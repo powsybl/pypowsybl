@@ -21,8 +21,8 @@ def create_battery_network() -> Network:
     return pp.network._create_network('batteries')
 
 
-def create_dangling_lines_network() -> Network:
-    return pp.network._create_network('dangling_lines')
+def create_boundary_lines_network() -> Network:
+    return pp.network._create_network('boundary_lines')
 
 
 def create_three_windings_transformer_network() -> Network:

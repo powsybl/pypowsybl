@@ -13,6 +13,7 @@ import pytest
 
 import pypowsybl as pp
 from pypowsybl import grid2op
+from pypowsybl.report import ReportNode
 
 TOLERANCE = 1e-3
 
@@ -140,3 +141,12 @@ def test_backend_disconnection_issue():
                                          1,  1,  1,  1,  1,  1,  1,  1, -1,  1,  1,  1,  1,  1,  1,  1,  1,
                                          1,  1,  1,  1,  1]),
                                backend.get_integer_value(grid2op.IntegerValueType.TOPO_VECT))
+
+def test_backend_report():
+    n = pp.network.create_ieee14()
+    report = ReportNode()
+    pp.loadflow.run_ac(n)
+    with grid2op.Backend(n) as backend:
+        backend.run_pf(report_node=report)
+
+    assert "Load flow on network 'ieee14cdf'" in str(report)

@@ -23,11 +23,12 @@ from pypowsybl import (
     grid2op,
     rao,
     report,
-    voltage_initializer
+    voltage_initializer,
+    opf
 )
 from pypowsybl.network import per_unit_view
 
-__version__ = '1.15.0.dev1'
+__version__ = '1.16.0.dev1'
 
 # set JVM java.library.path to pypowsybl module installation directory to be able to load native libraries
 _pypowsybl.set_java_library_path(_os.path.dirname(_inspect.getfile(_pypowsybl)))
@@ -49,7 +50,8 @@ __all__ = [
     "dynamic",
     "rao",
     "report",
-    "PyPowsyblError"
+    "PyPowsyblError",
+    "opf"
 ]
 
 

@@ -37,9 +37,9 @@ class ModelMapping:
         """
         return create_data_frame_from_series_array(_pp.get_categories_information())
 
-    def get_supported_models(self, category_name: str) -> List[str]:
+    def get_supported_models(self, category_name: str = '') -> List[str]:
         """
-        Get the supported dynamic models for a given category
+        Get the supported dynamic models for a given category or for all categories if no category_name is given
 
         Args:
             category_name: dynamic model category name
@@ -48,6 +48,18 @@ class ModelMapping:
             list of the supported models
         """
         return _pp.get_supported_models(category_name)
+
+    def get_supported_models_information(self, category_name: str = '') -> DataFrame:
+        """
+        Get more informations about the supported dynamic models for a given category or for all categories if no category_name is given
+
+        Args:
+            category_name: dynamic model category name
+
+        Returns:
+            a dataframe with information about the supported models
+        """
+        return create_data_frame_from_series_array(_pp.get_supported_models_information(category_name))
 
     def add_base_load(self, df: Optional[DataFrame] = None, **kwargs: ArrayLike) -> None:
         """
@@ -543,6 +555,37 @@ class ModelMapping:
                                                               model_name='StaticVarCompensatorPV')
         """
         self._add_all_dynamic_mappings('StaticVarCompensator', [df], **kwargs)
+
+    def add_shunt(self, df: Optional[DataFrame] = None, **kwargs: ArrayLike) -> None:
+        """
+        Add a shunt compensator mapping
+
+        :Args:
+            df: Attributes as a dataframe.
+            kwargs: Attributes as keyword arguments.
+
+        Notes:
+
+            Data may be provided as a dataframe or as keyword arguments.
+            In the latter case, all arguments must have the same length.
+
+            Valid attributes are:
+
+            - **static_id**: id of the network element to map
+            - **parameter_set_id**: id of the parameter for this model given in the dynawo configuration
+
+            - **model_name**: name of the model used for the mapping (if none the default model will be used)
+
+        Examples:
+            Using keyword arguments:
+
+            .. code-block:: python
+
+                model_mapping.add_shunt(static_id='SHUNT',
+                                               parameter_set_id='sh',
+                                               model_name='ShuntB')
+        """
+        self._add_all_dynamic_mappings('Shunt', [df], **kwargs)
 
     def add_base_line(self, df: Optional[DataFrame] = None, **kwargs: ArrayLike) -> None:
         """

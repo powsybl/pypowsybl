@@ -38,11 +38,10 @@ public final class SecurityAnalysisCUtils {
         return PyPowsyblConfiguration.isReadConfig() ? SecurityAnalysisParameters.load() : new SecurityAnalysisParameters();
     }
 
-    public static SecurityAnalysisParameters createSecurityAnalysisParameters(boolean dc,
-                                                                              PyPowsyblApiHeader.SecurityAnalysisParametersPointer securityAnalysisParametersPointer,
+    public static SecurityAnalysisParameters createSecurityAnalysisParameters(PyPowsyblApiHeader.SecurityAnalysisParametersPointer securityAnalysisParametersPointer,
                                                                               SecurityAnalysisProvider provider) {
         SecurityAnalysisParameters parameters = createSecurityAnalysisParameters(securityAnalysisParametersPointer);
-        parameters.setLoadFlowParameters(LoadFlowCUtils.createLoadFlowParameters(dc, securityAnalysisParametersPointer.getLoadFlowParameters(),
+        parameters.setLoadFlowParameters(LoadFlowCUtils.createLoadFlowParameters(securityAnalysisParametersPointer.getLoadFlowParameters(),
                 LoadFlowCUtils.getLoadFlowProvider(provider.getLoadFlowProviderName().orElse(PyPowsyblConfiguration.getDefaultLoadFlowProvider()))));
         Map<String, String> specificParametersProperties = getSpecificParameters(securityAnalysisParametersPointer);
         provider.loadSpecificParameters(specificParametersProperties).ifPresent(ext -> {

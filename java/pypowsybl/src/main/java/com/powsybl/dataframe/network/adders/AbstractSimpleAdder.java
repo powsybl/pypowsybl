@@ -51,8 +51,8 @@ public abstract class AbstractSimpleAdder implements NetworkElementAdder {
             loadAdder.add();
         } else if (injectionAdder instanceof BatteryAdder batteryAdder) {
             batteryAdder.add();
-        } else if (injectionAdder instanceof DanglingLineAdder danglingLineAdder) {
-            danglingLineAdder.add();
+        } else if (injectionAdder instanceof BoundaryLineAdder boundaryLineAdder) {
+            boundaryLineAdder.add();
         } else if (injectionAdder instanceof GeneratorAdder generatorAdder) {
             generatorAdder.add();
         } else if (injectionAdder instanceof ShuntCompensatorAdder shuntCompensatorAdder) {

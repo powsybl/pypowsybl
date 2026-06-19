@@ -65,7 +65,7 @@ class SensitivityAnalysis(ContingencyContainer):
 
         A variable could be:
 
-         - a network element ID: injections, PSTs, dangling lines and HVDC lines are supported
+         - a network element ID: injections, PSTs, boundary lines and HVDC lines are supported
          - a zone ID
          - a couple of zone ID to define a transfer between 2 zones
 
@@ -83,7 +83,7 @@ class SensitivityAnalysis(ContingencyContainer):
         Defines branch active power flow factor matrix, with a list of branches IDs and a list of variables.
 
         A variable could be:
-         - a network element ID: injections, PSTs, dangling lines and HVDC lines are supported
+         - a network element ID: injections, PSTs, boundary lines and HVDC lines are supported
          - a zone ID
          - a couple of zone ID to define a transfer between 2 zones
 
@@ -101,7 +101,7 @@ class SensitivityAnalysis(ContingencyContainer):
         Defines branch active power flow factor matrix for the base case, with a list of branches IDs and a list of variables.
 
         A variable could be:
-         - a network element ID: injections, PSTs, dangling lines and HVDC lines are supported
+         - a network element ID: injections, PSTs, boundary lines and HVDC lines are supported
          - a zone ID
          - a couple of zone ID to define a transfer between 2 zones
 
@@ -120,7 +120,7 @@ class SensitivityAnalysis(ContingencyContainer):
         Defines branch active power flow factor matrix for specific post contingencies states, with a list of branches IDs and a list of variables.
 
         A variable could be:
-         - a network element ID: injections, PSTs, dangling lines and HVDC lines are supported
+         - a network element ID: injections, PSTs, boundary lines and HVDC lines are supported
          - a zone ID
          - a couple of zone ID to define a transfer between 2 zones
 
@@ -142,7 +142,7 @@ class SensitivityAnalysis(ContingencyContainer):
         Defines branch active power factor matrix, with a list of branches IDs and a list of variables.
 
         A variable could be:
-         - a network element ID: injections, PSTs, dangling lines and HVDC lines are supported
+         - a network element ID: injections, PSTs, boundary lines and HVDC lines are supported
          - a zone ID
          - a couple of zone ID to define a transfer between 2 zones
 

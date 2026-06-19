@@ -7,6 +7,7 @@
  */
 package com.powsybl.python.loadflow;
 
+import com.powsybl.commons.PowsyblException;
 import com.powsybl.commons.extensions.Extension;
 import com.powsybl.commons.parameters.Parameter;
 import com.powsybl.commons.report.ReportNode;
@@ -72,7 +73,13 @@ public final class LoadFlowCFunctions {
         doCatch(exceptionHandlerPtr, new Runnable() {
             @Override
             public void run() {
-                PyPowsyblConfiguration.setDefaultLoadFlowProvider(CTypeUtil.toString(provider));
+                String providerName = CTypeUtil.toString(provider);
+                if (LoadFlowProvider.findAll().stream()
+                        .anyMatch(provider -> provider.getName().equals(providerName))) {
+                    PyPowsyblConfiguration.setDefaultLoadFlowProvider(providerName);
+                } else {
+                    throw new PowsyblException("No loadflow provider for name '" + providerName + "'");
+                }
             }
         });
     }
@@ -119,7 +126,7 @@ public final class LoadFlowCFunctions {
     }
 
     @CEntryPoint(name = "runLoadFlow")
-    public static ArrayPointer<LoadFlowComponentResultPointer> runLoadFlow(IsolateThread thread, ObjectHandle networkHandle, boolean dc,
+    public static ArrayPointer<LoadFlowComponentResultPointer> runLoadFlow(IsolateThread thread, ObjectHandle networkHandle,
                                                                            LoadFlowParametersPointer loadFlowParametersPtr,
                                                                            CCharPointer provider, ObjectHandle reportNodeHandle,
                                                                            PyPowsyblApiHeader.ExceptionHandlerPointer exceptionHandlerPtr) {
@@ -131,7 +138,7 @@ public final class LoadFlowCFunctions {
                 LoadFlowProvider loadFlowProvider = LoadFlowCUtils.getLoadFlowProvider(providerStr);
                 logger().info("loadflow provider used is : {}", loadFlowProvider.getName());
 
-                LoadFlowParameters parameters = LoadFlowCUtils.createLoadFlowParameters(dc, loadFlowParametersPtr, loadFlowProvider);
+                LoadFlowParameters parameters = LoadFlowCUtils.createLoadFlowParameters(loadFlowParametersPtr, loadFlowProvider);
                 LoadFlow.Runner runner = new LoadFlow.Runner(loadFlowProvider);
                 ReportNode reportNode = ReportCUtils.getReportNode(reportNodeHandle);
                 LoadFlowResult result = runner.run(network, network.getVariantManager().getWorkingVariantId(),
@@ -155,7 +162,6 @@ public final class LoadFlowCFunctions {
     public static void runLoadFlowAsync(IsolateThread thread,
                                         ObjectHandle networkHandle,
                                         CCharPointer variantId,
-                                        boolean dc,
                                         LoadFlowParametersPointer loadFlowParametersPtr,
                                         CCharPointer provider, ObjectHandle reportNodeHandle,
                                         LoadFlowResultCallback loadFlowResultCallback,
@@ -171,7 +177,7 @@ public final class LoadFlowCFunctions {
                 LoadFlowProvider loadFlowProvider = LoadFlowCUtils.getLoadFlowProvider(providerStr);
                 logger().debug("loadflow provider used is : {}", loadFlowProvider.getName());
 
-                LoadFlowParameters parameters = LoadFlowCUtils.createLoadFlowParameters(dc, loadFlowParametersPtr, loadFlowProvider);
+                LoadFlowParameters parameters = LoadFlowCUtils.createLoadFlowParameters(loadFlowParametersPtr, loadFlowProvider);
                 LoadFlow.Runner runner = new LoadFlow.Runner(loadFlowProvider);
                 ReportNode reportNode = ReportCUtils.getReportNode(reportNodeHandle);
                 runner.runAsync(network, variantIdStr,
@@ -197,7 +203,7 @@ public final class LoadFlowCFunctions {
         return doCatch(exceptionHandlerPtr, new PointerProvider<>() {
             @Override
             public LoadFlowParametersPointer get() {
-                return convertToLoadFlowParametersPointer(LoadFlowCUtils.createLoadFlowParameters(), null);
+                return convertToLoadFlowParametersPointer(LoadFlowCUtils.createLoadFlowParameters(), PyPowsyblConfiguration.getDefaultLoadFlowProvider());
             }
         });
     }
@@ -210,7 +216,7 @@ public final class LoadFlowCFunctions {
             public LoadFlowParametersPointer get() throws IOException {
                 String parametersJson = CTypeUtil.toString(parametersJsonPtr);
                 try (InputStream is = new ByteArrayInputStream(parametersJson.getBytes(StandardCharsets.UTF_8))) {
-                    return convertToLoadFlowParametersPointer(JsonLoadFlowParameters.read(is), null);
+                    return convertToLoadFlowParametersPointer(JsonLoadFlowParameters.read(is), PyPowsyblConfiguration.getDefaultLoadFlowProvider());
                 }
             }
         });
@@ -223,7 +229,7 @@ public final class LoadFlowCFunctions {
             @Override
             public CCharPointer get() {
                 String providerName = PyPowsyblConfiguration.getDefaultLoadFlowProvider();
-                LoadFlowParameters parameters = LoadFlowCUtils.createLoadFlowParameters(false, loadFlowParametersPtr, providerName);
+                LoadFlowParameters parameters = LoadFlowCUtils.createLoadFlowParameters(loadFlowParametersPtr, providerName);
                 try (ByteArrayOutputStream os = new ByteArrayOutputStream()) {
                     JsonLoadFlowParameters.write(parameters, os);
                     os.flush();
@@ -296,6 +302,7 @@ public final class LoadFlowCFunctions {
         cParameters.setReadSlackBus(parameters.isReadSlackBus());
         cParameters.setBalanceType(parameters.getBalanceType().ordinal());
         cParameters.setDcUseTransformerRatio(parameters.isDcUseTransformerRatio());
+        cParameters.setDc(parameters.isDc());
         CCharPointerPointer calloc = UnmanagedMemory.calloc(parameters.getCountriesToBalance().size() * SizeOf.get(CCharPointerPointer.class));
         ArrayList<Country> countries = new ArrayList<>(parameters.getCountriesToBalance());
         for (int i = 0; i < parameters.getCountriesToBalance().size(); i++) {

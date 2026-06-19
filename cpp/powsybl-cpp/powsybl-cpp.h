@@ -307,6 +307,7 @@ private:
 
 class LoadFlowParameters {
 public:
+    LoadFlowParameters();
     LoadFlowParameters(loadflow_parameters* src);
     std::shared_ptr<loadflow_parameters> to_c_struct() const;
     void load_to_c_struct(loadflow_parameters& params) const;
@@ -326,6 +327,7 @@ public:
     ComponentMode component_mode;
     bool hvdc_ac_emulation;
     double dc_power_factor;
+    bool dc;
     std::vector<std::string> provider_parameters_keys;
     std::vector<std::string> provider_parameters_values;
 };
@@ -366,6 +368,7 @@ public:
 
 class SensitivityAnalysisParameters {
 public:
+    SensitivityAnalysisParameters();
     SensitivityAnalysisParameters(sensitivity_analysis_parameters* src);
     std::shared_ptr<sensitivity_analysis_parameters> to_c_struct() const;
     void load_to_c_struct(sensitivity_analysis_parameters& params) const;
@@ -437,7 +440,10 @@ enum class NadLayoutType {
 enum class EdgeInfoType {
     ACTIVE_POWER = 0,
     REACTIVE_POWER,
-    CURRENT
+    CURRENT,
+    NAME,
+    VALUE_PERMANENT_LIMIT_PERCENTAGE,
+    EMPTY
 };
 
 class NadParameters {
@@ -446,7 +452,6 @@ public:
     std::shared_ptr<nad_parameters> to_c_struct() const;
     void nad_to_c_struct(nad_parameters& params) const;
 
-    bool edge_name_displayed;
     bool edge_info_along_edge;
     bool id_displayed;
     int power_value_precision;
@@ -458,9 +463,47 @@ public:
     NadLayoutType layout_type;
     int scaling_factor;
     double radius_factor;
-    EdgeInfoType edge_info_displayed;
     bool voltage_level_details;
     bool injections_added;
+    EdgeInfoType info_side_external;
+    EdgeInfoType info_middle_side1;
+    EdgeInfoType info_middle_side2;
+    EdgeInfoType info_side_internal;
+    double scale_factor;
+    double timeout_seconds;
+    bool edge_info_included;
+    bool voltage_level_legends_included;
+};
+
+enum ScalingType {
+    DELTA_P = 0,
+    TARGET_P,
+};
+
+enum Priority {
+    RESPECT_OF_VOLUME_ASKED = 0,
+    RESPECT_OF_DISTRIBUTION,
+    ONESHOT,
+};
+
+enum ScalingConvention {
+    GENERATOR_SCALING_CONVENTION = 0,
+    LOAD_SCALING_CONVENTION,
+};
+
+class ScalingParameters {
+public:
+    ScalingParameters(scaling_parameters* src);
+    std::shared_ptr<scaling_parameters> to_c_struct() const;
+    void load_to_c_struct(scaling_parameters& params) const;
+
+    ScalingConvention scaling_convention;
+    bool constant_power_factor;
+    bool reconnect;
+    bool allows_generator_out_of_active_power_limits;
+    Priority priority;
+    ScalingType scaling_type;
+    std::vector<std::string> ignored_injection_ids;
 };
 
 //=======short-circuit analysis==========
@@ -502,16 +545,6 @@ enum ObjectiveFunctionType {
     MIN_COST
 };
 
-enum Unit {
-    AMPERE = 0,
-    DEGREE,
-    MEGAWATT,
-    KILOVOLT,
-    PERCENT_IMAX,
-    TAP,
-    SECTION_COUNT
-};
-
 enum Solver {
     CBC,
     SCIP,
@@ -543,7 +576,6 @@ public:
 
     // Objective function parameters
     ObjectiveFunctionType objective_function_type;
-    Unit unit;
     bool enforce_curative_security;
     double curative_min_obj_improvement;
 
@@ -591,6 +623,14 @@ public:
 
     std::vector<std::string> provider_parameters_keys;
     std::vector<std::string> provider_parameters_values;
+
+    // Fast Rao extension
+    bool fast_rao_ext;
+    int number_of_cnecs_to_add;
+    bool add_unsecure_cnecs;
+    double margin_limit;
+
+    bool search_tree_parameters_ext;
 };
 
 RaoParameters* createRaoParameters();
@@ -643,7 +683,8 @@ void applySolvedTapPositionAndSolvedSectionCount(const JavaHandle& network);
 
 bool updateSwitchPosition(const JavaHandle& network, const std::string& id, bool open);
 
-bool updateConnectableStatus(const JavaHandle& network, const std::string& id, bool connected);
+bool updateConnectableStatus(const JavaHandle& network, const std::string& id, bool connected, bool allowDisconnectors,
+                             bool allowFictitious);
 
 std::vector<std::string> getNetworkElementsIds(const JavaHandle& network, element_type elementType, const std::vector<double>& nominalVoltages,
                                                const std::vector<std::string>& countries, bool mainCc, bool mainSc,
@@ -668,6 +709,10 @@ SeriesArray* createImporterParametersSeriesArray(const std::string& format);
 SeriesArray* createExporterParametersSeriesArray(const std::string& format);
 
 std::shared_ptr<network_metadata> getNetworkMetadata(const JavaHandle& network);
+
+void setNetworkCaseDate(const JavaHandle& network, double caseDate);
+
+void setNetworkName(const JavaHandle& network, std::string& name);
 
 bool isNetworkLoadable(const std::string& file);
 
@@ -709,9 +754,9 @@ DynamicSimulationParameters* createDynamicSimulationParameters();
 
 std::string saveNetworkToString(const JavaHandle& network, const std::string& format, const std::map<std::string, std::string>& parameters, JavaHandle* reportNode);
 
-void reduceNetwork(const JavaHandle& network, const double v_min, const double v_max, const std::vector<std::string>& ids, const std::vector<std::string>& vls, const std::vector<int>& depths, bool withDangLingLines);
+void reduceNetwork(const JavaHandle& network, const double v_min, const double v_max, const std::vector<std::string>& ids, const std::vector<std::string>& vls, const std::vector<int>& depths, bool withBoundaryLines);
 
-LoadFlowComponentResultArray* runLoadFlow(const JavaHandle& network, bool dc, const LoadFlowParameters& parameters, const std::string& provider, JavaHandle* reportNode);
+LoadFlowComponentResultArray* runLoadFlow(const JavaHandle& network, const LoadFlowParameters& parameters, const std::string& provider, JavaHandle* reportNode);
 
 SeriesArray* runLoadFlowValidation(const JavaHandle& network, validation_type validationType, const LoadFlowValidationParameters& validationParameters);
 
@@ -741,6 +786,8 @@ SeriesArray* getNetworkAreaDiagramDefaultBranchLabels(const JavaHandle& network)
 
 SeriesArray* getNetworkAreaDiagramDefaultTwtLabels(const JavaHandle& network);
 
+SeriesArray* getNetworkAreaDiagramDefaultInjectionsLabels(const JavaHandle& network);
+
 SeriesArray* getNetworkAreaDiagramDefaultBusDescriptions(const JavaHandle& network);
 
 SeriesArray* getNetworkAreaDiagramDefaultVoltageLevelDescriptions(const JavaHandle& network);
@@ -753,7 +800,7 @@ void addContingencyFromJsonFile(const JavaHandle& analysisContext, const std::st
 
 void exportToJson(const JavaHandle& securityAnalysisResult, const std::string& jsonFilePath);
 
-JavaHandle runSecurityAnalysis(const JavaHandle& securityAnalysisContext, const JavaHandle& network, const SecurityAnalysisParameters& parameters, const std::string& provider, bool dc, JavaHandle* reportNode);
+JavaHandle runSecurityAnalysis(const JavaHandle& securityAnalysisContext, const JavaHandle& network, const SecurityAnalysisParameters& parameters, const std::string& provider, JavaHandle* reportNode);
 
 JavaHandle createSensitivityAnalysis();
 
@@ -791,7 +838,7 @@ void addFactorMatrix(const JavaHandle& sensitivityAnalysisContext, std::string m
                      const std::vector<std::string>& variablesIds, const std::vector<std::string>& contingenciesIds, contingency_context_type ContingencyContextType,
                      sensitivity_function_type sensitivityFunctionType, sensitivity_variable_type sensitivityVariableType);
 
-JavaHandle runSensitivityAnalysis(const JavaHandle& sensitivityAnalysisContext, const JavaHandle& network, bool dc, SensitivityAnalysisParameters& parameters, const std::string& provider, JavaHandle* reportNode);
+JavaHandle runSensitivityAnalysis(const JavaHandle& sensitivityAnalysisContext, const JavaHandle& network, SensitivityAnalysisParameters& parameters, const std::string& provider, JavaHandle* reportNode);
 
 matrix* getSensitivityMatrix(const JavaHandle& sensitivityAnalysisResultContext, const std::string& matrixId, const std::string &contingencyId);
 
@@ -848,6 +895,8 @@ SeriesArray* getBusBreakerViewSwitches(const JavaHandle& network,std::string& vo
 SeriesArray* getBusBreakerViewBuses(const JavaHandle& network,std::string& voltageLevel);
 
 SeriesArray* getBusBreakerViewElements(const JavaHandle& network,std::string& voltageLevel);
+
+SeriesArray* getSwitchFlows(const JavaHandle& network, const std::vector<std::string>& switchIds);
 
 /**
  * Metadata of the dataframe of network elements data for a given element type.
@@ -942,11 +991,12 @@ JavaHandle createEventMapping();
 JavaHandle runDynamicSimulation(JavaHandle dynamicModelContext, JavaHandle network, JavaHandle dynamicMapping, JavaHandle* eventMapping, JavaHandle* timeSeriesMapping, DynamicSimulationParameters& parameters, JavaHandle* reportNode);
 
 // timeseries mapping
-void addOutputVariables(JavaHandle outputVariablesHandle, std::string dynamicId, std::vector<std::string>& variables, bool isDynamic, OutputVariableType variableType);
+void addOutputVariables(JavaHandle outputVariablesHandle, std::string dynamicId, std::vector<std::string>& variables, OutputVariableType variableType);
 
 // events mapping
-void addEventMappings(JavaHandle eventMappingHandle, EventMappingType mappingType, dataframe* mappingDf);
-std::vector<SeriesMetadata> getEventMappingsMetaData(EventMappingType mappingType);
+void addEventMappings(JavaHandle eventMappingHandle, std::string eventName, dataframe* mappingDf);
+std::vector<SeriesMetadata> getEventMappingsMetaData(std::string eventName);
+SeriesArray* getEventsInformation();
 
 // dynamic model mapping
 void addDynamicMappings(JavaHandle dynamicMappingHandle, std::string categoryName, dataframe_array* dataframes);
@@ -954,6 +1004,7 @@ std::vector<std::vector<SeriesMetadata>> getDynamicMappingsMetaData(std::string 
 std::vector<std::string> getCategories();
 SeriesArray* getCategoriesInformation();
 std::vector<std::string> getSupportedModels(std::string categoryName);
+SeriesArray* getSupportedModelsInformation(std::string categoryName);
 
 // results
 DynamicSimulationStatus getDynamicSimulationResultsStatus(JavaHandle resultsHandle);
@@ -994,6 +1045,13 @@ void voltageInitializerSetDefaultVariableScalingFactor(const JavaHandle& paramsH
 void voltageInitializerSetDefaultConstraintScalingFactor(const JavaHandle& paramsHandle, double defaultConstraintScalingFactor);
 void voltageInitializerSetReactiveSlackVariableScalingFactor(const JavaHandle& paramsHandle, double reactiveSlackVariableScalingFactor);
 void voltageInitializerSetTwoWindingTransformerRatioVariableScalingFactor(const JavaHandle& paramsHandle, double twoWindingTransformerRatioVariableScalingFactor);
+void voltageInitializerSetPenaltyInvestReaNeg(const JavaHandle& paramsHandle, double penaltyInvestReaNeg);
+void voltageInitializerSetPenaltyInvestReaPos(const JavaHandle& paramsHandle, double penaltyInvestReaPos);
+void voltageInitializerSetPenaltyActivePower(const JavaHandle& paramsHandle, double penaltyActivePower);
+void voltageInitializerSetPenaltyUnitsReactive(const JavaHandle& paramsHandle, double penaltyUnitsReactive);
+void voltageInitializerSetPenaltyTransfoRatio(const JavaHandle& paramsHandle, double penaltyTransfoRatio);
+void voltageInitializerSetPenaltyVoltageTargetRatio(const JavaHandle& paramsHandle, double penaltyVoltageTargetRatio);
+void voltageInitializerSetPenaltyVoltageTargetData(const JavaHandle& paramsHandle, double penaltyVoltageTargetData);
 
 void voltageInitializerApplyAllModifications(const JavaHandle& resultHandle, const JavaHandle& networkHandle);
 VoltageInitializerStatus voltageInitializerGetStatus(const JavaHandle& resultHandle);
@@ -1009,6 +1067,11 @@ std::vector<std::vector<SeriesMetadata>> getModificationMetadataWithElementType(
 void createNetworkModification(pypowsybl::JavaHandle network, dataframe_array* dataframe, network_modification_type networkModificationType, bool throwException, JavaHandle* reportNode);
 
 void splitOrMergeTransformers(pypowsybl::JavaHandle network, const std::vector<std::string>& transformerIds, bool merge, JavaHandle* reportNode);
+
+JavaHandle createScalable(int scalableType, const std::string& injectionId, double minValue, double maxValue, std::vector<JavaHandle> children, std::vector<double> percentages);
+double scale(JavaHandle network, JavaHandle scalable, const ScalingParameters& scalingParameters, double asked);
+std::vector<double> computeProportionalScalablePercentages(const std::vector<std::string>& injectionIds, distribution_mode mode, JavaHandle network);
+ScalingParameters* createScalingParameters();
 
 void setDefaultShortCircuitAnalysisProvider(const std::string& shortCircuitAnalysisProvider);
 std::string getDefaultShortCircuitAnalysisProvider();
@@ -1039,6 +1102,38 @@ SeriesArray* getCostResults(const JavaHandle& cracHandle, const JavaHandle& resu
 std::vector<std::string> getVirtualCostNames(const JavaHandle& resultHandle);
 SeriesArray* getVirtualCostsResults(const JavaHandle& cracHandle, const JavaHandle& resultHandle, const std::string& virtualCostName);
 
+SeriesArray* getInstants(const JavaHandle& cracHandle);
+SeriesArray* getMaxRemedialActionsUsageLimits(const JavaHandle& cracHandle);
+SeriesArray* getMaxTopologicalActionsPerTsoUsageLimits(const JavaHandle& cracHandle);
+SeriesArray* getMaxPstActionsPerTsoUsageLimits(const JavaHandle& cracHandle);
+SeriesArray* getMaxRemedialActionsPerTsoUsageLimits(const JavaHandle& cracHandle);
+SeriesArray* getMaxElementaryActionsPerTsoUsageLimits(const JavaHandle& cracHandle);
+SeriesArray* getCracContingencies(const JavaHandle& cracHandle);
+SeriesArray* getCracContingencyElements(const JavaHandle& cracHandle);
+SeriesArray* getFlowCnecs(const JavaHandle& cracHandle);
+SeriesArray* getAngleCnecs(const JavaHandle& cracHandle);
+SeriesArray* getVoltageCnecs(const JavaHandle& cracHandle);
+SeriesArray* getThresholds(const JavaHandle& cracHandle);
+SeriesArray* getCracPstRangeActions(const JavaHandle& cracHandle);
+SeriesArray* getCracHvdcRangeActions(const JavaHandle& cracHandle);
+SeriesArray* getCracInjectionRangeActions(const JavaHandle& cracHandle);
+SeriesArray* getNetworkElementIdsAndKeys(const JavaHandle& cracHandle);
+SeriesArray* getCracCounterTradeRangeActions(const JavaHandle& cracHandle);
+SeriesArray* getCracRangeActionRanges(const JavaHandle& cracHandle);
+SeriesArray* getCracNetworkActions(const JavaHandle& cracHandle);
+SeriesArray* getCracTerminalConnectionActions(const JavaHandle& cracHandle);
+SeriesArray* getCracPstTapPositionActions(const JavaHandle& cracHandle);
+SeriesArray* getCracGeneratorActions(const JavaHandle& cracHandle);
+SeriesArray* getCracLoadActions(const JavaHandle& cracHandle);
+SeriesArray* getCracBoundaryLineActions(const JavaHandle& cracHandle);
+SeriesArray* getCracShuntCompensatorPositionActions(const JavaHandle& cracHandle);
+SeriesArray* getCracSwitchActions(const JavaHandle& cracHandle);
+SeriesArray* getCracSwitchPairs(const JavaHandle& cracHandle);
+SeriesArray* getOnInstantUsageRules(const JavaHandle& cracHandle);
+SeriesArray* getOnContingencyStateUsageRules(const JavaHandle& cracHandle);
+SeriesArray* getOnConstraintUsageRules(const JavaHandle& cracHandle);
+SeriesArray* getOnFlowConstraintInCountryUsageRules(const JavaHandle& cracHandle);
+
 void setLoopFlowGlsk(const JavaHandle& raoContext, const JavaHandle& glsk);
 void setMonitoringGlsk(const JavaHandle& raoContext, const JavaHandle& glsk);
 
@@ -1055,7 +1150,7 @@ array* getGrid2opDoubleValue(const JavaHandle& backendHandle, Grid2opDoubleValue
 void updateGrid2opDoubleValue(const JavaHandle& backendHandle, Grid2opUpdateDoubleValueType valueType, double* valuePtr, int* changedPtr);
 void updateGrid2opIntegerValue(const JavaHandle& backendHandle, Grid2opUpdateIntegerValueType valueType, int* valuePtr, int* changedPtr);
 bool checkGrid2opIsolatedAndDisconnectedInjections(const JavaHandle& backendHandle);
-LoadFlowComponentResultArray* runGrid2opLoadFlow(const JavaHandle& network, bool dc, const LoadFlowParameters& parameters);
+LoadFlowComponentResultArray* runGrid2opLoadFlow(const JavaHandle& network, const LoadFlowParameters& parameters, JavaHandle* reportNode);
 
 }
 #endif //PYPOWSYBL_H

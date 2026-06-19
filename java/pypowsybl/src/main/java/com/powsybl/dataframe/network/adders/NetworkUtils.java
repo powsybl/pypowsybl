@@ -98,12 +98,12 @@ public final class NetworkUtils {
         return area;
     }
 
-    public static DanglingLine getDanglingLineOrThrow(Network network, String id) {
-        DanglingLine danglingLine = network.getDanglingLine(id);
-        if (danglingLine == null) {
-            throw new PowsyblException("Dangling Line '" + id + DOES_NOT_EXIST);
+    public static BoundaryLine getBoundaryLineOrThrow(Network network, String id) {
+        BoundaryLine boundaryLine = network.getBoundaryLine(id);
+        if (boundaryLine == null) {
+            throw new PowsyblException("Boundary Line '" + id + DOES_NOT_EXIST);
         }
-        return danglingLine;
+        return boundaryLine;
     }
 
     public static Connectable<?> getConnectableOrThrow(Network network, String id) {

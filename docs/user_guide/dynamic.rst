@@ -71,6 +71,14 @@ To run a Dynawo simulation:
 
     # dynamic mapping
     model_mapping = dyn.ModelMapping()
+
+    # get dynamic model categories dataframe
+    model_mapping.get_categories_information()
+    # get all supported model information dataframe
+    model_mapping.get_supported_models_information()
+    # or filtered by category
+    model_mapping.get_supported_models_information('SynchronizedGenerator')
+
     # can be written with kwargs...
     model_mapping.add_base_load(static_id='LOAD',
                                 parameter_set_id='LAB',
@@ -90,12 +98,13 @@ To run a Dynawo simulation:
     # events mapping
     event_mapping = dyn.EventMapping()
     event_mapping.add_disconnection(static_id='GEN', start_time=10)
-    event_mapping.add_disconnection(static_id='NHV1_NHV2_1', start_time=10, disconnect_only='ONE')
+    # can also be created with the proper event name
+    event_mapping.add_event_model(event_name='Disconnect', static_id='NHV1_NHV2_1', start_time=10, disconnect_only='ONE')
 
     # curves mapping
     variables_mapping = dyn.OutputVariableMapping()
-    variables_mapping.add_dynamic_model_curves("DM_LOAD", ["load_PPu", "load_QPu"])
-    variables_mapping.add_standard_model_final_state_values('NGEN', 'Upu_value') # and so on
+    variables_mapping.add_curves("LOAD", ["load_PPu", "load_QPu"])
+    variables_mapping.add_final_state_values('NGEN', 'Upu_value') # and so on
 
     # simulations parameters
     parameters = dyn.Parameters(start_time=0, stop_time=50)

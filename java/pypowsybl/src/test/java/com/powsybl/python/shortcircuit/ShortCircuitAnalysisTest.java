@@ -9,8 +9,8 @@ package com.powsybl.python.shortcircuit;
 
 import com.powsybl.dataframe.impl.Series;
 import com.powsybl.python.network.Dataframes;
-import com.powsybl.security.LimitViolation;
-import com.powsybl.security.LimitViolationType;
+import com.powsybl.contingency.violations.LimitViolation;
+import com.powsybl.contingency.violations.LimitViolationType;
 import com.powsybl.shortcircuit.*;
 import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.Test;
