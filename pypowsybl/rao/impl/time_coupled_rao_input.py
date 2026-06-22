@@ -20,7 +20,7 @@ class TimeCoupledRaoInput:
     Input wrapper class for time coupled rao input
     """
 
-    def __init__(self):
+    def __init__(self) -> None:
         self._data = []
 
     def add_data_point(self, timestamp: Datetime, network: Network, crac: Crac) -> Any :
