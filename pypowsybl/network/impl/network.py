@@ -2467,6 +2467,71 @@ class Network:  # pylint: disable=too-many-public-methods
         """
         return self.get_elements(ElementType.SWITCH, all_attributes, attributes, **kwargs)
 
+    def get_switch_flows(self, switch_ids: Union[str, List[str]]) -> DataFrame:
+        r"""
+        Get active and reactive flows for a list of switches.
+
+        Args:
+            switch_ids: one switch id or a list of switch ids
+
+        Returns:
+            A dataframe indexed by switch id with the following columns:
+
+            - **p**: active power on switch side 1 (in MW)
+            - **q**: reactive power on switch side 1 (in MVar)
+
+        Side convention:
+            The exposed ``p`` and ``q`` values correspond to the switch flow oriented from side 1 to side 2 in the
+            underlying PowSyBl topology representation of the switch.
+            In bus-breaker topology this corresponds to the switch endpoints ``bus1``.
+            In node-breaker topology this corresponds to the switch endpoints ``node1``.
+            If you need the value on side 2, use the opposite sign: ``p2 = -p`` and ``q2 = -q``. As switches are modelled
+            as zero-impedance elements, the flow on side 2 is always the opposite of the flow on side 1.
+
+        Notes:
+            This method is backed by PowSyBl's Java ``SwitchesFlow`` utility and exposes its side-1 active and reactive
+            power values as ``p`` and ``q``. It will not recompute a loadflow but use whatever loadflow information is
+            available at the terminal nodes during the call.
+
+            As long as there are no parallel switches or loops, the resulting flow over the switch is just the kirchhoff sum
+            on one side and physically meaningful. However, note that ``SwitchesFlow`` does not solve an electrical sharing
+            problem inside a meshed switch subgraph. In the case of parallel or looping switches, the following algorithm is
+            executed to return a deterministic result for each switch:
+
+            1. build a topology graph whose vertices are nodes or buses and whose edges are closed switches and,
+               in node-breaker topology, internal connections,
+            2. sum the terminal injections attached to each vertex,
+            3. select one spanning tree of that graph,
+            4. traverse that tree from the leaves to the root and assign each tree-edge flow from the net
+               downstream injection,
+            5. assign zero flow to switch edges that are outside the selected spanning tree.
+
+            For example, duplicating the ``S1VL2_COUPLER`` breaker in the four-substations node-breaker example with a second
+            closed breaker on the same two nodes yields the full cut flow on one coupler and zero on the other. Opening the
+            coupler that carries the non-zero value moves the full cut flow to the remaining closed coupler. In other words,
+            for meshed switch-only topologies, the reported switch flows are a spanning-tree allocation of the cut
+            flow, not a physical current-sharing result across parallel zero-impedance paths.
+
+        Examples:
+            .. code-block:: python
+
+                net = pp.network.create_four_substations_node_breaker_network()
+                pp.loadflow.run_ac(net)
+                net.get_switch_flows('S1VL2_COUPLER')
+
+            will output something like:
+
+            ============= ======== ============
+            \                    p            q
+            ============= ======== ============
+            id
+            S1VL2_COUPLER    250.0  -299.532312
+            ============= ======== ============
+        """
+        if isinstance(switch_ids, str):
+            switch_ids = [switch_ids]
+        return create_data_frame_from_series_array(_pp.get_switch_flows(self._handle, switch_ids))
+
     def get_ratio_tap_changer_steps(self, all_attributes: bool = False, attributes: Optional[List[str]] = None,
                                     **kwargs: ArrayLike) -> DataFrame:
         r"""
@@ -4575,6 +4640,63 @@ class Network:  # pylint: disable=too-many-public-methods
         """
         return self._update_elements(ElementType.OPERATIONAL_LIMITS, df, **kwargs)
 
+    def get_voltage_angle_limits(self, all_attributes: bool = False, attributes: Optional[List[str]] = None) -> DataFrame:
+        """
+        Get the list of voltage angle limits.
+
+        The resulting dataframe will include the following columns:
+
+          - **id**: identifier of the voltage angle limit
+          - **from_element_id**: identifier of the connectable owning the "from" terminal
+          - **from_side**: side of the "from" terminal for sided elements (ONE, TWO, THREE)
+          - **to_element_id**: identifier of the connectable owning the "to" terminal
+          - **to_side**: side of the "to" terminal for sided elements (ONE, TWO, THREE)
+          - **low_limit**: optional lower angle limit value
+          - **high_limit**: optional upper angle limit value
+
+        The index of the dataframe is the voltage angle limit **id**.
+
+        Args:
+            all_attributes: flag for including all attributes in the dataframe, default is false
+            attributes:     attributes to include in the dataframe. The 2 parameters are mutually
+                            exclusive. If no parameter is specified, the dataframe will include the default attributes.
+
+        Examples:
+
+            .. code-block:: python
+
+                import pypowsybl as pp
+
+                network = pp.network.create_eurostag_tutorial_example1_network()
+                network.create_voltage_angle_limits(
+                    id='NHV1_NHV2_1_ANGLE',
+                    from_element_id='NHV1_NHV2_1',
+                    from_side='ONE',
+                    to_element_id='NHV1_NHV2_1',
+                    to_side='TWO',
+                    low_limit=-30.0,
+                    high_limit=30.0,
+                )
+                angle_limits = network.get_voltage_angle_limits()
+                angle_limits.columns.tolist()
+                line_limit = angle_limits.loc['NHV1_NHV2_1_ANGLE']
+
+            .. code-block:: python
+
+                {
+                    'from_element_id': 'NHV1_NHV2_1',
+                    'from_side': 'ONE',
+                    'to_element_id': 'NHV1_NHV2_1',
+                    'to_side': 'TWO',
+                    'low_limit': -30.0,
+                    'high_limit': 30.0,
+                }
+
+        Returns:
+            All voltage angle limits on the network.
+        """
+        return self.get_elements(ElementType.VOLTAGE_ANGLE_LIMITS, all_attributes, attributes)
+
     def get_node_breaker_topology(self, voltage_level_id: str) -> NodeBreakerTopology:
         """
         Get the node breaker description of the topology of a voltage level.
@@ -5796,6 +5918,66 @@ class Network:  # pylint: disable=too-many-public-methods
             kwargs.pop('element_type')
 
         return self._create_elements(ElementType.OPERATIONAL_LIMITS, [df], **kwargs)
+
+    def create_voltage_angle_limits(self, df: Optional[DataFrame] = None, **kwargs: ArrayLike) -> None:
+        """
+        Creates voltage angle limits.
+
+        Notes:
+
+            Data may be provided as a dataframe or as keyword arguments.
+            In the latter case, all arguments must have the same length.
+
+            Valid attributes are:
+
+            - **id**: identifier of the voltage angle limit
+            - **from_element_id**: identifier of the connectable owning the "from" terminal
+            - **from_side**: side of the "from" terminal for sided elements (ONE, TWO, THREE)
+            - **to_element_id**: identifier of the connectable owning the "to" terminal
+            - **to_side**: side of the "to" terminal for sided elements (ONE, TWO, THREE)
+            - **low_limit**: optional lower angle limit value, in degrees
+            - **high_limit**: optional upper angle limit value, in degrees
+
+            If a voltage angle limit already exists with the same identifier, it is replaced.
+            At least one of **low_limit** or **high_limit** must be provided.
+
+        Args:
+            df: Attributes as a dataframe.
+            kwargs: Attributes as keyword arguments.
+
+        Examples:
+
+            Create a symmetric angle window on a line, between its two terminals:
+
+            .. code-block:: python
+
+                import pypowsybl as pp
+
+                network = pp.network.create_eurostag_tutorial_example1_network()
+                network.create_voltage_angle_limits(
+                    id='NHV1_NHV2_1_ANGLE',
+                    from_element_id='NHV1_NHV2_1',
+                    from_side='ONE',
+                    to_element_id='NHV1_NHV2_1',
+                    to_side='TWO',
+                    low_limit=-30.0,
+                    high_limit=30.0,
+                )
+
+            Create a limit with only an upper bound:
+
+            .. code-block:: python
+
+                network.create_voltage_angle_limits(
+                    id='NHV1_NHV2_2_MAX_ANGLE',
+                    from_element_id='NHV1_NHV2_2',
+                    from_side='ONE',
+                    to_element_id='NHV1_NHV2_2',
+                    to_side='TWO',
+                    high_limit=25.0,
+                )
+        """
+        return self._create_elements(ElementType.VOLTAGE_ANGLE_LIMITS, [df], **kwargs)
 
     def create_minmax_reactive_limits(self, df: Optional[DataFrame] = None, **kwargs: ArrayLike) -> None:
         """

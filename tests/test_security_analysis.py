@@ -242,6 +242,32 @@ def test_security_analysis_parameters():
     assert result.pre_contingency_result.status == pp.loadflow.ComponentStatus.MAX_ITERATION_REACHED
 
 
+def test_voltage_angle_limit_violation():
+    # The six bus network has a switch that, if opened, does not disconnect the grid. We want to measure the voltage
+    # angle across this switch in this test to simulate operating a station in two-node configuration and having to monitor
+    # the voltage angle across the coupler.
+    network = pp.network.create_metrix_tutorial_six_buses_network()
+    network.update_switches(id='SOO1__SC12_0', open=True)
+    network.create_voltage_angle_limits(
+        id='SO_SWITCH_ANGLE',
+        from_element_id='SO_L',
+        to_element_id='SO_G2',
+        low_limit=-0.01,
+        high_limit=0.01,
+    )
+
+    result = pp.security.create_analysis().run_ac(network)
+    angle_violations = result.limit_violations[
+        result.limit_violations.index.get_level_values('subject_id') == 'SO_SWITCH_ANGLE']
+
+    expected = pd.DataFrame.from_records(
+        index=['contingency_id', 'subject_id'],
+        columns=['contingency_id', 'subject_id', 'subject_name', 'limit_type', 'limit_name',
+                 'limit', 'acceptable_duration', 'limit_reduction', 'value', 'side'],
+        data=[['', 'SO_SWITCH_ANGLE', '', 'HIGH_VOLTAGE_ANGLE', '', 0.01, 2147483647, 1.0, 0.91622, '']])
+    pd.testing.assert_frame_equal(expected, angle_violations, check_dtype=False, atol=1e-5)
+
+
 def test_provider_parameters_names():
     assert pp.security.get_provider_parameters_names() == ['createResultExtension', 'contingencyPropagation', 'threadCount', 'dcFastMode', 'contingencyActivePowerLossDistribution', 'startWithFrozenACEmulation']
     assert pp.security.get_provider_parameters_names('OpenLoadFlow') == ['createResultExtension', 'contingencyPropagation', 'threadCount', 'dcFastMode', 'contingencyActivePowerLossDistribution', 'startWithFrozenACEmulation']
@@ -277,6 +303,19 @@ def test_different_equipment_contingency():
     assert 'Load contingency' in sa_result.post_contingency_results.keys()
     assert 'Twt contingency' in sa_result.post_contingency_results.keys()
     assert 'Switch contingency' in sa_result.post_contingency_results.keys()
+
+def test_post_contingency_disconnected_elements():
+    n = pp.network.create_four_substations_node_breaker_network()
+    sa = pp.security.create_analysis()
+    sa.add_single_element_contingency('S4VL1_BBS', 'Busbar contingency')
+    params = pp.security.Parameters(provider_parameters={
+        'contingencyPropagation': 'true',
+        'createResultExtension': 'true',
+    })
+
+    sa_result = sa.run_ac(n, parameters=params)
+
+    assert sorted(sa_result.find_post_contingency_result('Busbar contingency').disconnected_elements) == ['LD6', 'LINE_S3S4', 'SVC']
 
 def test_load_action():
     n = pp.network.create_eurostag_tutorial_example1_network()

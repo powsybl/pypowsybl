@@ -668,6 +668,21 @@ def test_create_limits():
     pd.testing.assert_frame_equal(expected, one_minute_limits, check_dtype=False, check_index_type=False)
 
 
+def test_create_voltage_angle_limits():
+    network = util.create_three_windings_transformer_with_current_limits_network()
+    network.create_voltage_angle_limits(pd.DataFrame.from_records(index='id', data=[
+        {'id': 'VAL-1', 'from_element_id': '3WT', 'from_side': 'ONE',
+         'to_element_id': '3WT', 'to_side': 'THREE', 'low_limit': -15.0, 'high_limit': 20.0}
+    ]))
+
+    expected = pd.DataFrame.from_records(
+        index='id',
+        columns=['id', 'from_element_id', 'from_side', 'to_element_id', 'to_side', 'low_limit', 'high_limit'],
+        data=[['VAL-1', '3WT', 'ONE', '3WT', 'THREE', -15.0, 20.0]])
+
+    pd.testing.assert_frame_equal(expected, network.get_voltage_angle_limits(all_attributes=True), check_dtype=False)
+
+
 def test_create_minmax_reactive_limits():
     network = pn.create_four_substations_node_breaker_network()
     network.create_minmax_reactive_limits(pd.DataFrame.from_records(index='id', data=[
