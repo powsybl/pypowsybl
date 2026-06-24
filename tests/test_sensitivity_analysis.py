@@ -365,3 +365,13 @@ def test_transfo3_sensi():
     analysis.add_branch_flow_factor_matrix([line_id], [t3e_id], "ptc_test")
     result = analysis.run(network)
     assert -0.002685 == pytest.approx(result.get_sensitivity_matrix('ptc_test').loc[t3e_id][line_id], 1e-3)
+
+def test_shunt_sensi():
+    n = pp.network.load(str(TEST_DIR.joinpath('shunt-network.xiidm')))
+    analysis = pp.sensitivity.create_ac_analysis()
+    analysis.add_factor_matrix(['vl1_0', 'b2', 'b3'], ['SHUNT'], [], ContingencyContextType.NONE,
+                               SensitivityFunctionType.BUS_VOLTAGE, SensitivityVariableType.SHUNT_COMPENSATOR_SUSCEPTANCE, 'm1')
+    result = analysis.run(n)
+    assert 0.0 == pytest.approx(result.get_sensitivity_matrix('m1').loc['SHUNT']['vl1_0'], 1e-3)
+    assert 1.168842 == pytest.approx(result.get_sensitivity_matrix('m1').loc['SHUNT']['b2'], 1e-3)
+    assert 2.334586 == pytest.approx(result.get_sensitivity_matrix('m1').loc['SHUNT']['b3'], 1e-3)
