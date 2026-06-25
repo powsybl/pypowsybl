@@ -72,6 +72,18 @@ In AC/DC mode, OPF solves AC and DC equations in the same optimization problem. 
 - VSC active and reactive powers;
 - Converter DC currents.
 
+AC/DC objective function
+~~~~~~~~~~~~~~~~~~~~~~~~
+
+In AC/DC mode, the current objective function minimizes DC line current usage:
+
+.. math::
+
+    \min \sum_l \left(I_{1,l}^2 + I_{2,l}^2\right)
+
+where ``I1`` and ``I2`` are the two oriented current variables of each modeled DC line.
+
+
 DC buses
 ~~~~~~~~
 
