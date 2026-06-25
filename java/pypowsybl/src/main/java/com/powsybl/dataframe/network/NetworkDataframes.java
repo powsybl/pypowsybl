@@ -996,6 +996,10 @@ public final class NetworkDataframes {
                 .strings("name", dcLine -> dcLine.getOptionalName().orElse(""), Identifiable::setName)
                 .strings("dc_node1_id", dl -> getDcNodeId(dl.getDcTerminal1()))
                 .strings("dc_node2_id", dl -> getDcNodeId(dl.getDcTerminal2()))
+                .booleans("connected1", dl -> dl.getDcTerminal1().isConnected(),
+                        (dl, dcConnected1) -> dl.getDcTerminal1().setConnected(dcConnected1))
+                .booleans("connected2", dl -> dl.getDcTerminal2().isConnected(),
+                        (dl, dcConnected2) -> dl.getDcTerminal2().setConnected(dcConnected2))
                 .doubles("r", (dcLine, context) -> perUnitR(context, dcLine),
                         (dcLine, r, context) -> dcLine.setR(unPerUnitRX(context, dcLine, r)))
                 .doubles("i1", getPerUnitI1(), setPerUnitI1())
@@ -1063,6 +1067,8 @@ public final class NetworkDataframes {
                 .stringsIndex("id", DcGround::getId)
                 .strings("name", dn -> dn.getOptionalName().orElse(""), Identifiable::setName)
                 .strings("dc_node_id", dg -> dg.getDcTerminal().getDcNode().getId())
+                .booleans("connected", dg -> dg.getDcTerminal().isConnected(),
+                        (dg, dcConnected) -> dg.getDcTerminal().setConnected(dcConnected))
                 .doubles("r", (dg, context) -> dg.getR(), (dg, r, context) -> dg.setR(r))
                 .booleans("fictitious", Identifiable::isFictitious, Identifiable::setFictitious, false)
                 .addProperties()

@@ -6,13 +6,13 @@
 #
 import copy
 import datetime
+import io
 import math
 import os
 import pathlib
 import re
 import tempfile
 import unittest
-import io
 import zipfile
 from os.path import exists
 
@@ -336,6 +336,7 @@ def test_loads_data_frame():
         data=[['S1VL1_2', 2], ['S1VL2_13', 13], ['S1VL2_15', 15], ['S1VL2_17', 17], ['S3VL1_4', 4], ['S4VL1_2', 2]])
     pd.testing.assert_frame_equal(expected, loads, check_dtype=False, atol=1e-2)
 
+
 def test_grounds():
     n = pp.network.create_eurostag_tutorial_example1_network()
     grounds = n.get_grounds(all_attributes=True)
@@ -346,6 +347,7 @@ def test_grounds():
                             columns=['name', 'voltage_level_id', 'bus_id', 'connected'],
                             data=[['', 'VLHV1', 'VLHV1_0', True]])
     pd.testing.assert_frame_equal(expected, n.get_grounds(), check_dtype=False, atol=1e-2)
+
 
 def test_batteries_data_frame():
     n = pp.network.load(str(TEST_DIR.joinpath('battery.xiidm')))
@@ -2671,10 +2673,12 @@ def test_dc_nodes():
 def test_dc_lines():
     n = pp.network.create_dc_detailed_vsc_symmetrical_monopole_network()
     n.update_dc_lines(pd.DataFrame(data={'r': 1.0, 'i1': 10.0, 'i2': 10.0}, index=['dcLineNeg']))
+    n.update_dc_lines(pd.DataFrame(data={'connected1': False}, index=['dcLinePos']))
     expected = pd.DataFrame(index=pd.Series(name='id', data=['dcLineNeg', 'dcLinePos']),
-                            columns=['name', 'dc_node1_id', 'dc_node2_id', 'r', 'i1', 'p1', 'i2', 'p2'],
-                            data=[['', 'dcNodeFrNeg', 'dcNodeGbNeg', 1.0, 10.0, nan, 10.0, nan],
-                                  ['', 'dcNodeFrPos', 'dcNodeGbPos', 5.0, nan, nan, nan, nan]])
+                            columns=['name', 'dc_node1_id', 'dc_node2_id', 'connected1', 'connected2', 'r', 'i1', 'p1',
+                                     'i2', 'p2'],
+                            data=[['', 'dcNodeFrNeg', 'dcNodeGbNeg', True, True, 1.0, 10.0, nan, 10.0, nan],
+                                  ['', 'dcNodeFrPos', 'dcNodeGbPos', False, True, 5.0, nan, nan, nan, nan]])
     pd.testing.assert_frame_equal(expected, n.get_dc_lines(), check_dtype=False)
 
     dc_lines = n.get_dc_lines(attributes=['dc_node1_id', 'dc_node2_id'])
@@ -2712,10 +2716,10 @@ def test_voltage_source_converters():
 
 def test_dc_grounds():
     n = pp.network.create_dc_detailed_lcc_bipole_ground_return_network()
-    n.update_dc_grounds(pd.DataFrame(data={'r': 1.0}, index=['dcGroundGb']))
+    n.update_dc_grounds(pd.DataFrame(data={'r': 1.0, 'connected': False}, index=['dcGroundGb']))
     expected = pd.DataFrame(index=pd.Series(name='id', data=['dcGroundGb', 'dcGroundFr']),
-                            columns=['name', 'dc_node_id', 'r'],
-                            data=[['', 'dcNodeGbMid', 1.0], ['', 'dcNodeFrMid', 0.0]])
+                            columns=['name', 'dc_node_id', 'connected', 'r'],
+                            data=[['', 'dcNodeGbMid', False, 1.0], ['', 'dcNodeFrMid', True, 0.0]])
     pd.testing.assert_frame_equal(expected, n.get_dc_grounds(), check_dtype=False)
 
     dc_grounds = n.get_dc_grounds(attributes=['dc_node_id'])

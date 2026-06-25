@@ -4,21 +4,21 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 #
-import io
+
+import pathlib
+import re
 
 import numpy as np
 import pandas as pd
 import pytest
-import re
+from numpy import nan
 
 import pypowsybl
 import pypowsybl.network
 import pypowsybl.network as pn
 import util
-from util import dataframe_from_string
-import pathlib
-from numpy import nan
 from pypowsybl import PyPowsyblError
+from util import dataframe_from_string
 
 
 @pytest.fixture
@@ -1190,13 +1190,16 @@ def test_dc_lines_creation():
         'VscSymmetricalMonopole')
 
     n.create_dc_lines(
-        pd.DataFrame(index=pd.Series(name='id', data=['DC_LINE_TEST']), columns=['r', 'dc_node1_id', 'dc_node2_id'],
-                     data=[[2, 'dcNodeGbNeg', 'dcNodeGbPos']]))
+        pd.DataFrame(index=pd.Series(name='id', data=['DC_LINE_TEST']),
+                     columns=['r', 'dc_node1_id', 'dc_node2_id', 'connected1'],
+                     data=[[2, 'dcNodeGbNeg', 'dcNodeGbPos', False]]))
     dc_line = n.get_dc_lines().loc['DC_LINE_TEST']
 
     assert dc_line.r == 2
     assert dc_line.dc_node1_id == 'dcNodeGbNeg'
     assert dc_line.dc_node2_id == 'dcNodeGbPos'
+    assert not dc_line.connected1
+    assert dc_line.connected2
 
 
 def test_voltage_source_converter_creation():
@@ -1235,6 +1238,7 @@ def test_dc_ground_creation():
         pd.DataFrame(index=['DC_GROUND_TEST'], columns=['dc_node_id', 'r'], data=[['dcNodeGbMid', 0.1]]))
 
     expected = pd.DataFrame(index=pd.Series(name='id', data=['dcGroundGb', 'dcGroundFr', 'DC_GROUND_TEST']),
-                            columns=['name', 'dc_node_id', 'r'],
-                            data=[['', 'dcNodeGbMid', 0.0], ['', 'dcNodeFrMid', 0.0], ['', 'dcNodeGbMid', 0.1]])
+                            columns=['name', 'dc_node_id', 'connected', 'r'],
+                            data=[['', 'dcNodeGbMid', False, 0.0], ['', 'dcNodeFrMid', True, 0.0],
+                                  ['', 'dcNodeGbMid', True, 0.1]])
     pd.testing.assert_frame_equal(expected, n.get_dc_grounds(), check_dtype=False)
