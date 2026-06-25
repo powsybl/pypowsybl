@@ -61,7 +61,7 @@ When the calculation converges, solved values are written back to the network ob
 
 
 AC/DC model overview
-====================
+--------------------
 
 In AC/DC mode, OPF solves AC and DC equations in the same optimization problem. The model includes:
 
@@ -73,19 +73,19 @@ In AC/DC mode, OPF solves AC and DC equations in the same optimization problem. 
 - Converter DC currents.
 
 DC buses
---------
+~~~~~~~~
 
-Each detailed DC connected component must contain at least one grounded DC node. A grounded DC node has zero potential. Other DC nodes satisfy a current-balance equation:
+DC nodes satisfy a current-balance equation:
 
 .. math::
 
     \sum_i I_i = 0
 
-where the currents are the currents flowing out of the DC node.
+where the currents are defined as flowing out of the DC node.
 
 
 DC lines
---------
+~~~~~~~~
 
 A DC line between ``dc_node1`` and ``dc_node2`` is modeled with Ohm's law.
 
@@ -103,7 +103,7 @@ For a line resistance ``R`` and node voltages ``V1`` and ``V2``:
 
 
 Voltage source converters
--------------------------
+~~~~~~~~~~~~~~~~~~~~~~~~~
 
 A voltage source converter links one AC bus to two DC nodes.
 
@@ -116,10 +116,10 @@ For ``V_DC`` mode, the voltage target is:
 
 .. math::
 
-    V^{target}_{DC} =V_1 - V_2 
+    V^{target}_{DC} = V_1 - V_2
 
 Converter power balance
------------------------
+~~~~~~~~~~~~~~~~~~~~~~~
 
 The converter DC current ``I`` is oriented from ``dc_node1`` to ``dc_node2``.
 
@@ -144,8 +144,6 @@ with:
 
     P_{loss} \geq 0
 
-
-With these conventions, rectifier mode has ``P_AC > 0`` and ``P_DC < 0``. Inverter mode has ``P_AC < 0`` and ``P_DC > 0``.
 
 Converter losses are modeled as a function of the DC current magnitude:
 
@@ -175,6 +173,6 @@ In inverter mode, power flows from DC to AC:
 
 
 DC voltage bases
-================
+----------------
 
-In AC/DC OPF, all DC nodes in the same detailed DC connected component must have the same nominal voltage.
+In AC/DC OPF, networks with several nominal voltages inside the same DC component are rejected before solving.
