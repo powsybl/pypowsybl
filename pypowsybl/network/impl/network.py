@@ -3236,12 +3236,12 @@ class Network:  # pylint: disable=too-many-public-methods
               - **bus1_id**: bus where this converter is connected, on side 1
               - **bus2_id** (optional): bus where this converter is connected, on side 2
               - **bus_breaker_bus1_id** (optional) bus of the bus-breaker view where this converter is connected, on side 1
-              - **bus_breaker_bus2_id** (optional) bus of the bus-breaker view where this converter is connected, on side 1
+              - **bus_breaker_bus2_id** (optional) bus of the bus-breaker view where this converter is connected, on side 2
               - **dc_node1_id**: dc node where this converter is connected, on side 1
               - **dc_node2_id**: dc node where this converter is connected, on side 2
               - **pcc_terminal_id** (optional): which element of the network is regulating PCC, needed if bus2_id is set
-              - **connected1**: ``True`` if the converter is connected to a ac bus, side 1
-              - **connected2**: ``True`` if the converter is connected to a ac bus, side 2. Defaults to false if there is no second AC bus.
+              - **connected1**: ``True`` if the converter is connected to an ac bus, side 1
+              - **connected2**: ``True`` if the converter is connected to an ac bus, side 2. Defaults to ``False`` if there is no second AC bus.
               - **dc_connected1**: ``True`` if the converter is connected to a dc node, side 1
               - **dc_connected2**: ``True`` if the converter is connected to a dc node, side 2
               - **voltage_regulator_on**: the voltage regulator status
