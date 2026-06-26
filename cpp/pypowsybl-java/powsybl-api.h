@@ -130,6 +130,7 @@ typedef struct post_contingency_result_struct {
     char* contingency_id;
     int status;
     array limit_violations;
+    array disconnected_elements;
 } post_contingency_result;
 
 typedef struct pre_contingency_result_struct {
@@ -173,6 +174,7 @@ typedef enum {
     PHASE_TAP_CHANGER,
     REACTIVE_CAPABILITY_CURVE_POINT,
     OPERATIONAL_LIMITS,
+    VOLTAGE_ANGLE_LIMITS,
     SELECTED_OPERATIONAL_LIMITS,
     MINMAX_REACTIVE_LIMITS,
     ALIAS,

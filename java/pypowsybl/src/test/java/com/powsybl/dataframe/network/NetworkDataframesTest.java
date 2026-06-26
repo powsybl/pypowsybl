@@ -822,6 +822,31 @@ class NetworkDataframesTest {
     }
 
     @Test
+    void testVoltageAngleLimits() {
+        Network network = EurostagTutorialExample1Factory.create();
+        network.newVoltageAngleLimit()
+                .setId("VAL-1")
+                .from(network.getLine("NHV1_NHV2_1").getTerminal(TwoSides.ONE))
+                .to(network.getLine("NHV1_NHV2_1").getTerminal(TwoSides.TWO))
+                .setLowLimit(-10.0)
+                .setHighLimit(12.0)
+                .add();
+
+        List<Series> limits = createDataFrame(VOLTAGE_ANGLE_LIMITS, network);
+
+        assertThat(limits)
+                .extracting(Series::getName)
+                .containsExactly("id", "from_element_id", "from_side", "to_element_id", "to_side", "low_limit", "high_limit");
+        assertThat(limits.get(0).getStrings()).containsExactly("VAL-1");
+        assertThat(limits.get(1).getStrings()).containsExactly("NHV1_NHV2_1");
+        assertThat(limits.get(2).getStrings()).containsExactly("ONE");
+        assertThat(limits.get(3).getStrings()).containsExactly("NHV1_NHV2_1");
+        assertThat(limits.get(4).getStrings()).containsExactly("TWO");
+        assertThat(limits.get(5).getDoubles()).containsExactly(-10.0);
+        assertThat(limits.get(6).getDoubles()).containsExactly(12.0);
+    }
+
+    @Test
     void areas() {
         Network network = EurostagTutorialExample1Factory.createWithTieLinesAndAreas();
         List<Series> series = createDataFrame(AREA, network);

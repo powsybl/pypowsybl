@@ -621,7 +621,7 @@ std::shared_ptr<sensitivity_analysis_parameters> SensitivityAnalysisParameters::
         delete ptr;
     });
 }
-  
+
 void SensitivityAnalysisParameters::load_to_c_struct(sensitivity_analysis_parameters& params) const {
     params.flow_flow_sensitivity_value_threshold = flow_flow_sensitivity_value_threshold;
     params.voltage_voltage_sensitivity_value_threshold = voltage_voltage_sensitivity_value_threshold;
@@ -1378,6 +1378,11 @@ SeriesArray* getBusBreakerViewBuses(const JavaHandle& network, std::string& volt
 
 SeriesArray* getBusBreakerViewElements(const JavaHandle& network, std::string& voltageLevel) {
     return new SeriesArray(PowsyblCaller::get()->callJava<array*>(::getBusBreakerViewElements, network, (char*) voltageLevel.c_str()));
+}
+
+SeriesArray* getSwitchFlows(const JavaHandle& network, const std::vector<std::string>& switchIds) {
+    ToCharPtrPtr switchIdsPtr(switchIds);
+    return new SeriesArray(PowsyblCaller::get()->callJava<array*>(::getSwitchFlows, network, switchIdsPtr.get(), switchIds.size()));
 }
 
 void updateNetworkElementsWithSeries(pypowsybl::JavaHandle network, dataframe* dataframe, element_type elementType, bool perUnit, double nominalApparentPower) {

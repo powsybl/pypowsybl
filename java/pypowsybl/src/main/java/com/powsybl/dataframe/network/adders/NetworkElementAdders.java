@@ -46,6 +46,7 @@ public final class NetworkElementAdders {
             Map.entry(PHASE_TAP_CHANGER, new PhaseTapChangerDataframeAdder()),
             Map.entry(RATIO_TAP_CHANGER, new RatioTapChangerDataframeAdder()),
             Map.entry(OPERATIONAL_LIMITS, new OperationalLimitsDataframeAdder()),
+            Map.entry(VOLTAGE_ANGLE_LIMITS, new VoltageAngleLimitsDataframeAdder()),
             Map.entry(MINMAX_REACTIVE_LIMITS, new MinMaxReactiveLimitsDataframeAdder()),
             Map.entry(REACTIVE_CAPABILITY_CURVE_POINT, new CurveReactiveLimitsDataframeAdder()),
             Map.entry(ALIAS, new AliasDataframeAdder()),

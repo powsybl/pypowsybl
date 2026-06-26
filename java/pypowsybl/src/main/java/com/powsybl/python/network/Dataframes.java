@@ -74,6 +74,7 @@ public final class Dataframes {
     private static final DataframeMapper<VoltageLevel.BusBreakerView, Void> BUS_BREAKER_VIEW_SWITCHES_MAPPER = createBusBreakerViewSwitchesMapper();
     private static final DataframeMapper<VoltageLevel, Void> BUS_BREAKER_VIEW_BUSES_MAPPER = createBusBreakerViewBuses();
     private static final DataframeMapper<VoltageLevel, Void> BUS_BREAKER_VIEW_ELEMENTS_MAPPER = createBusBreakerViewElements();
+    private static final DataframeMapper<List<SwitchFlowContext>, Void> SWITCH_FLOW_MAPPER = createSwitchFlowMapper();
 
     private static final DataframeMapper<Map<String, List<ConnectablePosition.Feeder>>, Void> FEEDER_MAP_MAPPER = createFeederMapDataframe();
 
@@ -155,6 +156,10 @@ public final class Dataframes {
 
     public static DataframeMapper<VoltageLevel, Void> busBreakerViewElements() {
         return BUS_BREAKER_VIEW_ELEMENTS_MAPPER;
+    }
+
+    public static DataframeMapper<List<SwitchFlowContext>, Void> switchFlowMapper() {
+        return SWITCH_FLOW_MAPPER;
     }
 
     public static DataframeMapper<Map<String, List<ConnectablePosition.Feeder>>, Void> feederMapMapper() {
@@ -360,6 +365,15 @@ public final class Dataframes {
                 .booleans("open", context -> context.getSwitchContext().isOpen())
                 .strings("bus1_id", BusBreakerViewSwitchContext::getBusId1)
                 .strings("bus2_id", BusBreakerViewSwitchContext::getBusId2)
+                .build();
+    }
+
+    private static DataframeMapper<List<SwitchFlowContext>, Void> createSwitchFlowMapper() {
+        return new DataframeMapperBuilder<List<SwitchFlowContext>, SwitchFlowContext, Void>()
+                .itemsProvider(switchFlows -> switchFlows)
+                .stringsIndex("id", SwitchFlowContext::id)
+                .doubles("p", SwitchFlowContext::p)
+                .doubles("q", SwitchFlowContext::q)
                 .build();
     }
 

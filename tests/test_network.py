@@ -1929,6 +1929,69 @@ def test_bus_breaker_view():
     pd.testing.assert_frame_equal(expected_elements, elements, check_dtype=False)
 
 
+def test_switch_flows():
+    # The idea behind this test case is to compare the switch flow over a single switch against a variant that "manually"
+    # computes the switch flow: We first compute a loadflow on a copy of the grid, then open the coupler and use powsybl's
+    # bus/branch functionality to locate the elements on each side of the coupler. The summed injections on these should
+    # match the computed flows over the closed coupler, as the loadflow was not recomputed after opening the coupler.
+    network = pp.network.create_four_substations_node_breaker_network()
+    pp.loadflow.run_ac(network)
+    # This is the default openloadflow parameter for active power mismatch -> we can not expect better.
+    maxActivePowerMismatch = 1e-2
+
+    switch_flows = network.get_switch_flows('S1VL2_COUPLER')
+    flow = switch_flows.loc['S1VL2_COUPLER']
+    assert list(switch_flows.columns) == ['p', 'q']
+
+
+    topology_network = pp.network.create_four_substations_node_breaker_network()
+    pp.loadflow.run_ac(topology_network)
+    topology_network.update_switches(id='S1VL2_COUPLER', open=True)
+    topology = topology_network.get_bus_breaker_topology('S1VL2')
+    coupler = topology.switches.loc['S1VL2_COUPLER']
+
+    graph = nx.Graph()
+    graph.add_nodes_from(topology.buses.index)
+    for switch_id, switch in topology.switches.iterrows():
+        if switch_id == 'S1VL2_COUPLER' or switch['open']:
+            continue
+        graph.add_edge(switch['bus1_id'], switch['bus2_id'])
+
+    side1_buses = nx.node_connected_component(graph, coupler['bus1_id'])
+    side2_buses = nx.node_connected_component(graph, coupler['bus2_id'])
+    assert side1_buses.isdisjoint(side2_buses)
+
+    elements = topology.elements
+    side1_elements = elements[elements['bus_id'].isin(side1_buses)]
+
+    branches = topology_network.get_branches(attributes=['p1', 'q1', 'p2', 'q2'])
+    injections = topology_network.get_injections(attributes=['p', 'q'])
+
+    def sum_side_flows(side_elements: pd.DataFrame) -> tuple[float, float]:
+        active_power = 0.0
+        reactive_power = 0.0
+        for element_id, row in side_elements.iterrows():
+            if row['type'] == 'BUSBAR_SECTION':
+                continue
+            if element_id in branches.index:
+                side = row['side']
+                if side == 'ONE':
+                    active_power += branches.at[element_id, 'p1']
+                    reactive_power += branches.at[element_id, 'q1']
+                else:
+                    active_power += branches.at[element_id, 'p2']
+                    reactive_power += branches.at[element_id, 'q2']
+            else:
+                active_power += injections.at[element_id, 'p']
+                reactive_power += injections.at[element_id, 'q']
+        return active_power, reactive_power
+
+    side1_flow = sum_side_flows(side1_elements)
+
+    assert flow['p'] == pytest.approx(-side1_flow[0], abs=maxActivePowerMismatch)
+    assert flow['q'] == pytest.approx(-side1_flow[1], abs=maxActivePowerMismatch)
+
+
 def test_bus_breaker_view_buses():
     n = pp.network.create_eurostag_tutorial_example1_network()
     buses = n.get_bus_breaker_view_buses()

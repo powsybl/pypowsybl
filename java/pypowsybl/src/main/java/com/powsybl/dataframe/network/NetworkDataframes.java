@@ -95,6 +95,7 @@ public final class NetworkDataframes {
         mappers.put(DataframeElementType.PHASE_TAP_CHANGER, ptcs());
         mappers.put(DataframeElementType.REACTIVE_CAPABILITY_CURVE_POINT, reactiveCapabilityCurves());
         mappers.put(DataframeElementType.OPERATIONAL_LIMITS, operationalLimits(false));
+        mappers.put(DataframeElementType.VOLTAGE_ANGLE_LIMITS, voltageAngleLimits());
         mappers.put(DataframeElementType.SELECTED_OPERATIONAL_LIMITS, operationalLimits(true));
         mappers.put(DataframeElementType.ALIAS, aliases());
         mappers.put(DataframeElementType.IDENTIFIABLE, identifiables());
@@ -1794,6 +1795,18 @@ public final class NetworkDataframes {
                 .booleans("fictitious", TemporaryLimitData::isFictitious, false)
                 .stringsIndex("group_name", TemporaryLimitData::getGroupId)
                 .booleans("selected", TemporaryLimitData::isSelected, false)
+                .build();
+    }
+
+    private static NetworkDataframeMapper voltageAngleLimits() {
+        return NetworkDataframeMapperBuilder.ofStream(Network::getVoltageAngleLimitsStream)
+                .stringsIndex("id", VoltageAngleLimit::getId)
+                .strings("from_element_id", limit -> limit.getTerminalFrom().getConnectable().getId())
+                .strings("from_side", limit -> getTerminalSideStr(limit.getTerminalFrom().getConnectable(), limit.getTerminalFrom()))
+                .strings("to_element_id", limit -> limit.getTerminalTo().getConnectable().getId())
+                .strings("to_side", limit -> getTerminalSideStr(limit.getTerminalTo().getConnectable(), limit.getTerminalTo()))
+                .doubles("low_limit", (limit, context) -> limit.getLowLimit().isPresent() ? perUnitAngle(context, limit.getLowLimit().getAsDouble()) : Double.NaN)
+                .doubles("high_limit", (limit, context) -> limit.getHighLimit().isPresent() ? perUnitAngle(context, limit.getHighLimit().getAsDouble()) : Double.NaN)
                 .build();
     }
 
