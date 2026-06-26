@@ -4,7 +4,6 @@
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 # SPDX-License-Identifier: MPL-2.0
 #
-import warnings
 from typing import List, Union, Optional
 from pypowsybl import _pypowsybl
 from pypowsybl.network import Network
@@ -55,7 +54,7 @@ class AcSensitivityAnalysis(SensitivityAnalysis):
         self.target_voltage_ids = target_voltage_ids
 
     def run(self, network: Network, parameters: Optional[Union[Parameters, LfParameters]] = None,
-            provider: str = '', reporter: Optional[ReportNode] = None, report_node: Optional[ReportNode] = None) -> AcSensitivityAnalysisResult:
+            provider: str = '', report_node: Optional[ReportNode] = None) -> AcSensitivityAnalysisResult:
         """
         Runs the sensitivity analysis.
 
@@ -63,15 +62,11 @@ class AcSensitivityAnalysis(SensitivityAnalysis):
             network:     The network
             parameters:  The sensitivity parameters
             provider:    Name of the sensitivity analysis provider
-            reporter:    deprecated, use report_node instead
             report_node: The reporter to be used to create an execution report, default is None (no report)
 
         Returns:
             a sensitivity analysis result
         """
-        if reporter is not None:
-            warnings.warn("Use of deprecated attribute reporter. Use report_node instead.", DeprecationWarning)
-            report_node = reporter
         sensitivity_parameters = Parameters(load_flow_parameters=parameters) if isinstance(parameters,
                                                                                            LfParameters) else parameters
         p: _pypowsybl.SensitivityAnalysisParameters = sensitivity_parameters._to_c_parameters() if sensitivity_parameters is not None else Parameters()._to_c_parameters()  # pylint: disable=W0212
