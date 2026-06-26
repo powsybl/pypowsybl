@@ -4,6 +4,7 @@
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 # SPDX-License-Identifier: MPL-2.0
 #
+import warnings
 from typing import List, Union, Optional
 from pypowsybl import _pypowsybl
 from pypowsybl.network import Network
