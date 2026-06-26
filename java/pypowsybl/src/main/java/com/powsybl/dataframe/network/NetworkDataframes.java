@@ -282,6 +282,22 @@ public final class NetworkDataframes {
         };
     }
 
+    private static <U extends AcDcConverter<U>> BooleanSeriesMapper.BooleanUpdater<U> connectConverterAcTerminal1() {
+        return (g, b) -> {
+            Boolean res = b ? g.getTerminal1().connect() : g.getTerminal1().disconnect();
+        };
+    }
+
+    private static <U extends AcDcConverter<U>> BooleanSeriesMapper.BooleanUpdater<U> connectConverterAcTerminal2() {
+        return (g, b) -> {
+            if (g.getTerminal2().isPresent()) {
+                Boolean res = b ? g.getTerminal2().get().connect() : g.getTerminal2().get().disconnect();
+            } else {
+                throw new PowsyblException("Terminal2 of converter " + g.getId() + " is missing");
+            }
+        };
+    }
+
     public static <T, U> ToDoubleBiFunction<T, NetworkDataframeContext> ifExistsDoublePerUnitPQ(Function<T, U> objectGetter, ToDoubleFunction<U> valueGetter) {
         return (item, context) -> {
             U object = objectGetter.apply(item);
@@ -1022,9 +1038,11 @@ public final class NetworkDataframes {
                 .strings("bus2_id", conv -> conv.getTerminal2().isPresent() ? getBusId(conv.getTerminal2().get()) : null)
                 .strings("bus_breaker_bus2_id", conv -> conv.getTerminal2().isPresent() ? getBusBreakerViewBusId(conv.getTerminal2().get()) : null,
                         (conv, id) -> setBusBreakerViewBusId(conv.getTerminal2().orElseThrow(() ->
-                                new PowsyblException("Terminal2 of converter" + conv.getId() + "is missing")), id), false)
+                                new PowsyblException("Terminal2 of converter " + conv.getId() + " is missing")), id), false)
                 .strings("dc_node1_id", conv -> conv.getDcTerminal1().getDcNode().getId())
                 .strings("dc_node2_id", conv -> conv.getDcTerminal2().getDcNode().getId())
+                .booleans("connected1", conv -> conv.getTerminal1().isConnected(), connectConverterAcTerminal1())
+                .booleans("connected2", conv -> conv.getTerminal2().isPresent() ? conv.getTerminal2().get().isConnected() : false, connectConverterAcTerminal2())
                 .booleans("dc_connected1", conv -> conv.getDcTerminal1().isConnected(),
                         (conv, dcConnected1) -> conv.getDcTerminal1().setConnected(dcConnected1))
                 .booleans("dc_connected2", conv -> conv.getDcTerminal2().isConnected(),

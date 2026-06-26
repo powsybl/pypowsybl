@@ -2696,15 +2696,32 @@ def test_voltage_source_converters():
               'target_q': 0.0, 'idle_loss': 0.5, 'switching_loss': 1.0, 'resistive_loss': 0.2, 'p_ac': 10.0,
               'q_ac': 10.0, 'p_dc1': 10.0, 'p_dc2': 10.0}, index=['VscFr']))
 
-    expected = pd.DataFrame(index=pd.Series(name='id', data=['VscFr', 'VscGb']),
-                            columns=['name', 'voltage_level_id', 'bus1_id', 'bus2_id', 'dc_node1_id', 'dc_node2_id',
-                                     'dc_connected1', 'dc_connected2', 'pcc_terminal_id', 'voltage_regulator_on',
-                                     'control_mode', 'target_v_dc', 'target_v_ac', 'target_p', 'target_q', 'idle_loss',
-                                     'switching_loss', 'resistive_loss', 'p_ac', 'q_ac', 'p_dc1', 'p_dc2'], data=[
-            ['', 'VLDC-FR-xNodeDc1fr-150', 'VLDC-FR-xNodeDc1fr-150_0', '', 'dcNodeFrNeg', 'dcNodeFrPos', True, True,
-             'VscFr', False, 'V_DC', 400.0, 400.0, -50.0, 0.0, 0.5, 1.0, 0.2, 10.0, 10.0, 10.0, 10.0],
-            ['', 'VLDC-GB-xNodeDc1gb-150', 'VLDC-GB-xNodeDc1gb-150_0', '', 'dcNodeGbNeg', 'dcNodeGbPos', True, True,
-             'TRDC-GB-xNodeDc1gb', False, 'P_PCC', 500.0, 400.0, -200.0, 0.0, 0.0, 0.0, 0.0, nan, nan, nan, nan]])
+    expected = pd.DataFrame({
+        'name': ['', ''],
+        'voltage_level_id': ['VLDC-FR-xNodeDc1fr-150', 'VLDC-GB-xNodeDc1gb-150'],
+        'bus1_id': ['VLDC-FR-xNodeDc1fr-150_0', 'VLDC-GB-xNodeDc1gb-150_0'],
+        'bus2_id': ['', ''],
+        'dc_node1_id': ['dcNodeFrNeg', 'dcNodeGbNeg'],
+        'dc_node2_id': ['dcNodeFrPos', 'dcNodeGbPos'],
+        'connected1': [True, True],
+        'connected2': [False, False],
+        'dc_connected1': [True, True],
+        'dc_connected2': [True, True],
+        'pcc_terminal_id': ['VscFr', 'TRDC-GB-xNodeDc1gb'],
+        'voltage_regulator_on': [False, False],
+        'control_mode': ['V_DC', 'P_PCC'],
+        'target_v_dc': [400.0, 500.0],
+        'target_v_ac': [400.0, 400.0],
+        'target_p': [-50.0, -200.0],
+        'target_q': [0.0, 0.0],
+        'idle_loss': [0.5, 0.0],
+        'switching_loss': [1.0, 0.0],
+        'resistive_loss': [0.2, 0.0],
+        'p_ac': [10.0, nan],
+        'q_ac': [10.0, nan],
+        'p_dc1': [10.0, nan],
+        'p_dc2': [10.0, nan],
+    }, index=pd.Series(name='id', data=['VscFr', 'VscGb']))
 
     pd.testing.assert_frame_equal(expected, n.get_voltage_source_converters(), check_dtype=False)
 
@@ -2712,6 +2729,12 @@ def test_voltage_source_converters():
     expected = pd.DataFrame(index=pd.Series(name='id', data=['VscFr', 'VscGb']), columns=['voltage_level_id'],
                             data=[['VLDC-FR-xNodeDc1fr-150'], ['VLDC-GB-xNodeDc1gb-150']])
     pd.testing.assert_frame_equal(expected, voltage_source_converters, check_dtype=False, atol=1e-2)
+
+    # Test update of connected2 attribute. Should raise an error as there is no second AC bus
+    with pytest.raises(PyPowsyblError) as e:
+        n.update_voltage_source_converters(id="VscFr", connected2=True)
+    assert e.value.args[0] == "Terminal2 of converter VscFr is missing"
+
 
 
 def test_dc_grounds():

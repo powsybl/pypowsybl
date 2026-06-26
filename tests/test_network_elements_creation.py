@@ -1204,20 +1204,37 @@ def test_dc_lines_creation():
 
 def test_voltage_source_converter_creation():
     n = pypowsybl.network.create_dc_detailed_vsc_symmetrical_monopole_network()
-    n.create_buses(id='BUS_TEST', voltage_level_id='VLDC-GB-xNodeDc1gb-150')
-    n.create_voltage_source_converters(pd.DataFrame(index=pd.Series(name='id', data=['CONV_TEST']),
-                                                    columns=['id', 'name', 'voltage_level_id', 'bus1_id', 'bus2_id',
-                                                             'dc_node1_id', 'dc_node2_id', 'control_mode', 'target_p',
-                                                             'voltage_regulator_on', 'idle_loss', 'switching_loss',
-                                                             'resistive_loss', 'target_v_ac', 'dc_connected1',
-                                                             'dc_connected2', 'pcc_terminal_id'], data=[
-            ['CONV_TEST', '', 'VLDC-GB-xNodeDc1gb-150', 'BUSDC-GB-xNodeDc1gb-150', 'BUS_TEST', 'dcNodeGbNeg',
-             'dcNodeGbPos', 'P_PCC', 300, True, 1.0, 1.0, 1.0, 400, True, False, 'TRDC-GB-xNodeDc1gb']]))
+    voltage_level_id = 'VLDC-GB-xNodeDc1gb-150'
+    new_bus_id = "BUS_TEST"
+    n.create_buses(id=new_bus_id, voltage_level_id=voltage_level_id)
+    bus_breaker_bus_id = n.get_bus_breaker_topology(voltage_level_id).buses.at[new_bus_id, "bus_id"]
+
+    n.create_voltage_source_converters(
+        pd.DataFrame([{
+            'id': 'CONV_TEST',
+            'name': '',
+            'voltage_level_id': voltage_level_id,
+            'bus1_id': 'BUSDC-GB-xNodeDc1gb-150',
+            'connectable_bus2_id': new_bus_id,  # Not provided in bus2_id --> not connected by default
+            'dc_node1_id': 'dcNodeGbNeg',
+            'dc_node2_id': 'dcNodeGbPos',
+            'control_mode': 'P_PCC',
+            'target_p': 300,
+            'voltage_regulator_on': True,
+            'idle_loss': 1.0,
+            'switching_loss': 1.0,
+            'resistive_loss': 1.0,
+            'target_v_ac': 400,
+            'dc_connected1': True,
+            'dc_connected2': False,
+            'pcc_terminal_id': 'TRDC-GB-xNodeDc1gb',
+        }]).set_index('id')
+    )
     conv = n.get_voltage_source_converters().loc['CONV_TEST']
 
-    assert conv.voltage_level_id == 'VLDC-GB-xNodeDc1gb-150'
+    assert conv.voltage_level_id == voltage_level_id
     assert conv.bus1_id == 'VLDC-GB-xNodeDc1gb-150_0'
-    assert conv.bus2_id == 'VLDC-GB-xNodeDc1gb-150_1'
+    assert conv.bus2_id == bus_breaker_bus_id
     assert conv.dc_node1_id == 'dcNodeGbNeg'
     assert conv.dc_node2_id == 'dcNodeGbPos'
     assert conv.control_mode == 'P_PCC'
@@ -1227,6 +1244,8 @@ def test_voltage_source_converter_creation():
     assert conv.switching_loss == 1.0
     assert conv.resistive_loss == 1.0
     assert conv.target_v_ac == 400
+    assert conv.connected1
+    assert not conv.connected2
     assert conv.dc_connected1 == True
     assert conv.dc_connected2 == False
     assert conv.pcc_terminal_id == 'TRDC-GB-xNodeDc1gb'
