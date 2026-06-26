@@ -1185,7 +1185,7 @@ PYBIND11_MODULE(_pypowsybl, m) {
           py::arg("name"));
     m.def("create_extensions", ::createExtensionsBind, "create extensions of network elements given the extension name",
           py::call_guard<py::gil_scoped_release>(), py::arg("network"),  py::arg("dataframes"),  py::arg("name"));
-    m.def("create_report_node", &pypowsybl::createReportNode, "Create a report node", py::arg("task_key"), py::arg("default_name"));
+    m.def("create_report_node", &pypowsybl::createReportNode, "Create a report node", py::arg("taskKey"));
     m.def("print_report", &pypowsybl::printReport, "Print a report", py::arg("report_node"));
 	m.def("json_report", &pypowsybl::jsonReport, "Print a report in json format", py::arg("report_node"));
     m.def("create_glsk_document", &pypowsybl::createGLSKdocument, "Create a glsk importer.", py::arg("filename"));
