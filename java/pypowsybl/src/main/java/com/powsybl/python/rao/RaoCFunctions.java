@@ -20,6 +20,7 @@ import com.powsybl.openrao.data.crac.api.RaUsageLimits;
 import com.powsybl.openrao.data.crac.api.parameters.CracCreationParameters;
 import com.powsybl.openrao.data.crac.api.parameters.JsonCracCreationParameters;
 import com.powsybl.openrao.data.raoresult.api.RaoResult;
+import com.powsybl.openrao.data.raoresult.api.TimeCoupledRaoResult;
 import com.powsybl.openrao.data.timecoupledconstraints.TimeCoupledConstraints;
 import com.powsybl.openrao.data.timecoupledconstraints.io.JsonTimeCoupledConstraints;
 import com.powsybl.openrao.raoapi.json.JsonRaoParameters;
@@ -455,6 +456,33 @@ public final class RaoCFunctions {
                 RaoResult result = ObjectHandles.getGlobal().get(raoResultHandle);
                 return Dataframes.createCDataframe(RaoDataframes.costResultMapper(), crac, new DataframeFilter(), result);
 
+            }
+        });
+    }
+
+    @CEntryPoint(name = "getGlobalCostResults")
+    public static ArrayPointer<SeriesPointer> getGlobalCostResults(IsolateThread thread, ObjectHandle cracHandle, ObjectHandle raoResultHandle, ExceptionHandlerPointer exceptionHandlerPtr) {
+        return doCatch(exceptionHandlerPtr, new PointerProvider<>() {
+            @Override
+            public ArrayPointer<SeriesPointer> get() throws IOException {
+                Crac crac = ObjectHandles.getGlobal().get(cracHandle);
+                TimeCoupledRaoResult result = ObjectHandles.getGlobal().get(raoResultHandle);
+                return Dataframes.createCDataframe(RaoDataframes.globalCostResultMapper(), crac, new DataframeFilter(), result);
+
+            }
+        });
+    }
+
+    @CEntryPoint(name = "getCostResultsForTimestamp")
+    public static ArrayPointer<SeriesPointer> getCostResultsForTimestamp(IsolateThread thread, ObjectHandle cracHandle, ObjectHandle raoResultHandle, CCharPointer timestampPtr, ExceptionHandlerPointer exceptionHandlerPtr) {
+        return doCatch(exceptionHandlerPtr, new PointerProvider<>() {
+            @Override
+            public ArrayPointer<SeriesPointer> get() throws IOException {
+                String timestampStr = CTypeUtil.toString(timestampPtr);
+                Crac crac = ObjectHandles.getGlobal().get(cracHandle);
+                TimeCoupledRaoResult result = ObjectHandles.getGlobal().get(raoResultHandle);
+                DataframeMapper<Crac, TimeCoupledRaoResult> virtualCostResultMapper = createCostResultMapper(OffsetDateTime.parse(timestampStr));
+                return Dataframes.createCDataframe(virtualCostResultMapper, crac, new DataframeFilter(), result);
             }
         });
     }

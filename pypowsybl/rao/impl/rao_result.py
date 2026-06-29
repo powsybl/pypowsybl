@@ -14,6 +14,7 @@ from .crac import Crac
 from pandas import DataFrame
 from pypowsybl.utils import path_to_str
 from os import PathLike
+from datetime import datetime as Datetime
 
 from typing import (
     Union,
@@ -74,6 +75,14 @@ class RaoResult:
     def get_cost_results(self) -> DataFrame:
         serie_flow = _pypowsybl.get_cost_results(self._handle_crac, self._handle_result)
         return create_data_frame_from_series_array(serie_flow)
+
+    def get_global_cost_results(self) -> DataFrame:
+        serie = _pypowsybl.get_global_cost_results(self._handle_crac, self._handle_result)
+        return create_data_frame_from_series_array(serie)
+
+    def get_cost_results_for_timestamp(self, timestamp: Datetime) -> DataFrame:
+        serie = _pypowsybl.get_cost_results_for_timestamp(self._handle_crac, self._handle_result, timestamp.strftime('%Y-%m-%dT%H:%M:%S+01:00'))
+        return create_data_frame_from_series_array(serie)
 
     def get_virtual_cost_names(self) -> List[str]:
         return _pypowsybl.get_virtual_cost_names(self._handle_result)
