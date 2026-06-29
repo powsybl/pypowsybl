@@ -746,6 +746,10 @@ JavaHandle detachSubNetwork(const JavaHandle& subNetwork) {
     return PowsyblCaller::get()->callJava<JavaHandle>(::detachSubNetwork, subNetwork);
 }
 
+JavaHandle flatten(const JavaHandle& network) {
+    return PowsyblCaller::get()->callJava<JavaHandle>(::flatten, network);
+}
+
 void applySolvedValues(const JavaHandle& network) {
     PowsyblCaller::get()->callJava(::applySolvedValues, network);
 }
