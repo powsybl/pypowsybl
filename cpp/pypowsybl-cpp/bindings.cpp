@@ -1375,6 +1375,8 @@ PYBIND11_MODULE(_pypowsybl, m) {
     m.def("get_pst_range_action_results", &pypowsybl::getPstRangeActionResults, "Get RAO PST range actions results", py::arg("crac"), py::arg("rao_result"));
     m.def("get_range_action_results", &pypowsybl::getRangeActionResults, "Get RAO range actions results (non-PST)", py::arg("crac"), py::arg("rao_result"));
     m.def("get_cost_results", &pypowsybl::getCostResults, "Get rao cost results", py::arg("crac"), py::arg("rao_result"));
+    m.def("get_global_cost_results", &pypowsybl::getGlobalCostResults, "Get global rao cost results", py::arg("crac"), py::arg("rao_result"));
+    m.def("get_cost_results_for_timestamp", &pypowsybl::getCostResultsForTimestamp, "Get rao cost results for a timestamp", py::arg("crac"), py::arg("rao_result"), py::arg("timestamp"));
     m.def("get_virtual_cost_names", &pypowsybl::getVirtualCostNames, "Get virtual cost names", py::arg("rao_result"));
     m.def("get_virtual_cost_results", &pypowsybl::getVirtualCostsResults, "Get rao virtual cost results", py::arg("crac"), py::arg("rao_result"), py::arg("virtual_cost_name"));
     m.def("run_voltage_monitoring", &pypowsybl::runVoltageMonitoring, py::call_guard<py::gil_scoped_release>(), "Run voltage monitoring", py::arg("network"), py::arg("result_handle"), py::arg("crac_handle"), py::arg("context_handle"), py::arg("load_flow_parameters"), py::arg("provider"));
