@@ -2,5 +2,8 @@
 {
   "name":"com.github.luben.zstd.ZstdInputStreamNoFinalizer",
   "fields":[{"name":"dstPos"}, {"name":"srcPos"}]
+}, {
+  "name":"com.github.luben.zstd.ZstdOutputStreamNoFinalizer",
+  "fields":[{"name":"dstPos"}, {"name":"srcPos"}]
 }
 ]

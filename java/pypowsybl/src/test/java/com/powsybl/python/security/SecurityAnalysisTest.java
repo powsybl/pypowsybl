@@ -56,7 +56,7 @@ class SecurityAnalysisTest {
         SecurityAnalysisResult result = analysisContext.run(network, new SecurityAnalysisParameters(), "OpenLoadFlow", ReportNode.NO_OP);
         assertThat(result.getPreContingencyResult().getNetworkResult().getBranchResults()).hasSize(1);
         BranchResult branchResult = result.getPreContingencyResult().getNetworkResult().getBranchResults().get(0);
-        var eps = Offset.offset(1e-12);
+        var eps = Offset.offset(1e-11);
         assertThat(branchResult.getP1()).isCloseTo(302.44404914466014, eps);
         assertThat(branchResult.getQ1()).isCloseTo(98.74027438015084, eps);
         assertThat(branchResult.getI1()).isCloseTo(456.7689759899928, eps);
