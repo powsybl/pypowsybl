@@ -351,6 +351,7 @@ public final class Util {
             case TRANSFORMER_PHASE_1 -> SensitivityVariableType.TRANSFORMER_PHASE_1;
             case TRANSFORMER_PHASE_2 -> SensitivityVariableType.TRANSFORMER_PHASE_2;
             case TRANSFORMER_PHASE_3 -> SensitivityVariableType.TRANSFORMER_PHASE_3;
+            case SHUNT_COMPENSATOR_SUSCEPTANCE -> SensitivityVariableType.SHUNT_COMPENSATOR_SUSCEPTANCE;
         };
     }
 

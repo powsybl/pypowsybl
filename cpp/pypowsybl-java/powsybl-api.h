@@ -259,6 +259,7 @@ typedef enum {
     TRANSFORMER_PHASE_1,
     TRANSFORMER_PHASE_2,
     TRANSFORMER_PHASE_3,
+    SHUNT_COMPENSATOR_SUSCEPTANCE,
 } sensitivity_variable_type;
 
 typedef enum {
