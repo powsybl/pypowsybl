@@ -1572,8 +1572,8 @@ long getInjectionFactorEndTimestamp(const JavaHandle& importer) {
     return PowsyblCaller::get()->callJava<long>(::getInjectionFactorEndTimestamp, importer);
 }
 
-JavaHandle createReportNode(const std::string& taskKey, const std::string& defaultName) {
-    return PowsyblCaller::get()->callJava<JavaHandle>(::createReportNode, (char*) taskKey.data(), (char*) defaultName.data());
+JavaHandle createReportNode(const std::string& taskKey) {
+    return PowsyblCaller::get()->callJava<JavaHandle>(::createReportNode, (char*) taskKey.data());
 }
 
 std::string printReport(const JavaHandle& reportNodeModel) {
