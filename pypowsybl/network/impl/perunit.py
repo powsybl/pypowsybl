@@ -32,7 +32,7 @@ class PerUnitView:  # pylint: disable=too-many-public-methods
             network: the underlying network
             sn:      the base power, in MW
         """
-        warnings.warn("Per-unit view is deprecated and slow (make a deep copy of the network), use per unit mode of the network instead", DeprecationWarning)
+        warnings.warn("Per-unit view is deprecated and slow (make a deep copy of the network), use per unit mode of the network instead", DeprecationWarning, stacklevel=2)
         self._network = pickle.loads(pickle.dumps(network))
         self._network.per_unit = True
         self._network.nominal_apparent_power = sn

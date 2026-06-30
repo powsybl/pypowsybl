@@ -261,7 +261,7 @@ class Network:  # pylint: disable=too-many-public-methods
         .. deprecated:: 1.1.0
           Use :meth:`save` instead.
         """
-        warnings.warn("dump is deprecated, use save instead", DeprecationWarning)
+        warnings.warn("dump is deprecated, use save instead", DeprecationWarning, stacklevel=2)
         self.save(file, format, parameters, reporter)
 
     def save(self, file: PathOrStr, format: str = 'XIIDM', parameters: ParamsDict = None,
@@ -289,7 +289,7 @@ class Network:  # pylint: disable=too-many-public-methods
                 network.save('/path/to/network.uct', format='UCTE')
         """
         if reporter is not None:
-            warnings.warn(DEPRECATED_REPORTER_WARNING, DeprecationWarning)
+            warnings.warn(DEPRECATED_REPORTER_WARNING, DeprecationWarning, stacklevel=2)
             report_node = reporter
         file = path_to_str(file)
         if parameters is None:
@@ -302,7 +302,7 @@ class Network:  # pylint: disable=too-many-public-methods
         .. deprecated:: 1.1.0
           Use :meth:`save_to_string` instead.
         """
-        warnings.warn("dump_to_string is deprecated, use save_to_string instead", DeprecationWarning)
+        warnings.warn("dump_to_string is deprecated, use save_to_string instead", DeprecationWarning, stacklevel=2)
         return self.save_to_string(format, parameters, reporter)
 
     def save_to_string(self, format: str = 'XIIDM', parameters: ParamsDict = None, reporter: Optional[ReportNode] = None,
@@ -320,7 +320,7 @@ class Network:  # pylint: disable=too-many-public-methods
             A string representing this network
         """
         if reporter is not None:
-            warnings.warn(DEPRECATED_REPORTER_WARNING, DeprecationWarning)
+            warnings.warn(DEPRECATED_REPORTER_WARNING, DeprecationWarning, stacklevel=2)
             report_node = reporter
 
         if parameters is None:
@@ -345,7 +345,7 @@ class Network:  # pylint: disable=too-many-public-methods
             A BytesIO data buffer representing this network
         """
         if reporter is not None:
-            warnings.warn(DEPRECATED_REPORTER_WARNING, DeprecationWarning)
+            warnings.warn(DEPRECATED_REPORTER_WARNING, DeprecationWarning, stacklevel=2)
             report_node = reporter
 
         if parameters is None:
@@ -367,7 +367,7 @@ class Network:  # pylint: disable=too-many-public-methods
         :param vl_depths: depth around voltage levels which are indicated by their id, that will be kept
         :param with_dangling_lines: keeping the dangling lines
         """
-        warnings.warn("reduce is deprecated, use `reduce_by_voltage_range`, `reduce_by_ids` or `reduce_by_ids_and_depths` instead depending on your use case", DeprecationWarning)
+        warnings.warn("reduce is deprecated, use `reduce_by_voltage_range`, `reduce_by_ids` or `reduce_by_ids_and_depths` instead depending on your use case", DeprecationWarning, stacklevel=2)
         if ids is None:
             ids = []
         vls = []
@@ -398,7 +398,7 @@ class Network:  # pylint: disable=too-many-public-methods
             will only keep elements of voltage level between 90 and 250kV, replacing the lines cut at the boundary by boundary lines.
         """
         if with_dangling_lines is not None:
-            warnings.warn("with_dangling_lines is deprecated, use with_boundary_lines instead", DeprecationWarning)
+            warnings.warn("with_dangling_lines is deprecated, use with_boundary_lines instead", DeprecationWarning, stacklevel=2)
             with_boundary_lines = with_dangling_lines
         _pp.reduce_network(self._handle, v_min=v_min, v_max=v_max, ids=[], vls=[], depths=[], with_boundary_lines=with_boundary_lines)
 
@@ -420,7 +420,7 @@ class Network:  # pylint: disable=too-many-public-methods
             will only keep voltage levels VL1 and VL2 and all network elements between them.
         """
         if with_dangling_lines is not None:
-            warnings.warn("with_dangling_lines is deprecated, use with_boundary_lines instead", DeprecationWarning)
+            warnings.warn("with_dangling_lines is deprecated, use with_boundary_lines instead", DeprecationWarning, stacklevel=2)
             with_boundary_lines = with_dangling_lines
         _pp.reduce_network(self._handle, v_min=0, v_max=sys.float_info.max, ids=ids, vls=[], depths=[], with_boundary_lines=with_boundary_lines)
 
@@ -442,7 +442,7 @@ class Network:  # pylint: disable=too-many-public-methods
             will only keep voltage levels VL1 and its neighbours, and VL25 with all elements around it with at most 3 connections between them.
         """
         if with_dangling_lines is not None:
-            warnings.warn("with_dangling_lines is deprecated, use with_boundary_lines instead", DeprecationWarning)
+            warnings.warn("with_dangling_lines is deprecated, use with_boundary_lines instead", DeprecationWarning, stacklevel=2)
             with_boundary_lines = with_dangling_lines
         vls = []
         depths = []
@@ -1766,7 +1766,7 @@ class Network:  # pylint: disable=too-many-public-methods
         .. deprecated:: 1.15.0
             Use :meth:`get_boundary_lines` instead.
         """
-        warnings.warn("get_dangling_lines is deprecated, use get_boundary_lines instead.", DeprecationWarning)
+        warnings.warn("get_dangling_lines is deprecated, use get_boundary_lines instead.", DeprecationWarning, stacklevel=2)
         return self.get_boundary_lines(all_attributes, attributes, **kwargs)
 
     def get_boundary_lines_generation(self, all_attributes: bool = False, attributes: Optional[List[str]] = None,
@@ -3566,7 +3566,7 @@ class Network:  # pylint: disable=too-many-public-methods
         .. deprecated:: 1.15.0
             Use :meth:`update_boundary_lines` instead.
         """
-        warnings.warn("update_dangling_lines is deprecated, use update_boundary_lines instead.", DeprecationWarning)
+        warnings.warn("update_dangling_lines is deprecated, use update_boundary_lines instead.", DeprecationWarning, stacklevel=2)
         self.update_boundary_lines(df, **kwargs)
 
     def update_boundary_lines_generation(self, df: Optional[DataFrame] = None, **kwargs: ArrayLike) -> None:
@@ -3607,7 +3607,7 @@ class Network:  # pylint: disable=too-many-public-methods
         .. deprecated:: 1.15.0
             Use :meth:`update_boundary_lines_generation` instead.
         """
-        warnings.warn("update_dangling_lines_generation is deprecated, use update_boundary_lines_generation instead", DeprecationWarning)
+        warnings.warn("update_dangling_lines_generation is deprecated, use update_boundary_lines_generation instead", DeprecationWarning, stacklevel=2)
         self.update_boundary_lines_generation(df, **kwargs)
 
     def update_vsc_converter_stations(self, df: Optional[DataFrame] = None, **kwargs: ArrayLike) -> None:
@@ -5080,11 +5080,11 @@ class Network:  # pylint: disable=too-many-public-methods
         ucte_xnode_code_str = 'ucte_xnode_code'
         if df is not None:
             if ucte_xnode_code_str in df.columns:
-                warnings.warn(ucte_xnode_code_str + " is deprecated, use pairing_key", DeprecationWarning)
+                warnings.warn(ucte_xnode_code_str + " is deprecated, use pairing_key", DeprecationWarning, stacklevel=2)
                 df = df.rename(columns={ucte_xnode_code_str: 'pairing_key'})
         ucte_x_node_code = kwargs.get(ucte_xnode_code_str)
         if ucte_x_node_code is not None:
-            warnings.warn(ucte_xnode_code_str + " is deprecated, use pairing_key", DeprecationWarning)
+            warnings.warn(ucte_xnode_code_str + " is deprecated, use pairing_key", DeprecationWarning, stacklevel=2)
             kwargs['pairing_key'] = ucte_x_node_code
             kwargs.pop(ucte_xnode_code_str)
         return self._create_elements(ElementType.BOUNDARY_LINE, [df, generation_df], **kwargs)
@@ -5094,7 +5094,7 @@ class Network:  # pylint: disable=too-many-public-methods
         .. deprecated:: 1.15.0
             Use :meth:`create_boundary_lines` instead.
         """
-        warnings.warn("create_dangling_lines is deprecated, use create_boundary_lines", DeprecationWarning)
+        warnings.warn("create_dangling_lines is deprecated, use create_boundary_lines", DeprecationWarning, stacklevel=2)
         self.create_boundary_lines(df, generation_df, **kwargs)
 
     def create_lcc_converter_stations(self, df: Optional[DataFrame] = None, **kwargs: ArrayLike) -> None:
@@ -5910,17 +5910,17 @@ class Network:  # pylint: disable=too-many-public-methods
         if df is not None:
             df['acceptable_duration'] = df['acceptable_duration'].map(lambda x: -1 if x == inf else int(x))
             if 'is_fictitious' in df.columns:
-                warnings.warn("operation limits is_fictitious attribute has been renamed fictitious", DeprecationWarning)
+                warnings.warn("operation limits is_fictitious attribute has been renamed fictitious", DeprecationWarning, stacklevel=2)
                 df = df.rename(columns={'is_fictitious': 'fictitious'})
             if 'element_type' in df.columns:
-                warnings.warn("useless operation limits element_type attribute has been removed", DeprecationWarning)
+                warnings.warn("useless operation limits element_type attribute has been removed", DeprecationWarning, stacklevel=2)
                 df = df.drop(columns=['element_type'])
 
         if kwargs.get('is_fictitious') is not None:
-            warnings.warn("operation limits is_fictitious attribute has been renamed fictitious", DeprecationWarning)
+            warnings.warn("operation limits is_fictitious attribute has been renamed fictitious", DeprecationWarning, stacklevel=2)
             kwargs['fictitious'] = kwargs.pop('is_fictitious')
         if kwargs.get('element_type') is not None:
-            warnings.warn("useless operation limits element_type attribute has been removed", DeprecationWarning)
+            warnings.warn("useless operation limits element_type attribute has been removed", DeprecationWarning, stacklevel=2)
             kwargs.pop('element_type')
 
         return self._create_elements(ElementType.OPERATIONAL_LIMITS, [df], **kwargs)
@@ -6101,16 +6101,16 @@ class Network:  # pylint: disable=too-many-public-methods
         """
         if df is not None:
             if "dangling_line1_id" in df.columns:
-                warnings.warn("dangling_line1_id is deprecated, use boundary_line1_id instead", DeprecationWarning)
+                warnings.warn("dangling_line1_id is deprecated, use boundary_line1_id instead", DeprecationWarning, stacklevel=2)
                 df = df.rename(columns={'dangling_line1_id': 'boundary_line1_id'})
             if "dangling_line2_id" in df.columns:
-                warnings.warn("dangling_line2_id is deprecated, use boundary_line2_id instead", DeprecationWarning)
+                warnings.warn("dangling_line2_id is deprecated, use boundary_line2_id instead", DeprecationWarning, stacklevel=2)
                 df = df.rename(columns={'dangling_line2_id': 'boundary_line2_id'})
         if kwargs.get('dangling_line1_id') is not None:
-            warnings.warn("dangling_line1_id is deprecated, use boundary_line1_id instead", DeprecationWarning)
+            warnings.warn("dangling_line1_id is deprecated, use boundary_line1_id instead", DeprecationWarning, stacklevel=2)
             kwargs['boundary_line1_id'] = kwargs.pop('dangling_line1_id')
         if kwargs.get('dangling_line2_id') is not None:
-            warnings.warn("dangling_line2_id is deprecated, use boundary_line2_id instead", DeprecationWarning)
+            warnings.warn("dangling_line2_id is deprecated, use boundary_line2_id instead", DeprecationWarning, stacklevel=2)
             kwargs['boundary_line2_id'] = kwargs.pop('dangling_line2_id')
         return self._create_elements(ElementType.TIE_LINE, [df], **kwargs)
 
@@ -6446,7 +6446,7 @@ class Network:  # pylint: disable=too-many-public-methods
         .. deprecated::
           Use :meth:`get_extensions` instead.
         """
-        warnings.warn("get_extension is deprecated, use get_extensions instead", DeprecationWarning)
+        warnings.warn("get_extension is deprecated, use get_extensions instead", DeprecationWarning, stacklevel=2)
         return self.get_extensions(extension_name)
 
     def get_elements_properties(self, all_attributes: bool = False, attributes: Optional[List[str]] = None,

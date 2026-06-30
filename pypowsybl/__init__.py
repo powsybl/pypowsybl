@@ -9,6 +9,8 @@ import os as _os
 import inspect as _inspect
 import logging
 import atexit as _atexit
+import warnings
+
 from pypowsybl import _pypowsybl
 from pypowsybl._pypowsybl import PyPowsyblError
 from pypowsybl import (
@@ -66,6 +68,10 @@ _atexit.register(_pypowsybl.close)
 
 # log substratvm max heap size
 _pypowsybl.log_max_memory()
+
+# activate DeprecationWarning printing for the package
+warnings.filterwarnings('default', category=DeprecationWarning, module='pypowsybl')
+
 
 def set_config_read(read_config: bool = True) -> None:
     """Set read ~/.itools/config.yml or not

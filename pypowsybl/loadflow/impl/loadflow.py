@@ -53,7 +53,7 @@ def run_ac(network: Network, parameters: Optional[Parameters] = None, provider: 
         A list of component results, one for each component of the network.
     """
     if reporter is not None:
-        warnings.warn("Use of deprecated attribute reporter. Use report_node instead.", DeprecationWarning)
+        warnings.warn("Use of deprecated attribute reporter. Use report_node instead.", DeprecationWarning, stacklevel=2)
         report_node = reporter
     p = parameters._to_c_parameters() if parameters is not None else _pypowsybl.LoadFlowParameters()  # pylint: disable=protected-access
     p.dc = False
@@ -105,7 +105,7 @@ def run_dc(network: Network, parameters: Optional[Parameters] = None, provider: 
         A list of component results, one for each component of the network.
     """
     if reporter is not None:
-        warnings.warn("Use of deprecated attribute reporter. Use report_node instead.", DeprecationWarning)
+        warnings.warn("Use of deprecated attribute reporter. Use report_node instead.", DeprecationWarning, stacklevel=2)
         report_node = reporter
     p = parameters._to_c_parameters() if parameters is not None else _pypowsybl.LoadFlowParameters()  # pylint: disable=protected-access
     p.dc = True

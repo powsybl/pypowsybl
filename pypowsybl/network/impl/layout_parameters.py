@@ -19,7 +19,7 @@ class LayoutParameters(SldParameters):
 
     def __init__(self, use_name: bool = False, center_name: bool = False, diagonal_label: bool = False,
                  topological_coloring: bool = True, nodes_infos: bool = False, component_library: str = 'Convergence'):
-        warnings.warn("LayoutParameters is deprecated, use SldParameters instead", DeprecationWarning)
+        warnings.warn("LayoutParameters is deprecated, use SldParameters instead", DeprecationWarning, stacklevel=2)
         super().__init__(use_name=use_name, center_name=center_name, diagonal_label=diagonal_label,
                          nodes_infos=nodes_infos, topological_coloring=topological_coloring,
                          component_library=component_library)

@@ -308,7 +308,7 @@ def load(file: Union[str, PathLike], parameters: Optional[Dict[str, str]] = None
             ...
     """
     if reporter is not None:
-        warnings.warn(DEPRECATED_REPORTER_WARNING, DeprecationWarning)
+        warnings.warn(DEPRECATED_REPORTER_WARNING, DeprecationWarning, stacklevel=2)
         report_node = reporter
     file = path_to_str(file)
     return Network(_pp.load_network(file, {} if parameters is None else parameters,
@@ -337,7 +337,7 @@ def load_from_binary_buffer(buffer: io.BytesIO, parameters: Optional[Dict[str, s
         The loaded network
     """
     if reporter is not None:
-        warnings.warn(DEPRECATED_REPORTER_WARNING, DeprecationWarning)
+        warnings.warn(DEPRECATED_REPORTER_WARNING, DeprecationWarning, stacklevel=2)
         report_node = reporter
     return load_from_binary_buffers([buffer], {} if parameters is None else parameters,
                                     [] if post_processors is None else post_processors, None, report_node,
@@ -363,7 +363,7 @@ def load_from_binary_buffers(buffers: List[io.BytesIO], parameters: Optional[Dic
         The loaded network
     """
     if reporter is not None:
-        warnings.warn(DEPRECATED_REPORTER_WARNING, DeprecationWarning)
+        warnings.warn(DEPRECATED_REPORTER_WARNING, DeprecationWarning, stacklevel=2)
         report_node = reporter
     buffer_list = []
     for buff in buffers:
@@ -395,7 +395,7 @@ def load_from_string(file_name: str, file_content: str, parameters: Optional[Dic
         The loaded network
     """
     if reporter is not None:
-        warnings.warn(DEPRECATED_REPORTER_WARNING, DeprecationWarning)
+        warnings.warn(DEPRECATED_REPORTER_WARNING, DeprecationWarning, stacklevel=2)
         report_node = reporter
     return Network(_pp.load_network_from_string(file_name, file_content, {} if parameters is None else parameters,
                                                 [] if post_processors is None else post_processors,

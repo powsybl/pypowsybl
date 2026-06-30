@@ -54,9 +54,9 @@ class NadParameters:
                                     edge_info_displayed: Optional[EdgeInfoType] = None,
                                     edge_info_parameters: Optional[EdgeInfoParameters] = None) -> None:
         if edge_name_displayed is not None:
-            warnings.warn("Use of deprecated attribute edge_name_displayed. Use edge_info_parameters instead.", DeprecationWarning)
+            warnings.warn("Use of deprecated attribute edge_name_displayed. Use edge_info_parameters instead.", DeprecationWarning, stacklevel=2)
         if edge_info_displayed is not None:
-            warnings.warn("Use of deprecated attribute edge_info_displayed. Use edge_info_parameters instead.", DeprecationWarning)
+            warnings.warn("Use of deprecated attribute edge_info_displayed. Use edge_info_parameters instead.", DeprecationWarning, stacklevel=2)
         if edge_info_parameters is not None:
             self._edge_info_parameters = edge_info_parameters
         else:
@@ -66,7 +66,7 @@ class NadParameters:
     @property
     def edge_name_displayed(self) -> bool:
         """edge_name_displayed"""
-        warnings.warn("Use of deprecated attribute edge_name_displayed. Use edge_info_parameters instead.", DeprecationWarning)
+        warnings.warn("Use of deprecated attribute edge_name_displayed. Use edge_info_parameters instead.", DeprecationWarning, stacklevel=2)
         return self._edge_info_parameters.info_middle_side1 == EdgeInfoType.NAME
 
     @property
@@ -127,7 +127,7 @@ class NadParameters:
     @property
     def edge_info_displayed(self) -> EdgeInfoType:
         """edge_info_displayed"""
-        warnings.warn("Use of deprecated attribute edge_info_displayed. Use edge_info_parameters instead.", DeprecationWarning)
+        warnings.warn("Use of deprecated attribute edge_info_displayed. Use edge_info_parameters instead.", DeprecationWarning, stacklevel=2)
         return self._edge_info_parameters.info_side_external
 
     @property
