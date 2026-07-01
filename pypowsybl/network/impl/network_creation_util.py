@@ -15,8 +15,6 @@ from pypowsybl.report import ReportNode
 from pypowsybl.utils import path_to_str
 from .network import Network
 
-DEPRECATED_REPORTER_WARNING = "Use of deprecated attribute reporter. Use report_node instead."
-
 
 def _create_network(name: str, network_id: str = '', allow_variant_multi_thread_access: bool = False) -> Network:
     return Network(_pp.create_network(name, network_id, allow_variant_multi_thread_access))
@@ -277,8 +275,8 @@ def is_loadable(file: Union[str, PathLike]) -> bool:
 
 
 def load(file: Union[str, PathLike], parameters: Optional[Dict[str, str]] = None,
-         post_processors: Optional[List[str]] = None, reporter: Optional[ReportNode] = None,
-         report_node: Optional[ReportNode] = None, allow_variant_multi_thread_access: bool = False) -> Network:
+         post_processors: Optional[List[str]] = None, report_node: Optional[ReportNode] = None,
+         allow_variant_multi_thread_access: bool = False) -> Network:
     """
     Load a network from a file. File should be in a supported format.
 
@@ -288,7 +286,6 @@ def load(file: Union[str, PathLike], parameters: Optional[Dict[str, str]] = None
        file:       path to the network file
        parameters: a dictionary of import parameters
        post_processors: a list of import post processors (will be added to the ones defined by the platform config)
-       reporter: deprecated, use report_node instead
        report_node: the reporter to be used to create an execution report, default is None (no report)
        allow_variant_multi_thread_access: allow multi-thread access to variant (default: False)
 
@@ -307,9 +304,6 @@ def load(file: Union[str, PathLike], parameters: Optional[Dict[str, str]] = None
             network = pp.network.load('network.uct')
             ...
     """
-    if reporter is not None:
-        warnings.warn(DEPRECATED_REPORTER_WARNING, DeprecationWarning)
-        report_node = reporter
     file = path_to_str(file)
     return Network(_pp.load_network(file, {} if parameters is None else parameters,
                                     [] if post_processors is None else post_processors,
@@ -319,8 +313,7 @@ def load(file: Union[str, PathLike], parameters: Optional[Dict[str, str]] = None
 
 
 def load_from_binary_buffer(buffer: io.BytesIO, parameters: Optional[Dict[str, str]] = None,
-                            post_processors: Optional[List[str]] = None, reporter: Optional[ReportNode] = None,
-                            report_node: Optional[ReportNode] = None,
+                            post_processors: Optional[List[str]] = None, report_node: Optional[ReportNode] = None,
                             allow_variant_multi_thread_access: bool = False) -> Network:
     """
     Load a network from a binary buffer.
@@ -329,24 +322,19 @@ def load_from_binary_buffer(buffer: io.BytesIO, parameters: Optional[Dict[str, s
        buffer:    The BytesIO data buffer
        parameters:  A dictionary of import parameters
        post_processors: a list of import post processors (will be added to the ones defined by the platform config)
-       reporter: deprecated, use report_node instead
        report_node: the reporter to be used to create an execution report, default is None (no report)
        allow_variant_multi_thread_access: allow multi-thread access to variant (default: False)
 
     Returns:
         The loaded network
     """
-    if reporter is not None:
-        warnings.warn(DEPRECATED_REPORTER_WARNING, DeprecationWarning)
-        report_node = reporter
     return load_from_binary_buffers([buffer], {} if parameters is None else parameters,
-                                    [] if post_processors is None else post_processors, None, report_node,
+                                    [] if post_processors is None else post_processors, report_node,
                                     allow_variant_multi_thread_access)
 
 
 def load_from_binary_buffers(buffers: List[io.BytesIO], parameters: Optional[Dict[str, str]] = None,
-                             post_processors: Optional[List[str]] = None, reporter: Optional[ReportNode] = None,
-                             report_node: Optional[ReportNode] = None,
+                             post_processors: Optional[List[str]] = None, report_node: Optional[ReportNode] = None,
                              allow_variant_multi_thread_access: bool = False) -> Network:
     """
     Load a network from a list of binary buffers. Only zipped CGMES are supported for several zipped source load.
@@ -355,16 +343,12 @@ def load_from_binary_buffers(buffers: List[io.BytesIO], parameters: Optional[Dic
        buffers:  The list of BytesIO data buffer
        parameters:  A dictionary of import parameters
        post_processors: a list of import post processors (will be added to the ones defined by the platform config)
-       reporter: deprecated, use report_node instead
        report_node: the reporter to be used to create an execution report, default is None (no report)
        allow_variant_multi_thread_access: allow multi-thread access to variant (default: False)
 
     Returns:
         The loaded network
     """
-    if reporter is not None:
-        warnings.warn(DEPRECATED_REPORTER_WARNING, DeprecationWarning)
-        report_node = reporter
     buffer_list = []
     for buff in buffers:
         buffer_list.append(buff.getbuffer())
@@ -376,7 +360,7 @@ def load_from_binary_buffers(buffers: List[io.BytesIO], parameters: Optional[Dic
 
 
 def load_from_string(file_name: str, file_content: str, parameters: Optional[Dict[str, str]] = None,
-                     post_processors: Optional[List[str]] = None, reporter: Optional[ReportNode] = None,
+                     post_processors: Optional[List[str]] = None,
                      report_node: Optional[ReportNode] = None,
                      allow_variant_multi_thread_access: bool = False) -> Network:
     """
@@ -387,16 +371,12 @@ def load_from_string(file_name: str, file_content: str, parameters: Optional[Dic
        file_content: file content
        parameters:   a dictionary of import parameters
        post_processors: a list of import post processors (will be added to the ones defined by the platform config)
-       reporter: deprecated, use report_node instead
        report_node: the reporter to be used to create an execution report, default is None (no report)
        allow_variant_multi_thread_access: allow multi-thread access to variant (default: False)
 
     Returns:
         The loaded network
     """
-    if reporter is not None:
-        warnings.warn(DEPRECATED_REPORTER_WARNING, DeprecationWarning)
-        report_node = reporter
     return Network(_pp.load_network_from_string(file_name, file_content, {} if parameters is None else parameters,
                                                 [] if post_processors is None else post_processors,
                                                 None if report_node is None else report_node._report_node,

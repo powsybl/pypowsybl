@@ -290,6 +290,7 @@ Miscellaneous network functions
    Network.reduce_by_voltage_range
    Network.reduce_by_ids_and_depths
    Network.merge
+   Network.flatten
    Network.get_single_line_diagram
    Network.write_single_line_diagram_svg
    Network.get_matrix_multi_substation_single_line_diagram

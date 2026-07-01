@@ -179,7 +179,7 @@ public class OperationalLimitsDataframeAdder implements NetworkElementAdder {
             }
 
             @Override
-            public Collection<OperationalLimitsGroup> getAllSelectedOperationalLimitsGroups() {
+            public List<OperationalLimitsGroup> getAllSelectedOperationalLimitsGroups() {
                 return branch.getAllSelectedOperationalLimitsGroups(side);
             }
 

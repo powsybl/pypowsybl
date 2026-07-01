@@ -356,6 +356,8 @@ PYBIND11_MODULE(_pypowsybl, m) {
 
     m.def("detach_sub_network", &pypowsybl::detachSubNetwork, "Detach a sub network from its parent", py::arg("sub_network"));
 
+    m.def("flatten", &pypowsybl::flatten, "Remove the subnetworks structure from the current network", py::arg("network"));
+
     m.def("apply_solved_values", &pypowsybl::applySolvedValues, "Copy solved values to input", py::arg("network"));
 
     m.def("apply_solved_tap_and_section_count_values", &pypowsybl::applySolvedTapPositionAndSolvedSectionCount, "Copy solved values of tap position and section count to input", py::arg("network"));
@@ -1010,7 +1012,7 @@ PYBIND11_MODULE(_pypowsybl, m) {
     m.def("run_sensitivity_analysis", &pypowsybl::runSensitivityAnalysis, "Run a sensitivity analysis", py::call_guard<py::gil_scoped_release>(),
           py::arg("sensitivity_analysis_context"), py::arg("network"), py::arg("parameters"), py::arg("provider"), py::arg("report_node"));
 
-    py::class_<matrix>(m, "Matrix", py::buffer_protocol())
+    py::class_<matrix, std::shared_ptr<matrix>>(m, "Matrix", py::buffer_protocol())
             .def_buffer([](matrix& m) -> py::buffer_info {
                 return py::buffer_info(m.values,
                                        sizeof(double),
@@ -1185,7 +1187,7 @@ PYBIND11_MODULE(_pypowsybl, m) {
           py::arg("name"));
     m.def("create_extensions", ::createExtensionsBind, "create extensions of network elements given the extension name",
           py::call_guard<py::gil_scoped_release>(), py::arg("network"),  py::arg("dataframes"),  py::arg("name"));
-    m.def("create_report_node", &pypowsybl::createReportNode, "Create a report node", py::arg("task_key"), py::arg("default_name"));
+    m.def("create_report_node", &pypowsybl::createReportNode, "Create a report node", py::arg("task_key"));
     m.def("print_report", &pypowsybl::printReport, "Print a report", py::arg("report_node"));
 	m.def("json_report", &pypowsybl::jsonReport, "Print a report in json format", py::arg("report_node"));
     m.def("create_glsk_document", &pypowsybl::createGLSKdocument, "Create a glsk importer.", py::arg("filename"));
