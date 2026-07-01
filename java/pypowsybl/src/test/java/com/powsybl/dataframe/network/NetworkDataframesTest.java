@@ -922,6 +922,24 @@ class NetworkDataframesTest {
     }
 
     @Test
+    void voltageSourceConvertersMinMaxP() {
+        Network network = DcDetailedNetworkFactory.createVscSymmetricalMonopole();
+
+        Map<String, Series> attrs = createDataFrame(VOLTAGE_SOURCE_CONVERTER, network,
+                new DataframeFilter(ALL_ATTRIBUTES, Collections.emptyList()))
+                .stream().collect(ImmutableMap.toImmutableMap(Series::getName, Function.identity()));
+        // default unbounded -> +/-inf for both converters (VscFr, VscGb)
+        assertThat(attrs.get("min_p").getDoubles()).containsExactly(Double.NEGATIVE_INFINITY, Double.NEGATIVE_INFINITY);
+        assertThat(attrs.get("max_p").getDoubles()).containsExactly(Double.POSITIVE_INFINITY, Double.POSITIVE_INFINITY);
+
+        // finite value via core API reads back as the SI value (default ctx, no per-unit)
+        network.getVoltageSourceConverter("VscFr").setMinP(-100.0);
+        double minP = createDataFrame(VOLTAGE_SOURCE_CONVERTER, network, new DataframeFilter(ALL_ATTRIBUTES, Collections.emptyList()))
+                .stream().filter(s -> s.getName().equals("min_p")).findFirst().orElseThrow().getDoubles()[0];
+        assertThat(minP).isEqualTo(-100.0);
+    }
+
+    @Test
     void dcGrounds() {
         Network network = DcDetailedNetworkFactory.createVscAsymmetricalMonopole();
         List<Series> series = createDataFrame(DC_GROUND, network);

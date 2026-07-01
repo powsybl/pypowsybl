@@ -2852,6 +2852,46 @@ def test_voltage_source_converters():
     assert e2.value.args[0] == "Terminal2 of converter VscFr is missing"
 
 
+def test_voltage_source_converters_min_max_p():
+    n = pp.network.create_dc_detailed_vsc_symmetrical_monopole_network()
+
+    # optional: absent from the default frame (regression-safety of optionality)
+    default_cols = n.get_voltage_source_converters().columns
+    assert 'min_p' not in default_cols and 'max_p' not in default_cols
+
+    # visible with all_attributes; unbounded core default reads as +/-inf
+    df = n.get_voltage_source_converters(all_attributes=True)
+    assert 'min_p' in df.columns and 'max_p' in df.columns
+    assert np.isneginf(df['min_p']['VscFr'])
+    assert np.isposinf(df['max_p']['VscFr'])
+
+    # explicit attribute selection works too
+    sel = n.get_voltage_source_converters(attributes=['min_p', 'max_p'])
+    assert list(sel.columns) == ['min_p', 'max_p']
+
+
+def test_voltage_source_converters_update_min_max_p():
+    n = pp.network.create_dc_detailed_vsc_symmetrical_monopole_network()
+
+    # set finite limits (SI, default mode), read back
+    n.update_voltage_source_converters(id='VscFr', min_p=-100.0, max_p=100.0)
+    df = n.get_voltage_source_converters(all_attributes=True)
+    assert df['min_p']['VscFr'] == pytest.approx(-100.0)
+    assert df['max_p']['VscFr'] == pytest.approx(100.0)
+
+    # updating only max_p must leave min_p untouched
+    n.update_voltage_source_converters(id='VscFr', max_p=150.0)
+    df = n.get_voltage_source_converters(all_attributes=True)
+    assert df['min_p']['VscFr'] == pytest.approx(-100.0)   # unchanged
+    assert df['max_p']['VscFr'] == pytest.approx(150.0)
+
+    # +/-inf round-trips back to "unbounded"
+    n.update_voltage_source_converters(id='VscFr', min_p=-np.inf, max_p=np.inf)
+    df = n.get_voltage_source_converters(all_attributes=True)
+    assert np.isneginf(df['min_p']['VscFr'])
+    assert np.isposinf(df['max_p']['VscFr'])
+
+
 def test_dc_grounds():
     n = pp.network.create_dc_detailed_lcc_bipole_ground_return_network()
     n.update_dc_grounds(pd.DataFrame(data={'r': 1.0, 'connected': False}, index=['dcGroundGb']))

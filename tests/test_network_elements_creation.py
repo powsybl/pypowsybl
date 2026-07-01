@@ -1284,6 +1284,11 @@ def test_voltage_source_converter_creation():
     assert conv.dc_connected2 == False
     assert conv.pcc_terminal_id == 'TRDC-GB-xNodeDc1gb'
 
+    # min_p / max_p not set at creation -> core default is unbounded (+/-inf)
+    convAll = n.get_voltage_source_converters(all_attributes=True).loc['CONV_TEST']
+    assert np.isneginf(convAll.min_p)
+    assert np.isposinf(convAll.max_p)
+
     # Test without specifying dc_connected1/2 and replacing bus1/2_id by connectable_bus1/2_id;
     # The DC side should be connected, but not the AC side
     connection_params_dict2 = {
@@ -1317,6 +1322,23 @@ def test_voltage_source_converter_creation():
     assert conv3.bus_breaker_bus2_id == ""
     assert conv3.connected1
     assert not conv3.connected2
+
+
+def test_voltage_source_converter_creation_min_max_p():
+    n = pypowsybl.network.create_dc_detailed_vsc_symmetrical_monopole_network()
+    n.create_buses(id='BUS_TEST', voltage_level_id='VLDC-GB-xNodeDc1gb-150')
+    n.create_voltage_source_converters(pd.DataFrame(index=pd.Series(name='id', data=['CONV_TEST']),
+                                                    columns=['id', 'name', 'voltage_level_id', 'bus1_id', 'bus2_id',
+                                                             'dc_node1_id', 'dc_node2_id', 'control_mode', 'target_p',
+                                                             'voltage_regulator_on', 'idle_loss', 'switching_loss',
+                                                             'resistive_loss', 'target_v_ac', 'dc_connected1',
+                                                             'dc_connected2', 'pcc_terminal_id', 'min_p', 'max_p'], data=[
+            ['CONV_TEST', '', 'VLDC-GB-xNodeDc1gb-150', 'BUSDC-GB-xNodeDc1gb-150', 'BUS_TEST', 'dcNodeGbNeg',
+             'dcNodeGbPos', 'P_PCC', 300, True, 1.0, 1.0, 1.0, 400, True, False, 'TRDC-GB-xNodeDc1gb', -100, 100]]))
+    conv = n.get_voltage_source_converters(all_attributes=True).loc['CONV_TEST']
+
+    assert conv.min_p == -100
+    assert conv.max_p == 100
 
 
 def test_dc_ground_creation():
