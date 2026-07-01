@@ -3315,6 +3315,8 @@ class Network:  # pylint: disable=too-many-public-methods
               - **idle_loss**: the idle loss coefficient (in MW)
               - **switching_loss**: the switching loss coefficient (in MW/A)
               - **resistive_loss**: the resistive loss coefficient (in Ohm)
+              - **min_p** (optional): the minimum active power, ``-inf`` if unbounded (in MW)
+              - **max_p** (optional): the maximum active power, ``inf`` if unbounded (in MW)
               - **p_ac**: the AC active flow on the converter, ``NaN`` if no loadflow has been computed (in MW)
               - **q_ac**: the AC reactive flow on the converter, ``NaN`` if no loadflow has been computed  (in MVAr)
               - **p_dc1**: the DC flow on the converter, side 1 ``NaN`` if no loadflow has been computed (in MW)
@@ -4539,6 +4541,8 @@ class Network:  # pylint: disable=too-many-public-methods
             - `target_v_ac`
             - `target_p`
             - `target_q`
+            - `min_p`
+            - `max_p`
             - `idle_loss`
             - `switching_loss`
             - `resistive_loss`
@@ -5976,6 +5980,8 @@ class Network:  # pylint: disable=too-many-public-methods
             - **idle_loss** the idle loss coefficient
             - **switching_loss** the switching loss coefficient
             - **resistive_loss** the resistive loss coefficient
+            - **min_p** the minimum active power in MW (optional, unbounded by default)
+            - **max_p** the maximum active power in MW (optional, unbounded by default)
 
         Examples:
             Using keyword arguments:
