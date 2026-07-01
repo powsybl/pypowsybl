@@ -27,7 +27,7 @@ class TimeCoupledRao:
         if parameters is None:
             parameters = RaoParameters()
 
-        timestamps, networks, cracs = zip(*time_coupled_inputs.get_data())
+        timestamps, networks, cracs = zip(*time_coupled_inputs.get_temporal_data())
         str_timestamps = [t.strftime('%Y-%m-%dT%H:%M:%S+01:00') for t in timestamps]
         rao_result = _pypowsybl.run_marmot(timestamps=str_timestamps, networks=[n._handle for n in networks], cracs=[c._handle for c in cracs],
           parameters=parameters._to_c_parameters(), constraints=time_coupled_constraints._handle)

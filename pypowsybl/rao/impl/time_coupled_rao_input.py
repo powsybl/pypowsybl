@@ -23,8 +23,8 @@ class TimeCoupledRaoInput:
     def __init__(self) -> None:
         self._data: List[Tuple[Datetime, Network, Crac]] = []
 
-    def add_data_point(self, timestamp: Datetime, network: Network, crac: Crac) -> Any :
+    def add_temporal_data(self, timestamp: Datetime, network: Network, crac: Crac) -> Any :
         return self._data.append((timestamp, network, crac))
 
-    def get_data(self) -> List[Tuple[Datetime, Network, Crac]]:
+    def get_temporal_data(self) -> List[Tuple[Datetime, Network, Crac]]:
         return self._data

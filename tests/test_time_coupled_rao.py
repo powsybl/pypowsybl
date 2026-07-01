@@ -45,7 +45,7 @@ def test_time_coupled_rao():
     time_coupled_input = TimeCoupledRaoInput()
     for t in timestamps:
         n = pp.network.load(DATA_DIR.joinpath("6Nodes_Pmin1000_Pmax3000.xiidm"))
-        time_coupled_input.add_data_point(datetime.strptime(t, date_format), n, Crac.from_file_source(n, DATA_DIR.joinpath("crac_" + t + ".json")))
+        time_coupled_input.add_temporal_data(datetime.strptime(t, date_format), n, Crac.from_file_source(n, DATA_DIR.joinpath("crac_" + t + ".json")))
 
     runner = TimeCoupledRao()
     results_df = runner.run(time_coupled_input, constraints, parameters)
