@@ -3248,8 +3248,8 @@ class Network:  # pylint: disable=too-many-public-methods
               - **control_mode**: the control mode of the converter
               - **target_p**: the active power setpoint (in MW, load convention)
               - **target_q**: the reactive power setpoint (in MVAr, load convention)
-              - **target_v_dc**: the DC voltage setpoint (in KV)
-              - **target_v_ac**: the AC voltage setpoint (in KV)
+              - **target_v_dc**: the DC voltage setpoint (in kV)
+              - **target_v_ac**: the AC voltage setpoint (in kV)
               - **idle_loss**: the idle loss coefficient (in MW)
               - **switching_loss**: the switching loss coefficient (in MW/A)
               - **resistive_loss**: the resistive loss coefficient (in Ohm)
@@ -3305,7 +3305,7 @@ class Network:  # pylint: disable=too-many-public-methods
 
               - **connected_component**: The connected component to which the dc bus belongs
               - **dc_component**: The dc component to which the dc bus belongs
-              - **v**: dc bus voltage (in KV)
+              - **v**: dc bus voltage (in kV)
               - **fictitious** (optional): ``True`` if the area is part of the model and not of the actual network
 
 

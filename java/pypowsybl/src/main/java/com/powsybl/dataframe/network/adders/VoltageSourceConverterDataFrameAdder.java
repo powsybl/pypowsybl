@@ -98,7 +98,7 @@ public class VoltageSourceConverterDataFrameAdder extends AbstractSimpleAdder {
             this.dcNodes1 = dataframe.getStrings("dc_node1_id");
             this.dcNodes2 = dataframe.getStrings("dc_node2_id");
             this.connectableBuses1 = dataframe.getStrings("connectable_bus1_id");
-            this.connectableBuses2 = dataframe.getStrings("connectable_bus1_id");
+            this.connectableBuses2 = dataframe.getStrings("connectable_bus2_id");
             this.dcConnected1 = dataframe.getInts("dc_connected1");
             this.dcConnected2 = dataframe.getInts("dc_connected2");
             this.pccTerminals = dataframe.getStrings("pcc_terminal_id");
