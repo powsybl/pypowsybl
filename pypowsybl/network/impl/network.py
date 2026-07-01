@@ -2922,7 +2922,7 @@ class Network:  # pylint: disable=too-many-public-methods
             .. doctest::
 
                 >>> from pathlib import Path
-                >>> data_dir = globals().get('DATA_DIR', Path(__file__).resolve().parents[3] / 'data')
+                >>> data_dir = globals().get('DATA_DIR', Path().resolve().parents[3] / 'data')
                 >>> cgmes_zip = data_dir / 'CGMES_Full.zip'
                 >>> network = pp.network.load(
                 ...     str(cgmes_zip),
