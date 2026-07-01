@@ -926,6 +926,23 @@ parent network and become again a standalone network.
 
     >>> nl_sub.detach()
 
+
+Network flattening
+------------------
+
+Pypowsybl provides the flatten method to remove the subnetworks structure, transferring the subnetworks' data to the
+parent network. For example, merging 2 CGMES microgrids yields to a subnetworks structure that can be flattened:
+
+.. doctest::
+
+    >>> be = pp.network.create_micro_grid_be_network()
+    >>> nl = pp.network.create_micro_grid_nl_network()
+    >>> be.merge(nl)
+    >>> be.flatten()
+
+Please refer to `the java documentation <https://powsybl.readthedocs.io/projects/powsybl-core/en/stable/grid_features/working_with_subnetworks.html#flattening-a-network>`
+for more precisions on extensions and properties handling while flattening a network.
+
 Reducing a network
 ------------------
 
