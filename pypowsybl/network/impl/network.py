@@ -3323,6 +3323,12 @@ class Network:  # pylint: disable=too-many-public-methods
               - **p_dc2**: the DC flow on the converter, side 2 ``NaN`` if no loadflow has been computed (in MW)
               - **fictitious** (optional): ``True`` if the area is part of the model and not of the actual network
 
+            .. note::
+
+                ``target_p``, ``min_p`` and ``max_p`` follow the load sign convention at the point of
+                common coupling (PCC): a positive value means active power absorbed by the converter from
+                the AC grid.
+
             .. warning::
 
                 A finite ``min_p`` / ``max_p`` (any value other than ``-inf`` / ``inf``) is not yet supported
@@ -4556,6 +4562,12 @@ class Network:  # pylint: disable=too-many-public-methods
             - `p_dc1`
             - `p_dc2`
             - `fictitious`
+
+            .. note::
+
+                ``target_p``, ``min_p`` and ``max_p`` follow the load sign convention at the point of
+                common coupling (PCC): a positive value means active power absorbed by the converter from
+                the AC grid.
 
             .. warning::
 
@@ -5992,6 +6004,12 @@ class Network:  # pylint: disable=too-many-public-methods
             - **resistive_loss** the resistive loss coefficient
             - **min_p** the minimum active power in MW (optional, unbounded by default)
             - **max_p** the maximum active power in MW (optional, unbounded by default)
+
+            .. note::
+
+                ``target_p``, ``min_p`` and ``max_p`` follow the load sign convention at the point of
+                common coupling (PCC): a positive value means active power absorbed by the converter from
+                the AC grid.
 
             .. warning::
 
