@@ -164,8 +164,11 @@ public class VoltageSourceConverterDataFrameAdder extends AbstractSimpleAdder {
             applyIfPresent(idleLoss, row, adder::setIdleLoss);
             applyIfPresent(switchingLoss, row, adder::setSwitchingLoss);
             applyIfPresent(resistiveLoss, row, adder::setResistiveLoss);
-            applyIfPresent(minP, row, adder::setMinP);
-            applyIfPresent(maxP, row, adder::setMaxP);
+            // Symmetric with the update path (NetworkDataframes): expose the "unbounded" state as -/+ inf,
+            // mapping it back to the core's -/+ Double.MAX_VALUE sentinel. Finite values pass through unchanged
+            // (creation dataframes are in SI, hence no per-unit conversion here).
+            applyIfPresent(minP, row, value -> adder.setMinP(value == Double.NEGATIVE_INFINITY ? -Double.MAX_VALUE : value));
+            applyIfPresent(maxP, row, value -> adder.setMaxP(value == Double.POSITIVE_INFINITY ? Double.MAX_VALUE : value));
         }
 
         void createVoltageSourceConverter(Network network, int row) {

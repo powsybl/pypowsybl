@@ -3323,6 +3323,11 @@ class Network:  # pylint: disable=too-many-public-methods
               - **p_dc2**: the DC flow on the converter, side 2 ``NaN`` if no loadflow has been computed (in MW)
               - **fictitious** (optional): ``True`` if the area is part of the model and not of the actual network
 
+            .. warning::
+
+                A finite ``min_p`` / ``max_p`` (any value other than ``-inf`` / ``inf``) is not yet supported
+                by IIDM serialization: saving a network that contains one raises a ``PowsyblException``.
+
             This dataframe is indexed on the converter ID.
         """
         return self.get_elements(ElementType.VOLTAGE_SOURCE_CONVERTER, all_attributes, attributes, **kwargs)
@@ -4551,6 +4556,11 @@ class Network:  # pylint: disable=too-many-public-methods
             - `p_dc1`
             - `p_dc2`
             - `fictitious`
+
+            .. warning::
+
+                A finite ``min_p`` / ``max_p`` (any value other than ``-inf`` / ``inf``) is not yet supported
+                by IIDM serialization: saving a network that contains one raises a ``PowsyblException``.
 
         See Also:
             :meth:`get_voltage_source_converters`
@@ -5982,6 +5992,11 @@ class Network:  # pylint: disable=too-many-public-methods
             - **resistive_loss** the resistive loss coefficient
             - **min_p** the minimum active power in MW (optional, unbounded by default)
             - **max_p** the maximum active power in MW (optional, unbounded by default)
+
+            .. warning::
+
+                A finite ``min_p`` / ``max_p`` (any value other than ``-inf`` / ``inf``) is not yet supported
+                by IIDM serialization: saving a network that contains one raises a ``PowsyblException``.
 
         Examples:
             Using keyword arguments:

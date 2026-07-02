@@ -932,11 +932,14 @@ class NetworkDataframesTest {
         assertThat(attrs.get("min_p").getDoubles()).containsExactly(Double.NEGATIVE_INFINITY, Double.NEGATIVE_INFINITY);
         assertThat(attrs.get("max_p").getDoubles()).containsExactly(Double.POSITIVE_INFINITY, Double.POSITIVE_INFINITY);
 
-        // finite value via core API reads back as the SI value (default ctx, no per-unit)
-        network.getVoltageSourceConverter("VscFr").setMinP(-100.0);
-        double minP = createDataFrame(VOLTAGE_SOURCE_CONVERTER, network, new DataframeFilter(ALL_ATTRIBUTES, Collections.emptyList()))
-                .stream().filter(s -> s.getName().equals("min_p")).findFirst().orElseThrow().getDoubles()[0];
-        assertThat(minP).isEqualTo(-100.0);
+        // finite values via core API read back as the SI value (default ctx, no per-unit)
+        network.getVoltageSourceConverter("VscFr").setMinP(-100.0).setMaxP(200.0);
+        attrs = createDataFrame(VOLTAGE_SOURCE_CONVERTER, network, new DataframeFilter(ALL_ATTRIBUTES, Collections.emptyList()))
+                .stream().collect(ImmutableMap.toImmutableMap(Series::getName, Function.identity()));
+        int row = Arrays.asList(attrs.get("id").getStrings()).indexOf("VscFr");
+        assertThat(row).isNotNegative();
+        assertThat(attrs.get("min_p").getDoubles()[row]).isEqualTo(-100.0);
+        assertThat(attrs.get("max_p").getDoubles()[row]).isEqualTo(200.0);
     }
 
     @Test
