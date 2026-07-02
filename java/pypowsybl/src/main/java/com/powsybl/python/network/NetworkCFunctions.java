@@ -2157,6 +2157,18 @@ public final class NetworkCFunctions {
         });
     }
 
+    @CEntryPoint(name = "flatten")
+    public static ObjectHandle flatten(IsolateThread thread, ObjectHandle networkHandle, ExceptionHandlerPointer exceptionHandlerPtr) {
+        return doCatch(exceptionHandlerPtr, new PointerProvider<>() {
+            @Override
+            public ObjectHandle get() {
+                Network network = ObjectHandles.getGlobal().get(networkHandle);
+                network.flatten();
+                return ObjectHandles.getGlobal().create(network);
+            }
+        });
+    }
+
     @CEntryPoint(name = "applySolvedValues")
     public static void applyAllSolvedValues(IsolateThread thread, ObjectHandle networkHandle, ExceptionHandlerPointer exceptionHandlerPtr) {
         doCatch(exceptionHandlerPtr, new Runnable() {

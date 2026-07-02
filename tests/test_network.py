@@ -1851,6 +1851,31 @@ def test_network_merge():
     assert 0 == len(merge.get_voltage_levels())  # merge is empty
 
 
+def test_network_flatten():
+    be = pp.network.create_micro_grid_be_network()
+    assert 6 == len(be.get_voltage_levels())
+    nl = pp.network.create_micro_grid_nl_network()
+    assert 4 == len(nl.get_voltage_levels())
+    be.merge(nl)
+    merge = be
+    assert 10 == len(merge.get_voltage_levels())
+    sub_networks = merge.get_sub_networks()
+    expected_sub_networks = pd.DataFrame(
+        index=pd.Series(
+            name="id",
+            data=[
+                "urn:uuid:d400c631-75a0-4c30-8aed-832b0d282e73",
+                "urn:uuid:77b55f87-fc1e-4046-9599-6c6b4f991a86",
+            ],
+        )
+    )
+    pd.testing.assert_frame_equal(expected_sub_networks, sub_networks, check_dtype=False)
+    assert 2 == len(merge.get_sub_networks())
+    merge.flatten()
+    assert 0 == len(merge.get_sub_networks())
+    assert 10 == len(merge.get_voltage_levels())
+
+
 def test_linear_shunt_compensator_sections():
     n = pp.network.create_four_substations_node_breaker_network()
     expected = pd.DataFrame(index=pd.Series(name='id',
