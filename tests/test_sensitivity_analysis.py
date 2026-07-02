@@ -270,18 +270,6 @@ def test_voltage_sensitivities_with_report():
     report2 = str(report_node)
     assert len(report2) > len(report1)
 
-def test_voltage_sensitivities_with_deprecated_report():
-    with pytest.warns(DeprecationWarning, match=re.escape("Use of deprecated attribute reporter. Use report_node instead.")):
-        report_node = rp.Reporter()
-        report1 = str(report_node)
-        assert len(report1) > 0
-        n = pp.network.create_eurostag_tutorial_example1_network()
-        sa = pp.sensitivity.create_ac_analysis()
-        sa.add_bus_voltage_factor_matrix(['VLGEN_0'], ['GEN'])
-        sa.run(n, reporter=report_node)
-        report2 = str(report_node)
-        assert len(report2) > len(report1)
-
 
 def test_sensitivity_parameters():
     n = pp.network.create_eurostag_tutorial_example1_network()
