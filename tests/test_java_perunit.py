@@ -234,7 +234,7 @@ def test_voltage_source_converters_min_max_p():
     n = pp.network.create_dc_detailed_vsc_symmetrical_monopole_network()
     n.per_unit = True
 
-    # unbounded default stays +/-inf regardless of per-unit (Sbase-independent by design)
+    # unbounded default stays +/-inf regardless of per-unit
     df = n.get_voltage_source_converters(all_attributes=True)
     assert np.isneginf(df['min_p']['VscFr'])
     assert np.isposinf(df['max_p']['VscFr'])

@@ -932,7 +932,7 @@ class NetworkDataframesTest {
         assertThat(attrs.get("min_p").getDoubles()).containsExactly(Double.NEGATIVE_INFINITY, Double.NEGATIVE_INFINITY);
         assertThat(attrs.get("max_p").getDoubles()).containsExactly(Double.POSITIVE_INFINITY, Double.POSITIVE_INFINITY);
 
-        // finite values via core API read back as the SI value (default ctx, no per-unit)
+        // finite values via core API read back
         network.getVoltageSourceConverter("VscFr").setMinP(-100.0).setMaxP(200.0);
         attrs = createDataFrame(VOLTAGE_SOURCE_CONVERTER, network, new DataframeFilter(ALL_ATTRIBUTES, Collections.emptyList()))
                 .stream().collect(ImmutableMap.toImmutableMap(Series::getName, Function.identity()));

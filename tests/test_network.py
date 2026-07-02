@@ -2873,7 +2873,7 @@ def test_voltage_source_converters_min_max_p():
 def test_voltage_source_converters_update_min_max_p():
     n = pp.network.create_dc_detailed_vsc_symmetrical_monopole_network()
 
-    # set finite limits (SI, default mode), read back
+    # set finite limits in MW, read back
     n.update_voltage_source_converters(id='VscFr', min_p=-100.0, max_p=100.0)
     df = n.get_voltage_source_converters(all_attributes=True)
     assert df['min_p']['VscFr'] == pytest.approx(-100.0)
