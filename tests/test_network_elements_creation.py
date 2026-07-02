@@ -1327,14 +1327,27 @@ def test_voltage_source_converter_creation():
 def test_voltage_source_converter_creation_min_max_p():
     n = pypowsybl.network.create_dc_detailed_vsc_symmetrical_monopole_network()
     n.create_buses(id='BUS_TEST', voltage_level_id='VLDC-GB-xNodeDc1gb-150')
-    n.create_voltage_source_converters(pd.DataFrame(index=pd.Series(name='id', data=['CONV_TEST']),
-                                                    columns=['id', 'name', 'voltage_level_id', 'bus1_id', 'bus2_id',
-                                                             'dc_node1_id', 'dc_node2_id', 'control_mode', 'target_p',
-                                                             'voltage_regulator_on', 'idle_loss', 'switching_loss',
-                                                             'resistive_loss', 'target_v_ac', 'dc_connected1',
-                                                             'dc_connected2', 'pcc_terminal_id', 'min_p', 'max_p'], data=[
-            ['CONV_TEST', '', 'VLDC-GB-xNodeDc1gb-150', 'BUSDC-GB-xNodeDc1gb-150', 'BUS_TEST', 'dcNodeGbNeg',
-             'dcNodeGbPos', 'P_PCC', 300, True, 1.0, 1.0, 1.0, 400, True, False, 'TRDC-GB-xNodeDc1gb', -100, 100]]))
+    n.create_voltage_source_converters(pd.DataFrame.from_records(index='id', data=[{
+        'id': 'CONV_TEST',
+        'name': '',
+        'voltage_level_id': 'VLDC-GB-xNodeDc1gb-150',
+        'bus1_id': 'BUSDC-GB-xNodeDc1gb-150',
+        'bus2_id': 'BUS_TEST',
+        'dc_node1_id': 'dcNodeGbNeg',
+        'dc_node2_id': 'dcNodeGbPos',
+        'control_mode': 'P_PCC',
+        'target_p': 300,
+        'voltage_regulator_on': True,
+        'idle_loss': 1.0,
+        'switching_loss': 1.0,
+        'resistive_loss': 1.0,
+        'target_v_ac': 400,
+        'dc_connected1': True,
+        'dc_connected2': False,
+        'pcc_terminal_id': 'TRDC-GB-xNodeDc1gb',
+        'min_p': -100,
+        'max_p': 100
+    }]))
     conv = n.get_voltage_source_converters(all_attributes=True).loc['CONV_TEST']
 
     assert conv.min_p == -100
