@@ -117,11 +117,6 @@
                                     <artifactId>powsybl-math-native</artifactId>
                                     <destFileName>powsybl-math-native.jar</destFileName>
                                 </artifactItem>
-                                <artifactItem>
-                                    <groupId>com.github.luben</groupId>
-                                    <artifactId>zstd-jni</artifactId>
-                                    <destFileName>zstd-jni.jar</destFileName>
-                                </artifactItem>
                             </artifactItems>
                         </configuration>
                     </execution>
