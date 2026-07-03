@@ -50,8 +50,6 @@ from .sld_profile import SldProfile
 from .svg import Svg
 from .util import create_data_frame_from_series_array, ParamsDict
 
-DEPRECATED_REPORTER_WARNING = "Use of deprecated attribute reporter. Use report_node instead."
-
 
 class WorkingVariantScope:
     def __init__(self, network: 'Network', variant_id: str):
@@ -265,7 +263,7 @@ class Network:  # pylint: disable=too-many-public-methods
         self.save(file, format, parameters, reporter)
 
     def save(self, file: PathOrStr, format: str = 'XIIDM', parameters: ParamsDict = None,
-             reporter: Optional[ReportNode] = None, report_node: Optional[ReportNode] = None) -> None:
+             report_node: Optional[ReportNode] = None) -> None:
         """
         Save a network to a file using the specified format.
 
@@ -276,7 +274,6 @@ class Network:  # pylint: disable=too-many-public-methods
             file:       path to the exported file
             format:     format to save the network, defaults to 'XIIDM'
             parameters: a dictionary of export parameters
-            reporter: deprecated, use report_node instead
             report_node:   the reporter to be used to create an execution report, default is None (no report)
 
         Examples:
@@ -288,9 +285,6 @@ class Network:  # pylint: disable=too-many-public-methods
                 network.save('network.xiidm.gz')  # produces a gzipped file
                 network.save('/path/to/network.uct', format='UCTE')
         """
-        if reporter is not None:
-            warnings.warn(DEPRECATED_REPORTER_WARNING, DeprecationWarning)
-            report_node = reporter
         file = path_to_str(file)
         if parameters is None:
             parameters = {}
@@ -305,31 +299,24 @@ class Network:  # pylint: disable=too-many-public-methods
         warnings.warn("dump_to_string is deprecated, use save_to_string instead", DeprecationWarning)
         return self.save_to_string(format, parameters, reporter)
 
-    def save_to_string(self, format: str = 'XIIDM', parameters: ParamsDict = None, reporter: Optional[ReportNode] = None,
-                       report_node: Optional[ReportNode] = None) -> str:
+    def save_to_string(self, format: str = 'XIIDM', parameters: ParamsDict = None, report_node: Optional[ReportNode] = None) -> str:
         """
         Save a network to a string using a specified format.
 
         Args:
             format:     format to export, only support mono file type, defaults to 'XIIDM'
             parameters: a dictionary of export parameters
-            reporter: deprecated, use report_node instead
             report_node:   the reporter to be used to create an execution report, default is None (no report)
 
         Returns:
             A string representing this network
         """
-        if reporter is not None:
-            warnings.warn(DEPRECATED_REPORTER_WARNING, DeprecationWarning)
-            report_node = reporter
-
         if parameters is None:
             parameters = {}
         return _pp.save_network_to_string(self._handle, format, parameters,
                                           None if report_node is None else report_node._report_node)  # pylint: disable=protected-access
 
-    def save_to_binary_buffer(self, format: str = 'XIIDM', parameters: ParamsDict = None,
-                              reporter: Optional[ReportNode] = None, report_node: Optional[ReportNode] = None) -> io.BytesIO:
+    def save_to_binary_buffer(self, format: str = 'XIIDM', parameters: ParamsDict = None, report_node: Optional[ReportNode] = None) -> io.BytesIO:
         """
         Save a network to a binary buffer using a specified format.
         In the current implementation, whatever the specified format is (so a format creating a single file or a format
@@ -338,16 +325,11 @@ class Network:  # pylint: disable=too-many-public-methods
         Args:
             format:     format to export, only support mono file type, defaults to 'XIIDM'
             parameters: a dictionary of export parameters
-            reporter: deprecated, use report_node instead
             report_node:   the reporter to be used to create an execution report, default is None (no report)
 
         Returns:
             A BytesIO data buffer representing this network
         """
-        if reporter is not None:
-            warnings.warn(DEPRECATED_REPORTER_WARNING, DeprecationWarning)
-            report_node = reporter
-
         if parameters is None:
             parameters = {}
         return io.BytesIO(_pp.save_network_to_binary_buffer(self._handle, format, parameters,
