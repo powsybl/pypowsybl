@@ -55,7 +55,7 @@ class NetworkCache:
             return branches
         branches_and_buses = pd.merge(branches, buses, left_on='bus1_id', right_index=True, how='left', validate='m:1')
         branches_and_buses = pd.merge(branches_and_buses, buses, left_on='bus2_id', right_index=True,
-                                      suffixes=('', '_2'), how='left')
+                                      suffixes=('', '_2'), how='left', validate='m:1')
         return branches_and_buses[
             (branches_and_buses['connected_component'] == 0) | (
                     branches_and_buses['connected_component_2'] == 0)]

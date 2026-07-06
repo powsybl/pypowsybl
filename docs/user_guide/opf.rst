@@ -1,6 +1,10 @@
 Running an optimal power flow
 =============================
 
+.. warning::
+
+    The OPF implementation is currently a beta feature. Its API and behavior may change in future versions.
+
 .. currentmodule:: pypowsybl.opf
 
 .. testsetup:: *

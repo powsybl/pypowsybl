@@ -101,18 +101,6 @@ def run_opf_then_lf(network: pp.network.Network,
     assert lf_result[0].status == pp.loadflow.ComponentStatus.CONVERGED
     assert lf_result[0].iteration_count == iteration_count
 
-def run_acdc_opf_then_lf(network: pp.network.Network,
-                         opf_parameters: OptimalPowerFlowParameters):
-    lf_parameters = create_acdc_loadflow_parameters()
-    lf_result = pp.loadflow.run_ac(network, lf_parameters)
-    assert lf_result[0].status == pp.loadflow.ComponentStatus.CONVERGED
-
-    assert pp.opf.run_ac(network, opf_parameters)
-
-    lf_parameters.voltage_init_mode = pp.loadflow.VoltageInitMode.PREVIOUS_VALUES
-    lf_result = pp.loadflow.run_ac(network, lf_parameters)
-    assert lf_result[0].status == pp.loadflow.ComponentStatus.CONVERGED
-
 
 def validate(network: Network):
     validation_parameters = pp.loadflow.ValidationParameters(threshold=1, check_main_component_only=True)
@@ -245,6 +233,7 @@ def test_micro_grid_nl():
 def test_vsc_symmetrical_monopole():
     opf_parameters = OptimalPowerFlowParameters(mode=OptimalPowerFlowMode.ACDC)
     assert pp.opf.run_ac(pp.network.create_dc_detailed_vsc_symmetrical_monopole_network(), opf_parameters)
+    
 
 '''
 #VSC assymetrical monopole network is defined in powsybl-core in the file DcDetailedNetworkFactory.java
