@@ -195,8 +195,8 @@ def create_limits(n: Network, n_pdp: pandapowerNet, id: pd.Series) -> None:
     limit_value = n_pdp.line['max_i_ka'] * 1000.0 / n_pdp.line['parallel']
     limit_value *= n_pdp.line['df']
     acceptable_duration = [-1] * len(n_pdp.line)
-    n.create_operational_limits(element_id=id, side=limit_side, name=limit_name, type=limit_type, value=limit_value,
-                                acceptable_duration=acceptable_duration)
+    n.create_loading_limits(element_id=id, side=limit_side, name=limit_name, type=limit_type, value=limit_value,
+                            acceptable_duration=acceptable_duration)
 
 def create_lines(n: Network, n_pdp: pandapowerNet) -> None:
     if len(n_pdp.line) > 0:

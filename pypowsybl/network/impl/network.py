@@ -4605,7 +4605,7 @@ class Network:  # pylint: disable=too-many-public-methods
         """
         return _pp.get_variant_ids(self._handle)
 
-    def get_operational_limits(self, all_attributes: bool = False, attributes: Optional[List[str]] = None, show_inactive_sets: bool = False) -> DataFrame:
+    def get_loading_limits(self, all_attributes: bool = False, attributes: Optional[List[str]] = None, show_inactive_sets: bool = False) -> DataFrame:
         """
         Get the list of operational limits.
 
@@ -4640,7 +4640,15 @@ class Network:  # pylint: disable=too-many-public-methods
             return self.get_elements(ElementType.OPERATIONAL_LIMITS, all_attributes, attributes)
         return self.get_elements(ElementType.SELECTED_OPERATIONAL_LIMITS, all_attributes, attributes)
 
-    def update_operational_limits(self, df: Optional[DataFrame] = None, **kwargs: ArrayLike) -> None:
+    def get_operational_limits(self, all_attributes: bool = False, attributes: Optional[List[str]] = None, show_inactive_sets: bool = False) -> DataFrame:
+        """
+        .. deprecated:: 1.16.0
+            Use :meth:`get_loading_limits` instead.
+        """
+        warnings.warn("get_operational_limits is deprecated, use get_loading_limits instead", DeprecationWarning)
+        return self.get_loading_limits(all_attributes, attributes, show_inactive_sets)
+
+    def update_loading_limits(self, df: Optional[DataFrame] = None, **kwargs: ArrayLike) -> None:
         """
         Update operational limits values with data provided as a :class:`~pandas.DataFrame` or as named arguments.
 
@@ -4671,6 +4679,14 @@ class Network:  # pylint: disable=too-many-public-methods
                 network.update_operational_limits(id='LINE', side='ONE', type='CURRENT', acceptable_duration=600, value=500)
         """
         return self._update_elements(ElementType.OPERATIONAL_LIMITS, df, **kwargs)
+
+    def update_operational_limits(self, df: Optional[DataFrame] = None, **kwargs: ArrayLike) -> None:
+        """
+        .. deprecated:: 1.16.0
+            Use :meth:`update_loading_limits` instead.
+        """
+        warnings.warn("update_operational_limits is deprecated, use update_loading_limits instead", DeprecationWarning)
+        return self.update_loading_limits(df, **kwargs)
 
     def get_voltage_angle_limits(self, all_attributes: bool = False, attributes: Optional[List[str]] = None) -> DataFrame:
         """
@@ -5903,7 +5919,7 @@ class Network:  # pylint: disable=too-many-public-methods
         """
         return self._create_elements(ElementType.DC_GROUND, [df], **kwargs)
 
-    def create_operational_limits(self, df: Optional[DataFrame] = None, **kwargs: ArrayLike) -> None:
+    def create_loading_limits(self, df: Optional[DataFrame] = None, **kwargs: ArrayLike) -> None:
         """
         Creates operational limits.
 
@@ -5950,6 +5966,14 @@ class Network:  # pylint: disable=too-many-public-methods
             kwargs.pop('element_type')
 
         return self._create_elements(ElementType.OPERATIONAL_LIMITS, [df], **kwargs)
+
+    def create_operational_limits(self, df: Optional[DataFrame] = None, **kwargs: ArrayLike) -> None:
+        """
+        .. deprecated:: 1.16.0
+            Use :meth:`create_loading_limits` instead.
+        """
+        warnings.warn("create_operational_limits is deprecated, use create_loading_limits instead", DeprecationWarning)
+        return self.create_loading_limits(df, **kwargs)
 
     def create_voltage_angle_limits(self, df: Optional[DataFrame] = None, **kwargs: ArrayLike) -> None:
         """

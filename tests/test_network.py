@@ -2317,7 +2317,7 @@ def test_limits():
               ('BL', 'BOUNDARY_LINE', 'NONE', '20\'', 'CURRENT', 120, 1200, False, 'DEFAULT', True),
               ('BL', 'BOUNDARY_LINE', 'NONE', '10\'', 'CURRENT', 140, 600, False, 'DEFAULT', True)]
     )
-    pd.testing.assert_frame_equal(expected, network.get_operational_limits(all_attributes=True), check_dtype=False,
+    pd.testing.assert_frame_equal(expected, network.get_loading_limits(all_attributes=True), check_dtype=False,
                                   check_index_type=False)
 
     network = pp.network.create_eurostag_tutorial_example1_with_power_limits_network()
@@ -2329,7 +2329,7 @@ def test_limits():
               ('LINE', 'ONE', 'permanent_limit', 'APPARENT_POWER', 500, -1, False, 'DEFAULT', True),
               ('LINE', 'TWO', 'permanent_limit', 'ACTIVE_POWER', 1100, -1, False, 'DEFAULT', True),
               ('LINE', 'TWO', 'permanent_limit', 'APPARENT_POWER', 1100, -1, False, 'DEFAULT', True)])
-    limits = network.get_operational_limits(all_attributes=True).loc['NHV1_NHV2_1']
+    limits = network.get_loading_limits(all_attributes=True).loc['NHV1_NHV2_1']
     limits = limits[limits['name'] == 'permanent_limit']
     pd.testing.assert_frame_equal(expected, limits, check_dtype=False, check_index_type=False)
     expected = pd.DataFrame.from_records(
@@ -2338,7 +2338,7 @@ def test_limits():
                  'fictitious', 'group_name', 'selected'],
         data=[['LINE', 'ONE', "20'", 'ACTIVE_POWER', 1200, 1200, False, 'DEFAULT', True],
               ['LINE', 'ONE', "20'", 'APPARENT_POWER', 1200, 1200, False, 'DEFAULT', True]])
-    limits = network.get_operational_limits(all_attributes=True).loc['NHV1_NHV2_2']
+    limits = network.get_loading_limits(all_attributes=True).loc['NHV1_NHV2_2']
     limits = limits[limits['name'] == '20\'']
     pd.testing.assert_frame_equal(expected, limits, check_dtype=False, check_index_type=False)
     network = util.create_three_windings_transformer_with_current_limits_network()
@@ -2349,13 +2349,13 @@ def test_limits():
         data=[['THREE_WINDINGS_TRANSFORMER', 'ONE', "10'", 'CURRENT', 1400, 600, False, 'DEFAULT', True],
               ['THREE_WINDINGS_TRANSFORMER', 'TWO', "10'", 'CURRENT', 140, 600, False, 'DEFAULT', True],
               ['THREE_WINDINGS_TRANSFORMER', 'THREE', "10'", 'CURRENT', 14, 600, False, 'DEFAULT', True]])
-    limits = network.get_operational_limits(all_attributes=True).loc['3WT']
+    limits = network.get_loading_limits(all_attributes=True).loc['3WT']
     limits = limits[limits['name'] == '10\'']
     pd.testing.assert_frame_equal(expected, limits, check_dtype=False, check_index_type=False)
 
 def test_multiple_limit_groups():
     network = pp.network.create_eurostag_tutorial_example1_network()
-    network.create_operational_limits(pd.DataFrame.from_records(index='element_id', data=[
+    network.create_loading_limits(pd.DataFrame.from_records(index='element_id', data=[
         {'element_id': 'NHV1_NHV2_1', 'name': 'permanent_limit', 'side': 'ONE',
          'type': 'APPARENT_POWER', 'value': 600,
          'acceptable_duration': np.inf, 'fictitious': False, 'group_name': 'SUMMER'},
@@ -2370,9 +2370,9 @@ def test_multiple_limit_groups():
          'acceptable_duration': 60, 'fictitious': False, 'group_name': 'SUMMER'}
     ]))
 
-    limits = network.get_operational_limits(all_attributes=True)
+    limits = network.get_loading_limits(all_attributes=True)
     assert('APPARENT_POWER' not in limits.index.get_level_values('type').to_list())
-    all_limits = network.get_operational_limits(all_attributes=True, show_inactive_sets=True)
+    all_limits = network.get_loading_limits(all_attributes=True, show_inactive_sets=True)
     assert('APPARENT_POWER' in all_limits.index.get_level_values('type').to_list())
 
     assert(network.get_lines(all_attributes=True).loc["NHV1_NHV2_1"]["selected_limits_group_1"] == "DEFAULT")
@@ -2381,15 +2381,27 @@ def test_multiple_limit_groups():
 
 def test_update_limits():
     network = pp.network.create_eurostag_tutorial_example1_with_power_limits_network()
-    assert network.get_operational_limits().loc["NHV1_NHV2_1", "ONE", "ACTIVE_POWER", -1, "DEFAULT"].value == 500
+    assert network.get_loading_limits().loc["NHV1_NHV2_1", "ONE", "ACTIVE_POWER", -1, "DEFAULT"].value == 500
     updating_df = pd.DataFrame.from_records(
         index=['element_id', 'side', 'type', 'acceptable_duration', 'group_name'],
         columns=['element_id', 'side', 'type', 'acceptable_duration', 'group_name', 'value'],
         data=[('NHV1_NHV2_1', 'ONE', 'ACTIVE_POWER', -1, 'DEFAULT', 400)]
     )
-    network.update_operational_limits(df=updating_df)
-    assert network.get_operational_limits().loc["NHV1_NHV2_1", "ONE", "ACTIVE_POWER", -1, "DEFAULT"].value == 400
+    network.update_loading_limits(df=updating_df)
+    assert network.get_loading_limits().loc["NHV1_NHV2_1", "ONE", "ACTIVE_POWER", -1, "DEFAULT"].value == 400
 
+def test_deprecated_operational_limits():
+    network = pp.network.create_eurostag_tutorial_example1_with_power_limits_network()
+    with pytest.warns(DeprecationWarning, match="get_operational_limits is deprecated, use get_loading_limits instead"):
+        assert network.get_operational_limits().loc["NHV1_NHV2_1", "ONE", "ACTIVE_POWER", -1, "DEFAULT"].value == 500
+    updating_df = pd.DataFrame.from_records(
+        index=['element_id', 'side', 'type', 'acceptable_duration', 'group_name'],
+        columns=['element_id', 'side', 'type', 'acceptable_duration', 'group_name', 'value'],
+        data=[('NHV1_NHV2_1', 'ONE', 'ACTIVE_POWER', -1, 'DEFAULT', 400)]
+    )
+    with pytest.warns(DeprecationWarning, match="update_operational_limits is deprecated, use update_loading_limits instead"):
+        network.update_operational_limits(df=updating_df)
+        assert network.get_loading_limits().loc["NHV1_NHV2_1", "ONE", "ACTIVE_POWER", -1, "DEFAULT"].value == 400
 
 def test_validation_level():
     n = pp.network.create_ieee14()
@@ -2906,7 +2918,7 @@ def test_update_name():
 def test_deprecated_operational_limits_is_fictitious():
     network = pp.network.create_eurostag_tutorial_example1_network()
     with pytest.warns(DeprecationWarning, match=re.escape("operation limits is_fictitious attribute has been renamed fictitious")):
-        network.create_operational_limits(pd.DataFrame.from_records(index='element_id', data=[
+        network.create_loading_limits(pd.DataFrame.from_records(index='element_id', data=[
             {'element_id': 'NHV1_NHV2_1',
              'name': '',
              'side': 'ONE',
@@ -2922,18 +2934,18 @@ def test_deprecated_operational_limits_is_fictitious():
              'acceptable_duration': 60,
              'is_fictitious': True},
         ]))
-    limits = network.get_operational_limits(all_attributes=True)
+    limits = network.get_loading_limits(all_attributes=True)
     assert limits.query("element_id == 'NHV1_NHV2_1' and side == 'ONE' and acceptable_duration == 60")['fictitious'].all()
 
 
 def test_deprecated_operational_limits_is_fictitious_kwargs():
     network = pp.network.create_eurostag_tutorial_example1_network()
     with pytest.warns(DeprecationWarning, match=re.escape("operation limits is_fictitious attribute has been renamed fictitious")):
-        network.create_operational_limits(element_id=['NHV1_NHV2_1', 'NHV1_NHV2_1'],
-                                          name=['', ''],
-                                          side=['ONE', 'ONE'], type=['CURRENT', 'CURRENT'], value=[400.0, 500.0],
-                                          acceptable_duration=[-1, 60], is_fictitious=[False, True])
-    limits = network.get_operational_limits(all_attributes=True)
+        network.create_loading_limits(element_id=['NHV1_NHV2_1', 'NHV1_NHV2_1'],
+                                      name=['', ''],
+                                      side=['ONE', 'ONE'], type=['CURRENT', 'CURRENT'], value=[400.0, 500.0],
+                                      acceptable_duration=[-1, 60], is_fictitious=[False, True])
+    limits = network.get_loading_limits(all_attributes=True)
     assert limits.query("element_id == 'NHV1_NHV2_1' and side == 'ONE' and acceptable_duration == 60")['fictitious'].all()
 
 
@@ -2941,7 +2953,7 @@ def test_deprecated_operational_limits_element_type():
     # element type should just be ignored and not throw an exception
     network = pp.network.create_eurostag_tutorial_example1_network()
     with pytest.warns(DeprecationWarning, match=re.escape("useless operation limits element_type attribute has been removed")):
-        network.create_operational_limits(pd.DataFrame.from_records(index='element_id', data=[
+        network.create_loading_limits(pd.DataFrame.from_records(index='element_id', data=[
             {'element_id': 'NHV1_NHV2_1',
              'element_type': 'LINE',
              'name': '',
@@ -2957,9 +2969,9 @@ def test_deprecated_operational_limits_element_type_kwargs():
     # element type should just be ignored and not throw an exception
     network = pp.network.create_eurostag_tutorial_example1_network()
     with pytest.warns(DeprecationWarning, match=re.escape("useless operation limits element_type attribute has been removed")):
-        network.create_operational_limits(element_id=['NHV1_NHV2_1', 'NHV1_NHV2_1'], element_type=['LINE', 'LINE'], name=['', ''],
-                                          side=['ONE', 'ONE'], type=['CURRENT', 'CURRENT'], value=[400.0, 500.0],
-                                          acceptable_duration=[-1, 60], fictitious=[False, True])
+        network.create_loading_limits(element_id=['NHV1_NHV2_1', 'NHV1_NHV2_1'], element_type=['LINE', 'LINE'], name=['', ''],
+                                      side=['ONE', 'ONE'], type=['CURRENT', 'CURRENT'], value=[400.0, 500.0],
+                                      acceptable_duration=[-1, 60], fictitious=[False, True])
 
 
 def test_topology_kind_update():
