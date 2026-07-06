@@ -50,8 +50,6 @@ from .sld_profile import SldProfile
 from .svg import Svg
 from .util import create_data_frame_from_series_array, ParamsDict
 
-DEPRECATED_REPORTER_WARNING = "Use of deprecated attribute reporter. Use report_node instead."
-
 
 class WorkingVariantScope:
     def __init__(self, network: 'Network', variant_id: str):
@@ -265,7 +263,7 @@ class Network:  # pylint: disable=too-many-public-methods
         self.save(file, format, parameters, reporter)
 
     def save(self, file: PathOrStr, format: str = 'XIIDM', parameters: ParamsDict = None,
-             reporter: Optional[ReportNode] = None, report_node: Optional[ReportNode] = None) -> None:
+             report_node: Optional[ReportNode] = None) -> None:
         """
         Save a network to a file using the specified format.
 
@@ -276,7 +274,6 @@ class Network:  # pylint: disable=too-many-public-methods
             file:       path to the exported file
             format:     format to save the network, defaults to 'XIIDM'
             parameters: a dictionary of export parameters
-            reporter: deprecated, use report_node instead
             report_node:   the reporter to be used to create an execution report, default is None (no report)
 
         Examples:
@@ -288,9 +285,6 @@ class Network:  # pylint: disable=too-many-public-methods
                 network.save('network.xiidm.gz')  # produces a gzipped file
                 network.save('/path/to/network.uct', format='UCTE')
         """
-        if reporter is not None:
-            warnings.warn(DEPRECATED_REPORTER_WARNING, DeprecationWarning)
-            report_node = reporter
         file = path_to_str(file)
         if parameters is None:
             parameters = {}
@@ -305,31 +299,24 @@ class Network:  # pylint: disable=too-many-public-methods
         warnings.warn("dump_to_string is deprecated, use save_to_string instead", DeprecationWarning)
         return self.save_to_string(format, parameters, reporter)
 
-    def save_to_string(self, format: str = 'XIIDM', parameters: ParamsDict = None, reporter: Optional[ReportNode] = None,
-                       report_node: Optional[ReportNode] = None) -> str:
+    def save_to_string(self, format: str = 'XIIDM', parameters: ParamsDict = None, report_node: Optional[ReportNode] = None) -> str:
         """
         Save a network to a string using a specified format.
 
         Args:
             format:     format to export, only support mono file type, defaults to 'XIIDM'
             parameters: a dictionary of export parameters
-            reporter: deprecated, use report_node instead
             report_node:   the reporter to be used to create an execution report, default is None (no report)
 
         Returns:
             A string representing this network
         """
-        if reporter is not None:
-            warnings.warn(DEPRECATED_REPORTER_WARNING, DeprecationWarning)
-            report_node = reporter
-
         if parameters is None:
             parameters = {}
         return _pp.save_network_to_string(self._handle, format, parameters,
                                           None if report_node is None else report_node._report_node)  # pylint: disable=protected-access
 
-    def save_to_binary_buffer(self, format: str = 'XIIDM', parameters: ParamsDict = None,
-                              reporter: Optional[ReportNode] = None, report_node: Optional[ReportNode] = None) -> io.BytesIO:
+    def save_to_binary_buffer(self, format: str = 'XIIDM', parameters: ParamsDict = None, report_node: Optional[ReportNode] = None) -> io.BytesIO:
         """
         Save a network to a binary buffer using a specified format.
         In the current implementation, whatever the specified format is (so a format creating a single file or a format
@@ -338,16 +325,11 @@ class Network:  # pylint: disable=too-many-public-methods
         Args:
             format:     format to export, only support mono file type, defaults to 'XIIDM'
             parameters: a dictionary of export parameters
-            reporter: deprecated, use report_node instead
             report_node:   the reporter to be used to create an execution report, default is None (no report)
 
         Returns:
             A BytesIO data buffer representing this network
         """
-        if reporter is not None:
-            warnings.warn(DEPRECATED_REPORTER_WARNING, DeprecationWarning)
-            report_node = reporter
-
         if parameters is None:
             parameters = {}
         return io.BytesIO(_pp.save_network_to_binary_buffer(self._handle, format, parameters,
@@ -775,6 +757,12 @@ class Network:  # pylint: disable=too-many-public-methods
         Detach a sub network from its parent network.
         """
         self._handle = _pp.detach_sub_network(self._handle)
+
+    def flatten(self) -> None:
+        """
+        Flatten the subnetworks to the current network.
+        """
+        self._handle = _pp.flatten(self._handle)
 
     def get_buses(self, all_attributes: bool = False, attributes: Optional[List[str]] = None,
                   **kwargs: ArrayLike) -> DataFrame:
@@ -2880,9 +2868,13 @@ class Network:  # pylint: disable=too-many-public-methods
         Get a dataframe of aliases of all network elements.
 
         Args:
+            all_attributes: flag for including all attributes in the dataframe, default is false
+            attributes: attributes to include in the dataframe. The 2 parameters are mutually exclusive.
+                        If no parameter is specified, the dataframe will include the default attributes.
+            kwargs: optional filters, passed as named arguments (for example ``id='ELEMENT_ID'``)
 
         Returns:
-            A dataframe of aliases
+            A dataframe of aliases.
 
         Notes:
             The resulting dataframe, depending on the parameters, will include the following columns:
@@ -2892,6 +2884,46 @@ class Network:  # pylint: disable=too-many-public-methods
               - **alias_type**: alias type
 
             This dataframe is indexed on the network element ID.
+
+            For CGMES imports, aliases retention depends on import parameters:
+
+            - If ``iidm.import.cgmes.remove-properties-and-aliases-after-import`` is ``true``,
+              aliases are removed after import and this dataframe may be empty (default behaviour)
+            - If it is ``false``, aliases remain available.
+
+        Examples:
+            Basic usage:
+
+            .. doctest::
+
+                >>> import pypowsybl as pp
+                >>> network = pp.network.create_four_substations_node_breaker_network()
+                >>> network.add_aliases(id='TWT', alias='TWT_ALIAS', alias_type='external')
+                >>> aliases = network.get_aliases()
+                >>> aliases.loc['TWT']['alias']
+                'TWT_ALIAS'
+                >>> aliases.loc['TWT']['alias_type']
+                'external'
+
+            CGMES import example with explicit alias retention to obtain Terminal IDs and other internal CGMES ids:
+
+            .. doctest::
+
+                >>> from pathlib import Path
+                >>> data_dir = globals().get('DATA_DIR', Path().resolve().parents[3] / 'data')
+                >>> cgmes_zip = data_dir / 'CGMES_Full.zip'
+                >>> network = pp.network.load(
+                ...     str(cgmes_zip),
+                ...     {
+                ...         'iidm.import.cgmes.source-for-iidm-id': 'rdfID',
+                ...         'iidm.import.cgmes.remove-properties-and-aliases-after-import': 'false',
+                ...     },
+                ... )
+                >>> aliases = network.get_aliases()
+                >>> list(aliases[['type', 'alias', 'alias_type']].columns)
+                ['type', 'alias', 'alias_type']
+                >>> len(aliases) > 0
+                True
         """
         return self.get_elements(ElementType.ALIAS, all_attributes, attributes, **kwargs)
 

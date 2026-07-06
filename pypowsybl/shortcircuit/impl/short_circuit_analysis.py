@@ -4,7 +4,6 @@
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 # SPDX-License-Identifier: MPL-2.0
 #
-import warnings
 from typing import List, Optional
 
 from numpy.typing import ArrayLike
@@ -86,23 +85,18 @@ class ShortCircuitAnalysis:
         self._set_faults([df], **kwargs)
 
     def run(self, network: Network, parameters: Optional[Parameters] = None,
-            provider: str = '', reporter: Optional[ReportNode] = None, report_node: Optional[ReportNode] = None) -> ShortCircuitAnalysisResult:
+            provider: str = '', report_node: Optional[ReportNode] = None) -> ShortCircuitAnalysisResult:
         """ Runs a short-circuit analysis.
 
         Args:
             network:    Network on which the short-circuit analysis will be computed
             parameters: short-circuit analysis parameters
             provider:   Name of the short-circuit analysis implementation provider to be used.
-            reporter: deprecated, use report_node instead
             report_node: the reporter to be used to create an execution report, default is None (no report)
 
         Returns:
             A short-circuit analysis result.
         """
-        if reporter is not None:
-            warnings.warn("Use of deprecated attribute reporter. Use report_node instead.", DeprecationWarning)
-            report_node = reporter
-
         p = parameters._to_c_parameters() if parameters is not None else Parameters()._to_c_parameters()  # pylint: disable=protected-access
 
         return ShortCircuitAnalysisResult(
