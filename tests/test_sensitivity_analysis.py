@@ -353,3 +353,59 @@ def test_transfo3_sensi():
     analysis.add_branch_flow_factor_matrix([line_id], [t3e_id], "ptc_test")
     result = analysis.run(network)
     assert -0.002685 == pytest.approx(result.get_sensitivity_matrix('ptc_test').loc[t3e_id][line_id], 1e-3)
+
+def test_shunt_sensi():
+    n = pp.network.load(str(TEST_DIR.joinpath('shunt-network.xiidm')))
+    analysis = pp.sensitivity.create_ac_analysis()
+    analysis.add_factor_matrix(['vl1_0', 'b2', 'b3'], ['SHUNT'], [], ContingencyContextType.NONE,
+                               SensitivityFunctionType.BUS_VOLTAGE, SensitivityVariableType.SHUNT_COMPENSATOR_SUSCEPTANCE, 'm1')
+    result = analysis.run(n)
+    assert 0.0 == pytest.approx(result.get_sensitivity_matrix('m1').loc['SHUNT']['vl1_0'], 1e-3)
+    assert 1168.841743 == pytest.approx(result.get_sensitivity_matrix('m1').loc['SHUNT']['b2'], 1e-3)
+    assert 2334.586066 == pytest.approx(result.get_sensitivity_matrix('m1').loc['SHUNT']['b3'], 1e-3)
+
+
+def test_branch_parameter_sensi():
+    # Sensitivity of a branch active power flow to the branch series parameters: resistance (Ohm),
+    # reactance (Ohm) and admittance (S). The variable id is the branch id.
+    n = pp.network.create_eurostag_tutorial_example1_network()
+    line = 'NHV1_NHV2_1'
+    analysis = pp.sensitivity.create_ac_analysis()
+    analysis.add_factor_matrix([line], [line], [], ContingencyContextType.NONE,
+                               SensitivityFunctionType.BRANCH_ACTIVE_POWER_1, SensitivityVariableType.BRANCH_RESISTANCE, 'r')
+    analysis.add_factor_matrix([line], [line], [], ContingencyContextType.NONE,
+                               SensitivityFunctionType.BRANCH_ACTIVE_POWER_1, SensitivityVariableType.BRANCH_REACTANCE, 'x')
+    analysis.add_factor_matrix([line], [line], [], ContingencyContextType.NONE,
+                               SensitivityFunctionType.BRANCH_ACTIVE_POWER_1, SensitivityVariableType.BRANCH_ADMITTANCE, 'y')
+    result = analysis.run(n)
+    assert 1.880628 == pytest.approx(result.get_sensitivity_matrix('r').loc[line][line], 1e-3)
+    assert -4.719600 == pytest.approx(result.get_sensitivity_matrix('x').loc[line][line], 1e-3)
+    assert 4973.888550 == pytest.approx(result.get_sensitivity_matrix('y').loc[line][line], 1e-3)
+
+
+def test_svc_pilot_point_sensi():
+    # Closed-loop sensitivity of bus voltages to the pilot-point target voltage of a secondary voltage
+    # control (SVC) zone. The variable id is the zone name; secondary voltage control must be enabled.
+    n = pp.network.create_ieee14()
+    # SVC zone z1: pilot bus B10, controllers B6-G and B8-G
+    zones = pd.DataFrame.from_records(index='name',
+                                      data=[{'name': 'z1', 'target_v': 12.7, 'bus_ids': 'B10'}])
+    units = pd.DataFrame.from_records(index='unit_id',
+                                      data=[{'unit_id': 'B6-G', 'zone_name': 'z1', 'participate': True},
+                                            {'unit_id': 'B8-G', 'zone_name': 'z1', 'participate': True}])
+    n.create_extensions('secondaryVoltageControl', [zones, units])
+
+    params = pp.sensitivity.Parameters()
+    params.load_flow_parameters.use_reactive_limits = False
+    params.load_flow_parameters.provider_parameters = {'secondaryVoltageControl': 'true',
+                                                        'maxPlausibleTargetVoltage': '1.6'}
+    analysis = pp.sensitivity.create_ac_analysis()
+    analysis.add_factor_matrix(['B10', 'VL6_0', 'VL8_0'], ['z1'], [], ContingencyContextType.NONE,
+                               SensitivityFunctionType.BUS_VOLTAGE, SensitivityVariableType.SVC_PILOT_POINT_TARGET_VOLTAGE, 'm1')
+    result = analysis.run(n, params)
+    df = result.get_sensitivity_matrix('m1')
+    # the pilot bus tracks its target one to one in closed loop
+    assert 1.0 == pytest.approx(df.loc['z1']['B10'], 1e-3)
+    # the controller buses move more to hold the pilot at target
+    assert 1.112380 == pytest.approx(df.loc['z1']['VL6_0'], 1e-3)
+    assert 2.559211 == pytest.approx(df.loc['z1']['VL8_0'], 1e-3)
