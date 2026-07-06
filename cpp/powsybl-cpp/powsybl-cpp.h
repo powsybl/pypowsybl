@@ -677,6 +677,8 @@ JavaHandle getSubNetwork(const JavaHandle& network, const std::string& subNetwor
 
 JavaHandle detachSubNetwork(const JavaHandle& subNetwork);
 
+JavaHandle flatten(const JavaHandle& network);
+
 void applySolvedValues(const JavaHandle& network);
 
 void applySolvedTapPositionAndSolvedSectionCount(const JavaHandle& network);
