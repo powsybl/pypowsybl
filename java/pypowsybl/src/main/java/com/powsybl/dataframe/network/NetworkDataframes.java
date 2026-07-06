@@ -94,9 +94,9 @@ public final class NetworkDataframes {
         mappers.put(DataframeElementType.RATIO_TAP_CHANGER, rtcs());
         mappers.put(DataframeElementType.PHASE_TAP_CHANGER, ptcs());
         mappers.put(DataframeElementType.REACTIVE_CAPABILITY_CURVE_POINT, reactiveCapabilityCurves());
-        mappers.put(DataframeElementType.OPERATIONAL_LIMITS, operationalLimits(false));
+        mappers.put(DataframeElementType.LOADING_LIMITS, loadingLimits(false));
         mappers.put(DataframeElementType.VOLTAGE_ANGLE_LIMITS, voltageAngleLimits());
-        mappers.put(DataframeElementType.SELECTED_OPERATIONAL_LIMITS, operationalLimits(true));
+        mappers.put(DataframeElementType.SELECTED_LOADING_LIMITS, loadingLimits(true));
         mappers.put(DataframeElementType.ALIAS, aliases());
         mappers.put(DataframeElementType.IDENTIFIABLE, identifiables());
         mappers.put(DataframeElementType.INJECTION, injections());
@@ -1756,7 +1756,7 @@ public final class NetworkDataframes {
         transformer.getPhaseTapChanger().setRegulationTerminal(getBranchTerminal(transformer, side));
     }
 
-    private static NetworkDataframeMapper operationalLimits(boolean onlyActive) {
+    private static NetworkDataframeMapper loadingLimits(boolean onlyActive) {
         return NetworkDataframeMapperBuilder.ofStream(onlyActive ? NetworkUtil::getSelectedLimits : NetworkUtil::getLimits,
                         NetworkDataframes::getLimit)
                 .stringsIndex("element_id", TemporaryLimitData::getId)

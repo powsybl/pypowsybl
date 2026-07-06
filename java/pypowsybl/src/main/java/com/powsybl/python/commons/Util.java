@@ -248,9 +248,9 @@ public final class Util {
             case NON_LINEAR_SHUNT_COMPENSATOR_SECTION ->
                 PyPowsyblApiHeader.ElementType.NON_LINEAR_SHUNT_COMPENSATOR_SECTION;
             case LINEAR_SHUNT_COMPENSATOR_SECTION -> PyPowsyblApiHeader.ElementType.LINEAR_SHUNT_COMPENSATOR_SECTION;
-            case OPERATIONAL_LIMITS -> PyPowsyblApiHeader.ElementType.OPERATIONAL_LIMITS;
+            case LOADING_LIMITS -> PyPowsyblApiHeader.ElementType.LOADING_LIMITS;
             case VOLTAGE_ANGLE_LIMITS -> PyPowsyblApiHeader.ElementType.VOLTAGE_ANGLE_LIMITS;
-            case SELECTED_OPERATIONAL_LIMITS -> PyPowsyblApiHeader.ElementType.SELECTED_OPERATIONAL_LIMITS;
+            case SELECTED_LOADING_LIMITS -> PyPowsyblApiHeader.ElementType.SELECTED_LOADING_LIMITS;
             case MINMAX_REACTIVE_LIMITS -> PyPowsyblApiHeader.ElementType.MINMAX_REACTIVE_LIMITS;
             case ALIAS -> PyPowsyblApiHeader.ElementType.ALIAS;
             case TERMINAL -> PyPowsyblApiHeader.ElementType.TERMINAL;
@@ -301,9 +301,9 @@ public final class Util {
             case REACTIVE_CAPABILITY_CURVE_POINT -> DataframeElementType.REACTIVE_CAPABILITY_CURVE_POINT;
             case NON_LINEAR_SHUNT_COMPENSATOR_SECTION -> DataframeElementType.NON_LINEAR_SHUNT_COMPENSATOR_SECTION;
             case LINEAR_SHUNT_COMPENSATOR_SECTION -> DataframeElementType.LINEAR_SHUNT_COMPENSATOR_SECTION;
-            case OPERATIONAL_LIMITS -> DataframeElementType.OPERATIONAL_LIMITS;
+            case LOADING_LIMITS -> DataframeElementType.LOADING_LIMITS;
             case VOLTAGE_ANGLE_LIMITS -> DataframeElementType.VOLTAGE_ANGLE_LIMITS;
-            case SELECTED_OPERATIONAL_LIMITS -> DataframeElementType.SELECTED_OPERATIONAL_LIMITS;
+            case SELECTED_LOADING_LIMITS -> DataframeElementType.SELECTED_LOADING_LIMITS;
             case MINMAX_REACTIVE_LIMITS -> DataframeElementType.MINMAX_REACTIVE_LIMITS;
             case ALIAS -> DataframeElementType.ALIAS;
             case TERMINAL -> DataframeElementType.TERMINAL;

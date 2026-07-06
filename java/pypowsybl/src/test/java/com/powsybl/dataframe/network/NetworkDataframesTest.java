@@ -807,10 +807,10 @@ class NetworkDataframesTest {
     }
 
     @Test
-    void testOperationalLimits() {
+    void testLoadingLimits() {
         Network network = EurostagTutorialExample1Factory.createWithFixedLimits();
-        List<Series> limits = createDataFrame(OPERATIONAL_LIMITS, network);
-        List<Series> selectedLimits = createDataFrame(SELECTED_OPERATIONAL_LIMITS, network);
+        List<Series> limits = createDataFrame(LOADING_LIMITS, network);
+        List<Series> selectedLimits = createDataFrame(SELECTED_LOADING_LIMITS, network);
 
         assertThat(limits)
             .extracting(Series::getName).containsExactly("element_id", "element_type", "side",

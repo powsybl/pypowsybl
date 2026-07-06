@@ -178,7 +178,6 @@ Network elements can be modified using dataframes:
    Network.update_non_linear_shunt_compensator_sections
    Network.update_loading_limits
    Network.update_operational_limits
-   Network.update_voltage_angle_limits
    Network.update_phase_tap_changers
    Network.update_phase_tap_changer_steps
    Network.update_ratio_tap_changers

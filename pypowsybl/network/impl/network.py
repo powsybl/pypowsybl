@@ -4607,7 +4607,7 @@ class Network:  # pylint: disable=too-many-public-methods
 
     def get_loading_limits(self, all_attributes: bool = False, attributes: Optional[List[str]] = None, show_inactive_sets: bool = False) -> DataFrame:
         """
-        Get the list of operational limits.
+        Get the list of loading limits.
 
         The resulting dataframe, depending on the parameters, will have some of the following columns:
 
@@ -4634,11 +4634,11 @@ class Network:  # pylint: disable=too-many-public-methods
             show_inactive_sets: flag to choose whether inactive limit sets should also be included in the dataframe
 
         Returns:
-            All limits on the network
+            All loading limits on the network
         """
         if show_inactive_sets:
-            return self.get_elements(ElementType.OPERATIONAL_LIMITS, all_attributes, attributes)
-        return self.get_elements(ElementType.SELECTED_OPERATIONAL_LIMITS, all_attributes, attributes)
+            return self.get_elements(ElementType.LOADING_LIMITS, all_attributes, attributes)
+        return self.get_elements(ElementType.SELECTED_LOADING_LIMITS, all_attributes, attributes)
 
     def get_operational_limits(self, all_attributes: bool = False, attributes: Optional[List[str]] = None, show_inactive_sets: bool = False) -> DataFrame:
         """
@@ -4650,7 +4650,7 @@ class Network:  # pylint: disable=too-many-public-methods
 
     def update_loading_limits(self, df: Optional[DataFrame] = None, **kwargs: ArrayLike) -> None:
         """
-        Update operational limits values with data provided as a :class:`~pandas.DataFrame` or as named arguments.
+        Update loading limits values with data provided as a :class:`~pandas.DataFrame` or as named arguments.
 
         Args:
             df: the data to be updated, as a dataframe.
@@ -4659,7 +4659,7 @@ class Network:  # pylint: disable=too-many-public-methods
                     In the case of sequences, all arguments must have the same length.
 
         Notes:
-            Only the value of operational limits can be updated.
+            Only the value of loading limits can be updated.
             To define which limit must be modified, the following fields must be present :
 
             - `element_id`
@@ -4669,16 +4669,16 @@ class Network:  # pylint: disable=too-many-public-methods
             - `group_name` (if not specified, will try to update the corresponding limit in the selected set of the element)
 
         See Also:
-            :meth:`get_operational_limits`
+            :meth:`get_loading_limits`
 
         Examples:
             An example using keyword arguments:
 
             .. code-block:: python
 
-                network.update_operational_limits(id='LINE', side='ONE', type='CURRENT', acceptable_duration=600, value=500)
+                network.update_loading_limits(id='LINE', side='ONE', type='CURRENT', acceptable_duration=600, value=500)
         """
-        return self._update_elements(ElementType.OPERATIONAL_LIMITS, df, **kwargs)
+        return self._update_elements(ElementType.LOADING_LIMITS, df, **kwargs)
 
     def update_operational_limits(self, df: Optional[DataFrame] = None, **kwargs: ArrayLike) -> None:
         """
@@ -5921,7 +5921,7 @@ class Network:  # pylint: disable=too-many-public-methods
 
     def create_loading_limits(self, df: Optional[DataFrame] = None, **kwargs: ArrayLike) -> None:
         """
-        Creates operational limits.
+        Creates loading limits.
 
         Notes:
 
@@ -5941,7 +5941,7 @@ class Network:  # pylint: disable=too-many-public-methods
 
             For each location of the network defined by a couple (element_id, side) and each group_name:
 
-            - if operational limits already exist, they will be replaced
+            - if loading limits already exist, they will be replaced
             - multiple limits may be defined, typically with different acceptable_duration
             - you can only define ONE permanent limit, identified by an acceptable_duration of -1
 
@@ -5965,7 +5965,7 @@ class Network:  # pylint: disable=too-many-public-methods
             warnings.warn("useless operation limits element_type attribute has been removed", DeprecationWarning)
             kwargs.pop('element_type')
 
-        return self._create_elements(ElementType.OPERATIONAL_LIMITS, [df], **kwargs)
+        return self._create_elements(ElementType.LOADING_LIMITS, [df], **kwargs)
 
     def create_operational_limits(self, df: Optional[DataFrame] = None, **kwargs: ArrayLike) -> None:
         """
