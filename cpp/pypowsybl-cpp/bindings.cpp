@@ -1012,7 +1012,7 @@ PYBIND11_MODULE(_pypowsybl, m) {
     m.def("run_sensitivity_analysis", &pypowsybl::runSensitivityAnalysis, "Run a sensitivity analysis", py::call_guard<py::gil_scoped_release>(),
           py::arg("sensitivity_analysis_context"), py::arg("network"), py::arg("parameters"), py::arg("provider"), py::arg("report_node"));
 
-    py::class_<matrix>(m, "Matrix", py::buffer_protocol())
+    py::class_<matrix, std::shared_ptr<matrix>>(m, "Matrix", py::buffer_protocol())
             .def_buffer([](matrix& m) -> py::buffer_info {
                 return py::buffer_info(m.values,
                                        sizeof(double),
