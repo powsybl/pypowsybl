@@ -449,7 +449,7 @@ jobs:
           unzip binaries.zip
 
       - name: Install Ipopt (Linux, via micromamba)
-        if: matrix.config.name == 'linux'
+        if: matrix.config.name == 'ubuntu'
         shell: bash
         run: |
           curl -Ls https://micro.mamba.pm/api/micromamba/linux-64/latest | tar -xvj bin/micromamba
