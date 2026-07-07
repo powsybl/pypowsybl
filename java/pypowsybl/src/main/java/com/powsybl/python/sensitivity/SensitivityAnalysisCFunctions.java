@@ -218,6 +218,20 @@ public final class SensitivityAnalysisCFunctions {
         });
     }
 
+    @CEntryPoint(name = "freeSensitivityMatrix")
+    public static void freeSensitivityMatrix(IsolateThread thread, PyPowsyblApiHeader.MatrixPointer matrixPtr,
+                                             ExceptionHandlerPointer exceptionHandlerPtr) {
+        doCatch(exceptionHandlerPtr, new Runnable() {
+            @Override
+            public void run() {
+                if (matrixPtr.isNonNull()) {
+                    UnmanagedMemory.free(matrixPtr.getValues());
+                    UnmanagedMemory.free(matrixPtr);
+                }
+            }
+        });
+    }
+
     @CEntryPoint(name = "createSensitivityAnalysisParameters")
     public static SensitivityAnalysisParametersPointer createSensitivityAnalysisParameters(IsolateThread thread, ExceptionHandlerPointer exceptionHandlerPtr) {
         return doCatch(exceptionHandlerPtr, new PointerProvider<>() {
