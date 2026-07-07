@@ -934,7 +934,7 @@ std::vector<std::vector<SeriesMetadata>> getNetworkExtensionsCreationDataframesM
 
 void createExtensions(pypowsybl::JavaHandle network, dataframe_array* dataframes, std::string& name);
 
-JavaHandle createReportNode(const std::string& taskKey, const std::string& defaultName);
+JavaHandle createReportNode(const std::string& taskKey);
 
 std::string printReport(const JavaHandle& reportNode);
 
