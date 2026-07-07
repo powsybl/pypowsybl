@@ -8,6 +8,7 @@
 package com.powsybl.python.rao;
 
 import com.powsybl.commons.PowsyblException;
+import com.powsybl.commons.report.ReportNode;
 import com.powsybl.dataframe.DataframeFilter;
 import com.powsybl.dataframe.DataframeMapper;
 import com.powsybl.glsk.api.GlskDocument;
@@ -78,7 +79,7 @@ public final class RaoCFunctions {
 
     @CEntryPoint(name = "createDefaultRaoParameters")
     public static ObjectHandle createDefaultRaoParameters(IsolateThread thread, ExceptionHandlerPointer exceptionHandlerPtr) {
-        return doCatch(exceptionHandlerPtr, () -> ObjectHandles.getGlobal().create(new RaoParameters()));
+        return doCatch(exceptionHandlerPtr, () -> ObjectHandles.getGlobal().create(new RaoParameters(ReportNode.NO_OP)));
     }
 
     @CEntryPoint(name = "loadRaoParameters")
@@ -88,7 +89,7 @@ public final class RaoCFunctions {
             public RaoParametersPointer get() throws IOException {
                 ByteBuffer bufferParameters = CTypeConversion.asByteBuffer(parametersBuffer, paramersBufferSize);
                 InputStream streamedParameters = new ByteArrayInputStream(binaryBufferToBytes(bufferParameters));
-                return convertToRaoParametersPointer(JsonRaoParameters.read(streamedParameters));
+                return convertToRaoParametersPointer(JsonRaoParameters.read(streamedParameters, ReportNode.NO_OP));
             }
         });
     }
@@ -101,7 +102,7 @@ public final class RaoCFunctions {
             public ArrayPointer<CCharPointer> get() throws IOException {
                 RaoParameters parameters = convertToRaoParameters(raoParameters);
                 try (ByteArrayOutputStream output = new ByteArrayOutputStream()) {
-                    JsonRaoParameters.write(parameters, output);
+                    JsonRaoParameters.write(parameters, output, ReportNode.NO_OP);
                     return Util.createByteArray(output.toByteArray());
                 } catch (IOException e) {
                     throw new PowsyblException("Could not serialize rao parameters : " + e.getMessage());
@@ -324,7 +325,7 @@ public final class RaoCFunctions {
 
     @CEntryPoint(name = "createRaoParameters")
     public static RaoParametersPointer createRaoParameters(IsolateThread thread, ExceptionHandlerPointer exceptionHandlerPtr) {
-        return doCatch(exceptionHandlerPtr, () -> convertToRaoParametersPointer(new RaoParameters()));
+        return doCatch(exceptionHandlerPtr, () -> convertToRaoParametersPointer(new RaoParameters(ReportNode.NO_OP)));
     }
 
     @CEntryPoint(name = "getFlowCnecResults")
@@ -478,7 +479,7 @@ public final class RaoCFunctions {
     }
 
     private static RaoParameters convertToRaoParameters(RaoParametersPointer paramPointer) {
-        RaoParameters raoParameters = new RaoParameters();
+        RaoParameters raoParameters = new RaoParameters(ReportNode.NO_OP);
         raoParameters.getObjectiveFunctionParameters().setType(
             ObjectiveFunctionParameters.ObjectiveFunctionType.values()[paramPointer.getObjectiveFunctionType()]);
         raoParameters.getObjectiveFunctionParameters().setEnforceCurativeSecurity(paramPointer.getEnforceCurativeSecurity());
@@ -511,10 +512,11 @@ public final class RaoCFunctions {
         }
 
         if (paramPointer.getSearchTreeParameters()) {
-            raoParameters.addExtension(OpenRaoSearchTreeParameters.class, new OpenRaoSearchTreeParameters());
+            raoParameters.addExtension(OpenRaoSearchTreeParameters.class, new OpenRaoSearchTreeParameters(ReportNode.NO_OP));
             OpenRaoSearchTreeParameters searchTreeParameters = raoParameters.getExtension(OpenRaoSearchTreeParameters.class);
 
-            searchTreeParameters.getObjectiveFunctionParameters().setCurativeMinObjImprovement(paramPointer.getCurativeMinObjImprovement());
+            searchTreeParameters.getObjectiveFunctionParameters().setCurativeMinObjImprovement(paramPointer.getCurativeMinObjImprovement(),
+                    ReportNode.NO_OP);
 
             // Range action optimization solver
             searchTreeParameters.getRangeActionsOptimizationParameters().getLinearOptimizationSolver()
