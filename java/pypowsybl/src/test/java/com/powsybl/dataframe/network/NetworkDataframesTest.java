@@ -25,6 +25,7 @@ import com.powsybl.iidm.network.test.HvdcTestNetwork;
 import com.powsybl.iidm.network.test.TwoVoltageLevelNetworkFactory;
 import com.powsybl.python.network.NetworkUtilTest;
 import com.powsybl.python.network.Networks;
+
 import org.junit.jupiter.api.Test;
 
 import java.util.*;
@@ -904,7 +905,7 @@ class NetworkDataframesTest {
 
         assertThat(series)
                 .extracting(Series::getName)
-                .containsExactly("id", "name", "dc_node1_id", "dc_node2_id", "r", "i1", "p1", "i2", "p2");
+                .containsExactly("id", "name", "dc_node1_id", "dc_node2_id", "connected1", "connected2", "r", "i1", "p1", "i2", "p2");
     }
 
     @Test
@@ -915,7 +916,7 @@ class NetworkDataframesTest {
         assertThat(series)
                 .extracting(Series::getName)
                 .containsExactly("id", "name", "voltage_level_id", "bus1_id", "bus2_id", "dc_node1_id", "dc_node2_id",
-                        "dc_connected1", "dc_connected2", "pcc_terminal_id", "voltage_regulator_on", "control_mode",
+                        "connected1", "connected2", "dc_connected1", "dc_connected2", "pcc_terminal_id", "voltage_regulator_on", "control_mode",
                         "target_v_dc", "target_v_ac", "target_p", "target_q", "idle_loss", "switching_loss", "resistive_loss", "p_ac",
                         "q_ac", "p_dc1", "p_dc2");
     }
@@ -927,7 +928,24 @@ class NetworkDataframesTest {
 
         assertThat(series)
                 .extracting(Series::getName)
-                .containsExactly("id", "name", "dc_node_id", "r");
+                .containsExactly("id", "name", "dc_node_id", "connected", "r");
+    }
+
+    @Test
+    void dcSwitches() {
+        Network network = DcDetailedNetworkFactory.createSimple2NodesDcSwitch();
+        List<Series> series = createDataFrame(DC_SWITCH, network);
+
+        assertThat(series)
+                .extracting(Series::getName)
+                .containsExactly("id", "name", "dc_node1_id", "dc_node2_id", "kind", "open", "r");
+        // fictitious is hidden by default
+
+        // With all columns
+        List<Series> allAttributeSeries = createDataFrame(DC_SWITCH, network, new DataframeFilter(ALL_ATTRIBUTES, Collections.emptyList()));
+        assertThat(allAttributeSeries)
+                .extracting(Series::getName)
+                .containsExactly("id", "name", "dc_node1_id", "dc_node2_id", "kind", "open", "r", "fictitious");
     }
 
     @Test

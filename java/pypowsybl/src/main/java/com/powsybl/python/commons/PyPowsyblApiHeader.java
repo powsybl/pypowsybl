@@ -641,6 +641,7 @@ public final class PyPowsyblApiHeader {
         DC_NODE,
         VOLTAGE_SOURCE_CONVERTER,
         DC_GROUND,
+        DC_SWITCH,
         DC_BUS;
 
         @CEnumValue
