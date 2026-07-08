@@ -429,6 +429,21 @@
         </dependency>
         <dependency>
             <groupId>com.powsybl</groupId>
+            <artifactId>open-rao-crac-io-cim</artifactId>
+            <version>${powsybl-open-rao.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>com.powsybl</groupId>
+            <artifactId>open-rao-crac-io-cse</artifactId>
+            <version>${powsybl-open-rao.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>com.powsybl</groupId>
+            <artifactId>open-rao-crac-io-fb-constraint</artifactId>
+            <version>${powsybl-open-rao.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>com.powsybl</groupId>
             <artifactId>open-rao-search-tree-rao</artifactId>
         </dependency>
         <dependency>
