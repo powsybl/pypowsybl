@@ -51,12 +51,16 @@ Import a CRAC file from NC profiles
 +++++++++++++++++++++++++++++++++++
 
 You can also import a CRAC from native business data. Currently, pypowsybl allows the import of
-`ENTSO-E's Network Codes profiles <https://www.entsoe.eu/data/cim/cim-for-grid-models-exchange/#_Network_Code__NC__profiles>`_.
-All the profiles need to be gathered in the same ZIP archive.
+`ENTSO-E's Network Codes profiles <https://www.entsoe.eu/data/cim/cim-for-grid-models-exchange/#_Network_Code__NC__profiles>`_,
+`CIM CRAC <https://powsybl.readthedocs.io/projects/openrao/en/stable/input-data/crac/cim.html>`_,
+`CSE CRAC <https://powsybl.readthedocs.io/projects/openrao/en/stable/input-data/crac/cse.html>`_,
+`Flow Based Constraints CRAC <https://powsybl.readthedocs.io/projects/openrao/en/stable/input-data/crac/fbconstraint.html>`_.
+
+For network codes profiles, all the profiles need to be gathered in the same ZIP archive.
 
 To guide the CRAC importer in its interpretation of the native format, you need to provide set of
 `CRAC creation parameters <https://powsybl.readthedocs.io/projects/openrao/en/stable/input-data/crac/creation-parameters.html>`_
-to the ``Crac.from_file_source`` method. A JSON example is provided below.
+to the ``Crac.from_file_source`` method. A JSON example is provided below for network code profiles creation parameters.
 
 .. code-block:: json
 
@@ -107,6 +111,9 @@ to the ``Crac.from_file_source`` method. A JSON example is provided below.
         }
       }
     }
+
+See `OpenRAO creation parameters documentation <https://powsybl.readthedocs.io/projects/openrao/en/stable/input-data/crac/creation-parameters.html>`_
+for more example on creation parameters for each crac format.
 
 In pypowsybl you simply need to provide the path to the JSON CRAC creation parameters file:
 
