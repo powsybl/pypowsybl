@@ -552,14 +552,54 @@ def test_import_crac_from_nc_profiles():
 def test_import_cim_crac():
     network = pp.network.load(DATA_DIR.joinpath("rao/native_cracs/cim-crac-network.xiidm"))
     crac = pp.rao.Crac.from_file_source(network, DATA_DIR.joinpath("rao/native_cracs/cim-crac.xml"), DATA_DIR.joinpath("rao/native_cracs/cim-crac-parameters.json"))
+    expected_instants = pd.DataFrame(
+            {
+                "id": ["preventive", "outage", "auto", "curative"],
+                "kind": ["PREVENTIVE", "OUTAGE", "AUTO", "CURATIVE"],
+                "order": [0, 1, 2, 3],
+            }
+        ).set_index("id", inplace=False)
+    pd.testing.assert_frame_equal(expected_instants, crac.get_instants(), check_dtype=False)
+    assert sorted(list(crac.get_contingencies().index)) == ["Co-1", "Co-2", "Co-3"]
+    assert len(crac.get_voltage_cnecs()) == 3
 
 def test_import_cse_crac():
     network = pp.network.load(DATA_DIR.joinpath("rao/native_cracs/cse-crac-network.xiidm"))
     crac = pp.rao.Crac.from_file_source(network, DATA_DIR.joinpath("rao/native_cracs/cse-crac.xml"), DATA_DIR.joinpath("rao/native_cracs/cse-crac-parameters.json"))
+    expected_instants = pd.DataFrame(
+                {
+                    "id": ["preventive", "outage", "auto", "curative"],
+                    "kind": ["PREVENTIVE", "OUTAGE", "AUTO", "CURATIVE"],
+                    "order": [0, 1, 2, 3],
+                }
+            ).set_index("id", inplace=False)
+    pd.testing.assert_frame_equal(expected_instants, crac.get_instants(), check_dtype=False)
+    assert sorted(list(crac.get_contingencies().index)) == []
+
+    expected_network_actions = pd.DataFrame(
+            {
+                "id": ["RA2", "RA1"],
+                "name": ["RA2", "RA1"],
+                "operator": ["BE", "BE"],
+                "speed": [None, None],
+                "activation_cost": [None, None]
+            }
+        ).set_index("id", inplace=False)
+    pd.testing.assert_frame_equal(expected_network_actions, crac.get_network_actions(), check_dtype=False)
 
 def test_import_fb_constraint_crac():
     network = pp.network.load(DATA_DIR.joinpath("rao/native_cracs/fb-constraint-crac-network.xiidm"))
     crac = pp.rao.Crac.from_file_source(network, DATA_DIR.joinpath("rao/native_cracs/fb-constraint-crac.xml"), DATA_DIR.joinpath("rao/native_cracs/fb-constraint-crac-parameters.json"))
+    expected_instants = pd.DataFrame(
+                    {
+                        "id": ["preventive", "outage", "curative"],
+                        "kind": ["PREVENTIVE", "OUTAGE", "CURATIVE"],
+                        "order": [0, 1, 2],
+                    }
+                ).set_index("id", inplace=False)
+    pd.testing.assert_frame_equal(expected_instants, crac.get_instants(), check_dtype=False)
+    assert sorted(list(crac.get_contingencies().index)) == ["BE_CO_00001", "BE_CO_00002"]
+    assert len(crac.get_flow_cnecs()) == 10
 
 if __name__ == '__main__':
     unittest.main()
