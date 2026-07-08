@@ -284,6 +284,22 @@ public final class NetworkDataframes {
         };
     }
 
+    private static <U extends AcDcConverter<U>> BooleanSeriesMapper.BooleanUpdater<U> connectConverterAcTerminal1() {
+        return (g, b) -> {
+            Boolean res = b ? g.getTerminal1().connect() : g.getTerminal1().disconnect();
+        };
+    }
+
+    private static <U extends AcDcConverter<U>> BooleanSeriesMapper.BooleanUpdater<U> connectConverterAcTerminal2() {
+        return (g, b) -> {
+            if (g.getTerminal2().isPresent()) {
+                Boolean res = b ? g.getTerminal2().get().connect() : g.getTerminal2().get().disconnect();
+            } else {
+                throw new PowsyblException("Terminal2 of converter " + g.getId() + " is missing");
+            }
+        };
+    }
+
     public static <T, U> ToDoubleBiFunction<T, NetworkDataframeContext> ifExistsDoublePerUnitPQ(Function<T, U> objectGetter, ToDoubleFunction<U> valueGetter) {
         return (item, context) -> {
             U object = objectGetter.apply(item);
@@ -998,6 +1014,10 @@ public final class NetworkDataframes {
                 .strings("name", dcLine -> dcLine.getOptionalName().orElse(""), Identifiable::setName)
                 .strings("dc_node1_id", dl -> getDcNodeId(dl.getDcTerminal1()))
                 .strings("dc_node2_id", dl -> getDcNodeId(dl.getDcTerminal2()))
+                .booleans("connected1", dl -> dl.getDcTerminal1().isConnected(),
+                        (dl, dcConnected1) -> dl.getDcTerminal1().setConnected(dcConnected1))
+                .booleans("connected2", dl -> dl.getDcTerminal2().isConnected(),
+                        (dl, dcConnected2) -> dl.getDcTerminal2().setConnected(dcConnected2))
                 .doubles("r", (dcLine, context) -> perUnitR(context, dcLine),
                         (dcLine, r, context) -> dcLine.setR(unPerUnitRX(context, dcLine, r)))
                 .doubles("i1", getPerUnitI1(), setPerUnitI1())
@@ -1020,9 +1040,11 @@ public final class NetworkDataframes {
                 .strings("bus2_id", conv -> conv.getTerminal2().isPresent() ? getBusId(conv.getTerminal2().get()) : null)
                 .strings("bus_breaker_bus2_id", conv -> conv.getTerminal2().isPresent() ? getBusBreakerViewBusId(conv.getTerminal2().get()) : null,
                         (conv, id) -> setBusBreakerViewBusId(conv.getTerminal2().orElseThrow(() ->
-                                new PowsyblException("Terminal2 of converter" + conv.getId() + "is missing")), id), false)
+                                new PowsyblException("Terminal2 of converter " + conv.getId() + " is missing")), id), false)
                 .strings("dc_node1_id", conv -> conv.getDcTerminal1().getDcNode().getId())
                 .strings("dc_node2_id", conv -> conv.getDcTerminal2().getDcNode().getId())
+                .booleans("connected1", conv -> conv.getTerminal1().isConnected(), connectConverterAcTerminal1())
+                .booleans("connected2", conv -> conv.getTerminal2().isPresent() ? conv.getTerminal2().get().isConnected() : false, connectConverterAcTerminal2())
                 .booleans("dc_connected1", conv -> conv.getDcTerminal1().isConnected(),
                         (conv, dcConnected1) -> conv.getDcTerminal1().setConnected(dcConnected1))
                 .booleans("dc_connected2", conv -> conv.getDcTerminal2().isConnected(),
@@ -1065,6 +1087,8 @@ public final class NetworkDataframes {
                 .stringsIndex("id", DcGround::getId)
                 .strings("name", dn -> dn.getOptionalName().orElse(""), Identifiable::setName)
                 .strings("dc_node_id", dg -> dg.getDcTerminal().getDcNode().getId())
+                .booleans("connected", dg -> dg.getDcTerminal().isConnected(),
+                        (dg, dcConnected) -> dg.getDcTerminal().setConnected(dcConnected))
                 .doubles("r", (dg, context) -> dg.getR(), (dg, r, context) -> dg.setR(r))
                 .booleans("fictitious", Identifiable::isFictitious, Identifiable::setFictitious, false)
                 .addProperties()
