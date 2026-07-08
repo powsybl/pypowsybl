@@ -6,13 +6,13 @@
 #
 import copy
 import datetime
+import io
 import math
 import os
 import pathlib
 import re
 import tempfile
 import unittest
-import io
 import zipfile
 from os.path import exists
 
@@ -336,6 +336,7 @@ def test_loads_data_frame():
         data=[['S1VL1_2', 2], ['S1VL2_13', 13], ['S1VL2_15', 15], ['S1VL2_17', 17], ['S3VL1_4', 4], ['S4VL1_2', 2]])
     pd.testing.assert_frame_equal(expected, loads, check_dtype=False, atol=1e-2)
 
+
 def test_grounds():
     n = pp.network.create_eurostag_tutorial_example1_network()
     grounds = n.get_grounds(all_attributes=True)
@@ -346,6 +347,7 @@ def test_grounds():
                             columns=['name', 'voltage_level_id', 'bus_id', 'connected'],
                             data=[['', 'VLHV1', 'VLHV1_0', True]])
     pd.testing.assert_frame_equal(expected, n.get_grounds(), check_dtype=False, atol=1e-2)
+
 
 def test_batteries_data_frame():
     n = pp.network.load(str(TEST_DIR.joinpath('battery.xiidm')))
@@ -1119,15 +1121,15 @@ def test_sld_svg():
 
     sld_multi_substation3 = n.get_matrix_multi_substation_single_line_diagram([['S1'],['S2']])
     assert re.search('.*<svg.*', sld_multi_substation3.svg)
-    assert len(sld_multi_substation3.metadata) > 0   
-    
+    assert len(sld_multi_substation3.metadata) > 0
+
     sld_multi_substation4 = n.get_matrix_multi_substation_single_line_diagram([['S1', 'S2']])
     assert re.search('.*<svg.*', sld_multi_substation4.svg)
-    assert len(sld_multi_substation4.metadata) > 0    
+    assert len(sld_multi_substation4.metadata) > 0
 
     sld_multi_substation5 = n.get_matrix_multi_substation_single_line_diagram([['S1', ''], ['', 'S2']])
     assert re.search('.*<svg.*', sld_multi_substation5.svg)
-    assert len(sld_multi_substation5.metadata) > 0    
+    assert len(sld_multi_substation5.metadata) > 0
 
 def test_sld_svg_backward_compatibility():
     n = pp.network.create_four_substations_node_breaker_network()
@@ -1215,7 +1217,7 @@ def test_nad_fixed_positions():
     assert re.search('.*<svg.*', nad1.svg)
     assert len(nad1.metadata) > 0
 
-    fixed_positions_df2 = pd.DataFrame.from_records(index='id', 
+    fixed_positions_df2 = pd.DataFrame.from_records(index='id',
                                                    data=[{'id': 'VL8', 'x': 10.0, 'y': 20.0,
                                                           'legend_shift_x': 50.0, 'legend_shift_y': 51.0,
                                                           'legend_connection_shift_x': 52.0, 'legend_connection_shift_y': 53.0}])
@@ -1326,7 +1328,7 @@ def test_nad_profile():
     assert list(default_profile.vl_descriptions) == ['type', 'description']
     assert list(default_profile.injections_labels.columns) == ["labelInternal", "labelExternal", "arrow"]
 
-    
+
 def test_sld_profile():
     diagram_profile = SldProfile()
     assert not diagram_profile.labels
@@ -2742,91 +2744,205 @@ def test_terminals():
 def test_dc_nodes():
     n = pp.network.create_dc_detailed_vsc_symmetrical_monopole_network()
     n.update_dc_nodes(pd.DataFrame(data={'nominal_v': 500}, index=['dcNodeFrPos']))
-    expected = pd.DataFrame(
-        index=pd.Series(name='id', data=['dcNodeGbNeg', 'dcNodeGbPos', 'dcNodeFrNeg', 'dcNodeFrPos']),
-        columns=['name', 'dc_bus_id', 'nominal_v', 'v'],
-        data=[['', 'dcNodeGbNeg_dcBus', 250, nan], ['', 'dcNodeGbPos_dcBus', 250, nan],
-              ['', 'dcNodeFrNeg_dcBus', 250, nan], ['', 'dcNodeFrPos_dcBus', 500, nan]])
+    expected = pd.DataFrame({
+        'name': ['', '', '', ''],
+        'dc_bus_id': ['dcNodeGbNeg_dcBus', 'dcNodeGbPos_dcBus', 'dcNodeFrNeg_dcBus', 'dcNodeFrPos_dcBus'],
+        'nominal_v': [250, 250, 250, 500],
+        'v': [nan, nan, nan, nan]
+    }, index=pd.Series(['dcNodeGbNeg', 'dcNodeGbPos', 'dcNodeFrNeg', 'dcNodeFrPos'], name="id"))
     pd.testing.assert_frame_equal(expected, n.get_dc_nodes(), check_dtype=False)
 
     dc_nodes = n.get_dc_nodes(attributes=['nominal_v'])
-    expected = pd.DataFrame(
-        index=pd.Series(name='id', data=['dcNodeGbNeg', 'dcNodeGbPos', 'dcNodeFrNeg', 'dcNodeFrPos']),
-        columns=['nominal_v'], data=[[250], [250], [250], [500]])
+    expected = pd.DataFrame({'nominal_v': [250, 250, 250, 500]},
+                            index=pd.Series(['dcNodeGbNeg', 'dcNodeGbPos', 'dcNodeFrNeg', 'dcNodeFrPos'], name="id"))
     pd.testing.assert_frame_equal(expected, dc_nodes, check_dtype=False, atol=1e-2)
 
 
 def test_dc_lines():
     n = pp.network.create_dc_detailed_vsc_symmetrical_monopole_network()
     n.update_dc_lines(pd.DataFrame(data={'r': 1.0, 'i1': 10.0, 'i2': 10.0}, index=['dcLineNeg']))
-    expected = pd.DataFrame(index=pd.Series(name='id', data=['dcLineNeg', 'dcLinePos']),
-                            columns=['name', 'dc_node1_id', 'dc_node2_id', 'r', 'i1', 'p1', 'i2', 'p2'],
-                            data=[['', 'dcNodeFrNeg', 'dcNodeGbNeg', 1.0, 10.0, nan, 10.0, nan],
-                                  ['', 'dcNodeFrPos', 'dcNodeGbPos', 5.0, nan, nan, nan, nan]])
+    n.update_dc_lines(pd.DataFrame(data={'connected1': False}, index=['dcLinePos']))
+    expected = pd.DataFrame({
+        'name': ['', ''],
+        'dc_node1_id': ['dcNodeFrNeg', 'dcNodeFrPos'],
+        'dc_node2_id': ['dcNodeGbNeg', 'dcNodeGbPos'],
+        'connected1': [True, False],
+        'connected2': [True, True],
+        'r': [1.0, 5.0],
+        'i1': [10.0, nan],
+        'p1': [nan, nan],
+        'i2': [10.0, nan],
+        'p2': [nan, nan]
+    }, index=pd.Series(['dcLineNeg', 'dcLinePos'], name="id"))
+
     pd.testing.assert_frame_equal(expected, n.get_dc_lines(), check_dtype=False)
 
     dc_lines = n.get_dc_lines(attributes=['dc_node1_id', 'dc_node2_id'])
-    expected = pd.DataFrame(index=pd.Series(name='id', data=['dcLineNeg', 'dcLinePos']),
-                            columns=['dc_node1_id', 'dc_node2_id'],
-                            data=[['dcNodeFrNeg', 'dcNodeGbNeg'], ['dcNodeFrPos', 'dcNodeGbPos']])
+    expected = pd.DataFrame({
+        'dc_node1_id': ['dcNodeFrNeg', 'dcNodeFrPos'],
+        'dc_node2_id': ['dcNodeGbNeg', 'dcNodeGbPos']
+    }, index=pd.Series(['dcLineNeg', 'dcLinePos'], name="id"))
+
     pd.testing.assert_frame_equal(expected, dc_lines, check_dtype=False, atol=1e-2)
 
 
 def test_voltage_source_converters():
     n = pp.network.create_dc_detailed_vsc_symmetrical_monopole_network()
-    n.update_voltage_source_converters(pd.DataFrame(
-        data={'dc_connected1': True, 'dc_connected2': True, 'voltage_regulator_on': False, 'control_mode': 'V_DC',
-              'pcc_terminal_id': 'VscFr', 'target_v_dc': 400.0, 'target_v_ac': 400.0, 'target_p': -50.0,
-              'target_q': 0.0, 'idle_loss': 0.5, 'switching_loss': 1.0, 'resistive_loss': 0.2, 'p_ac': 10.0,
-              'q_ac': 10.0, 'p_dc1': 10.0, 'p_dc2': 10.0}, index=['VscFr']))
+    n.update_voltage_source_converters(pd.DataFrame(data={
+        'dc_connected1': True,
+        'dc_connected2': True,
+        'voltage_regulator_on': False,
+        'control_mode': 'V_DC',
+        'pcc_terminal_id': 'VscFr',
+        'target_v_dc': 400.0,
+        'target_v_ac': 400.0,
+        'target_p': -50.0,
+        'target_q': 0.0,
+        'idle_loss': 0.5,
+        'switching_loss': 1.0,
+        'resistive_loss': 0.2,
+        'p_ac': 10.0,
+        'q_ac': 10.0,
+        'p_dc1': 10.0,
+        'p_dc2': 10.0
+    }, index=['VscFr']))
 
-    expected = pd.DataFrame(index=pd.Series(name='id', data=['VscFr', 'VscGb']),
-                            columns=['name', 'voltage_level_id', 'bus1_id', 'bus2_id', 'dc_node1_id', 'dc_node2_id',
-                                     'dc_connected1', 'dc_connected2', 'pcc_terminal_id', 'voltage_regulator_on',
-                                     'control_mode', 'target_v_dc', 'target_v_ac', 'target_p', 'target_q', 'idle_loss',
-                                     'switching_loss', 'resistive_loss', 'p_ac', 'q_ac', 'p_dc1', 'p_dc2'], data=[
-            ['', 'VLDC-FR-xNodeDc1fr-150', 'VLDC-FR-xNodeDc1fr-150_0', '', 'dcNodeFrNeg', 'dcNodeFrPos', True, True,
-             'VscFr', False, 'V_DC', 400.0, 400.0, -50.0, 0.0, 0.5, 1.0, 0.2, 10.0, 10.0, 10.0, 10.0],
-            ['', 'VLDC-GB-xNodeDc1gb-150', 'VLDC-GB-xNodeDc1gb-150_0', '', 'dcNodeGbNeg', 'dcNodeGbPos', True, True,
-             'TRDC-GB-xNodeDc1gb', False, 'P_PCC', 500.0, 400.0, -200.0, 0.0, 0.0, 0.0, 0.0, nan, nan, nan, nan]])
+    expected = pd.DataFrame({
+        'name': ['', ''],
+        'voltage_level_id': ['VLDC-FR-xNodeDc1fr-150', 'VLDC-GB-xNodeDc1gb-150'],
+        'bus1_id': ['VLDC-FR-xNodeDc1fr-150_0', 'VLDC-GB-xNodeDc1gb-150_0'],
+        'bus2_id': ['', ''],
+        'dc_node1_id': ['dcNodeFrNeg', 'dcNodeGbNeg'],
+        'dc_node2_id': ['dcNodeFrPos', 'dcNodeGbPos'],
+        'connected1': [True, True],
+        'connected2': [False, False],
+        'dc_connected1': [True, True],
+        'dc_connected2': [True, True],
+        'pcc_terminal_id': ['VscFr', 'TRDC-GB-xNodeDc1gb'],
+        'voltage_regulator_on': [False, False],
+        'control_mode': ['V_DC', 'P_PCC'],
+        'target_v_dc': [400.0, 500.0],
+        'target_v_ac': [400.0, 400.0],
+        'target_p': [-50.0, -200.0],
+        'target_q': [0.0, 0.0],
+        'idle_loss': [0.5, 0.0],
+        'switching_loss': [1.0, 0.0],
+        'resistive_loss': [0.2, 0.0],
+        'p_ac': [10.0, nan],
+        'q_ac': [10.0, nan],
+        'p_dc1': [10.0, nan],
+        'p_dc2': [10.0, nan],
+    }, index=pd.Series(['VscFr', 'VscGb'], name="id"))
 
     pd.testing.assert_frame_equal(expected, n.get_voltage_source_converters(), check_dtype=False)
 
     voltage_source_converters = n.get_voltage_source_converters(attributes=['voltage_level_id'])
-    expected = pd.DataFrame(index=pd.Series(name='id', data=['VscFr', 'VscGb']), columns=['voltage_level_id'],
-                            data=[['VLDC-FR-xNodeDc1fr-150'], ['VLDC-GB-xNodeDc1gb-150']])
+    expected = pd.DataFrame({'voltage_level_id': ['VLDC-FR-xNodeDc1fr-150', 'VLDC-GB-xNodeDc1gb-150']},
+                            index=pd.Series(['VscFr', 'VscGb'], name="id"))
     pd.testing.assert_frame_equal(expected, voltage_source_converters, check_dtype=False, atol=1e-2)
+
+    # Test update of connected2 attribute. Should raise an error as there is no second AC bus
+    with pytest.raises(PyPowsyblError) as e:
+        n.update_voltage_source_converters(id="VscFr", connected2=True)
+    assert e.value.args[0] == "Terminal2 of converter VscFr is missing"
+
+    # Same test for bus_breaker_bus2_id attribute
+    with pytest.raises(PyPowsyblError) as e2:
+        n.update_voltage_source_converters(id="VscFr", bus_breaker_bus2_id='Some id')
+    assert e2.value.args[0] == "Terminal2 of converter VscFr is missing"
 
 
 def test_dc_grounds():
     n = pp.network.create_dc_detailed_lcc_bipole_ground_return_network()
-    n.update_dc_grounds(pd.DataFrame(data={'r': 1.0}, index=['dcGroundGb']))
-    expected = pd.DataFrame(index=pd.Series(name='id', data=['dcGroundGb', 'dcGroundFr']),
-                            columns=['name', 'dc_node_id', 'r'],
-                            data=[['', 'dcNodeGbMid', 1.0], ['', 'dcNodeFrMid', 0.0]])
+    n.update_dc_grounds(pd.DataFrame(data={'r': 1.0, 'connected': False}, index=['dcGroundGb']))
+    expected = pd.DataFrame({
+        'name': ['', ''],
+        'dc_node_id': ['dcNodeGbMid', 'dcNodeFrMid'],
+        'connected': [False, True],
+        'r': [1.0, 0.0]
+    }, index=pd.Series(['dcGroundGb', 'dcGroundFr'], name="id"))
+
     pd.testing.assert_frame_equal(expected, n.get_dc_grounds(), check_dtype=False)
 
     dc_grounds = n.get_dc_grounds(attributes=['dc_node_id'])
-    expected = pd.DataFrame(index=pd.Series(name='id', data=['dcGroundGb', 'dcGroundFr']), columns=['dc_node_id'],
-                            data=[['dcNodeGbMid'], ['dcNodeFrMid']])
+    expected = pd.DataFrame({'dc_node_id': ['dcNodeGbMid', 'dcNodeFrMid']},
+                            index=pd.Series(['dcGroundGb', 'dcGroundFr'], name="id"))
     pd.testing.assert_frame_equal(expected, dc_grounds, check_dtype=False, atol=1e-2)
+
+
+def test_dc_switches():
+    n = pp.network.create_dc_detailed_dc_switch_2_nodes()
+    n.update_dc_switches(pd.DataFrame(data={'r': 0.0}, index=['dcSwitch']))
+
+    expected = pd.DataFrame(index=pd.Series(name='id', data=['dcSwitch']),
+                            columns=['name', 'r', 'dc_node1_id', 'dc_node2_id', 'kind', 'open'],
+                            data=[['', 0.0, 'dcNode1', 'dcNode2', 'DISCONNECTOR', False]])
+    dc_switches = n.get_dc_switches()
+    # check_like = True to avoid testing column ordering - not specified
+    pd.testing.assert_frame_equal(expected, dc_switches, check_dtype=False, check_like=True)
+
+    dc_switches = n.get_dc_switches(attributes=['dc_node1_id'])
+    expected = pd.DataFrame(index=pd.Series(name='id', data=['dcSwitch']),
+                            columns=['dc_node1_id'], data=[['dcNode1']])
+    pd.testing.assert_frame_equal(expected, dc_switches, check_dtype=False, check_like=True)
+
+    has_changed = n.open_dc_switch('dcSwitch')
+    assert has_changed
+    dc_switches = n.get_dc_switches(attributes=['open'])
+    expected = pd.DataFrame(index=pd.Series(name='id', data=['dcSwitch']),
+                            columns=['open'], data=[[True]])
+    pd.testing.assert_frame_equal(expected, dc_switches, check_dtype=False, check_like=True)
+
+    has_changed = n.open_dc_switch('dcSwitch')
+    assert not has_changed
+
+    has_changed = n.close_dc_switch('dcSwitch')
+    assert has_changed
+    dc_switches = n.get_dc_switches(attributes=['open'])
+    expected = pd.DataFrame(index=pd.Series(name='id', data=['dcSwitch']),
+                            columns=['open'], data=[[False]])
+    pd.testing.assert_frame_equal(expected, dc_switches, check_dtype=False, check_like=True)
+
+    has_changed = n.close_dc_switch('dcSwitch')
+    assert not has_changed
+
+    # update open state via dataframe
+    n.update_dc_switches(id='dcSwitch', open=True)
+    dc_switches = n.get_dc_switches(attributes=['open'])
+    expected = pd.DataFrame(index=pd.Series(name='id', data=['dcSwitch']),
+                            columns=['open'], data=[[True]])
+    pd.testing.assert_frame_equal(expected, dc_switches, check_dtype=False, check_like=True)
+
+    n.update_dc_switches(id='dcSwitch', open=False)
+    dc_switches = n.get_dc_switches(attributes=['open'])
+    expected = pd.DataFrame(index=pd.Series(name='id', data=['dcSwitch']),
+                            columns=['open'], data=[[False]])
+    pd.testing.assert_frame_equal(expected, dc_switches, check_dtype=False, check_like=True)
+
+    # update name via dataframe
+    n.update_dc_switches(id='dcSwitch', name='My DC Switch')
+    dc_switches = n.get_dc_switches(attributes=['name'])
+    expected = pd.DataFrame(index=pd.Series(name='id', data=['dcSwitch']),
+                            columns=['name'], data=[['My DC Switch']])
+    pd.testing.assert_frame_equal(expected, dc_switches, check_dtype=False, check_like=True)
 
 
 def test_dc_buses():
     n = pp.network.create_dc_detailed_vsc_symmetrical_monopole_network()
     n.update_dc_buses(pd.DataFrame(data={'v': 100}, index=['dcNodeFrPos_dcBus']))
-    expected = pd.DataFrame(index=pd.Series(name='id',
-                                            data=['dcNodeFrPos_dcBus', 'dcNodeFrNeg_dcBus', 'dcNodeGbPos_dcBus',
-                                                  'dcNodeGbNeg_dcBus']),
-                            columns=['name', 'connected_component', 'dc_component', 'v'],
-                            data=[['', 0, 0, 100], ['', 0, 0, nan], ['', 0, 0, nan], ['', 0, 0, nan]])
+    expected = pd.DataFrame({
+        'name': ['', '', '', ''],
+        'connected_component': [0, 0, 0, 0],
+        'dc_component': [0, 0, 0, 0],
+        'v': [100, nan, nan, nan]
+    }, index=pd.Series(['dcNodeFrPos_dcBus', 'dcNodeFrNeg_dcBus', 'dcNodeGbPos_dcBus', 'dcNodeGbNeg_dcBus'], name="id"))
     pd.testing.assert_frame_equal(expected, n.get_dc_buses(), check_dtype=False)
 
     dc_buses = n.get_dc_buses(attributes=['v'])
-    expected = pd.DataFrame(index=pd.Series(name='id',
-                                            data=['dcNodeFrPos_dcBus', 'dcNodeFrNeg_dcBus', 'dcNodeGbPos_dcBus',
-                                                  'dcNodeGbNeg_dcBus']), columns=['v'],
-                            data=[[100], [nan], [nan], [nan]])
+    expected = pd.DataFrame({'v': [100, nan, nan, nan]},
+                            index=pd.Series(
+                                ['dcNodeFrPos_dcBus', 'dcNodeFrNeg_dcBus', 'dcNodeGbPos_dcBus', 'dcNodeGbNeg_dcBus'],
+                                name="id"))
     pd.testing.assert_frame_equal(expected, dc_buses, check_dtype=False, atol=1e-2)
 
 
@@ -3011,7 +3127,7 @@ def test_is_loadable():
         file.touch()
         assert not pp.network.is_loadable(file)
 
-        
+
 def test_alpha_rho_transfo2():
     network = pp.network.create_micro_grid_be_network()
     transfo2 = network.get_2_windings_transformers(attributes=['rho', 'alpha'])
@@ -3116,6 +3232,8 @@ def test_create_dc_detailed_network():
     assert 'VscSymmetricalMonopole+FR+GB' == n.id
     n = pp.network.create_dc_detailed_vsc_asymmetrical_monopole_network()
     assert 'VscAsymmetricalMonopole+FR+GB' == n.id
+    n2 = pp.network.create_dc_detailed_dc_switch_2_nodes()
+    assert 'Simple2NodesDcSwitch' == n2.id
 
 if __name__ == '__main__':
     unittest.main()

@@ -931,6 +931,10 @@ bool updateSwitchPosition(const JavaHandle& network, const std::string& id, bool
     return PowsyblCaller::get()->callJava<bool>(::updateSwitchPosition, network, (char*) id.data(), open);
 }
 
+bool updateDcSwitchPosition(const JavaHandle& network, const std::string& id, bool open) {
+    return PowsyblCaller::get()->callJava<bool>(::updateDcSwitchPosition, network, (char*) id.data(), open);
+}
+
 bool updateConnectableStatus(const JavaHandle& network, const std::string& id, bool connected,
                              bool allowDisconnectors, bool allowFictitious) {
     return PowsyblCaller::get()->callJava<bool>(::updateConnectableStatus, network, (char*) id.data(), connected,
@@ -1260,7 +1264,7 @@ void addFactorMatrix(const JavaHandle& sensitivityAnalysisContext, std::string m
        ToCharPtrPtr variableIdPtr(variablesIds);
        ToCharPtrPtr contingenciesIdPtr(contingenciesIds);
        PowsyblCaller::get()->callJava(::addFactorMatrix, sensitivityAnalysisContext, branchIdPtr.get(), branchesIds.size(),
-                  variableIdPtr.get(), variablesIds.size(), contingenciesIdPtr.get(), contingenciesIds.size(), 
+                  variableIdPtr.get(), variablesIds.size(), contingenciesIdPtr.get(), contingenciesIds.size(),
                   (char*) matrixId.c_str(), ContingencyContextType, sensitivityFunctionType, sensitivityVariableType);
 }
 
@@ -1269,14 +1273,26 @@ JavaHandle runSensitivityAnalysis(const JavaHandle& sensitivityAnalysisContext, 
     return PowsyblCaller::get()->callJava<JavaHandle>(::runSensitivityAnalysis, sensitivityAnalysisContext, network, c_parameters.get(), (char *) provider.data(), (reportNode == nullptr) ? nullptr : *reportNode);
 }
 
-matrix* getSensitivityMatrix(const JavaHandle& sensitivityAnalysisResultContext, const std::string& matrixId, const std::string& contingencyId) {
-    return PowsyblCaller::get()->callJava<matrix*>(::getSensitivityMatrix, sensitivityAnalysisResultContext,
+std::shared_ptr<matrix> getSensitivityMatrix(const JavaHandle& sensitivityAnalysisResultContext, const std::string& matrixId, const std::string& contingencyId) {
+    matrix* m = PowsyblCaller::get()->callJava<matrix*>(::getSensitivityMatrix, sensitivityAnalysisResultContext,
                                 (char*) matrixId.c_str(), (char*) contingencyId.c_str());
+    if (m == nullptr) {
+        return nullptr;
+    }
+    return std::shared_ptr<matrix>(m, [](matrix* ptr) {
+        PowsyblCaller::get()->callJava(::freeSensitivityMatrix, ptr);
+    });
 }
 
-matrix* getReferenceMatrix(const JavaHandle& sensitivityAnalysisResultContext, const std::string& matrixId, const std::string& contingencyId) {
-    return PowsyblCaller::get()->callJava<matrix*>(::getReferenceMatrix, sensitivityAnalysisResultContext,
+std::shared_ptr<matrix> getReferenceMatrix(const JavaHandle& sensitivityAnalysisResultContext, const std::string& matrixId, const std::string& contingencyId) {
+    matrix* m = PowsyblCaller::get()->callJava<matrix*>(::getReferenceMatrix, sensitivityAnalysisResultContext,
                                 (char*) matrixId.c_str(), (char*) contingencyId.c_str());
+    if (m == nullptr) {
+        return nullptr;
+    }
+    return std::shared_ptr<matrix>(m, [](matrix* ptr) {
+        PowsyblCaller::get()->callJava(::freeSensitivityMatrix, ptr);
+    });
 }
 
 SeriesArray* createNetworkElementsSeriesArray(const JavaHandle& network, element_type elementType, filter_attributes_type filterAttributesType, const std::vector<std::string>& attributes, dataframe* dataframe, bool perUnit, double nominalApparentPower) {
