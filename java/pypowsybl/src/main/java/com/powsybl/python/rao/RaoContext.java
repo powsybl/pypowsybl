@@ -8,6 +8,7 @@
 package com.powsybl.python.rao;
 
 import com.powsybl.commons.PowsyblException;
+import com.powsybl.commons.report.ReportNode;
 import com.powsybl.glsk.api.GlskDocument;
 import com.powsybl.iidm.network.Network;
 import com.powsybl.loadflow.LoadFlowParameters;
@@ -76,7 +77,7 @@ public class RaoContext {
             inputs.put(timestamps.get(i), RaoInput.build(n, crac).build());
         }
         TimeCoupledRaoInput timeCoupledInput = new TimeCoupledRaoInput(new TemporalDataImpl<>(inputs), timeCoupledConstraints);
-        return new Marmot().run(timeCoupledInput, parameters).join();
+        return new Marmot().run(timeCoupledInput, parameters, ReportNode.NO_OP).join();
     }
 
     public RaoResultWithVoltageMonitoring runVoltageMonitoring(Network network, RaoResult resultIn, String provider, LoadFlowParameters parameters) {
