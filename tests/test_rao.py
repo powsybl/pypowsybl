@@ -522,8 +522,8 @@ def validate_redispatch_ra_setpoint(crac_file: str, parameters_file: str, set_po
 
 
 def test_import_crac_from_nc_profiles():
-    network = pp.network.load(DATA_DIR.joinpath("rao/16Nodes.zip"))
-    crac = pp.rao.Crac.from_file_source(network, DATA_DIR.joinpath("rao/NetworkCodesProfiles.zip"), DATA_DIR.joinpath("rao/nc-crac-parameters.json"))
+    network = pp.network.load(DATA_DIR.joinpath("rao/native_cracs/16Nodes.zip"))
+    crac = pp.rao.Crac.from_file_source(network, DATA_DIR.joinpath("rao/native_cracs/NetworkCodesProfiles.zip"), DATA_DIR.joinpath("rao/native_cracs/nc-crac-parameters.json"))
 
     expected_instants = pd.DataFrame(
         {
@@ -548,6 +548,18 @@ def test_import_crac_from_nc_profiles():
         }
     ).set_index("id", inplace=False)
     pd.testing.assert_frame_equal(expected_network_actions, crac.get_network_actions(), check_dtype=False)
+
+def test_import_cim_crac():
+    network = pp.network.load(DATA_DIR.joinpath("rao/native_cracs/cim-crac-network.xiidm"))
+    crac = pp.rao.Crac.from_file_source(network, DATA_DIR.joinpath("rao/native_cracs/cim-crac.xml"), DATA_DIR.joinpath("rao/native_cracs/cim-crac-parameters.json"))
+
+def test_import_cse_crac():
+    network = pp.network.load(DATA_DIR.joinpath("rao/native_cracs/cse-crac-network.xiidm"))
+    crac = pp.rao.Crac.from_file_source(network, DATA_DIR.joinpath("rao/native_cracs/cse-crac.xml"), DATA_DIR.joinpath("rao/native_cracs/cse-crac-parameters.json"))
+
+def test_import_fb_constraint_crac():
+    network = pp.network.load(DATA_DIR.joinpath("rao/native_cracs/fb-constraint-crac-network.xiidm"))
+    crac = pp.rao.Crac.from_file_source(network, DATA_DIR.joinpath("rao/native_cracs/fb-constraint-crac.xml"), DATA_DIR.joinpath("rao/native_cracs/fb-constraint-crac-parameters.json"))
 
 if __name__ == '__main__':
     unittest.main()
