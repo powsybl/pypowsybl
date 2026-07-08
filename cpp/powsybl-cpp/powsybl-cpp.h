@@ -677,11 +677,15 @@ JavaHandle getSubNetwork(const JavaHandle& network, const std::string& subNetwor
 
 JavaHandle detachSubNetwork(const JavaHandle& subNetwork);
 
+JavaHandle flatten(const JavaHandle& network);
+
 void applySolvedValues(const JavaHandle& network);
 
 void applySolvedTapPositionAndSolvedSectionCount(const JavaHandle& network);
 
 bool updateSwitchPosition(const JavaHandle& network, const std::string& id, bool open);
+
+bool updateDcSwitchPosition(const JavaHandle& network, const std::string& id, bool open);
 
 bool updateConnectableStatus(const JavaHandle& network, const std::string& id, bool connected, bool allowDisconnectors,
                              bool allowFictitious);
@@ -840,9 +844,9 @@ void addFactorMatrix(const JavaHandle& sensitivityAnalysisContext, std::string m
 
 JavaHandle runSensitivityAnalysis(const JavaHandle& sensitivityAnalysisContext, const JavaHandle& network, SensitivityAnalysisParameters& parameters, const std::string& provider, JavaHandle* reportNode);
 
-matrix* getSensitivityMatrix(const JavaHandle& sensitivityAnalysisResultContext, const std::string& matrixId, const std::string &contingencyId);
+std::shared_ptr<matrix> getSensitivityMatrix(const JavaHandle& sensitivityAnalysisResultContext, const std::string& matrixId, const std::string &contingencyId);
 
-matrix* getReferenceMatrix(const JavaHandle& sensitivityAnalysisResultContext, const std::string& matrixId, const std::string& contingencyId);
+std::shared_ptr<matrix> getReferenceMatrix(const JavaHandle& sensitivityAnalysisResultContext, const std::string& matrixId, const std::string& contingencyId);
 
 SeriesArray* createNetworkElementsSeriesArray(const JavaHandle& network, element_type elementType, filter_attributes_type filterAttributesType, const std::vector<std::string>& attributes, dataframe* dataframe, bool perUnit, double nominalApparentPower);
 
@@ -932,7 +936,7 @@ std::vector<std::vector<SeriesMetadata>> getNetworkExtensionsCreationDataframesM
 
 void createExtensions(pypowsybl::JavaHandle network, dataframe_array* dataframes, std::string& name);
 
-JavaHandle createReportNode(const std::string& taskKey, const std::string& defaultName);
+JavaHandle createReportNode(const std::string& taskKey);
 
 std::string printReport(const JavaHandle& reportNode);
 

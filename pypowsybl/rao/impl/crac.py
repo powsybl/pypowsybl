@@ -385,8 +385,8 @@ class Crac:
 
             - **name**: the name of the counter-trade range action
             - **operator**: the name of the operator the counter-trade range action belongs to
-            - **exporting_country**: the name of the country the power is exported from
-            - **importing_country**: the name of the country the power is imported in
+            - **exporting_area**: the name of the area the power is exported from
+            - **importing_area**: the name of the area the power is imported in
             - **group_id**: the id of the group the counter-trade range action belongs to
             - **speed**: the activation speed of the counter-trade range action, if it is an automaton
             - **activation_cost**: the amount of money to spend to activate the counter-trade range action

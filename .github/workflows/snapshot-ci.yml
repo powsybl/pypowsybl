@@ -59,12 +59,27 @@ jobs:
           fi
           echo "SCRIPTS_PATH=$SCRIPTS_PATH" >> $GITHUB_ENV  
 
-      # Build powsybl-core on main branch
+      # Checkout scripts
+      # The scripts are located in the workflow folder of the repository
+      # They are necessary for checking out the integration branch if it exists
+      - name: Checkout scripts
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        with:
+          sparse-checkout: |
+            .github
+          sparse-checkout-cone-mode: false
+          path: scripts
+
+      # Build powsybl-core
+      - name: Detect which powsybl-core reference to use
+        run: ./check_core_ref.sh
+        working-directory: ${{ env.SCRIPTS_PATH }}
+
       - name: Checkout core sources
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
         with:
           repository: powsybl/powsybl-core
-          ref: main
+          ref: ${{ env.CORE_REF }}
           path: powsybl-core
 
       - name: Build powsybl-core
@@ -74,17 +89,6 @@ jobs:
       - name: Get powsybl-core version
         run: echo "CORE_VERSION=$(mvn help:evaluate -Dexpression=project.version -q -DforceStdout)" >> $GITHUB_ENV
         working-directory: ./powsybl-core
-
-      # Checkout script
-      # The script check_snapshot_branch.sh is located in the workflow folder of the repository
-      # It is necessary for checking out the integration branch if it exists
-      - name: Checkout script
-        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
-        with:
-          sparse-checkout: |
-            .github
-          sparse-checkout-cone-mode: false
-          path: scripts
 
       # Build Open-Loadflow
       - name: Checking for powsybl-open-loadflow snapshot branch
@@ -319,7 +323,7 @@ jobs:
         working-directory: ./pypowsybl
 
       - name: Install Ipopt (Linux, via micromamba)
-        if: matrix.config.name == 'linux'
+        if: matrix.config.name == 'ubuntu'
         shell: bash
         run: |
           curl -Ls https://micro.mamba.pm/api/micromamba/linux-64/latest | tar -xvj bin/micromamba
@@ -445,7 +449,7 @@ jobs:
           unzip binaries.zip
 
       - name: Install Ipopt (Linux, via micromamba)
-        if: matrix.config.name == 'linux'
+        if: matrix.config.name == 'ubuntu'
         shell: bash
         run: |
           curl -Ls https://micro.mamba.pm/api/micromamba/linux-64/latest | tar -xvj bin/micromamba

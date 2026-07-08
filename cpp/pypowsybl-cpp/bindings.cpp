@@ -350,11 +350,15 @@ PYBIND11_MODULE(_pypowsybl, m) {
 
     m.def("update_switch_position", &pypowsybl::updateSwitchPosition, "Update a switch position");
 
+    m.def("update_dc_switch_position", &pypowsybl::updateDcSwitchPosition, "Update a DC switch position");
+
     m.def("merge", &pypowsybl::merge, "Merge several networks");
 
     m.def("get_sub_network", &pypowsybl::getSubNetwork, "Get a sub network from its ID", py::arg("network"), py::arg("sub_network_id"));
 
     m.def("detach_sub_network", &pypowsybl::detachSubNetwork, "Detach a sub network from its parent", py::arg("sub_network"));
+
+    m.def("flatten", &pypowsybl::flatten, "Remove the subnetworks structure from the current network", py::arg("network"));
 
     m.def("apply_solved_values", &pypowsybl::applySolvedValues, "Copy solved values to input", py::arg("network"));
 
@@ -410,6 +414,7 @@ PYBIND11_MODULE(_pypowsybl, m) {
             .value("DC_NODE", element_type::DC_NODE)
             .value("VOLTAGE_SOURCE_CONVERTER", element_type::VOLTAGE_SOURCE_CONVERTER)
             .value("DC_GROUND", element_type::DC_GROUND)
+            .value("DC_SWITCH", element_type::DC_SWITCH)
             .value("DC_BUS", element_type::DC_BUS);
 
     py::enum_<filter_attributes_type>(m, "FilterAttributesType")
@@ -729,7 +734,7 @@ PYBIND11_MODULE(_pypowsybl, m) {
 
     m.def("get_network_area_diagram_svg", &pypowsybl::getNetworkAreaDiagramSvg, "Get network area diagram SVG as a string",
           py::arg("network"), py::arg("voltage_level_ids"), py::arg("depth"), py::arg("high_nominal_voltage_bound"), py::arg("low_nominal_voltage_bound"), py::arg("nad_parameters"));
-          
+
     m.def("get_network_area_diagram_svg_and_metadata", &pypowsybl::getNetworkAreaDiagramSvgAndMetadata, "Get network area diagram SVG and its metadata as a list of strings",
           py::arg("network"), py::arg("voltage_level_ids"), py::arg("depth"), py::arg("high_nominal_voltage_bound"), py::arg("low_nominal_voltage_bound"), py::arg("nad_parameters"), py::arg("fixed_positions"),
           py::arg("branch_labels"), py::arg("three_wt_labels"), py::arg("injections_labels"), py::arg("bus_descriptions"), py::arg("vl_descriptions"), py::arg("bus_node_styles"), py::arg("edge_styles"), py::arg("three_wt_styles"));
@@ -751,7 +756,7 @@ PYBIND11_MODULE(_pypowsybl, m) {
 
     m.def("get_default_voltage_level_descriptions_nad", &pypowsybl::getNetworkAreaDiagramDefaultVoltageLevelDescriptions, "Get network area diagram default voltage level descriptions",
         py::arg("network"));
-    
+
     m.def("create_security_analysis", &pypowsybl::createSecurityAnalysis, "Create a security analysis");
 
     m.def("add_contingency", &pypowsybl::addContingency, "Add a contingency to a security analysis or sensitivity analysis",
@@ -1010,7 +1015,7 @@ PYBIND11_MODULE(_pypowsybl, m) {
     m.def("run_sensitivity_analysis", &pypowsybl::runSensitivityAnalysis, "Run a sensitivity analysis", py::call_guard<py::gil_scoped_release>(),
           py::arg("sensitivity_analysis_context"), py::arg("network"), py::arg("parameters"), py::arg("provider"), py::arg("report_node"));
 
-    py::class_<matrix>(m, "Matrix", py::buffer_protocol())
+    py::class_<matrix, std::shared_ptr<matrix>>(m, "Matrix", py::buffer_protocol())
             .def_buffer([](matrix& m) -> py::buffer_info {
                 return py::buffer_info(m.values,
                                        sizeof(double),
@@ -1185,7 +1190,7 @@ PYBIND11_MODULE(_pypowsybl, m) {
           py::arg("name"));
     m.def("create_extensions", ::createExtensionsBind, "create extensions of network elements given the extension name",
           py::call_guard<py::gil_scoped_release>(), py::arg("network"),  py::arg("dataframes"),  py::arg("name"));
-    m.def("create_report_node", &pypowsybl::createReportNode, "Create a report node", py::arg("task_key"), py::arg("default_name"));
+    m.def("create_report_node", &pypowsybl::createReportNode, "Create a report node", py::arg("task_key"));
     m.def("print_report", &pypowsybl::printReport, "Print a report", py::arg("report_node"));
 	m.def("json_report", &pypowsybl::jsonReport, "Print a report in json format", py::arg("report_node"));
     m.def("create_glsk_document", &pypowsybl::createGLSKdocument, "Create a glsk importer.", py::arg("filename"));

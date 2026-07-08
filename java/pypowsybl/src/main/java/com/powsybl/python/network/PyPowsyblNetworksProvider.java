@@ -58,7 +58,8 @@ public class PyPowsyblNetworksProvider implements Networks.NetworksProvider {
             factory("dc_detailed_lcc_bipole_ground_return_with_dc_line_segments", () -> DcDetailedNetworkFactory.createLccBipoleGroundReturnWithDcLineSegments()),
             factory("dc_detailed_lcc_bipole_metallic_return", () -> DcDetailedNetworkFactory.createLccMonopoleMetallicReturn()),
             factory("dc_detailed_vsc_symmetrical_monopole", () -> DcDetailedNetworkFactory.createVscSymmetricalMonopole()),
-            factory("dc_detailed_vsc_asymmetrical_monopole", () -> DcDetailedNetworkFactory.createVscAsymmetricalMonopole())
+            factory("dc_detailed_vsc_asymmetrical_monopole", () -> DcDetailedNetworkFactory.createVscAsymmetricalMonopole()),
+            factory("dc_detailed_dc_switch_2_nodes", () -> DcDetailedNetworkFactory.createSimple2NodesDcSwitch())
     );
 
     @Override

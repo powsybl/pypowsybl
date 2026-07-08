@@ -115,10 +115,10 @@ It also possible to get flow transfer on monitored branches in case of N-1 branc
     >>> sa.add_monitored_elements(branch_ids=['NHV1_NHV2_1', 'NHV1_NHV2_2'])
     >>> sa_result = sa.run_ac(n)
     >>> sa_result.branch_results
-                                                              p1          q1           i1          p2          q2           i2  flow_transfer
+                                                             p1          q1           i1          p2          q2           i2  flow_transfer
     contingency_id operator_strategy_id branch_id
-                                        NHV1_NHV2_2  302.444049   98.740275   456.768978 -300.433895 -137.188493   488.992798            NaN
                                         NHV1_NHV2_1  302.444049   98.740275   456.768978 -300.433895 -137.188493   488.992798            NaN
+                                        NHV1_NHV2_2  302.444049   98.740275   456.768978 -300.433895 -137.188493   488.992798            NaN
     NHV1_NHV2_2                         NHV1_NHV2_1  610.562154  334.056272  1008.928788 -600.996156 -285.379147  1047.825769       1.018761
     NHV1_NHV2_1                         NHV1_NHV2_2  610.562154  334.056272  1008.928788 -600.996156 -285.379147  1047.825769       1.018761
 

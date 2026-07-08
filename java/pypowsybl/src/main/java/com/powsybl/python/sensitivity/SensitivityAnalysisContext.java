@@ -216,7 +216,9 @@ class SensitivityAnalysisContext extends ContingencyContainerImpl {
                             }
                         }
                         for (ContingencyContext cCtx : contingencyContexts) {
-                            handler.onFactor(matrix.getFunctionType(), functionId, variableType, variableId, variableSet, cCtx);
+                            SensitivityFunctionType functionType = matrix.getFunctionType();
+                            String finalFunctionId = SensitivityFactor.resolveBusId(functionId, matrix.getFunctionType(), network);
+                            handler.onFactor(functionType, finalFunctionId, variableType, variableId, variableSet, cCtx);
                         }
                     }
                 }
