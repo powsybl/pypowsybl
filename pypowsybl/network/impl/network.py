@@ -3209,6 +3209,9 @@ class Network:  # pylint: disable=too-many-public-methods
 
               - **dc_node1_id**: dc node where this dc line is connected, on side 1
               - **dc_node2_id**: dc node where this dc line is connected, on side 2
+              - **connected1**: ``True`` if the dc line is connected to a dc node, side 1
+              - **connected2**: ``True`` if the dc line is connected to a dc node, side 2
+              - **r**: The resistance of the dc line (in Ohm).
               - **p1**: the active flow on the dc line at its "1" side, ``NaN`` if no loadflow has been computed (in MW)
               - **i1**: the current on the dc line at its "1" side, ``NaN`` if no loadflow has been computed (in A)
               - **p2**: the active flow on the dc line at its "2" side, ``NaN`` if no loadflow has been computed (in MW)
@@ -3236,7 +3239,7 @@ class Network:  # pylint: disable=too-many-public-methods
         Notes:
             The resulting dataframe, depending on the parameters, will include the following columns:
 
-              - **nominal_v**: dc node nominal voltage
+              - **nominal_v**: dc node nominal voltage (in kV)
               - **dc_bus_id**: at which dc bus the dc node belongs
               - **fictitious** (optional): ``True`` if the area is part of the model and not of the actual network
 
@@ -3264,20 +3267,24 @@ class Network:  # pylint: disable=too-many-public-methods
               - **voltage_level_id**: at which substation the converter is connected
               - **bus1_id**: bus where this converter is connected, on side 1
               - **bus2_id** (optional): bus where this converter is connected, on side 2
+              - **bus_breaker_bus1_id** (optional) bus of the bus-breaker view where this converter is connected, on side 1
+              - **bus_breaker_bus2_id** (optional) bus of the bus-breaker view where this converter is connected, on side 2
               - **dc_node1_id**: dc node where this converter is connected, on side 1
               - **dc_node2_id**: dc node where this converter is connected, on side 2
-              - **regulated_element_id** (optional): which element of the network is regulating PCC, needed if bus2_id is set
+              - **pcc_terminal_id** (optional): which element of the network is regulating PCC, needed if bus2_id is set
+              - **connected1**: ``True`` if the converter is connected to an ac bus, side 1
+              - **connected2**: ``True`` if the converter is connected to an ac bus, side 2. Defaults to ``False`` if there is no second AC bus.
               - **dc_connected1**: ``True`` if the converter is connected to a dc node, side 1
               - **dc_connected2**: ``True`` if the converter is connected to a dc node, side 2
               - **voltage_regulator_on**: the voltage regulator status
               - **control_mode**: the control mode of the converter
-              - **target_p**: the active power setpoint
-              - **target_q**: the reactive power setpoint
-              - **target_v_dc**: the DC voltage setpoint
-              - **target_v_ac**: the AC voltage setpoint
-              - **idle_loss**: the idle loss coefficient
-              - **switching_loss**: the switching loss coefficient
-              - **resistive_loss**: the resistive loss coefficient
+              - **target_p**: the active power setpoint (in MW, load convention)
+              - **target_q**: the reactive power setpoint (in MVAr, load convention)
+              - **target_v_dc**: the DC voltage setpoint (in kV)
+              - **target_v_ac**: the AC voltage setpoint (in kV)
+              - **idle_loss**: the idle loss coefficient (in MW)
+              - **switching_loss**: the switching loss coefficient (in MW/A)
+              - **resistive_loss**: the resistive loss coefficient (in Ohm)
               - **p_ac**: the AC active flow on the converter, ``NaN`` if no loadflow has been computed (in MW)
               - **q_ac**: the AC reactive flow on the converter, ``NaN`` if no loadflow has been computed  (in MVAr)
               - **p_dc1**: the DC flow on the converter, side 1 ``NaN`` if no loadflow has been computed (in MW)
@@ -3305,7 +3312,8 @@ class Network:  # pylint: disable=too-many-public-methods
             The resulting dataframe, depending on the parameters, will include the following columns:
 
               - **dc_node_id**: dc node identifier
-              - **r**: dc ground resistance
+              - **connected**: ``True`` if the dc ground is connected to a dc node
+              - **r**: dc ground resistance (in Ohm)
 
             This dataframe is indexed on the dc ground ID.
         """
@@ -3329,7 +3337,7 @@ class Network:  # pylint: disable=too-many-public-methods
 
               - **connected_component**: The connected component to which the dc bus belongs
               - **dc_component**: The dc component to which the dc bus belongs
-              - **v**: dc bus voltage
+              - **v**: dc bus voltage (in kV)
               - **fictitious** (optional): ``True`` if the area is part of the model and not of the actual network
 
 
@@ -4399,6 +4407,8 @@ class Network:  # pylint: disable=too-many-public-methods
             - `r`
             - `i1`
             - `i2`
+            - `connected1`
+            - `connected2`
             - `fictitious`
 
         See Also:
@@ -4455,10 +4465,22 @@ class Network:  # pylint: disable=too-many-public-methods
         Notes:
             Attributes that can be updated are:
 
+            - `bus_breaker_bus1_id`
+            - `bus_breaker_bus2_id`
+            - `connected1`
+            - `connected2`
+            - `dc_connected1`
+            - `dc_connected2`
+            - `pcc_terminal_id`
+            - `voltage_regulator_on`
+            - `control_mode`
             - `target_v_dc`
             - `target_v_ac`
             - `target_p`
             - `target_q`
+            - `idle_loss`
+            - `switching_loss`
+            - `resistive_loss`
             - `p_ac`
             - `q_ac`
             - `p_dc1`
@@ -4491,6 +4513,7 @@ class Network:  # pylint: disable=too-many-public-methods
             Attributes that can be updated are:
 
             - `r`
+            - `connected`
             - `fictitious`
 
         See Also:
