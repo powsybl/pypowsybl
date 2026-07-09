@@ -142,9 +142,10 @@ class SensitivityAnalysis(ContingencyContainer):
         Defines branch active power factor matrix, with a list of branches IDs and a list of variables.
 
         A variable could be:
-         - a network element ID: injections, PSTs, boundary lines and HVDC lines are supported
+         - a network element ID: injections, shunts, branches, PSTs, boundary lines and HVDC lines are supported
          - a zone ID
          - a couple of zone ID to define a transfer between 2 zones
+         - a SVC zone id
 
         sensitivity_function_type can be:
          - BRANCH_ACTIVE_POWER_1
