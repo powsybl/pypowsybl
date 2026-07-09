@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  ~ Copyright (c) 2021, RTE (http://www.rte-france.com)
+  ~ This Source Code Form is subject to the terms of the Mozilla Public
+  ~ License, v. 2.0. If a copy of the MPL was not distributed with this
+  ~ file, You can obtain one at http://mozilla.org/MPL/2.0/.
+  -->
+<CRACDocument DtdVersion="4" DtdRelease="3" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="crac-document.xsd">
+  <DocumentIdentification v="2021_04_30_TEST_CSE_CRAC_1"/>
+  <DocumentVersion v="1"/>
+  <DocumentType v="Z03"/>
+  <ProcessType v="Z03"/>
+  <SenderIdentification v="senderEIC" codingScheme="A01"/>
+  <SenderRole v="A36"/>
+  <ReceiverIdentification v="receiverEIC" codingScheme="A01"/>
+  <ReceiverRole v="A04"/>
+  <CreationDateTime v="2021-04-30T16:00:00Z"/>
+  <TimeInterval v="2021-04-30T22:00Z/2021-04-30T23:00Z"/>
+  <Domain v="unit_test_domain" codingScheme="A01"/>
+  <CRACSeries>
+    <RemedialActions>
+      <RemedialAction> <!-- should be imported, inverse of RA2 -->
+        <Name v="RA1"/>
+        <TimeInterval v="2020-03-12T23:00Z/2020-03-13T00:00Z"/>
+        <Operator v="BE"/>
+        <Application v="CURATIVE"/>
+        <SharedWith v="CSE"/>
+        <BusBar>
+          <InitialNode v="BBE1AA11"/>
+          <FinalNode v="BBE1AA12"/>
+          <Branch>
+            <FromNode v="FFR1AA1*"/>
+            <ToNode v="BBE1AA11"/>
+            <Order v="1"/>
+          </Branch>
+        </BusBar>
+      </RemedialAction>
+      <RemedialAction> <!-- should be imported, inverse of RA1 -->
+        <Name v="RA2"/>
+        <TimeInterval v="2020-03-12T23:00Z/2020-03-13T00:00Z"/>
+        <Operator v="BE"/>
+        <Application v="CURATIVE"/>
+        <SharedWith v="CSE"/>
+        <BusBar>
+          <InitialNode v="BBE1AA12"/>
+          <FinalNode v="BBE1AA11"/>
+          <Branch>
+            <FromNode v="FFR1AA1*"/>
+            <ToNode v="BBE1AA11"/>
+            <Order v="1"/>
+          </Branch>
+        </BusBar>
+      </RemedialAction>
+    </RemedialActions>
+  </CRACSeries>
+</CRACDocument>

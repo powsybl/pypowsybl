@@ -32,6 +32,7 @@ pypowsybl::JavaHandle loadCracSourceWithParameters(const pypowsybl::JavaHandle& 
 pypowsybl::JavaHandle loadGlskSource(const py::buffer& glsk);
 pypowsybl::JavaHandle loadResultSource(const pypowsybl::JavaHandle& cracHandle, const py::buffer& result);
 pypowsybl::RaoParameters* loadRaoParametersFromBuffer(const py::buffer& parameters);
+pypowsybl::JavaHandle loadTimeCoupledConstraintsSource(const py::buffer& timeCoupledConstraintsBuffer);
 
 py::bytes saveRaoParametersToBinaryBuffer(const pypowsybl::RaoParameters& rao_parameters);
 py::bytes saveRaoResultsToBinaryBuffer(const pypowsybl::JavaHandle& raoContext, const pypowsybl::JavaHandle& crac);
@@ -350,6 +351,8 @@ PYBIND11_MODULE(_pypowsybl, m) {
 
     m.def("update_switch_position", &pypowsybl::updateSwitchPosition, "Update a switch position");
 
+    m.def("update_dc_switch_position", &pypowsybl::updateDcSwitchPosition, "Update a DC switch position");
+
     m.def("merge", &pypowsybl::merge, "Merge several networks");
 
     m.def("get_sub_network", &pypowsybl::getSubNetwork, "Get a sub network from its ID", py::arg("network"), py::arg("sub_network_id"));
@@ -412,6 +415,7 @@ PYBIND11_MODULE(_pypowsybl, m) {
             .value("DC_NODE", element_type::DC_NODE)
             .value("VOLTAGE_SOURCE_CONVERTER", element_type::VOLTAGE_SOURCE_CONVERTER)
             .value("DC_GROUND", element_type::DC_GROUND)
+            .value("DC_SWITCH", element_type::DC_SWITCH)
             .value("DC_BUS", element_type::DC_BUS);
 
     py::enum_<filter_attributes_type>(m, "FilterAttributesType")
@@ -731,7 +735,7 @@ PYBIND11_MODULE(_pypowsybl, m) {
 
     m.def("get_network_area_diagram_svg", &pypowsybl::getNetworkAreaDiagramSvg, "Get network area diagram SVG as a string",
           py::arg("network"), py::arg("voltage_level_ids"), py::arg("depth"), py::arg("high_nominal_voltage_bound"), py::arg("low_nominal_voltage_bound"), py::arg("nad_parameters"));
-          
+
     m.def("get_network_area_diagram_svg_and_metadata", &pypowsybl::getNetworkAreaDiagramSvgAndMetadata, "Get network area diagram SVG and its metadata as a list of strings",
           py::arg("network"), py::arg("voltage_level_ids"), py::arg("depth"), py::arg("high_nominal_voltage_bound"), py::arg("low_nominal_voltage_bound"), py::arg("nad_parameters"), py::arg("fixed_positions"),
           py::arg("branch_labels"), py::arg("three_wt_labels"), py::arg("injections_labels"), py::arg("bus_descriptions"), py::arg("vl_descriptions"), py::arg("bus_node_styles"), py::arg("edge_styles"), py::arg("three_wt_styles"));
@@ -753,7 +757,7 @@ PYBIND11_MODULE(_pypowsybl, m) {
 
     m.def("get_default_voltage_level_descriptions_nad", &pypowsybl::getNetworkAreaDiagramDefaultVoltageLevelDescriptions, "Get network area diagram default voltage level descriptions",
         py::arg("network"));
-    
+
     m.def("create_security_analysis", &pypowsybl::createSecurityAnalysis, "Create a security analysis");
 
     m.def("add_contingency", &pypowsybl::addContingency, "Add a contingency to a security analysis or sensitivity analysis",
@@ -1012,7 +1016,7 @@ PYBIND11_MODULE(_pypowsybl, m) {
     m.def("run_sensitivity_analysis", &pypowsybl::runSensitivityAnalysis, "Run a sensitivity analysis", py::call_guard<py::gil_scoped_release>(),
           py::arg("sensitivity_analysis_context"), py::arg("network"), py::arg("parameters"), py::arg("provider"), py::arg("report_node"));
 
-    py::class_<matrix>(m, "Matrix", py::buffer_protocol())
+    py::class_<matrix, std::shared_ptr<matrix>>(m, "Matrix", py::buffer_protocol())
             .def_buffer([](matrix& m) -> py::buffer_info {
                 return py::buffer_info(m.values,
                                        sizeof(double),
@@ -1371,10 +1375,14 @@ PYBIND11_MODULE(_pypowsybl, m) {
     m.def("get_pst_range_action_results", &pypowsybl::getPstRangeActionResults, "Get RAO PST range actions results", py::arg("crac"), py::arg("rao_result"));
     m.def("get_range_action_results", &pypowsybl::getRangeActionResults, "Get RAO range actions results (non-PST)", py::arg("crac"), py::arg("rao_result"));
     m.def("get_cost_results", &pypowsybl::getCostResults, "Get rao cost results", py::arg("crac"), py::arg("rao_result"));
+    m.def("get_global_cost_results", &pypowsybl::getGlobalCostResults, "Get global rao cost results", py::arg("crac"), py::arg("rao_result"));
+    m.def("get_cost_results_for_timestamp", &pypowsybl::getCostResultsForTimestamp, "Get rao cost results for a timestamp", py::arg("crac"), py::arg("rao_result"), py::arg("timestamp"));
     m.def("get_virtual_cost_names", &pypowsybl::getVirtualCostNames, "Get virtual cost names", py::arg("rao_result"));
     m.def("get_virtual_cost_results", &pypowsybl::getVirtualCostsResults, "Get rao virtual cost results", py::arg("crac"), py::arg("rao_result"), py::arg("virtual_cost_name"));
     m.def("run_voltage_monitoring", &pypowsybl::runVoltageMonitoring, py::call_guard<py::gil_scoped_release>(), "Run voltage monitoring", py::arg("network"), py::arg("result_handle"), py::arg("crac_handle"), py::arg("context_handle"), py::arg("load_flow_parameters"), py::arg("provider"));
     m.def("run_angle_monitoring", &pypowsybl::runAngleMonitoring, py::call_guard<py::gil_scoped_release>(), "Run angle monitoring", py::arg("network"), py::arg("result_handle"), py::arg("crac_handle"), py::arg("context_handle"), py::arg("load_flow_parameters"), py::arg("provider"));
+    m.def("run_marmot", &pypowsybl::runMarmot, py::call_guard<py::gil_scoped_release>(), "Run marmot", py::arg("timestamps"), py::arg("networks"), py::arg("cracs"), py::arg("parameters"), py::arg("constraints"));
+    m.def("load_time_coupled_constraints", ::loadTimeCoupledConstraintsSource, py::call_guard<py::gil_scoped_release>(), "Load time coupled constraints", py::arg("constraints_source"));
 
     m.def("get_instants", &pypowsybl::getInstants, "Get crac instants", py::arg("crac"));
     m.def("get_max_remedial_actions_usage_limits", &pypowsybl::getMaxRemedialActionsUsageLimits, "Get max remedial actions usage limit", py::arg("crac"));
@@ -1615,6 +1623,11 @@ pypowsybl::JavaHandle loadResultSource(const pypowsybl::JavaHandle& cracHandle, 
     py::buffer_info resultInfo = result.request();
     return pypowsybl::PowsyblCaller::get()->callJava<pypowsybl::JavaHandle>(::loadResultFromBufferedSource,
      cracHandle, static_cast<char*>(resultInfo.ptr), resultInfo.size);
+}
+
+pypowsybl::JavaHandle loadTimeCoupledConstraintsSource(const py::buffer& timeCoupledConstraintsBuffer) {
+    py::buffer_info constraintsInfo = timeCoupledConstraintsBuffer.request();
+    return pypowsybl::PowsyblCaller::get()->callJava<pypowsybl::JavaHandle>(::loadTimeCoupledConstraints, static_cast<char*>(constraintsInfo.ptr), constraintsInfo.size);
 }
 
 py::bytes saveRaoResultsToBinaryBuffer(const pypowsybl::JavaHandle& raoResult, const pypowsybl::JavaHandle& crac) {

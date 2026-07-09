@@ -332,6 +332,22 @@ def test_busbar_section_sensi():
     result = analysis.run(network)
     assert -0.8 == pytest.approx(result.get_sensitivity_matrix('m1').loc['S2VL1_BBS']['LINE_S2S3'], 1e-4)
 
+
+@pytest.mark.parametrize('network_factory, bus_id, target_voltage_id', [
+    (pp.network.create_eurostag_tutorial_example1_network, 'VLGEN_0', 'GEN'),
+    (pp.network.create_eurostag_tutorial_example1_network, 'NGEN', 'GEN'),
+    (pp.network.create_four_substations_node_breaker_network, 'S3VL1_0', 'GTH2'),
+    (pp.network.create_four_substations_node_breaker_network, 'S3VL1_BBS', 'GTH2'),
+])
+def test_bus_voltage_sensi_id_resolution(network_factory, bus_id, target_voltage_id):
+    network = network_factory()
+    analysis = pp.sensitivity.create_ac_analysis()
+    analysis.add_bus_voltage_factor_matrix([bus_id], [target_voltage_id])
+    result = analysis.run(network)
+    df = result.get_sensitivity_matrix()
+    assert df.shape == (1, 1)
+    assert df[bus_id][target_voltage_id] == pytest.approx(1.0, abs=1e-6)
+
 def test_transfo3_sensi():
     network = pp.network.create_micro_grid_be_network()
     t3e_id = network.get_3_windings_transformers().head(1).index[0]

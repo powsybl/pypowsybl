@@ -1,0 +1,12 @@
+{
+  "resources":{
+  "includes":[
+    {
+      "pattern":"\\Qcom/powsybl/openrao/data/crac/io/cse/xsd/crac-document_4_23.xsd\\E"
+    }, {
+      "pattern":"\\Qcom/powsybl/openrao/data/crac/io/cse/xsd/etso-code-lists.xsd\\E"
+    }, {
+      "pattern":"\\Qcom/powsybl/openrao/data/crac/io/cse/xsd/etso-core-cmpts.xsd\\E"
+    }
+  ]}
+}

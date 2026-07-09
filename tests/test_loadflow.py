@@ -308,7 +308,8 @@ def test_get_provider_parameters_names():
                                    'generatorsWithZeroMwTargetAreNotStarted',
                                    'incrementalShuntControlOuterLoopMaxSectionShift',
                                    'fixVoltageTargets',
-                                   'acDcNetwork']
+                                   'acDcNetwork',
+                                   'allowNonLinearShuntZeroSection']
 
 def test_get_provider_parameters():
     specific_parameters = pp.loadflow.get_provider_parameters('OpenLoadFlow')
