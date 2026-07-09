@@ -3315,11 +3315,24 @@ class Network:  # pylint: disable=too-many-public-methods
               - **idle_loss**: the idle loss coefficient (in MW)
               - **switching_loss**: the switching loss coefficient (in MW/A)
               - **resistive_loss**: the resistive loss coefficient (in Ohm)
+              - **min_p** (optional): the minimum active power, ``-inf`` if unbounded (in MW)
+              - **max_p** (optional): the maximum active power, ``inf`` if unbounded (in MW)
               - **p_ac**: the AC active flow on the converter, ``NaN`` if no loadflow has been computed (in MW)
               - **q_ac**: the AC reactive flow on the converter, ``NaN`` if no loadflow has been computed  (in MVAr)
               - **p_dc1**: the DC flow on the converter, side 1 ``NaN`` if no loadflow has been computed (in MW)
               - **p_dc2**: the DC flow on the converter, side 2 ``NaN`` if no loadflow has been computed (in MW)
               - **fictitious** (optional): ``True`` if the area is part of the model and not of the actual network
+
+            .. note::
+
+                ``target_p``, ``min_p`` and ``max_p`` follow the load sign convention at the point of
+                common coupling (PCC): a positive value means active power absorbed by the converter from
+                the AC grid.
+
+            .. warning::
+
+                A finite ``min_p`` / ``max_p`` (any value other than ``-inf`` / ``inf``) is not yet supported
+                by IIDM serialization: saving a network that contains one raises a ``PowsyblException``.
 
             This dataframe is indexed on the converter ID.
         """
@@ -4539,6 +4552,8 @@ class Network:  # pylint: disable=too-many-public-methods
             - `target_v_ac`
             - `target_p`
             - `target_q`
+            - `min_p`
+            - `max_p`
             - `idle_loss`
             - `switching_loss`
             - `resistive_loss`
@@ -4547,6 +4562,17 @@ class Network:  # pylint: disable=too-many-public-methods
             - `p_dc1`
             - `p_dc2`
             - `fictitious`
+
+            .. note::
+
+                ``target_p``, ``min_p`` and ``max_p`` follow the load sign convention at the point of
+                common coupling (PCC): a positive value means active power absorbed by the converter from
+                the AC grid.
+
+            .. warning::
+
+                A finite ``min_p`` / ``max_p`` (any value other than ``-inf`` / ``inf``) is not yet supported
+                by IIDM serialization: saving a network that contains one raises a ``PowsyblException``.
 
         See Also:
             :meth:`get_voltage_source_converters`
@@ -5971,11 +5997,24 @@ class Network:  # pylint: disable=too-many-public-methods
             - **control_mode** the control mode of the converter (V_DC or P_PCC)
             - **target_p** the AC active power setpoint
             - **target_q** the AC reactive power setpoint
+            - **min_p** the minimum active power in MW (optional, unbounded by default)
+            - **max_p** the maximum active power in MW (optional, unbounded by default)
             - **target_v_ac** the AC voltage setpoint
             - **target_v_dc** the DC voltage setpoint
             - **idle_loss** the idle loss coefficient
             - **switching_loss** the switching loss coefficient
             - **resistive_loss** the resistive loss coefficient
+
+            .. note::
+
+                ``target_p``, ``min_p`` and ``max_p`` follow the load sign convention at the point of
+                common coupling (PCC): a positive value means active power absorbed by the converter from
+                the AC grid.
+
+            .. warning::
+
+                A finite ``min_p`` / ``max_p`` (any value other than ``-inf`` / ``inf``) is not yet supported
+                by IIDM serialization: saving a network that contains one raises a ``PowsyblException``.
 
         Examples:
             Using keyword arguments:

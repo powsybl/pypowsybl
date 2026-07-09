@@ -1062,6 +1062,18 @@ public final class NetworkDataframes {
                         (conv, targetP, context) -> conv.setTargetP(unPerUnitPQ(context, targetP)))
                 .doubles("target_q", (conv, context) -> perUnitPQ(context, conv.getReactivePowerSetpoint()),
                         (conv, targetQ, context) -> conv.setReactivePowerSetpoint(unPerUnitPQ(context, targetQ)))
+                // The core represents the "unbounded" default as -/+ Double.MAX_VALUE; expose it as -/+ infinity
+                // Non-default columns, so absent from the default dataframe.
+                .doubles("min_p",
+                        (conv, context) -> conv.getMinP() == -Double.MAX_VALUE
+                                ? Double.NEGATIVE_INFINITY : perUnitPQ(context, conv.getMinP()),
+                        (conv, minP, context) -> conv.setMinP(minP == Double.NEGATIVE_INFINITY
+                                ? -Double.MAX_VALUE : unPerUnitPQ(context, minP)), false)
+                .doubles("max_p",
+                        (conv, context) -> conv.getMaxP() == Double.MAX_VALUE
+                                ? Double.POSITIVE_INFINITY : perUnitPQ(context, conv.getMaxP()),
+                        (conv, maxP, context) -> conv.setMaxP(maxP == Double.POSITIVE_INFINITY
+                                ? Double.MAX_VALUE : unPerUnitPQ(context, maxP)), false)
                 .doubles("idle_loss", (conv, context) -> perUnitPQ(context, conv.getIdleLoss()),
                         (conv, idleLoss, context) -> conv.setIdleLoss(unPerUnitPQ(context, idleLoss)))
                 .doubles("switching_loss", (conv, context) -> perUnitV(context, conv.getSwitchingLoss(), conv.getTerminal1()),

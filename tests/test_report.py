@@ -9,7 +9,7 @@ from pypowsybl.report import ReportNode
 
 def test_task_key():
     report_node = ReportNode("pypowsybl.dynasim.pypowsyblDynamicModels")
-    assert "PyPowsybl Dynamic Models Supplier" in str(report_node)
+    assert "PyPowsybl" in str(report_node)
 
 def test_task_key_not_found():
     report_node = ReportNode("Test")

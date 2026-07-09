@@ -725,17 +725,20 @@ JavaHandle createNetwork(const std::string& name, const std::string& id, bool al
     return PowsyblCaller::get()->callJava<JavaHandle>(::createNetwork, (char*) name.data(), (char*) id.data(), allowVariantMultiThreadAccess);
 }
 
-JavaHandle merge(std::vector<JavaHandle>& networks) {
-    std::vector<void*> networksPtrs;
-    networksPtrs.reserve(networks.size());
-    for (int i = 0; i < networks.size(); ++i) {
-        void* ptr = networks[i];
-        networksPtrs.push_back(ptr);
+std::vector<void*> objectHandleVectorToPtrs(std::vector<JavaHandle>& handles) {
+    std::vector<void*> handlePtrs;
+    handlePtrs.reserve(handles.size());
+    for (auto & i : handles) {
+        void* ptr = i;
+        handlePtrs.push_back(ptr);
     }
-    int networkCount = networksPtrs.size();
-    void** networksData = (void**) networksPtrs.data();
+    return handlePtrs;
+}
 
-    return PowsyblCaller::get()->callJava<JavaHandle>(::merge, networksData, networkCount);
+JavaHandle merge(std::vector<JavaHandle>& networks) {
+    int networkCount = networks.size();
+    std::vector<void*> networksPtrs = objectHandleVectorToPtrs(networks);
+    return PowsyblCaller::get()->callJava<JavaHandle>(::merge, (void**) networksPtrs.data(), networkCount);
 }
 
 JavaHandle getSubNetwork(const JavaHandle& network, const std::string& subNetworkId) {
@@ -2275,6 +2278,14 @@ SeriesArray* getCostResults(const JavaHandle& cracHandle, const JavaHandle& resu
     return new SeriesArray(PowsyblCaller::get()->callJava<array*>(::getCostResults, cracHandle, resultHandle));
 }
 
+SeriesArray* getGlobalCostResults(const JavaHandle& cracHandle, const JavaHandle& resultHandle) {
+    return new SeriesArray(PowsyblCaller::get()->callJava<array*>(::getGlobalCostResults, cracHandle, resultHandle));
+}
+
+SeriesArray* getCostResultsForTimestamp(const JavaHandle& cracHandle, const JavaHandle& resultHandle, const std::string& timestamp) {
+    return new SeriesArray(PowsyblCaller::get()->callJava<array*>(::getCostResultsForTimestamp, cracHandle, resultHandle, (char*) timestamp.c_str()));
+}
+
 std::vector<std::string> getVirtualCostNames(const JavaHandle& resultHandle) {
     auto virtulCostArrayPtr = pypowsybl::PowsyblCaller::get()->callJava<array*>(::getVirtualCostNames, resultHandle);
     ToStringVector virtalCosts(virtulCostArrayPtr);
@@ -2434,6 +2445,16 @@ JavaHandle runVoltageMonitoring(const JavaHandle& networkHandle, const JavaHandl
 JavaHandle runAngleMonitoring(const JavaHandle& networkHandle, const JavaHandle& resultHandle, const JavaHandle& cracHandle, const JavaHandle& contextHandle, const LoadFlowParameters& parameters, const std::string& provider) {
     auto c_loadflow_parameters = parameters.to_c_struct();
     return pypowsybl::PowsyblCaller::get()->callJava<JavaHandle>(::runAngleMonitoring, networkHandle, resultHandle, cracHandle, contextHandle, c_loadflow_parameters.get(), (char *) provider.data());
+}
+
+JavaHandle runMarmot(const std::vector<std::string>& timestamps, std::vector<JavaHandle>& networks, std::vector<JavaHandle>& cracs,
+                     const RaoParameters& parameters, const JavaHandle& constraints) {
+    auto c_parameters = parameters.to_c_struct();
+    int count = timestamps.size();
+    ToCharPtrPtr timestampsPtr(timestamps);
+    std::vector<void*> networksPtrs = objectHandleVectorToPtrs(networks);
+    std::vector<void*> cracPtrs = objectHandleVectorToPtrs(cracs);
+    return pypowsybl::PowsyblCaller::get()->callJava<JavaHandle>(::runMarmot, timestampsPtr.get(), (void**) networksPtrs.data(), (void**) cracPtrs.data(), count, c_parameters.get(), constraints);
 }
 
 
