@@ -644,8 +644,8 @@ PYBIND11_MODULE(_pypowsybl, m) {
             .def_readwrite("provider_parameters_keys", &pypowsybl::DynamicSimulationParameters::provider_parameters_keys)
             .def_readwrite("provider_parameters_values", &pypowsybl::DynamicSimulationParameters::provider_parameters_values);
 
-    m.def("check_loadflow_parameters", &pypowsybl::checkLoadFlowParameters, "Check load flow parameters", py::call_guard<py::gil_scoped_release>(),
-          py::arg("parameters"), py::arg("provider"), py::arg("report_node"));
+    m.def("check_loadflow_parameters", &pypowsybl::checkLoadFlowParameters, "Check load flow parameters",
+        py::arg("parameters"), py::arg("provider"), py::arg("report_node"));
 
     m.def("run_loadflow", &pypowsybl::runLoadFlow, "Run a load flow", py::call_guard<py::gil_scoped_release>(),
           py::arg("network"), py::arg("parameters"), py::arg("provider"), py::arg("report_node"));

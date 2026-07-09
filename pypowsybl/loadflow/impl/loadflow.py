@@ -116,7 +116,7 @@ def run_dc(network: Network, parameters: Optional[Parameters] = None, provider: 
 def check_loadflow_parameters(parameters: Optional[Parameters] = None, provider: str = '',
            report_node: Optional[ReportNode] = None) -> bool:  # pylint: disable=protected-access
     """
-    Verifies if the load flow parameters' values are supported by the provider.<br>
+    Verifies if the provider supports the load flow parameters values.
     Reports the unsupported parameters with the report node.
 
     Args:
