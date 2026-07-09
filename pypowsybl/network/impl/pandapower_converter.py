@@ -171,9 +171,9 @@ def create_transformers(n: Network, n_pdp: pandapowerNet) -> None:
         rk = trafo_and_bus['vkr_percent'] / 100 * c
         zk = trafo_and_bus['vk_percent'] / 100 * c
         xk = np.sqrt(zk ** 2 - rk ** 2)
-        ym = trafo_and_bus['i0_percent'] / 100
+        ym = trafo_and_bus['i0_percent'] / 100 / c
         gm = trafo_and_bus['pfe_kw'] / (trafo_and_bus['sn_mva'] * 1000) / c
-        bm = -1 * np.sign(ym) * np.sqrt(ym ** 2 - gm ** 2)
+        bm = -1 * np.sign(ym) * np.sqrt(np.clip(ym ** 2 - gm ** 2, 0, None))
 
         zb_tr = (rated_u2 ** 2) / n_pdp.sn_mva
         r = rk * zb_tr / trafo_and_bus['parallel']
