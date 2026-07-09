@@ -1284,6 +1284,11 @@ def test_voltage_source_converter_creation():
     assert conv.dc_connected2 == False
     assert conv.pcc_terminal_id == 'TRDC-GB-xNodeDc1gb'
 
+    # min_p / max_p not set at creation -> core default is unbounded (+/-inf)
+    convAll = n.get_voltage_source_converters(all_attributes=True).loc['CONV_TEST']
+    assert np.isneginf(convAll.min_p)
+    assert np.isposinf(convAll.max_p)
+
     # Test without specifying dc_connected1/2 and replacing bus1/2_id by connectable_bus1/2_id;
     # The DC side should be connected, but not the AC side
     connection_params_dict2 = {
@@ -1317,6 +1322,36 @@ def test_voltage_source_converter_creation():
     assert conv3.bus_breaker_bus2_id == ""
     assert conv3.connected1
     assert not conv3.connected2
+
+
+def test_voltage_source_converter_creation_min_max_p():
+    n = pypowsybl.network.create_dc_detailed_vsc_symmetrical_monopole_network()
+    n.create_buses(id='BUS_TEST', voltage_level_id='VLDC-GB-xNodeDc1gb-150')
+    n.create_voltage_source_converters(pd.DataFrame.from_records(index='id', data=[{
+        'id': 'CONV_TEST',
+        'name': '',
+        'voltage_level_id': 'VLDC-GB-xNodeDc1gb-150',
+        'bus1_id': 'BUSDC-GB-xNodeDc1gb-150',
+        'bus2_id': 'BUS_TEST',
+        'dc_node1_id': 'dcNodeGbNeg',
+        'dc_node2_id': 'dcNodeGbPos',
+        'control_mode': 'P_PCC',
+        'target_p': 300,
+        'voltage_regulator_on': True,
+        'idle_loss': 1.0,
+        'switching_loss': 1.0,
+        'resistive_loss': 1.0,
+        'target_v_ac': 400,
+        'dc_connected1': True,
+        'dc_connected2': False,
+        'pcc_terminal_id': 'TRDC-GB-xNodeDc1gb',
+        'min_p': -100,
+        'max_p': 100
+    }]))
+    conv = n.get_voltage_source_converters(all_attributes=True).loc['CONV_TEST']
+
+    assert conv.min_p == -100
+    assert conv.max_p == 100
 
 
 def test_dc_ground_creation():

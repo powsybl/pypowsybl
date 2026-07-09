@@ -49,7 +49,9 @@ public class VoltageSourceConverterDataFrameAdder extends AbstractSimpleAdder {
             SeriesMetadata.doubles("target_v_ac"),
             SeriesMetadata.doubles("idle_loss"),
             SeriesMetadata.doubles("switching_loss"),
-            SeriesMetadata.doubles("resistive_loss")
+            SeriesMetadata.doubles("resistive_loss"),
+            SeriesMetadata.doubles("min_p"),
+            SeriesMetadata.doubles("max_p")
     );
 
     @Override
@@ -86,6 +88,8 @@ public class VoltageSourceConverterDataFrameAdder extends AbstractSimpleAdder {
         protected final DoubleSeries idleLoss;
         protected final DoubleSeries switchingLoss;
         protected final DoubleSeries resistiveLoss;
+        protected final DoubleSeries minP;
+        protected final DoubleSeries maxP;
 
         VoltageSourceConverterSeries(UpdatingDataframe dataframe) {
             super(dataframe);
@@ -111,6 +115,8 @@ public class VoltageSourceConverterDataFrameAdder extends AbstractSimpleAdder {
             this.idleLoss = dataframe.getDoubles("idle_loss");
             this.switchingLoss = dataframe.getDoubles("switching_loss");
             this.resistiveLoss = dataframe.getDoubles("resistive_loss");
+            this.minP = dataframe.getDoubles("min_p");
+            this.maxP = dataframe.getDoubles("max_p");
         }
 
         void setVoltageSourceConverterAttributes(VoltageSourceConverterAdder adder, int row, Network network) {
@@ -158,6 +164,11 @@ public class VoltageSourceConverterDataFrameAdder extends AbstractSimpleAdder {
             applyIfPresent(idleLoss, row, adder::setIdleLoss);
             applyIfPresent(switchingLoss, row, adder::setSwitchingLoss);
             applyIfPresent(resistiveLoss, row, adder::setResistiveLoss);
+            // Symmetric with the update path (NetworkDataframes): expose the "unbounded" state as -/+ inf,
+            // mapping it back to the core's -/+ Double.MAX_VALUE sentinel. Finite values pass through unchanged
+            // (creation dataframes are in SI, hence no per-unit conversion here).
+            applyIfPresent(minP, row, value -> adder.setMinP(value == Double.NEGATIVE_INFINITY ? -Double.MAX_VALUE : value));
+            applyIfPresent(maxP, row, value -> adder.setMaxP(value == Double.POSITIVE_INFINITY ? Double.MAX_VALUE : value));
         }
 
         void createVoltageSourceConverter(Network network, int row) {
