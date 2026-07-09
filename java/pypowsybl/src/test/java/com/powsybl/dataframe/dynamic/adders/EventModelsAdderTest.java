@@ -15,6 +15,7 @@ import com.powsybl.dynawo.models.events.AbstractEvent;
 import com.powsybl.iidm.network.Network;
 import com.powsybl.iidm.network.TwoSides;
 import com.powsybl.iidm.network.test.EurostagTutorialExample1Factory;
+import com.powsybl.iidm.network.test.FourSubstationsNodeBreakerFactory;
 import com.powsybl.python.dynamic.PythonEventModelsSupplier;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -45,8 +46,7 @@ class EventModelsAdderTest {
 
     @ParameterizedTest(name = "{0}")
     @MethodSource("eventProvider")
-    void testEventAdders(String name, Consumer<DefaultUpdatingDataframe> updateDataframe) {
-        Network network = EurostagTutorialExample1Factory.createWithLFResults();
+    void testEventAdders(String name, Network network, Consumer<DefaultUpdatingDataframe> updateDataframe) {
         dataframe.addSeries(START_TIME, false, new TestDoubleSeries(10));
         updateDataframe.accept(dataframe);
         EventMappingHandler.addElements(name, eventModelsSupplier, dataframe);
@@ -69,28 +69,40 @@ class EventModelsAdderTest {
     static Stream<Arguments> eventProvider() {
         return Stream.of(
                 Arguments.of("Disconnect",
+                        EurostagTutorialExample1Factory.createWithLFResults(),
                         (Consumer<DefaultUpdatingDataframe>) df -> {
                             df.addSeries(STATIC_ID, false, new TestStringSeries("NHV1_NHV2_1"));
                             df.addSeries(DISCONNECT_ONLY, false, new TestStringSeries(TwoSides.ONE.toString()));
                         }),
                 Arguments.of("Disconnect",
+                        EurostagTutorialExample1Factory.createWithLFResults(),
                         (Consumer<DefaultUpdatingDataframe>) df -> df.addSeries(STATIC_ID, false, new TestStringSeries("GEN"))),
+                Arguments.of("OpenSwitch",
+                        FourSubstationsNodeBreakerFactory.create(),
+                        (Consumer<DefaultUpdatingDataframe>) df -> df.addSeries(STATIC_ID, false, new TestStringSeries("S1VL2_TWT_BREAKER"))),
+                Arguments.of("CloseSwitch",
+                        FourSubstationsNodeBreakerFactory.create(),
+                        (Consumer<DefaultUpdatingDataframe>) df -> df.addSeries(STATIC_ID, false, new TestStringSeries("S1VL2_TWT_BREAKER"))),
                 Arguments.of("ActivePowerVariation",
+                        EurostagTutorialExample1Factory.createWithLFResults(),
                         (Consumer<DefaultUpdatingDataframe>) df -> {
                             df.addSeries(STATIC_ID, false, new TestStringSeries("GEN"));
                             df.addSeries(DELTA_P, false, new TestDoubleSeries(1.3));
                         }),
                 Arguments.of("ReactivePowerVariation",
+                        EurostagTutorialExample1Factory.createWithLFResults(),
                         (Consumer<DefaultUpdatingDataframe>) df -> {
                             df.addSeries(STATIC_ID, false, new TestStringSeries("GEN"));
                             df.addSeries(DELTA_Q, false, new TestDoubleSeries(1.4));
                         }),
                 Arguments.of("ReferenceVoltageVariation",
+                        EurostagTutorialExample1Factory.createWithLFResults(),
                         (Consumer<DefaultUpdatingDataframe>) df -> {
                             df.addSeries(STATIC_ID, false, new TestStringSeries("GEN"));
                             df.addSeries(DELTA_U, false, new TestDoubleSeries(1.5));
                         }),
                 Arguments.of("NodeFault",
+                        EurostagTutorialExample1Factory.createWithLFResults(),
                         (Consumer<DefaultUpdatingDataframe>) df -> {
                             df.addSeries(STATIC_ID, false, new TestStringSeries("NLOAD"));
                             df.addSeries(FAULT_TIME, false, new TestDoubleSeries(0.1));

@@ -8,6 +8,7 @@
 package com.powsybl.dataframe.network.adders;
 
 import com.powsybl.cgmes.extensions.CgmesMetadataModels;
+import com.powsybl.commons.PowsyblException;
 import com.powsybl.dataframe.DataframeElementType;
 import com.powsybl.dataframe.update.*;
 import com.powsybl.entsoe.util.EntsoeArea;
@@ -590,6 +591,62 @@ class NetworkElementAddersTest {
     }
 
     @Test
+    void voltageAngleLimits() {
+        Network network = ThreeWindingsTransformerNetworkFactory.createWithCurrentLimits();
+        DefaultUpdatingDataframe dataframe = new DefaultUpdatingDataframe(1);
+        addStringColumn(dataframe, "id", "VAL-1");
+        addStringColumn(dataframe, "from_element_id", "3WT");
+        addStringColumn(dataframe, "from_side", "ONE");
+        addStringColumn(dataframe, "to_element_id", "3WT");
+        addStringColumn(dataframe, "to_side", "THREE");
+        addDoubleColumn(dataframe, "low_limit", -15.0);
+        addDoubleColumn(dataframe, "high_limit", 20.0);
+
+        NetworkElementAdders.addElements(DataframeElementType.VOLTAGE_ANGLE_LIMITS, network, singletonList(dataframe));
+
+        VoltageAngleLimit limit = network.getVoltageAngleLimit("VAL-1");
+        assertNotNull(limit);
+        assertEquals("3WT", limit.getTerminalFrom().getConnectable().getId());
+        assertEquals(network.getThreeWindingsTransformer("3WT").getTerminal(ThreeSides.ONE), limit.getTerminalFrom());
+        assertEquals(network.getThreeWindingsTransformer("3WT").getTerminal(ThreeSides.THREE), limit.getTerminalTo());
+        assertEquals(-15.0, limit.getLowLimit().orElseThrow());
+        assertEquals(20.0, limit.getHighLimit().orElseThrow());
+    }
+
+    @Test
+    void malformedVoltageAngleLimitsDoNotOverwriteExistingEntry() {
+        Network network = ThreeWindingsTransformerNetworkFactory.createWithCurrentLimits();
+
+        DefaultUpdatingDataframe validDataframe = new DefaultUpdatingDataframe(1);
+        addStringColumn(validDataframe, "id", "VAL-1");
+        addStringColumn(validDataframe, "from_element_id", "3WT");
+        addStringColumn(validDataframe, "from_side", "ONE");
+        addStringColumn(validDataframe, "to_element_id", "3WT");
+        addStringColumn(validDataframe, "to_side", "THREE");
+        addDoubleColumn(validDataframe, "low_limit", -15.0);
+        addDoubleColumn(validDataframe, "high_limit", 20.0);
+        NetworkElementAdders.addElements(DataframeElementType.VOLTAGE_ANGLE_LIMITS, network, singletonList(validDataframe));
+
+        DefaultUpdatingDataframe malformedDataframe = new DefaultUpdatingDataframe(1);
+        addStringColumn(malformedDataframe, "id", "VAL-1");
+        addStringColumn(malformedDataframe, "from_element_id", "3WT");
+        addStringColumn(malformedDataframe, "from_side", "ONE");
+        addStringColumn(malformedDataframe, "to_element_id", "3WT");
+        addStringColumn(malformedDataframe, "to_side", "THREE");
+
+        PowsyblException exception = assertThrows(PowsyblException.class,
+                () -> NetworkElementAdders.addElements(DataframeElementType.VOLTAGE_ANGLE_LIMITS, network, singletonList(malformedDataframe)));
+        assertEquals("At least one of low_limit or high_limit must be provided.", exception.getMessage());
+
+        VoltageAngleLimit limit = network.getVoltageAngleLimit("VAL-1");
+        assertNotNull(limit);
+        assertEquals(network.getThreeWindingsTransformer("3WT").getTerminal(ThreeSides.ONE), limit.getTerminalFrom());
+        assertEquals(network.getThreeWindingsTransformer("3WT").getTerminal(ThreeSides.THREE), limit.getTerminalTo());
+        assertEquals(-15.0, limit.getLowLimit().orElseThrow());
+        assertEquals(20.0, limit.getHighLimit().orElseThrow());
+    }
+
+    @Test
     void area() {
         var network = EurostagTutorialExample1Factory.create();
         var dataframe = new DefaultUpdatingDataframe(1);
@@ -745,5 +802,29 @@ class NetworkElementAddersTest {
         addDoubleColumn(dataframe, "r", 1.0);
         NetworkElementAdders.addElements(DataframeElementType.DC_GROUND, network.getSubnetwork("VscAsymmetricalMonopole"), singletonList(dataframe));
         assertEquals(3, network.getDcGroundCount());
+    }
+
+    @Test
+    void dcSwitch() {
+        Network network = DcDetailedNetworkFactory.createSimple2NodesDcSwitch();
+        DefaultUpdatingDataframe dataframe = new DefaultUpdatingDataframe(1);
+        addStringColumn(dataframe, "id", "DC_SWITCH_TEST");
+        addDoubleColumn(dataframe, "r", 1.23);
+        // deliberately reversed from the factory default to verify node IDs are set correctly
+        addStringColumn(dataframe, "dc_node1_id", "dcNode2");
+        addStringColumn(dataframe, "dc_node2_id", "dcNode1");
+        addStringColumn(dataframe, "kind", "BREAKER");
+        addIntColumn(dataframe, "open", 1);
+
+        NetworkElementAdders.addElements(DataframeElementType.DC_SWITCH, network, singletonList(dataframe));
+
+        assertEquals(2, network.getDcSwitchCount());
+        DcSwitch dcSwitch = network.getDcSwitch("DC_SWITCH_TEST");
+        assertNotNull(dcSwitch);
+        assertEquals(1.23, dcSwitch.getR(), 0.0);
+        assertEquals("dcNode2", dcSwitch.getDcNode1().getId());
+        assertEquals("dcNode1", dcSwitch.getDcNode2().getId());
+        assertEquals(DcSwitchKind.BREAKER, dcSwitch.getKind());
+        assertTrue(dcSwitch.isOpen());
     }
 }

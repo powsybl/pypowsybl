@@ -28,14 +28,36 @@ the violations created by the contingency, they are collected by contingency in 
     >>> result.post_contingency_results
     {'First contingency': PostContingencyResult(contingency_id='First contingency', status=CONVERGED, limit_violations=[3])}
     >>> result.limit_violations
-                                  subject_name   limit_type limit_name   limit  acceptable_duration  limit_reduction        value side
+                    subject_name   limit_type limit_name   limit  acceptable_duration  limit_reduction        value side
     contingency_id    subject_id
-                      NHV1_NHV2_1                   CURRENT  permanent   500.0           2147483647              1.0   623.568946  ONE
-                      NHV1_NHV2_2                   CURRENT  permanent   500.0           2147483647              1.0   655.409876  TWO
-                      VLHV1                     LOW_VOLTAGE              400.0           2147483647              1.0   398.917401
+              NHV1_NHV2_1                   CURRENT  permanent   500.0           2147483647              1.0   623.568946  ONE
+              NHV1_NHV2_2                   CURRENT  permanent   500.0           2147483647              1.0   655.409876  TWO
+              VLHV1                     LOW_VOLTAGE              400.0           2147483647              1.0   398.917401     
     First contingency NHV1_NHV2_2                   CURRENT        20'  1200.0                   60              1.0  1438.021676  ONE
-                      NHV1_NHV2_2                   CURRENT  permanent   500.0           2147483647              1.0  1477.824335  TWO
-                      VLHV1                     LOW_VOLTAGE              400.0           2147483647              1.0   392.158685
+              NHV1_NHV2_2                   CURRENT  permanent   500.0           2147483647              1.0  1477.824335  TWO
+              VLHV1                     LOW_VOLTAGE              400.0           2147483647              1.0   392.158685     
+
+The same `limit_violations` dataframe is also used for voltage angle violations when voltage angle limits are defined on the network.
+In that case, the `limit_type` column contains `LOW_VOLTAGE_ANGLE` or `HIGH_VOLTAGE_ANGLE`:
+
+.. code-block:: python
+
+    >>> network = pp.network.create_eurostag_tutorial_example1_network()
+    >>> network.create_voltage_angle_limits(
+    ...     id='NHV1_NHV2_1_ANGLE',
+    ...     from_element_id='NHV1_NHV2_1',
+    ...     from_side='ONE',
+    ...     to_element_id='NHV1_NHV2_1',
+    ...     to_side='TWO',
+    ...     low_limit=-5.0,
+    ...     high_limit=5.0,
+    ... )
+    >>> sa = pp.security.create_analysis()
+    >>> sa.add_single_element_contingency('NHV1_NHV2_1', 'First contingency')
+    >>> sa_result = sa.run_ac(network)
+    >>> angle_violations = sa_result.limit_violations[
+    ...     sa_result.limit_violations['limit_type'].isin(['LOW_VOLTAGE_ANGLE', 'HIGH_VOLTAGE_ANGLE'])
+    ... ]
 
 It is also possible to get a JSON file with the full security analysis results, just by using the `export_to_json` method, like in the example below :
 
@@ -93,10 +115,10 @@ It also possible to get flow transfer on monitored branches in case of N-1 branc
     >>> sa.add_monitored_elements(branch_ids=['NHV1_NHV2_1', 'NHV1_NHV2_2'])
     >>> sa_result = sa.run_ac(n)
     >>> sa_result.branch_results
-                                                              p1          q1           i1          p2          q2           i2  flow_transfer
+                                                             p1          q1           i1          p2          q2           i2  flow_transfer
     contingency_id operator_strategy_id branch_id
-                                        NHV1_NHV2_2  302.444049   98.740275   456.768978 -300.433895 -137.188493   488.992798            NaN
                                         NHV1_NHV2_1  302.444049   98.740275   456.768978 -300.433895 -137.188493   488.992798            NaN
+                                        NHV1_NHV2_2  302.444049   98.740275   456.768978 -300.433895 -137.188493   488.992798            NaN
     NHV1_NHV2_2                         NHV1_NHV2_1  610.562154  334.056272  1008.928788 -600.996156 -285.379147  1047.825769       1.018761
     NHV1_NHV2_1                         NHV1_NHV2_2  610.562154  334.056272  1008.928788 -600.996156 -285.379147  1047.825769       1.018761
 

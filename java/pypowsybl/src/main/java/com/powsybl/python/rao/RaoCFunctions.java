@@ -8,6 +8,7 @@
 package com.powsybl.python.rao;
 
 import com.powsybl.commons.PowsyblException;
+import com.powsybl.commons.report.ReportNode;
 import com.powsybl.dataframe.DataframeFilter;
 import com.powsybl.dataframe.DataframeMapper;
 import com.powsybl.glsk.api.GlskDocument;
@@ -20,6 +21,9 @@ import com.powsybl.openrao.data.crac.api.RaUsageLimits;
 import com.powsybl.openrao.data.crac.api.parameters.CracCreationParameters;
 import com.powsybl.openrao.data.crac.api.parameters.JsonCracCreationParameters;
 import com.powsybl.openrao.data.raoresult.api.RaoResult;
+import com.powsybl.openrao.data.raoresult.api.TimeCoupledRaoResult;
+import com.powsybl.openrao.data.timecoupledconstraints.TimeCoupledConstraints;
+import com.powsybl.openrao.data.timecoupledconstraints.io.JsonTimeCoupledConstraints;
 import com.powsybl.openrao.raoapi.json.JsonRaoParameters;
 import com.powsybl.openrao.raoapi.parameters.*;
 import com.powsybl.openrao.raoapi.parameters.extensions.*;
@@ -46,6 +50,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.ByteBuffer;
+import java.time.OffsetDateTime;
 import java.util.*;
 import java.util.function.Supplier;
 
@@ -78,7 +83,7 @@ public final class RaoCFunctions {
 
     @CEntryPoint(name = "createDefaultRaoParameters")
     public static ObjectHandle createDefaultRaoParameters(IsolateThread thread, ExceptionHandlerPointer exceptionHandlerPtr) {
-        return doCatch(exceptionHandlerPtr, () -> ObjectHandles.getGlobal().create(new RaoParameters()));
+        return doCatch(exceptionHandlerPtr, () -> ObjectHandles.getGlobal().create(new RaoParameters(ReportNode.NO_OP)));
     }
 
     @CEntryPoint(name = "loadRaoParameters")
@@ -88,7 +93,7 @@ public final class RaoCFunctions {
             public RaoParametersPointer get() throws IOException {
                 ByteBuffer bufferParameters = CTypeConversion.asByteBuffer(parametersBuffer, paramersBufferSize);
                 InputStream streamedParameters = new ByteArrayInputStream(binaryBufferToBytes(bufferParameters));
-                return convertToRaoParametersPointer(JsonRaoParameters.read(streamedParameters));
+                return convertToRaoParametersPointer(JsonRaoParameters.read(streamedParameters, ReportNode.NO_OP));
             }
         });
     }
@@ -101,7 +106,7 @@ public final class RaoCFunctions {
             public ArrayPointer<CCharPointer> get() throws IOException {
                 RaoParameters parameters = convertToRaoParameters(raoParameters);
                 try (ByteArrayOutputStream output = new ByteArrayOutputStream()) {
-                    JsonRaoParameters.write(parameters, output);
+                    JsonRaoParameters.write(parameters, output, ReportNode.NO_OP);
                     return Util.createByteArray(output.toByteArray());
                 } catch (IOException e) {
                     throw new PowsyblException("Could not serialize rao parameters : " + e.getMessage());
@@ -268,6 +273,37 @@ public final class RaoCFunctions {
         });
     }
 
+    @CEntryPoint(name = "loadTimeCoupledConstraints")
+    public static ObjectHandle loadTimeCoupledConstraints(IsolateThread thread, CCharPointer constraintsBuffer,
+                                                          int constraintsBufferSize, ExceptionHandlerPointer exceptionHandlerPtr) {
+        return doCatch(exceptionHandlerPtr, new PointerProvider<>() {
+            @Override
+            public ObjectHandle get() throws IOException {
+                ByteBuffer byteBufferConstraints = CTypeConversion.asByteBuffer(constraintsBuffer, constraintsBufferSize);
+                InputStream streamConstraints = new ByteArrayInputStream(binaryBufferToBytes(byteBufferConstraints));
+                TimeCoupledConstraints timeCoupledConstraints = JsonTimeCoupledConstraints.read(streamConstraints);
+                return ObjectHandles.getGlobal().create(timeCoupledConstraints);
+            }
+        });
+    }
+
+    @CEntryPoint(name = "runMarmot")
+    public static ObjectHandle runMarmot(IsolateThread thread, CCharPointerPointer timestampsPtr, VoidPointerPointer networkHandles, VoidPointerPointer cracHandles, int elementCount,
+                                      RaoParametersPointer parametersPointer, ObjectHandle timeCoupledConstraintHandle, ExceptionHandlerPointer exceptionHandlerPtr) {
+        return doCatch(exceptionHandlerPtr, new PointerProvider<>() {
+            @Override
+            public ObjectHandle get() throws IOException {
+                List<Network> networks = toObjectHandleList(networkHandles, elementCount);
+                List<Crac> cracs = toObjectHandleList(cracHandles, elementCount);
+                List<OffsetDateTime> timestamps = toStringList(timestampsPtr, elementCount).stream().map(OffsetDateTime::parse).toList();
+                RaoParameters raoParameters = convertToRaoParameters(parametersPointer);
+                TimeCoupledConstraints constraints = ObjectHandles.getGlobal().get(timeCoupledConstraintHandle);
+                RaoResult result = RaoContext.runMarmot(timestamps, networks, cracs, raoParameters, constraints);
+                return ObjectHandles.getGlobal().create(result);
+            }
+        });
+    }
+
     @CEntryPoint(name = "serializeRaoResultsToBuffer")
     public static ArrayPointer<CCharPointer> serializeRaoResultsToBuffer(IsolateThread thread, ObjectHandle raoResultHandle,
         ObjectHandle cracHandle, ExceptionHandlerPointer exceptionHandlerPtr) {
@@ -324,7 +360,7 @@ public final class RaoCFunctions {
 
     @CEntryPoint(name = "createRaoParameters")
     public static RaoParametersPointer createRaoParameters(IsolateThread thread, ExceptionHandlerPointer exceptionHandlerPtr) {
-        return doCatch(exceptionHandlerPtr, () -> convertToRaoParametersPointer(new RaoParameters()));
+        return doCatch(exceptionHandlerPtr, () -> convertToRaoParametersPointer(new RaoParameters(ReportNode.NO_OP)));
     }
 
     @CEntryPoint(name = "getFlowCnecResults")
@@ -425,6 +461,33 @@ public final class RaoCFunctions {
         });
     }
 
+    @CEntryPoint(name = "getGlobalCostResults")
+    public static ArrayPointer<SeriesPointer> getGlobalCostResults(IsolateThread thread, ObjectHandle cracHandle, ObjectHandle raoResultHandle, ExceptionHandlerPointer exceptionHandlerPtr) {
+        return doCatch(exceptionHandlerPtr, new PointerProvider<>() {
+            @Override
+            public ArrayPointer<SeriesPointer> get() throws IOException {
+                Crac crac = ObjectHandles.getGlobal().get(cracHandle);
+                TimeCoupledRaoResult result = ObjectHandles.getGlobal().get(raoResultHandle);
+                return Dataframes.createCDataframe(RaoDataframes.globalCostResultMapper(), crac, new DataframeFilter(), result);
+
+            }
+        });
+    }
+
+    @CEntryPoint(name = "getCostResultsForTimestamp")
+    public static ArrayPointer<SeriesPointer> getCostResultsForTimestamp(IsolateThread thread, ObjectHandle cracHandle, ObjectHandle raoResultHandle, CCharPointer timestampPtr, ExceptionHandlerPointer exceptionHandlerPtr) {
+        return doCatch(exceptionHandlerPtr, new PointerProvider<>() {
+            @Override
+            public ArrayPointer<SeriesPointer> get() throws IOException {
+                String timestampStr = CTypeUtil.toString(timestampPtr);
+                Crac crac = ObjectHandles.getGlobal().get(cracHandle);
+                TimeCoupledRaoResult result = ObjectHandles.getGlobal().get(raoResultHandle);
+                DataframeMapper<Crac, TimeCoupledRaoResult> virtualCostResultMapper = createCostResultMapper(OffsetDateTime.parse(timestampStr));
+                return Dataframes.createCDataframe(virtualCostResultMapper, crac, new DataframeFilter(), result);
+            }
+        });
+    }
+
     @CEntryPoint(name = "getVirtualCostNames")
     public static ArrayPointer<CCharPointerPointer> getVirtualCostNames(IsolateThread thread, ObjectHandle raoResultHandle, ExceptionHandlerPointer exceptionHandlerPtr) {
         return doCatch(exceptionHandlerPtr, new PointerProvider<>() {
@@ -478,7 +541,7 @@ public final class RaoCFunctions {
     }
 
     private static RaoParameters convertToRaoParameters(RaoParametersPointer paramPointer) {
-        RaoParameters raoParameters = new RaoParameters();
+        RaoParameters raoParameters = new RaoParameters(ReportNode.NO_OP);
         raoParameters.getObjectiveFunctionParameters().setType(
             ObjectiveFunctionParameters.ObjectiveFunctionType.values()[paramPointer.getObjectiveFunctionType()]);
         raoParameters.getObjectiveFunctionParameters().setEnforceCurativeSecurity(paramPointer.getEnforceCurativeSecurity());
@@ -511,10 +574,11 @@ public final class RaoCFunctions {
         }
 
         if (paramPointer.getSearchTreeParameters()) {
-            raoParameters.addExtension(OpenRaoSearchTreeParameters.class, new OpenRaoSearchTreeParameters());
+            raoParameters.addExtension(OpenRaoSearchTreeParameters.class, new OpenRaoSearchTreeParameters(ReportNode.NO_OP));
             OpenRaoSearchTreeParameters searchTreeParameters = raoParameters.getExtension(OpenRaoSearchTreeParameters.class);
 
-            searchTreeParameters.getObjectiveFunctionParameters().setCurativeMinObjImprovement(paramPointer.getCurativeMinObjImprovement());
+            searchTreeParameters.getObjectiveFunctionParameters().setCurativeMinObjImprovement(paramPointer.getCurativeMinObjImprovement(),
+                    ReportNode.NO_OP);
 
             // Range action optimization solver
             searchTreeParameters.getRangeActionsOptimizationParameters().getLinearOptimizationSolver()
@@ -770,12 +834,12 @@ public final class RaoCFunctions {
 
     @CEntryPoint(name = "getCracPstRangeActions")
     public static ArrayPointer<SeriesPointer> getCracPstRangeActions(IsolateThread thread, ObjectHandle cracHandle, ExceptionHandlerPointer exceptionHandlerPtr) {
-        return cracGenericMethod(thread, cracHandle, cracRangeActions(crac -> crac.getPstRangeActions().stream().toList()), exceptionHandlerPtr);
+        return cracGenericMethod(thread, cracHandle, cracPstRangeActions(crac -> crac.getPstRangeActions().stream().toList()), exceptionHandlerPtr);
     }
 
     @CEntryPoint(name = "getCracHvdcRangeActions")
     public static ArrayPointer<SeriesPointer> getCracHvdcRangeActions(IsolateThread thread, ObjectHandle cracHandle, ExceptionHandlerPointer exceptionHandlerPtr) {
-        return cracGenericMethod(thread, cracHandle, cracRangeActions(crac -> crac.getHvdcRangeActions().stream().toList()), exceptionHandlerPtr);
+        return cracGenericMethod(thread, cracHandle, cracHvdcRangeActions(crac -> crac.getHvdcRangeActions().stream().toList()), exceptionHandlerPtr);
     }
 
     @CEntryPoint(name = "getCracInjectionRangeActions")

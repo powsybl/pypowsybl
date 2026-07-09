@@ -153,6 +153,7 @@ Supported elements are:
  - DC lines
  - voltage source converters
  - DC grounds
+ - DC switches
 
 Each element of the network is mapped to one row of the dataframe, an each element attribute
 is mapped to one column of the dataframe (a :class:`~pandas.Series`).
@@ -565,7 +566,7 @@ Now you can draw the single line diagrams of *VL1* and *VL2* to check that the l
    :class: forced-white-background
 
 Here, similarly to busbar sections, the load and the line are randomly localized on the diagram.
-You can add extensions on the line and on the load to specify where they are localized in the busbar sections and if they must be 
+You can add extensions on the line and on the load to specify where they are localized in the busbar sections and if they must be
 drawn on the top or on the bottom. We choose that the load *load1* is the first feeder of the busbar
 section and on the bottom of *VL1*. The line *line1* is the second one and directed to the top on *VL1*. On *VL2*, the line
 is also on top. The relative position between the load and the line is specified with the order in the position
@@ -926,6 +927,23 @@ parent network and become again a standalone network.
 
     >>> nl_sub.detach()
 
+
+Network flattening
+------------------
+
+Pypowsybl provides the flatten method to remove the subnetworks structure, transferring the subnetworks' data to the
+parent network. For example, merging 2 CGMES microgrids yields to a subnetworks structure that can be flattened:
+
+.. doctest::
+
+    >>> be = pp.network.create_micro_grid_be_network()
+    >>> nl = pp.network.create_micro_grid_nl_network()
+    >>> be.merge(nl)
+    >>> be.flatten()
+
+Please refer to `the java documentation <https://powsybl.readthedocs.io/projects/powsybl-core/en/stable/grid_features/working_with_subnetworks.html#flattening-a-network>`
+for more precisions on extensions and properties handling while flattening a network.
+
 Reducing a network
 ------------------
 
@@ -1044,3 +1062,113 @@ Using the same example as above :
     LINE1               LINE  TWO               1'  CURRENT      1500                   60       False        DEFAULT     False
     LINE1               LINE  TWO  permanent_limit  CURRENT      1100                   -1       False    OTHER_GROUP      True
 
+
+Using voltage angle limits
+--------------------------
+
+Voltage angle limits are defined between two terminals. Unlike operational limits, they are not attached to a single element 
+side and they are not organized in operational-limit groups. Also there is currently no temporary/permanent distinction for
+voltage angles.
+
+Each voltage angle limit has its own identifier and may define a lower bound, an upper bound, or both.
+The endpoints are addressed with a connectable identifier and, for sided elements, a side value.
+
+.. code-block:: python
+
+    >>> net = pp.network.create_eurostag_tutorial_example1_network()
+    >>> net.create_voltage_angle_limits(
+    ...     id='NHV1_NHV2_1_ANGLE',
+    ...     from_element_id='NHV1_NHV2_1',
+    ...     from_side='ONE',
+    ...     to_element_id='NHV1_NHV2_1',
+    ...     to_side='TWO',
+    ...     low_limit=-30.0,
+    ...     high_limit=30.0,
+    ... )
+    >>> net.get_voltage_angle_limits()
+                  from_element_id from_side to_element_id to_side  low_limit  high_limit
+    id
+    NHV1_NHV2_1_ANGLE    NHV1_NHV2_1       ONE    NHV1_NHV2_1     TWO      -30.0        30.0
+
+The same API can also be used with a dataframe:
+
+.. code-block:: python
+
+    >>> df = pd.DataFrame.from_records(index='id', data=[{
+    ...     'id': 'NHV1_NHV2_2_MAX_ANGLE',
+    ...     'from_element_id': 'NHV1_NHV2_2',
+    ...     'from_side': 'ONE',
+    ...     'to_element_id': 'NHV1_NHV2_2',
+    ...     'to_side': 'TWO',
+    ...     'high_limit': 25.0,
+    ... }])
+    >>> net.create_voltage_angle_limits(df)
+
+Voltage angle limits are identified by their own `id`. If you insert another voltage angle limit on the same pair of
+terminals but with a different `id`, both limits are kept. As a result, `get_voltage_angle_limits()` will show two
+rows for the same endpoints, one for each limit id, and they will both be checked in the security analysis.
+
+Voltage angle limits are also used by security analysis. When they are violated, the security-analysis results expose them
+through the `limit_violations` dataframe with `LOW_VOLTAGE_ANGLE` or `HIGH_VOLTAGE_ANGLE` as `limit_type`.
+
+
+Using network extensions
+------------------------
+
+Network extensions are exposed through a small set of generic methods:
+
+- :func:`get_extensions_names` to list the available extension names
+- :func:`get_extensions_information` to inspect the dataframe schema of each extension
+- :meth:`Network.get_extensions` to read extension data
+- :meth:`Network.create_extensions`, :meth:`Network.update_extensions` and :meth:`Network.remove_extensions` to manage extension data
+
+Pypowsybl mostly exposes the powsybl-core extension model as read/write dataframes. For the semantic meaning of a specific extension,
+refer to the `powsybl-core extensions documentation <https://powsybl.readthedocs.io/projects/powsybl-core/en/latest/grid_model/extensions.html>`_.
+
+For example, transformer phase-angle-clock extensions can be discovered from the extension catalog:
+
+.. code-block:: python
+
+    >>> available_extensions = pp.network.get_extensions_names()
+    >>> available_extensions[0:5]
+    ['activePowerControl',
+    'branchObservability',
+    'busbarSectionPosition',
+    'cgmesMetadataModels',
+    'coordinatedReactiveControl']
+
+    >>> extensions_information = pp.network.get_extensions_information()
+    >>> extensions_information.loc['twoWindingsTransformerPhaseAngleClock', 'attributes']
+    'index : id (str), phase_angle_clock (int)'
+
+Sticking to the phase clock extension as an example, create, update and remove can be used as follows.
+
+.. code-block:: python
+
+    >>> network = pp.network.create_ieee14()
+    >>> transformer_id = network.get_2_windings_transformers().index[0]
+
+    >>> network.create_extensions(
+    ...     'twoWindingsTransformerPhaseAngleClock',
+    ...     id=transformer_id,
+    ...     phase_angle_clock=5,
+    ... )
+
+    >>> phase_angle_clock = network.get_extensions('twoWindingsTransformerPhaseAngleClock').loc[transformer_id]
+    >>> phase_angle_clock.phase_angle_clock
+    5
+
+    >>> network.update_extensions(
+    ...     'twoWindingsTransformerPhaseAngleClock',
+    ...     id=transformer_id,
+    ...     phase_angle_clock=11,
+    ... )
+
+    >>> network.get_extensions('twoWindingsTransformerPhaseAngleClock').loc[transformer_id].phase_angle_clock
+    11
+
+    >>> network.remove_extensions('twoWindingsTransformerPhaseAngleClock', [transformer_id])
+    >>> network.get_extensions('twoWindingsTransformerPhaseAngleClock').empty
+    True
+
+The same workflow applies to other extensions.
