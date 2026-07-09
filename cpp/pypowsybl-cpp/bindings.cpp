@@ -1132,7 +1132,12 @@ PYBIND11_MODULE(_pypowsybl, m) {
             .value("HVDC_LINE_ACTIVE_POWER", sensitivity_variable_type::HVDC_LINE_ACTIVE_POWER)
             .value("TRANSFORMER_PHASE_1", sensitivity_variable_type::TRANSFORMER_PHASE_1)
             .value("TRANSFORMER_PHASE_2", sensitivity_variable_type::TRANSFORMER_PHASE_2)
-            .value("TRANSFORMER_PHASE_3", sensitivity_variable_type::TRANSFORMER_PHASE_3);
+            .value("TRANSFORMER_PHASE_3", sensitivity_variable_type::TRANSFORMER_PHASE_3)
+            .value("SHUNT_COMPENSATOR_SUSCEPTANCE", sensitivity_variable_type::SHUNT_COMPENSATOR_SUSCEPTANCE)
+            .value("BRANCH_RESISTANCE", sensitivity_variable_type::BRANCH_RESISTANCE)
+            .value("BRANCH_REACTANCE", sensitivity_variable_type::BRANCH_REACTANCE)
+            .value("BRANCH_ADMITTANCE", sensitivity_variable_type::BRANCH_ADMITTANCE)
+            .value("SVC_PILOT_POINT_TARGET_VOLTAGE", sensitivity_variable_type::SVC_PILOT_POINT_TARGET_VOLTAGE);
 
     m.def("get_post_contingency_results", &pypowsybl::getPostContingencyResults, "get post contingency results of a security analysis", py::arg("result"));
     m.def("get_pre_contingency_result", &pypowsybl::getPreContingencyResult, "get pre contingency result of a security analysis", py::arg("result"));
