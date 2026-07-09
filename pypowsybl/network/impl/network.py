@@ -5997,13 +5997,13 @@ class Network:  # pylint: disable=too-many-public-methods
             - **control_mode** the control mode of the converter (V_DC or P_PCC)
             - **target_p** the AC active power setpoint
             - **target_q** the AC reactive power setpoint
+            - **min_p** the minimum active power in MW (optional, unbounded by default)
+            - **max_p** the maximum active power in MW (optional, unbounded by default)
             - **target_v_ac** the AC voltage setpoint
             - **target_v_dc** the DC voltage setpoint
             - **idle_loss** the idle loss coefficient
             - **switching_loss** the switching loss coefficient
             - **resistive_loss** the resistive loss coefficient
-            - **min_p** the minimum active power in MW (optional, unbounded by default)
-            - **max_p** the maximum active power in MW (optional, unbounded by default)
 
             .. note::
 
