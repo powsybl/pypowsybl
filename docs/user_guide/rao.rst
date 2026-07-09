@@ -269,3 +269,33 @@ open rao, a RaoLogFilter is available :
     >>> logger.setLevel(logging.ERROR)
     >>> logger.addFilter(RaoLogFilter())
     >>> rao_result = rao_runner.run(crac, network, parameters, loop_flow_glsk=glsk)
+
+MARMOT, the time-coupled RAO
+============================
+
+PyPowSyBl provide an API to launch a time-coupled RAO using the MARMOT implementation present in powsybl-open-rao.
+Please see the `PowSyBl RAO MARMOT documentation <https://powsybl.readthedocs.io/projects/openrao/en/stable/algorithms/marmot.html>`_ for more details.
+
+Dedicated classes to build a time coupled input, constraints and runner are available.
+
+.. doctest::
+
+    >>> import pypowsybl as pp
+    >>> import logging
+    >>> import sys
+    >>> import pypowsybl as pp
+    >>> from pypowsybl.rao import Parameters as RaoParameters
+    >>> from pypowsybl.rao import TimeCoupledConstraints, Crac, TimeCoupledRaoInput, TimeCoupledRao
+    >>> from datetime import datetime
+    >>> from pypowsybl._pypowsybl import RaoComputationStatus
+    >>> RAO_DATA_DIR = TEST_DIR.parent / 'data/rao/time_coupled_rao'
+    >>>
+    >>> parameters = RaoParameters.from_file_source(RAO_DATA_DIR.joinpath("RaoParameters_minCost_megawatt_dc_0_shift_penalty_100.json"))
+    >>> constraints = TimeCoupledConstraints.from_file_source(RAO_DATA_DIR.joinpath("time-coupled-constraints-with-lead-and-lag-times-and-gradients.json"))
+    >>> date_format = '%Y%m%d%H%M'
+    >>> time_coupled_input = TimeCoupledRaoInput()
+    >>> for t in ["202511040030", "202511040130", "202511040230"]:
+    >>>   n = pp.network.load(RAO_DATA_DIR.joinpath("6Nodes_Pmin1000_Pmax3000.xiidm"))
+    >>>   time_coupled_input.add_temporal_data(datetime.strptime(t, date_format), n, Crac.from_file_source(n, RAO_DATA_DIR.joinpath("crac_" + t + ".json")))
+    >>> runner = TimeCoupledRao()
+    >>> results_df = runner.run(time_coupled_input, constraints, parameters)
