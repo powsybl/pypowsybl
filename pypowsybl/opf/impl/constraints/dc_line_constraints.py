@@ -5,9 +5,9 @@
 # SPDX-License-Identifier: MPL-2.0
 #
 import pyoptinterface as poi
-from pyoptinterface import ipopt
 
 from pypowsybl.opf.impl.model.constraints import Constraints
+from pypowsybl.opf.impl.model.model import Model
 from pypowsybl.opf.impl.model.model_parameters import ModelParameters
 from pypowsybl.opf.impl.model.network_cache import NetworkCache
 from pypowsybl.opf.impl.model.variable_context import VariableContext
@@ -15,7 +15,7 @@ from pypowsybl.opf.impl.model.variable_context import VariableContext
 
 class DcLineConstraints(Constraints):
     def add(self, parameters: ModelParameters, network_cache: NetworkCache, variable_context: VariableContext,
-            model: ipopt.Model) -> None:
+            model: Model) -> None:
         
         # FIXME add DC switch support once the PyPowSyBl DC switch API is available.
         # DC switches may affect the effective DC topology and/or add additional branches

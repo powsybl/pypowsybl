@@ -5,9 +5,9 @@
 # SPDX-License-Identifier: MPL-2.0
 #
 import pyoptinterface as poi
-from pyoptinterface import ipopt
 
 from pypowsybl.opf.impl.model.constraints import Constraints
+from pypowsybl.opf.impl.model.model import Model
 from pypowsybl.opf.impl.model.model_parameters import ModelParameters
 from pypowsybl.opf.impl.model.network_cache import NetworkCache
 from pypowsybl.opf.impl.model.variable_context import VariableContext
@@ -15,7 +15,7 @@ from pypowsybl.opf.impl.model.variable_context import VariableContext
 
 class DcGroundConstraints(Constraints):
     def add(self, parameters: ModelParameters, network_cache: NetworkCache, variable_context: VariableContext,
-            model: ipopt.Model) -> None:
+            model: Model) -> None:
         for row in network_cache.dc_grounds.itertuples(index=False):
             dc_node_num = network_cache.dc_nodes.index.get_loc(row.dc_node_id)
             v_var = variable_context.v_dc_vars[dc_node_num]

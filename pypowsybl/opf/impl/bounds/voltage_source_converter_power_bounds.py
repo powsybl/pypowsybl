@@ -23,7 +23,7 @@ MAX_CONVERTER_Q = 100.0
 class VoltageSourceConverterPowerBounds(VariableBounds):
 
     def add(self, parameters: ModelParameters, network_cache: NetworkCache,
-            variable_context: VariableContext, model: Model):
+            variable_context: VariableContext, model: Model) -> None:
         for converter_num, row in enumerate(network_cache.voltage_source_converters.itertuples()):
             converter_index = variable_context.conv_num_2_index[converter_num]
             if converter_index == -1:
@@ -31,7 +31,7 @@ class VoltageSourceConverterPowerBounds(VariableBounds):
 
             logger.log(TRACE_LEVEL,
                        f"Add active power bounds [{-MAX_CONVERTER_P}, {MAX_CONVERTER_P}] to converter '{row.Index}' (num={converter_num})")
-            
+
             model.set_variable_bounds(variable_context.conv_p_vars[converter_index], -MAX_CONVERTER_P, MAX_CONVERTER_P)
 
             logger.log(TRACE_LEVEL,

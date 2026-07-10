@@ -13,7 +13,7 @@ from pypowsybl.opf.impl.model.variable_context import VariableContext
 
 
 class MinimizeDcLossesFunction(CostFunction):
-    def __init__(self):
+    def __init__(self) -> None:
         super().__init__('Minimal Dc Losses')
 
     def create(self, network_cache: NetworkCache, variable_context: VariableContext) -> ExprBuilder:

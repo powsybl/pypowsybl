@@ -23,7 +23,7 @@ MAX_DC_VOLTAGE = 2.0
 class DcNodeVoltageBounds(VariableBounds):
 
     def add(self, parameters: ModelParameters, network_cache: NetworkCache,
-            variable_context: VariableContext, model: Model):
+            variable_context: VariableContext, model: Model) -> None:
         for dc_node_num, row in enumerate(network_cache.dc_nodes.itertuples()):
             logger.log(TRACE_LEVEL,
                        f"Add voltage magnitude bounds [{MIN_DC_VOLTAGE}, {MAX_DC_VOLTAGE}] "

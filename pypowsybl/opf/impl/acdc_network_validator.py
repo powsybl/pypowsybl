@@ -4,6 +4,8 @@
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 # SPDX-License-Identifier: MPL-2.0
 #
+from pandas import DataFrame
+
 from pypowsybl.network import Network
 
 
@@ -39,8 +41,7 @@ def validate_acdc_network(network: Network) -> None:
     check_dc_components_have_vdc_converter(voltage_source_converters, dc_nodes_with_component)
 
 
-def get_dc_nodes_with_component(dc_nodes, dc_buses):
-    
+def get_dc_nodes_with_component(dc_nodes: DataFrame, dc_buses: DataFrame) -> DataFrame:
     # DC nodes reference their DC bus. The DC component is carried by the DC bus,
     # so map each DC node to its component before running component-level checks.
 
@@ -53,7 +54,7 @@ def get_dc_nodes_with_component(dc_nodes, dc_buses):
     )
 
 
-def check_dc_nodes_have_same_nominal_voltage_per_dc_component(dc_nodes_with_component) -> None:
+def check_dc_nodes_have_same_nominal_voltage_per_dc_component(dc_nodes_with_component: DataFrame) -> None:
     if dc_nodes_with_component["nominal_v"].isna().any():
         nodes_without_nominal_v = sorted(
             dc_nodes_with_component[dc_nodes_with_component["nominal_v"].isna()].index
@@ -76,7 +77,7 @@ def check_dc_nodes_have_same_nominal_voltage_per_dc_component(dc_nodes_with_comp
                 f"DC nodes: {component_node_ids}"
             )
 
-def check_dc_components_have_vdc_converter(voltage_source_converters, dc_nodes_with_component) -> None:
+def check_dc_components_have_vdc_converter(voltage_source_converters: DataFrame, dc_nodes_with_component: DataFrame) -> None:
     node_to_component = dc_nodes_with_component["dc_component"].to_dict()
     all_dc_components = set(dc_nodes_with_component["dc_component"])
 
@@ -102,12 +103,12 @@ def check_dc_components_have_vdc_converter(voltage_source_converters, dc_nodes_w
             f"DC components have no VSC in V_DC mode: {components_without_vdc}"
         )
 
-def check_no_dangling_dc_lines(dc_lines) -> None:
-    invalid_lines = []
+def check_no_dangling_dc_lines(dc_lines: DataFrame) -> None:
+    invalid_lines: list[str] = []
 
     for row in dc_lines.itertuples():
         if not (row.dc_node1_id and row.dc_node2_id):
-            invalid_lines.append(row.Index)
+            invalid_lines.append(str(row.Index))
 
     if invalid_lines:
         raise ValueError(

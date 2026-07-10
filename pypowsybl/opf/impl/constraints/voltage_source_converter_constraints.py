@@ -5,15 +5,17 @@
 # SPDX-License-Identifier: MPL-2.0
 #
 import pyoptinterface as poi
-from pyoptinterface import ipopt, nl
+from pyoptinterface import nl
+
 from pypowsybl.opf.impl.model.constraints import Constraints
+from pypowsybl.opf.impl.model.model import Model
 from pypowsybl.opf.impl.model.model_parameters import ModelParameters
 from pypowsybl.opf.impl.model.network_cache import NetworkCache
 from pypowsybl.opf.impl.model.variable_context import VariableContext
 
 class VoltageSourceConverterConstraints(Constraints):
     def add(self, parameters: ModelParameters, network_cache: NetworkCache, variable_context: VariableContext,
-            model: ipopt.Model) -> None:
+            model: Model) -> None:
         for converter_num, converter_row in enumerate(network_cache.voltage_source_converters.itertuples(index=False)):
             with nl.graph():
                 dc_node1_id, dc_node2_id, bus1_id = converter_row.dc_node1_id, converter_row.dc_node2_id, converter_row.bus1_id

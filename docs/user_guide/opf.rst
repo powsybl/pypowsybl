@@ -48,6 +48,14 @@ Create a network, select an OPF mode, and run the calculation:
         raise RuntimeError("OPF did not converge")
 
 
+Solver
+------
+
+The OPF uses `PyOptInterface <https://metab0t.github.io/PyOptInterface/>`_ with `IPOPT <https://github.com/coin-or/Ipopt>`_ as the default solver of the optimal power flow.
+
+The IPOPT native library is not shipped with PyPowSyBl nor PyOptInterface. When it is not available, running an OPF raises ``RuntimeError: IPOPT library is not loaded``. To install a precompiled IPOPT and make it discoverable, follow the `PyOptInterface IPOPT setup guide <https://metab0t.github.io/PyOptInterface/getting_started.html#ipopt>`_.
+
+
 Parameters
 ----------
 
@@ -192,3 +200,15 @@ DC voltage bases
 ----------------
 
 In AC/DC OPF, networks with several nominal voltages inside the same DC component are rejected before solving.
+
+
+Scope and limitations
+---------------------
+
+As a beta, the optimal power flow in the AC/DC mode applies fixed placeholder operating limits instead of reading them from the network:
+
+- VSC active and reactive power bounds;
+- DC node voltage bounds;
+- DC line current bounds.
+
+DC switches are not yet modeled.

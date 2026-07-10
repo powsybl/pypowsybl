@@ -20,7 +20,7 @@ MIN_DC_CURRENT = -2.0
 MAX_DC_CURRENT = 2.0
 class DcLineCurrentBounds(VariableBounds):
     def add(self, parameters: ModelParameters, network_cache: NetworkCache,
-            variable_context: VariableContext, model: Model):
+            variable_context: VariableContext, model: Model) -> None:
         for dc_line_num, row in enumerate(network_cache.dc_lines.itertuples()):
 
             dc_line_index = variable_context.dc_line_num_2_index[dc_line_num]

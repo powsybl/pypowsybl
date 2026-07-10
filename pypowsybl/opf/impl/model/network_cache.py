@@ -218,29 +218,29 @@ class NetworkCache:
         return points.set_index(['id', 'num'])
 
     @staticmethod
-    def _build_dc_buses(network: Network):
+    def _build_dc_buses(network: Network) -> DataFrame:
         dc_buses = network.get_dc_buses(attributes=['connected_component', 'dc_component'])
         return dc_buses[dc_buses['connected_component'] == 0]
 
     @staticmethod
-    def _build_dc_nodes(network: Network, dc_buses: DataFrame):
+    def _build_dc_nodes(network: Network, dc_buses: DataFrame) -> DataFrame:
         # FIXME : when dc_nodes is empty, its type is float64 and not object
         dc_nodes = network.get_dc_nodes(attributes=['dc_bus_id', 'nominal_v']).astype(object)
         return pd.merge(dc_nodes, dc_buses, left_on='dc_bus_id', right_index=True, how='left')
 
     @staticmethod
-    def _build_dc_lines(network: Network):
+    def _build_dc_lines(network: Network) -> DataFrame:
         return network.get_dc_lines(attributes=['dc_node1_id', 'dc_node2_id', 'r'])
 
     @staticmethod
-    def _build_voltage_source_converters(network: Network):
+    def _build_voltage_source_converters(network: Network) -> DataFrame:
         return network.get_voltage_source_converters(attributes=['voltage_level_id', 'bus1_id', 'bus2_id', 'dc_node1_id', 'dc_node2_id',
                                      'dc_connected1', 'dc_connected2', 'pcc_terminal_id', 'voltage_regulator_on',
                                      'control_mode', 'target_v_dc', 'target_v_ac', 'target_p', 'target_q', 'idle_loss',
                                      'switching_loss', 'resistive_loss'])
 
     @staticmethod
-    def _build_dc_grounds(network: Network):
+    def _build_dc_grounds(network: Network) -> DataFrame:
         return network.get_dc_grounds(attributes=['dc_node_id', 'r'])
 
     @property
@@ -539,14 +539,14 @@ class NetworkCache:
 
     def update_dc_nodes(self,
                      dc_node_ids: list[str],
-                     dc_node_v: list[float]):
+                     dc_node_v: list[float]) -> None:
         self._network.update_dc_nodes(id=dc_node_ids, v=dc_node_v)
         self._dc_nodes = self._build_dc_nodes(self._network, self.dc_buses)
 
     def update_dc_lines(self,
                         dc_line_ids: list[str],
                         dc_line_i1: list[float],
-                        dc_line_i2: list[float]):
+                        dc_line_i2: list[float]) -> None:
         self._network.update_dc_lines(id=dc_line_ids,
                                       i1=dc_line_i1,
                                       i2=dc_line_i2)
@@ -561,7 +561,7 @@ class NetworkCache:
                                          conv_target_p: list[float],
                                          conv_target_q:list[float],
                                          conv_target_v_dc: list[float],
-                                         conv_target_v_ac: list[float]):
+                                         conv_target_v_ac: list[float]) -> None:
         self._network.update_voltage_source_converters(id=conv_ids,
                                                        p_ac=conv_p,
                                                        q_ac=conv_q,

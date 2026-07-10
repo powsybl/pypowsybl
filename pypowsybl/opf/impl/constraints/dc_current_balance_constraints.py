@@ -4,6 +4,8 @@
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 # SPDX-License-Identifier: MPL-2.0
 #
+from typing import Any
+
 import pyoptinterface as poi
 
 from pypowsybl.opf.impl.model import network_cache
@@ -40,10 +42,10 @@ def create_dc_current_balance_expressions(network_cache: NetworkCache,
             continue
 
         add_current_to_dc_node(expressions_by_dc_node_id,
-                                row.dc_node1_id,
+                                str(row.dc_node1_id),
                                 variable_context.closed_dc_line_i1_vars[dc_line_index])
         add_current_to_dc_node(expressions_by_dc_node_id,
-                                row.dc_node2_id,
+                                str(row.dc_node2_id),
                                 variable_context.closed_dc_line_i2_vars[dc_line_index])
         
     # Add current from converters to DC node current balance expression
@@ -54,15 +56,15 @@ def create_dc_current_balance_expressions(network_cache: NetworkCache,
 
         converter_current = variable_context.conv_i_vars[converter_index]
 
-        add_current_to_dc_node(expressions_by_dc_node_id, row.dc_node1_id, converter_current)
-        add_current_to_dc_node(expressions_by_dc_node_id, row.dc_node2_id, -converter_current)
+        add_current_to_dc_node(expressions_by_dc_node_id, str(row.dc_node1_id), converter_current)
+        add_current_to_dc_node(expressions_by_dc_node_id, str(row.dc_node2_id), -converter_current)
 
     return list(expressions_by_dc_node_id.values())
 
 
 def add_current_to_dc_node(expressions_by_dc_node_id: dict[str, poi.ExprBuilder],
                             dc_node_id: str,
-                            current) -> None:
+                            current: Any) -> None:
     if dc_node_id not in expressions_by_dc_node_id:
         return
 
