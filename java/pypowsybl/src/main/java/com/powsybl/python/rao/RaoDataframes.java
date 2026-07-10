@@ -22,9 +22,11 @@ import com.powsybl.openrao.data.crac.api.usagerule.OnContingencyState;
 import com.powsybl.openrao.data.crac.api.usagerule.OnFlowConstraintInCountry;
 import com.powsybl.openrao.data.crac.api.usagerule.UsageRule;
 import com.powsybl.openrao.data.raoresult.api.RaoResult;
+import com.powsybl.openrao.data.raoresult.api.TimeCoupledRaoResult;
 import org.apache.commons.lang3.tuple.Triple;
 import org.apache.commons.math3.util.Pair;
 
+import java.time.OffsetDateTime;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Function;
@@ -51,6 +53,7 @@ public final class RaoDataframes {
     private static final DataframeMapper<Crac, RaoResult> PST_RANGE_ACTION_RESULT_MAPPER = createPstRangeActionResultMapper();
     private static final DataframeMapper<Crac, RaoResult> RANGE_ACTION_RESULT_MAPPER = createRangeActionResultMapper();
     private static final DataframeMapper<Crac, RaoResult> COST_RESULT_MAPPER = createCostResultMapper();
+    private static final DataframeMapper<Crac, TimeCoupledRaoResult> GLOBAL_COST_RESULT_MAPPER = createGlobalCostResultMapper();
 
     public static DataframeMapper<Crac, RaoResult> flowCnecMapper() {
         return FLOW_CNEC_RESULT_MAPPER;
@@ -82,6 +85,10 @@ public final class RaoDataframes {
 
     public static DataframeMapper<Crac, RaoResult> costResultMapper() {
         return COST_RESULT_MAPPER;
+    }
+
+    public static DataframeMapper<Crac, TimeCoupledRaoResult> globalCostResultMapper() {
+        return GLOBAL_COST_RESULT_MAPPER;
     }
 
     public record FlowCnecResult(String cnecId, Instant instant, String contingency, TwoSides side, double flow, double margin, double relativeMargin, double commercialFlow, double loopFlow, double ptdfZonalSum) { }
@@ -262,6 +269,36 @@ public final class RaoDataframes {
         return results;
     }
 
+    private static List<CostResult> getGlobalCostResults(Crac crac, TimeCoupledRaoResult raoResult) {
+        List<CostResult> results = new ArrayList<>();
+        results.add(new CostResult(null,
+                raoResult.getGlobalFunctionalCost(null),
+                raoResult.getGlobalVirtualCost(null),
+                raoResult.getGlobalCost(null)));
+        for (var instant : crac.getSortedInstants()) {
+            results.add(new CostResult(instant,
+                    raoResult.getGlobalFunctionalCost(instant),
+                    raoResult.getGlobalVirtualCost(instant),
+                    raoResult.getGlobalCost(instant)));
+        }
+        return results;
+    }
+
+    private static List<CostResult> getCostResults(Crac crac, TimeCoupledRaoResult raoResult, OffsetDateTime timestamp) {
+        List<CostResult> results = new ArrayList<>();
+        results.add(new CostResult(null,
+                raoResult.getFunctionalCost(null, timestamp),
+                raoResult.getVirtualCost(null, timestamp),
+                raoResult.getCost(null, timestamp)));
+        for (var instant : crac.getSortedInstants()) {
+            results.add(new CostResult(instant,
+                    raoResult.getFunctionalCost(instant, timestamp),
+                    raoResult.getVirtualCost(instant, timestamp),
+                    raoResult.getCost(instant, timestamp)));
+        }
+        return results;
+    }
+
     private static List<VirtualCostResult> getVirtualCost(Crac crac, RaoResult raoResult) {
         List<VirtualCostResult> results = new ArrayList<>();
         results.add(new VirtualCostResult(null, getVirtualCostMap(null, raoResult)));
@@ -379,6 +416,26 @@ public final class RaoDataframes {
             .doubles("virtual_cost", CostResult::virtualCost)
             .doubles("cost", CostResult::cost)
             .build();
+    }
+
+    private static DataframeMapper<Crac, TimeCoupledRaoResult> createGlobalCostResultMapper() {
+        return new DataframeMapperBuilder<Crac, CostResult, TimeCoupledRaoResult>()
+                .itemsProvider(RaoDataframes::getGlobalCostResults)
+                .stringsIndex(OPTIMIZED_INSTANT, c -> c.instant() != null ? c.instant().getId() : INITIAL_INSTANT)
+                .doubles("global_functional_cost", CostResult::functionalCost)
+                .doubles("global_virtual_cost", CostResult::virtualCost)
+                .doubles("global_cost", CostResult::cost)
+                .build();
+    }
+
+    public static DataframeMapper<Crac, TimeCoupledRaoResult> createCostResultMapper(OffsetDateTime timestamp) {
+        return new DataframeMapperBuilder<Crac, CostResult, TimeCoupledRaoResult>()
+                .itemsProvider((crac, raoResult) -> RaoDataframes.getCostResults(crac, raoResult, timestamp))
+                .stringsIndex(OPTIMIZED_INSTANT, c -> c.instant() != null ? c.instant().getId() : INITIAL_INSTANT)
+                .doubles("functional_cost", CostResult::functionalCost)
+                .doubles("virtual_cost", CostResult::virtualCost)
+                .doubles("cost", CostResult::cost)
+                .build();
     }
 
     public static DataframeMapper<Crac, RaoResult> createVirtualCostResultMapper(String virtualCostName) {
@@ -590,8 +647,8 @@ public final class RaoDataframes {
             .stringsIndex("id", CounterTradeRangeAction::getId)
             .strings("name", CounterTradeRangeAction::getName)
             .strings("operator", CounterTradeRangeAction::getOperator)
-            .strings("exporting_country", a -> a.getExportingCountry().name())
-            .strings("importing_country", a -> a.getImportingCountry().name())
+            .strings("exporting_area", a -> a.getExportingArea())
+            .strings("importing_area", a -> a.getImportingArea())
             .strings("group_id", a -> a.getGroupId().orElse(""))
             .optionalInts("speed", a -> a.getSpeed().map(OptionalInt::of).orElse(OptionalInt.empty()))
             .optionalDoubles("activation_cost", a -> a.getActivationCost().map(OptionalDouble::of).orElseGet(OptionalDouble::empty))

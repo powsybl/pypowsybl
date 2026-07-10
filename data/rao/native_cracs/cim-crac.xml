@@ -1,0 +1,131 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CRAC_MarketDocument xmlns="urn:iec62325.351:tc57wg16:451-n:CRACdocument:2:3" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="urn:iec62325.351:tc57wg16:451-n:CRACdocument:2:3 iec62325-451-n-crac_v2_3.xsd">
+  <mRID>CIM_CRAC_DOCUMENT</mRID>
+  <revisionNumber>1</revisionNumber>
+  <type>B15</type>
+  <process.processType>A48</process.processType>
+  <sender_MarketParticipant.mRID codingScheme="A01">FAKE</sender_MarketParticipant.mRID>
+  <sender_MarketParticipant.marketRole.type>A36</sender_MarketParticipant.marketRole.type>
+  <receiver_MarketParticipant.mRID codingScheme="A01">FAKE</receiver_MarketParticipant.mRID>
+  <receiver_MarketParticipant.marketRole.type>A04</receiver_MarketParticipant.marketRole.type>
+  <createdDateTime>2021-03-31T15:02:00Z</createdDateTime>
+  <status>
+    <value>A42</value>
+  </status>
+  <time_Period.timeInterval>
+    <start>2021-04-01T22:00Z</start>
+    <end>2021-04-02T22:00Z</end>
+  </time_Period.timeInterval>
+  <domain.mRID codingScheme="A01">10YCB-FR-ES-PT-S</domain.mRID>
+  <TimeSeries>
+    <mRID>TimeSeries</mRID>
+    <businessType>B54</businessType>
+    <curveType>A03</curveType>
+    <in_Domain.mRID codingScheme="A01">1------0</in_Domain.mRID>
+    <out_Domain.mRID codingScheme="A01">1------0</out_Domain.mRID>
+    <Period>
+      <timeInterval>
+        <start>2021-04-01T22:00Z</start>
+        <end>2021-04-02T22:00Z</end>
+      </timeInterval>
+      <resolution>PT60M</resolution>
+      <Point>
+        <position>2</position>
+        <Series>
+          <mRID>ContingenciesSeries1</mRID>
+          <businessType>B55</businessType>
+          <name>ContingenciesSeries</name>
+          <optimization_MarketObjectStatus.status>A52</optimization_MarketObjectStatus.status>
+          <Contingency_Series>
+            <mRID>Co-1</mRID>
+            <name>Co-1-name</name>
+            <RegisteredResource>
+              <mRID codingScheme="A02">_ffbabc27-1ccd-4fdc-b037-e341706c8d29</mRID>
+              <name>Co1NetworkElementName</name>
+              <in_Domain.mRID codingScheme="A01">1------0</in_Domain.mRID>
+              <out_Domain.mRID codingScheme="A01">1------0</out_Domain.mRID>
+            </RegisteredResource>
+          </Contingency_Series>
+          <Contingency_Series>
+            <mRID>Co-2</mRID>
+            <name>Co-2-name</name>
+            <RegisteredResource>
+              <mRID codingScheme="A02">_e8acf6b6-99cb-45ad-b8dc-16c7866a4ddc</mRID>
+              <name>Co2NetworkElementName</name>
+              <in_Domain.mRID codingScheme="A01">1------0</in_Domain.mRID>
+              <out_Domain.mRID codingScheme="A01">1------0</out_Domain.mRID>
+            </RegisteredResource>
+            <RegisteredResource>
+              <mRID codingScheme="A02">_df16b3dd-c905-4a6f-84ee-f067be86f5da</mRID>
+              <name>Co2NetworkElementName</name>
+              <in_Domain.mRID codingScheme="A01">1------0</in_Domain.mRID>
+              <out_Domain.mRID codingScheme="A01">1------0</out_Domain.mRID>
+            </RegisteredResource>
+          </Contingency_Series>
+          <Contingency_Series>
+            <mRID>Co-3</mRID>
+            <name>Co-3-name</name>
+            <RegisteredResource>
+              <mRID codingScheme="A02">_b58bf21a-096a-4dae-9a01-3f03b60c24c7</mRID>
+              <name>Co2NetworkElementName</name>
+              <in_Domain.mRID codingScheme="A01">1------0</in_Domain.mRID>
+              <out_Domain.mRID codingScheme="A01">1------0</out_Domain.mRID>
+            </RegisteredResource>
+            <RegisteredResource>
+              <mRID codingScheme="A02">DOES_NOT_EXIST</mRID>
+              <name>Co2NetworkElementName</name>
+              <in_Domain.mRID codingScheme="A01">1------0</in_Domain.mRID>
+              <out_Domain.mRID codingScheme="A01">1------0</out_Domain.mRID>
+            </RegisteredResource>
+          </Contingency_Series>
+          <Contingency_Series>
+            <mRID>Co-4</mRID>
+            <name>Co-4-name</name>
+            <RegisteredResource>
+              <mRID codingScheme="A02">DOES_NOT_EXIST</mRID>
+              <name>Co2NetworkElementName</name>
+              <in_Domain.mRID codingScheme="A01">1------0</in_Domain.mRID>
+              <out_Domain.mRID codingScheme="A01">1------0</out_Domain.mRID>
+            </RegisteredResource>
+          </Contingency_Series>
+          <Contingency_Series>
+            <mRID>Co-5</mRID>
+            <name>Co-5-name</name>
+          </Contingency_Series>
+        </Series>
+        <Series>
+          <mRID>ContingenciesSeries2</mRID>
+          <businessType>B57</businessType>
+          <name>ContingenciesSeries</name>
+          <optimization_MarketObjectStatus.status>A52</optimization_MarketObjectStatus.status>
+          <Contingency_Series>
+            <mRID>Co-1</mRID>
+            <name>Co-1-name</name>
+            <RegisteredResource>
+              <mRID codingScheme="A02">_ffbabc27-1ccd-4fdc-b037-e341706c8d29</mRID>
+              <name>Co1NetworkElementName</name>
+              <in_Domain.mRID codingScheme="A01">1------0</in_Domain.mRID>
+              <out_Domain.mRID codingScheme="A01">1------0</out_Domain.mRID>
+            </RegisteredResource>
+          </Contingency_Series>
+          <Contingency_Series>
+            <mRID>Co-2</mRID>
+            <name>Co-2-name</name>
+            <RegisteredResource>
+              <mRID codingScheme="A02">_e8acf6b6-99cb-45ad-b8dc-16c7866a4ddc</mRID>
+              <name>Co2NetworkElementName</name>
+              <in_Domain.mRID codingScheme="A01">1------0</in_Domain.mRID>
+              <out_Domain.mRID codingScheme="A01">1------0</out_Domain.mRID>
+            </RegisteredResource>
+            <RegisteredResource>
+              <mRID codingScheme="A02">_df16b3dd-c905-4a6f-84ee-f067be86f5da</mRID>
+              <name>Co2NetworkElementName</name>
+              <in_Domain.mRID codingScheme="A01">1------0</in_Domain.mRID>
+              <out_Domain.mRID codingScheme="A01">1------0</out_Domain.mRID>
+            </RegisteredResource>
+          </Contingency_Series>
+        </Series>
+      </Point>
+    </Period>
+  </TimeSeries>
+</CRAC_MarketDocument>
