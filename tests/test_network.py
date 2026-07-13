@@ -3094,7 +3094,7 @@ def test_deprecated_loading_limits_is_fictitious():
     assert limits.query("element_id == 'NHV1_NHV2_1' and side == 'ONE' and acceptable_duration == 60")['fictitious'].all()
 
 
-def test_deprecated_operational_limits_is_fictitious_kwargs():
+def test_deprecated_loading_limits_is_fictitious_kwargs():
     network = pp.network.create_eurostag_tutorial_example1_network()
     with pytest.warns(DeprecationWarning, match=re.escape("loading limits is_fictitious attribute has been renamed fictitious")):
         network.create_loading_limits(element_id=['NHV1_NHV2_1', 'NHV1_NHV2_1'],
