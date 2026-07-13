@@ -4,11 +4,12 @@
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 # SPDX-License-Identifier: MPL-2.0
 #
+import warnings
 from typing import List, Union
 
+from pypowsybl._pypowsybl import OutputVariableType
+
 from pypowsybl import _pypowsybl as _pp
-from pypowsybl._pypowsybl import OutputVariableType # pylint: disable=protected-access
-import warnings
 
 
 class OutputVariableMapping:

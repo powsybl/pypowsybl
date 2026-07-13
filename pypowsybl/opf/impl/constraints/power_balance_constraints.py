@@ -10,10 +10,10 @@ from typing import cast
 import pyoptinterface as poi
 
 from pypowsybl.opf.impl.model.constraints import Constraints
-from pypowsybl.opf.impl.model.model_parameters import ModelParameters
-from pypowsybl.opf.impl.model.variable_context import VariableContext
-from pypowsybl.opf.impl.model.network_cache import NetworkCache
 from pypowsybl.opf.impl.model.model import Model
+from pypowsybl.opf.impl.model.model_parameters import ModelParameters
+from pypowsybl.opf.impl.model.network_cache import NetworkCache
+from pypowsybl.opf.impl.model.variable_context import VariableContext
 from pypowsybl.opf.impl.util import BranchRow, GeneratorRow, LoadRow, ConnectableRow, BoundaryLineRow
 
 

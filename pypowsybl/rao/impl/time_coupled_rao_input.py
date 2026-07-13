@@ -5,15 +5,13 @@
 # SPDX-License-Identifier: MPL-2.0
 #
 from datetime import datetime as Datetime
-
-from pypowsybl import _pypowsybl
+from typing import (
+    Any, List, Tuple
+)
 
 from pypowsybl.network import Network
 from .crac import Crac
 
-from typing import (
-    Union, Any, List, Tuple
-)
 
 class TimeCoupledRaoInput:
     """

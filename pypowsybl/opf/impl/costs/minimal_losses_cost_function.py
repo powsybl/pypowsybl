@@ -22,4 +22,3 @@ class MinimalLossesCostFunction(CostFunction):
         for branch_index in range(len(variable_context.closed_branch_p1_vars)):
             cost += variable_context.closed_branch_p1_vars[branch_index] - variable_context.closed_branch_p2_vars[branch_index]
         return cost
-
