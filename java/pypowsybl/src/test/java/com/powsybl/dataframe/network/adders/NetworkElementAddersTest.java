@@ -803,4 +803,28 @@ class NetworkElementAddersTest {
         NetworkElementAdders.addElements(DataframeElementType.DC_GROUND, network.getSubnetwork("VscAsymmetricalMonopole"), singletonList(dataframe));
         assertEquals(3, network.getDcGroundCount());
     }
+
+    @Test
+    void dcSwitch() {
+        Network network = DcDetailedNetworkFactory.createSimple2NodesDcSwitch();
+        DefaultUpdatingDataframe dataframe = new DefaultUpdatingDataframe(1);
+        addStringColumn(dataframe, "id", "DC_SWITCH_TEST");
+        addDoubleColumn(dataframe, "r", 1.23);
+        // deliberately reversed from the factory default to verify node IDs are set correctly
+        addStringColumn(dataframe, "dc_node1_id", "dcNode2");
+        addStringColumn(dataframe, "dc_node2_id", "dcNode1");
+        addStringColumn(dataframe, "kind", "BREAKER");
+        addIntColumn(dataframe, "open", 1);
+
+        NetworkElementAdders.addElements(DataframeElementType.DC_SWITCH, network, singletonList(dataframe));
+
+        assertEquals(2, network.getDcSwitchCount());
+        DcSwitch dcSwitch = network.getDcSwitch("DC_SWITCH_TEST");
+        assertNotNull(dcSwitch);
+        assertEquals(1.23, dcSwitch.getR(), 0.0);
+        assertEquals("dcNode2", dcSwitch.getDcNode1().getId());
+        assertEquals("dcNode1", dcSwitch.getDcNode2().getId());
+        assertEquals(DcSwitchKind.BREAKER, dcSwitch.getKind());
+        assertTrue(dcSwitch.isOpen());
+    }
 }

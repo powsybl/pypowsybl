@@ -228,7 +228,7 @@ def create_shunts(n: Network, n_pdp: pandapowerNet) -> None:
         connectable_bus_id = build_bus_id(n_pdp.shunt['bus'].astype(str)).tolist()
         bus_id = np.where(n_pdp.shunt['in_service'], connectable_bus_id, "")
         model_type = ['LINEAR'] * len(n_pdp.shunt)
-        section_count = n_pdp.shunt['step'].tolist()
+        section_count = n_pdp.shunt['step'].astype(int).tolist()
         shunt_df = pd.DataFrame(data={
             'name': name,
             'voltage_level_id': vl_id,

@@ -225,6 +225,36 @@ class Network:  # pylint: disable=too-many-public-methods
     def close_switch(self, id: str) -> bool:
         return _pp.update_switch_position(self._handle, id, False)
 
+    def open_dc_switch(self, id: str) -> bool:
+        """
+        Opens a DC switch.
+
+        Args:
+            id: the identifier of the DC switch to open.
+
+        Returns:
+            ``True`` if the switch state changed (was closed before), ``False`` if it was already open.
+
+        See Also:
+            :meth:`close_dc_switch`, :meth:`get_dc_switches`
+        """
+        return _pp.update_dc_switch_position(self._handle, id, True)
+
+    def close_dc_switch(self, id: str) -> bool:
+        """
+        Closes a DC switch.
+
+        Args:
+            id: the identifier of the DC switch to close.
+
+        Returns:
+            ``True`` if the switch state changed (was open before), ``False`` if it was already closed.
+
+        See Also:
+            :meth:`open_dc_switch`, :meth:`get_dc_switches`
+        """
+        return _pp.update_dc_switch_position(self._handle, id, False)
+
     def connect(self, id: str, operate_disconnectors: bool = False, operate_fictitious: bool = False) -> bool:
         """
         Connects a connectable element's terminal or terminals.
@@ -340,7 +370,7 @@ class Network:  # pylint: disable=too-many-public-methods
         """
         .. deprecated:: 1.14.0
           Use :meth:`reduce_by_voltage_range`, :meth:`reduce_by_ids` or :meth:`reduce_by_ids_and_depths` instead depending on your use case.
-        
+
         Reduce to a smaller network according to the following parameters
 
         :param v_min: minimum voltage of the voltage levels kept after reducing
@@ -3209,6 +3239,9 @@ class Network:  # pylint: disable=too-many-public-methods
 
               - **dc_node1_id**: dc node where this dc line is connected, on side 1
               - **dc_node2_id**: dc node where this dc line is connected, on side 2
+              - **connected1**: ``True`` if the dc line is connected to a dc node, side 1
+              - **connected2**: ``True`` if the dc line is connected to a dc node, side 2
+              - **r**: The resistance of the dc line (in Ohm).
               - **p1**: the active flow on the dc line at its "1" side, ``NaN`` if no loadflow has been computed (in MW)
               - **i1**: the current on the dc line at its "1" side, ``NaN`` if no loadflow has been computed (in A)
               - **p2**: the active flow on the dc line at its "2" side, ``NaN`` if no loadflow has been computed (in MW)
@@ -3236,7 +3269,7 @@ class Network:  # pylint: disable=too-many-public-methods
         Notes:
             The resulting dataframe, depending on the parameters, will include the following columns:
 
-              - **nominal_v**: dc node nominal voltage
+              - **nominal_v**: dc node nominal voltage (in kV)
               - **dc_bus_id**: at which dc bus the dc node belongs
               - **fictitious** (optional): ``True`` if the area is part of the model and not of the actual network
 
@@ -3264,25 +3297,42 @@ class Network:  # pylint: disable=too-many-public-methods
               - **voltage_level_id**: at which substation the converter is connected
               - **bus1_id**: bus where this converter is connected, on side 1
               - **bus2_id** (optional): bus where this converter is connected, on side 2
+              - **bus_breaker_bus1_id** (optional) bus of the bus-breaker view where this converter is connected, on side 1
+              - **bus_breaker_bus2_id** (optional) bus of the bus-breaker view where this converter is connected, on side 2
               - **dc_node1_id**: dc node where this converter is connected, on side 1
               - **dc_node2_id**: dc node where this converter is connected, on side 2
-              - **regulated_element_id** (optional): which element of the network is regulating PCC, needed if bus2_id is set
+              - **pcc_terminal_id** (optional): which element of the network is regulating PCC, needed if bus2_id is set
+              - **connected1**: ``True`` if the converter is connected to an ac bus, side 1
+              - **connected2**: ``True`` if the converter is connected to an ac bus, side 2. Defaults to ``False`` if there is no second AC bus.
               - **dc_connected1**: ``True`` if the converter is connected to a dc node, side 1
               - **dc_connected2**: ``True`` if the converter is connected to a dc node, side 2
               - **voltage_regulator_on**: the voltage regulator status
               - **control_mode**: the control mode of the converter
-              - **target_p**: the active power setpoint
-              - **target_q**: the reactive power setpoint
-              - **target_v_dc**: the DC voltage setpoint
-              - **target_v_ac**: the AC voltage setpoint
-              - **idle_loss**: the idle loss coefficient
-              - **switching_loss**: the switching loss coefficient
-              - **resistive_loss**: the resistive loss coefficient
+              - **target_p**: the active power setpoint (in MW, load convention)
+              - **target_q**: the reactive power setpoint (in MVAr, load convention)
+              - **target_v_dc**: the DC voltage setpoint (in kV)
+              - **target_v_ac**: the AC voltage setpoint (in kV)
+              - **idle_loss**: the idle loss coefficient (in MW)
+              - **switching_loss**: the switching loss coefficient (in MW/A)
+              - **resistive_loss**: the resistive loss coefficient (in Ohm)
+              - **min_p** (optional): the minimum active power, ``-inf`` if unbounded (in MW)
+              - **max_p** (optional): the maximum active power, ``inf`` if unbounded (in MW)
               - **p_ac**: the AC active flow on the converter, ``NaN`` if no loadflow has been computed (in MW)
               - **q_ac**: the AC reactive flow on the converter, ``NaN`` if no loadflow has been computed  (in MVAr)
               - **p_dc1**: the DC flow on the converter, side 1 ``NaN`` if no loadflow has been computed (in MW)
               - **p_dc2**: the DC flow on the converter, side 2 ``NaN`` if no loadflow has been computed (in MW)
               - **fictitious** (optional): ``True`` if the area is part of the model and not of the actual network
+
+            .. note::
+
+                ``target_p``, ``min_p`` and ``max_p`` follow the load sign convention at the point of
+                common coupling (PCC): a positive value means active power absorbed by the converter from
+                the AC grid.
+
+            .. warning::
+
+                A finite ``min_p`` / ``max_p`` (any value other than ``-inf`` / ``inf``) is not yet supported
+                by IIDM serialization: saving a network that contains one raises a ``PowsyblException``.
 
             This dataframe is indexed on the converter ID.
         """
@@ -3305,11 +3355,43 @@ class Network:  # pylint: disable=too-many-public-methods
             The resulting dataframe, depending on the parameters, will include the following columns:
 
               - **dc_node_id**: dc node identifier
-              - **r**: dc ground resistance
+              - **connected**: ``True`` if the dc ground is connected to a dc node
+              - **r**: dc ground resistance (in Ohm)
 
             This dataframe is indexed on the dc ground ID.
         """
         return self.get_elements(ElementType.DC_GROUND, all_attributes, attributes, **kwargs)
+
+    def get_dc_switches(self, all_attributes: bool = False, attributes: Optional[List[str]] = None, **kwargs: ArrayLike) -> DataFrame:
+        r"""
+        Get a dataframe of DC switches.
+
+        Args:
+            all_attributes: flag for including all attributes in the dataframe, default is false
+            attributes: attributes to include in the dataframe. The 2 parameters are mutually exclusive.
+                        If no parameter is specified, the dataframe will include the default attributes.
+            kwargs: the data to be selected, as named arguments.
+
+        Returns:
+            the DC switches dataframe
+
+        Notes:
+            The resulting dataframe, depending on the parameters, will include the following columns:
+
+              - **name**: optional human-readable name
+              - **dc_node1_id**: identifier of the first DC node the switch connects
+              - **dc_node2_id**: identifier of the second DC node the switch connects
+              - **kind**: the kind of DC switch (BREAKER or DISCONNECTOR)
+              - **open**: ``True`` if the switch is open, ``False`` if it is closed
+              - **r**: resistance of the DC switch (in Ohm)
+              - **fictitious** (optional): ``True`` if the element is part of the model and not of the actual network
+
+            This dataframe is indexed on the DC switch ID.
+
+        See Also:
+            :meth:`update_dc_switches`, :meth:`create_dc_switches`
+        """
+        return self.get_elements(ElementType.DC_SWITCH, all_attributes, attributes, **kwargs)
 
     def get_dc_buses(self, all_attributes: bool = False, attributes: Optional[List[str]] = None, **kwargs: ArrayLike) -> DataFrame:
         r"""
@@ -3329,7 +3411,7 @@ class Network:  # pylint: disable=too-many-public-methods
 
               - **connected_component**: The connected component to which the dc bus belongs
               - **dc_component**: The dc component to which the dc bus belongs
-              - **v**: dc bus voltage
+              - **v**: dc bus voltage (in kV)
               - **fictitious** (optional): ``True`` if the area is part of the model and not of the actual network
 
 
@@ -4399,6 +4481,8 @@ class Network:  # pylint: disable=too-many-public-methods
             - `r`
             - `i1`
             - `i2`
+            - `connected1`
+            - `connected2`
             - `fictitious`
 
         See Also:
@@ -4455,15 +4539,40 @@ class Network:  # pylint: disable=too-many-public-methods
         Notes:
             Attributes that can be updated are:
 
+            - `bus_breaker_bus1_id`
+            - `bus_breaker_bus2_id`
+            - `connected1`
+            - `connected2`
+            - `dc_connected1`
+            - `dc_connected2`
+            - `pcc_terminal_id`
+            - `voltage_regulator_on`
+            - `control_mode`
             - `target_v_dc`
             - `target_v_ac`
             - `target_p`
             - `target_q`
+            - `min_p`
+            - `max_p`
+            - `idle_loss`
+            - `switching_loss`
+            - `resistive_loss`
             - `p_ac`
             - `q_ac`
             - `p_dc1`
             - `p_dc2`
             - `fictitious`
+
+            .. note::
+
+                ``target_p``, ``min_p`` and ``max_p`` follow the load sign convention at the point of
+                common coupling (PCC): a positive value means active power absorbed by the converter from
+                the AC grid.
+
+            .. warning::
+
+                A finite ``min_p`` / ``max_p`` (any value other than ``-inf`` / ``inf``) is not yet supported
+                by IIDM serialization: saving a network that contains one raises a ``PowsyblException``.
 
         See Also:
             :meth:`get_voltage_source_converters`
@@ -4491,6 +4600,7 @@ class Network:  # pylint: disable=too-many-public-methods
             Attributes that can be updated are:
 
             - `r`
+            - `connected`
             - `fictitious`
 
         See Also:
@@ -4505,6 +4615,38 @@ class Network:  # pylint: disable=too-many-public-methods
                 network.update_dc_grounds(id=['DG1', 'DG2'], r=[2.0, 0.0])
         """
         return self._update_elements(ElementType.DC_GROUND, df, **kwargs)
+
+    def update_dc_switches(self, df: Optional[DataFrame] = None, **kwargs: ArrayLike) -> None:
+        """
+        Update DC switches with data provided as a dataframe or as named arguments.
+
+        Args:
+            df: the data to be updated, as a dataframe.
+            kwargs: the data to be updated, as named arguments.
+                    Arguments can be single values or any type of sequence.
+                    In the case of sequences, all arguments must have the same length.
+
+        Notes:
+            Attributes that can be updated are:
+
+            - `name`
+            - `open`
+            - `r`
+            - `fictitious`
+
+        See Also:
+            :meth:`get_dc_switches`, :meth:`open_dc_switch`, :meth:`close_dc_switch`
+
+        Examples:
+            Some examples using keyword arguments:
+
+            .. code-block:: python
+
+                network.update_dc_switches(id='DS1', r=0.5)
+                network.update_dc_switches(id='DS1', open=True)
+                network.update_dc_switches(id=['DS1', 'DS2'], r=[0.5, 0.0])
+        """
+        return self._update_elements(ElementType.DC_SWITCH, df, **kwargs)
 
     def update_dc_buses(self, df: Optional[DataFrame] = None, **kwargs: ArrayLike) -> None:
         """
@@ -5871,11 +6013,24 @@ class Network:  # pylint: disable=too-many-public-methods
             - **control_mode** the control mode of the converter (V_DC or P_PCC)
             - **target_p** the AC active power setpoint
             - **target_q** the AC reactive power setpoint
+            - **min_p** the minimum active power in MW (optional, unbounded by default)
+            - **max_p** the maximum active power in MW (optional, unbounded by default)
             - **target_v_ac** the AC voltage setpoint
             - **target_v_dc** the DC voltage setpoint
             - **idle_loss** the idle loss coefficient
             - **switching_loss** the switching loss coefficient
             - **resistive_loss** the resistive loss coefficient
+
+            .. note::
+
+                ``target_p``, ``min_p`` and ``max_p`` follow the load sign convention at the point of
+                common coupling (PCC): a positive value means active power absorbed by the converter from
+                the AC grid.
+
+            .. warning::
+
+                A finite ``min_p`` / ``max_p`` (any value other than ``-inf`` / ``inf``) is not yet supported
+                by IIDM serialization: saving a network that contains one raises a ``PowsyblException``.
 
         Examples:
             Using keyword arguments:
@@ -5918,6 +6073,43 @@ class Network:  # pylint: disable=too-many-public-methods
                 network.create_dc_grounds(id='DG1', dc_node_id="DN1", r=1.0)
         """
         return self._create_elements(ElementType.DC_GROUND, [df], **kwargs)
+
+    def create_dc_switches(self, df: Optional[DataFrame] = None, **kwargs: ArrayLike) -> None:
+        """
+        Creates DC switches.
+
+        Args:
+            df: Attributes as a dataframe.
+            kwargs: Attributes as keyword arguments.
+
+        Notes:
+
+            Data may be provided as a dataframe or as keyword arguments.
+            In the latter case, all arguments must have the same length.
+
+            Valid attributes are:
+
+            - **id**: the identifier of the new DC switch
+            - **name**: an optional human-readable name
+            - **dc_node1_id**: identifier of the first DC node the switch connects
+            - **dc_node2_id**: identifier of the second DC node the switch connects
+            - **kind**: the kind of DC switch (BREAKER or DISCONNECTOR)
+            - **open**: ``True`` to create the switch in open state, ``False`` for closed (default)
+            - **r**: resistance of the DC switch (in Ohm)
+            - **fictitious**: ``True`` if the element is part of the model and not of the actual network
+
+        See Also:
+            :meth:`get_dc_switches`
+
+        Examples:
+            Using keyword arguments:
+
+            .. code-block:: python
+
+                network.create_dc_switches(id='DS1', dc_node1_id='DN1', dc_node2_id='DN2',
+                                           kind='BREAKER', open=False, r=0.0)
+        """
+        return self._create_elements(ElementType.DC_SWITCH, [df], **kwargs)
 
     def create_loading_limits(self, df: Optional[DataFrame] = None, **kwargs: ArrayLike) -> None:
         """

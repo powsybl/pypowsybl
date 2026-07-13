@@ -1,0 +1,46 @@
+[
+  {
+    "name": "org.glassfish.jaxb.runtime.v2.model.impl.Utils",
+    "allDeclaredFields": true
+  },
+  {
+    "name": "org.glassfish.jaxb.core.v2.model.nav.ReflectionNavigator",
+    "allDeclaredMethods": true
+  },
+  {
+    "name": "org.glassfish.jaxb.runtime.v2.ContextFactory",
+    "allDeclaredMethods": true
+  },
+  {
+    "name": "org.glassfish.jaxb.runtime.v2.runtime.property.ArrayElementLeafProperty",
+    "allDeclaredConstructors": true
+  },
+  {
+    "name": "org.glassfish.jaxb.runtime.v2.runtime.property.SingleMapNodeProperty",
+    "allDeclaredConstructors": true
+  },
+  {
+    "name": "org.glassfish.jaxb.runtime.v2.runtime.property.SingleReferenceNodeProperty",
+    "allDeclaredConstructors": true
+  },
+  {
+    "name": "org.glassfish.jaxb.runtime.v2.runtime.property.ArrayElementNodeProperty",
+    "allDeclaredConstructors": true
+  },
+  {
+    "name": "org.glassfish.jaxb.runtime.v2.model.impl.RuntimeModelBuilder",
+    "allDeclaredConstructors": true
+  },
+  {
+    "name": "org.glassfish.jaxb.runtime.v2.runtime.property.SingleElementLeafProperty",
+    "allDeclaredConstructors": true
+  },
+  {
+    "name": "org.glassfish.jaxb.runtime.v2.runtime.property.SingleElementNodeProperty",
+    "allDeclaredConstructors": true
+  },
+  {
+    "name": "org.glassfish.jaxb.runtime.v2.runtime.property.ArrayReferenceNodeProperty",
+    "allDeclaredConstructors": true
+  }
+]
