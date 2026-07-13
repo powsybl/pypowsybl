@@ -1,6 +1,7 @@
 {
   "resources":{
     "includes":[
-      {"pattern":"\\Qcom/powsybl/pypowsybl/reports.properties\\E"}
+      {"pattern":"\\Qcom/powsybl/pypowsybl/reports.properties\\E"},
+      {"pattern":"\\Qcom/powsybl/pypowsybl/reports_fr.properties\\E"}
     ]}
 }

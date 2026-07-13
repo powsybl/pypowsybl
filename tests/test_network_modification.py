@@ -24,20 +24,6 @@ def test_voltage_level_topology_creation():
     assert switches[switches['kind'] == 'DISCONNECTOR'].shape[0] == 9
     assert switches[switches['kind'] == 'BREAKER'].shape[0] == 3
 
-def test_voltage_level_topology_creation_deprecated_report():
-    network = pp.network.create_four_substations_node_breaker_network()
-    network.create_voltage_levels(id='VL1', substation_id='S1', topology_kind='NODE_BREAKER', nominal_v=225)
-    df = pd.DataFrame.from_records(index="id", data=[
-        {'id': 'VL1', 'aligned_buses_or_busbar_count': 3, 'switch_kinds': 'BREAKER, DISCONNECTOR'}
-    ])
-    with pytest.warns(DeprecationWarning, match=re.escape("Use of deprecated attribute reporter. Use report_node instead.")):
-        report_node = rp.Reporter()
-        report1 = str(report_node)
-        assert len(report1) > 0
-        pp.network.create_voltage_level_topology(network, df, reporter=report_node)
-        report2 = str(report_node)
-        assert len(report2) > len(report1)
-
 
 def test_voltage_level_topology_creation_with_no_switch_kind():
     network = pp.network.create_four_substations_node_breaker_network()
@@ -185,26 +171,6 @@ def test_add_load_bay_node_breaker():
     assert position.direction == 'BOTTOM'
 
 
-def test_add_load_bay_node_breaker_deprecated_reporter():
-    n = pp.network.create_four_substations_node_breaker_network_with_extensions()
-    df = pd.DataFrame(index=["new_load"], columns=["id", "p0", "q0", "bus_or_busbar_section_id", "position_order"],
-                      data=[["new_load", 10.0, 3.0, "S1VL1_BBS", 0]])
-    with pytest.warns(DeprecationWarning, match=re.escape("Use of deprecated attribute reporter. Use report_node instead.")):
-        report_node = rp.Reporter()
-        report1 = str(report_node)
-        assert len(report1) > 0
-        pp.network.create_load_bay(network=n, df=df, raise_exception=True, reporter=report_node)
-        report2 = str(report_node)
-        assert len(report2) > len(report1)
-        load = n.get_loads().loc["new_load"]
-        assert load.p0 == 10.0
-        assert load.q0 == 3.0
-        position = n.get_extensions('position').loc["new_load"]
-        assert position.order == 0
-        assert position.feeder_name == 'new_load'
-        assert position.direction == 'BOTTOM'
-
-
 def test_add_load_bay_from_kwargs_node_breaker():
     n = pp.network.create_four_substations_node_breaker_network_with_extensions()
     pp.network.create_load_bay(network=n, id="new_load", p0=10.0, q0=3.0, bus_or_busbar_section_id="S1VL1_BBS",
@@ -245,29 +211,6 @@ def test_add_generator_bay():
     assert position.direction == 'TOP'
 
 
-def test_add_generator_bay_deprecated_report():
-    n = pp.network.create_four_substations_node_breaker_network_with_extensions()
-    with pytest.warns(DeprecationWarning, match=re.escape("Use of deprecated attribute reporter. Use report_node instead.")):
-        report_node = rp.Reporter()
-        report1 = str(report_node)
-        assert len(report1) > 0
-        pp.network.create_generator_bay(n, pd.DataFrame.from_records(
-            data=[('new_gen', 4999, -9999.99, True, 100, 150, 300, 'S1VL1_BBS', 15, 'TOP')],
-            columns=['id', 'max_p', 'min_p', 'voltage_regulator_on', 'target_p', 'target_q', 'target_v',
-                     'bus_or_busbar_section_id', 'position_order', 'direction'],
-            index='id'), reporter=report_node)
-        report2 = str(report_node)
-        assert len(report2) > len(report1)
-        generator = n.get_generators().loc['new_gen']
-        assert generator.target_p == 100.0
-        assert generator.target_q == 150.0
-        assert generator.voltage_level_id == 'S1VL1'
-        position = n.get_extensions('position').loc["new_gen"]
-        assert position.order == 15
-        assert position.feeder_name == 'new_gen'
-        assert position.direction == 'TOP'
-
-
 def test_add_generator_bay_bus_breaker():
     n = pp.network.create_eurostag_tutorial_example1_network()
     pp.network.create_generator_bay(n, pd.DataFrame.from_records(
@@ -300,31 +243,6 @@ def test_add_battery_bay():
     assert position.order == 15
     assert position.feeder_name == 'new_battery'
     assert position.direction == 'BOTTOM'
-
-
-def test_add_battery_bay_deprecated_report():
-    n = pp.network.create_four_substations_node_breaker_network_with_extensions()
-    df = pd.DataFrame.from_records(
-        columns=['id', 'bus_or_busbar_section_id', 'max_p', 'min_p', 'target_p', 'target_q', 'position_order'],
-        data=[('new_battery', 'S1VL1_BBS', 100, 10, 90, 20, 15)],
-        index='id')
-    with pytest.warns(DeprecationWarning, match=re.escape("Use of deprecated attribute reporter. Use report_node instead.")):
-        report_node = rp.Reporter()
-        report1 = str(report_node)
-        assert len(report1) > 0
-        pp.network.create_battery_bay(n, df, reporter=report_node)
-        report2 = str(report_node)
-        assert len(report2) > len(report1)
-        battery = n.get_batteries().loc['new_battery']
-        assert battery.voltage_level_id == 'S1VL1'
-        assert battery.max_p == 100
-        assert battery.min_p == 10
-        assert battery.target_p == 90
-        assert battery.target_q == 20
-        position = n.get_extensions('position').loc["new_battery"]
-        assert position.order == 15
-        assert position.feeder_name == 'new_battery'
-        assert position.direction == 'BOTTOM'
 
 
 def test_add_battery_bay_bus_breaker():
@@ -371,41 +289,6 @@ def test_add_boundary_line_bay():
     assert position.order == 15
     assert position.feeder_name == 'new_boundary_line'
     assert position.direction == 'BOTTOM'
-
-
-def test_add_boundary_line_bay_deprecated_reporter():
-    n = pp.network.create_four_substations_node_breaker_network_with_extensions()
-    df = pd.DataFrame.from_records(index='id', data=[{
-        'id': 'new_boundary_line',
-        'name': 'boundary_line',
-        'p0': 100,
-        'q0': 101,
-        'r': 2,
-        'x': 2,
-        'g': 1,
-        'b': 1,
-        'position_order': 15,
-        'bus_or_busbar_section_id': 'S1VL1_BBS'
-    }])
-    with pytest.warns(DeprecationWarning, match=re.escape("Use of deprecated attribute reporter. Use report_node instead.")):
-        report_node = rp.Reporter()
-        report1 = str(report_node)
-        assert len(report1) > 0
-        pp.network.create_boundary_line_bay(n, df, reporter=report_node)
-        report2 = str(report_node)
-        assert len(report2) > len(report1)
-        boundary_line = n.get_boundary_lines().loc['new_boundary_line']
-        assert boundary_line.voltage_level_id == 'S1VL1'
-        assert boundary_line.r == 2
-        assert boundary_line.x == 2
-        assert boundary_line.g == 1
-        assert boundary_line.b == 1
-        assert boundary_line.p0 == 100
-        assert boundary_line.q0 == 101
-        position = n.get_extensions('position').loc["new_boundary_line"]
-        assert position.order == 15
-        assert position.feeder_name == 'new_boundary_line'
-        assert position.direction == 'BOTTOM'
 
 
 def test_add_boundary_line_bay_bus_breaker():
@@ -649,40 +532,6 @@ def test_add_svc_bay():
     assert position.direction == 'BOTTOM'
 
 
-def test_add_svc_bay_deprecated_report():
-    n = pp.network.create_four_substations_node_breaker_network_with_extensions()
-    df = pd.DataFrame.from_records(
-        index='id',
-        data=[{'id': 'svc_test',
-               'name': '',
-               'bus_or_busbar_section_id': 'S1VL1_BBS',
-               'position_order': 15,
-               'target_q': 200,
-               'regulation_mode': 'REACTIVE_POWER',
-               'regulating': True,
-               'target_v': 400,
-               'b_min': 0,
-               'b_max': 2}])
-    with pytest.warns(DeprecationWarning, match=re.escape("Use of deprecated attribute reporter. Use report_node instead.")):
-        report_node = rp.Reporter()
-        report1 = str(report_node)
-        assert len(report1) > 0
-        pp.network.create_static_var_compensator_bay(n, df, reporter=report_node)
-        report2 = str(report_node)
-        assert len(report2) > len(report1)
-        svc = n.get_static_var_compensators().loc['svc_test']
-        assert svc.voltage_level_id == 'S1VL1'
-        assert svc.target_q == 200
-        assert svc.regulation_mode == 'REACTIVE_POWER'
-        assert svc.target_v == 400
-        assert svc.b_min == 0
-        assert svc.b_max == 2
-        position = n.get_extensions('position').loc['svc_test']
-        assert position.order == 15
-        assert position.feeder_name == 'svc_test'
-        assert position.direction == 'BOTTOM'
-
-
 def test_add_svc_bay_bus_breaker():
     n = pp.network.create_eurostag_tutorial_example1_network()
     df = pd.DataFrame.from_records(
@@ -729,33 +578,6 @@ def test_add_lcc_bay():
     assert position.direction == 'BOTTOM'
 
 
-def test_add_lcc_bay_deprecated_report():
-    n = pp.network.create_four_substations_node_breaker_network_with_extensions()
-    df = pd.DataFrame.from_records(
-        index='id',
-        data=[{'id': 'lcc_test',
-               'name': '',
-               'bus_or_busbar_section_id': 'S1VL1_BBS',
-               'position_order': 15,
-               'loss_factor': 0.1,
-               'power_factor': 0.2}])
-    with pytest.warns(DeprecationWarning, match=re.escape("Use of deprecated attribute reporter. Use report_node instead.")):
-        report_node = rp.Reporter()
-        report1 = str(report_node)
-        assert len(report1) > 0
-        pp.network.create_lcc_converter_station_bay(n, df, reporter=report_node)
-        report2 = str(report_node)
-        assert len(report2) > len(report1)
-        lcc = n.get_lcc_converter_stations().loc['lcc_test']
-        assert lcc.voltage_level_id == 'S1VL1'
-        assert lcc.loss_factor == pytest.approx(0.1, abs=1e-6)
-        assert lcc.power_factor == pytest.approx(0.2, abs=1e-6)
-        position = n.get_extensions('position').loc['lcc_test']
-        assert position.order == 15
-        assert position.feeder_name == 'lcc_test'
-        assert position.direction == 'BOTTOM'
-
-
 def test_add_lcc_bay_node_breaker():
     n = pp.network.create_eurostag_tutorial_example1_network()
     df = pd.DataFrame.from_records(
@@ -800,37 +622,6 @@ def test_add_vsc_bay():
     assert position.direction == 'BOTTOM'
 
 
-def test_add_vsc_bay_deprecated_report():
-    n = pp.network.create_four_substations_node_breaker_network_with_extensions()
-    df = pd.DataFrame.from_records(
-        index='id',
-        data=[{'id': 'vsc_test',
-               'name': '',
-               'bus_or_busbar_section_id': 'S1VL1_BBS',
-               'position_order': 15,
-               'target_q': 200,
-               'voltage_regulator_on': True,
-               'loss_factor': 1.0,
-               'target_v': 400}])
-    with pytest.warns(DeprecationWarning, match=re.escape("Use of deprecated attribute reporter. Use report_node instead.")):
-        report_node = rp.Reporter()
-        report1 = str(report_node)
-        assert len(report1) > 0
-        pp.network.create_vsc_converter_station_bay(n, df, reporter=report_node)
-        report2 = str(report_node)
-        assert len(report2) > len(report1)
-        vsc = n.get_vsc_converter_stations().loc['vsc_test']
-        assert vsc.voltage_level_id == 'S1VL1'
-        assert vsc.target_q == 200
-        assert vsc.voltage_regulator_on == True
-        assert vsc.loss_factor == 1
-        assert vsc.target_v == 400
-        position = n.get_extensions('position').loc['vsc_test']
-        assert position.order == 15
-        assert position.feeder_name == 'vsc_test'
-        assert position.direction == 'BOTTOM'
-
-
 def test_add_vsc_bay_bus_breaker():
     n = pp.network.create_eurostag_tutorial_example1_network()
     df = pd.DataFrame.from_records(
@@ -871,30 +662,6 @@ def test_create_branch_feeder_bays_twt_bus_breaker():
     assert n.get_extensions('position').size == 0
 
 
-def test_create_branch_feeder_bays_twt_bus_breaker_deprecated_reporter():
-    n = pp.network.create_eurostag_tutorial_example1_network()
-    df = pd.DataFrame(index=['new_twt'],
-                      columns=['id', 'bus_or_busbar_section_id_1', 'bus_or_busbar_section_id_2', 'r', 'x', 'g', 'b',
-                               'rated_u1', 'rated_u2', 'rated_s'],
-                      data=[['new_twt', 'NGEN', 'NHV1', 5.0, 50.0, 2.0, 4.0, 225.0, 400.0, 1.0]])
-    with pytest.warns(DeprecationWarning, match=re.escape("Use of deprecated attribute reporter. Use report_node instead.")):
-        report_node = rp.Reporter()
-        report1 = str(report_node)
-        assert len(report1) > 0
-        pp.network.create_2_windings_transformer_bays(n, df, reporter=report_node)
-        report2 = str(report_node)
-        assert len(report2) > len(report1)
-        retrieved_new_twt = n.get_2_windings_transformers().loc['new_twt']
-        assert retrieved_new_twt["r"] == 5.0
-        assert retrieved_new_twt["x"] == 50.0
-        assert retrieved_new_twt["g"] == 2.0
-        assert retrieved_new_twt["b"] == 4.0
-        assert retrieved_new_twt["rated_u1"] == 225.0
-        assert retrieved_new_twt["rated_u2"] == 400.0
-        assert retrieved_new_twt["rated_s"] == 1.0
-        assert n.get_extensions('position').size == 0
-
-
 def test_create_branch_feeder_bays_line_bus_breaker():
     n = pp.network.create_eurostag_tutorial_example1_network()
     df = pd.DataFrame(index=['new_line'],
@@ -911,30 +678,6 @@ def test_create_branch_feeder_bays_line_bus_breaker():
     assert retrieved_newline["connected1"]
     assert retrieved_newline["connected2"]
     assert n.get_extensions('position').size == 0
-
-
-def test_create_branch_feeder_bays_line_bus_breaker_deprecated_report():
-    n = pp.network.create_eurostag_tutorial_example1_network()
-    df = pd.DataFrame(index=['new_line'],
-                      columns=['id', 'bus_or_busbar_section_id_1', 'bus_or_busbar_section_id_2', 'r', 'x', 'g1', 'g2', 'b1', 'b2'],
-                      data=[['new_line', 'NHV1', 'NHV2', 5.0, 50.0, 20.0, 30.0, 40.0, 50.0]])
-    with pytest.warns(DeprecationWarning, match=re.escape("Use of deprecated attribute reporter. Use report_node instead.")):
-        report_node = rp.Reporter()
-        report1 = str(report_node)
-        assert len(report1) > 0
-        pp.network.create_line_bays(n, df, reporter=report_node)
-        report2 = str(report_node)
-        assert len(report2) > len(report1)
-        retrieved_newline = n.get_lines().loc['new_line']
-        assert retrieved_newline["r"] == 5.0
-        assert retrieved_newline["x"] == 50.0
-        assert retrieved_newline["g1"] == 20.0
-        assert retrieved_newline["g2"] == 30.0
-        assert retrieved_newline["b1"] == 40.0
-        assert retrieved_newline["b2"] == 50.0
-        assert retrieved_newline["connected1"]
-        assert retrieved_newline["connected2"]
-        assert n.get_extensions('position').size == 0
 
 
 def test_create_coupling_device():
@@ -961,38 +704,6 @@ def test_create_coupling_device():
     assert len(switches[switches["kind"] == "BREAKER"].index) == 1
     assert len(switches[switches["open"] == True].index) == 2
     assert len(switches[switches["open"] == False].index) == 3
-
-
-def test_create_coupling_device_deprecated_report():
-    n = pp.network.create_empty()
-    n.create_substations(id='S1')
-    n.create_voltage_levels(id='VL1', substation_id='S1', topology_kind='NODE_BREAKER',
-                            nominal_v=225, low_voltage_limit=380, high_voltage_limit=420)
-    busbars = pd.DataFrame.from_records(index='id', data=[
-        {'voltage_level_id': 'VL1', 'id': 'BBS1', 'node': 0},
-        {'voltage_level_id': 'VL1', 'id': 'BBS2', 'node': 1},
-        {'voltage_level_id': 'VL1', 'id': 'BBS3', 'node': 2},
-    ])
-    n.create_busbar_sections(busbars)
-    n.create_extensions('busbarSectionPosition', id=['BBS1', 'BBS2', 'BBS3'], busbar_index=[1, 2, 3],
-                        section_index=[1, 1, 1])
-    assert len(n.get_switches().index) == 0
-    coupling_device = pd.DataFrame.from_records(index='bus_or_busbar_section_id_1', data=[
-        {'bus_or_busbar_section_id_1': 'BBS1', 'bus_or_busbar_section_id_2': 'BBS2'},
-    ])
-    with pytest.warns(DeprecationWarning, match=re.escape("Use of deprecated attribute reporter. Use report_node instead.")):
-        report_node = rp.Reporter()
-        report1 = str(report_node)
-        assert len(report1) > 0
-        pp.network.create_coupling_device(n, coupling_device, reporter=report_node)
-        report2 = str(report_node)
-        assert len(report2) > len(report1)
-        switches = n.get_switches()
-        assert len(switches.index) == 5
-        assert len(switches[switches["kind"] == "DISCONNECTOR"].index) == 4
-        assert len(switches[switches["kind"] == "BREAKER"].index) == 1
-        assert len(switches[switches["open"] == True].index) == 2
-        assert len(switches[switches["open"] == False].index) == 3
 
 
 def test_create_coupling_device_kwargs():
@@ -1033,32 +744,6 @@ def test_create_coupling_device_bus_breaker():
     assert len(switches.index) == 1
     assert len(switches[switches["kind"] == "BREAKER"].index) == 1
     assert len(switches[switches["open"] == False].index) == 1
-
-
-def test_remove_feeder_bay_deprecated_report():
-    n = pp.network.create_four_substations_node_breaker_network()
-    df = pd.DataFrame(index=['new_line'],
-                      columns=['id', 'bus_or_busbar_section_id_1', 'bus_or_busbar_section_id_2', 'position_order_1',
-                               'position_order_2', 'direction_1', 'direction_2', 'r', 'x', 'g1', 'g2', 'b1', 'b2'],
-                      data=[['new_line', 'S1VL2_BBS1', 'S2VL1_BBS', 115, 121, 'TOP', 'TOP', 5.0, 50.0, 20.0, 30.0, 40.0,
-                             50.0]])
-    with pytest.warns(DeprecationWarning, match=re.escape("Use of deprecated attribute reporter. Use report_node instead.")):
-        report_node = rp.Reporter()
-        report1 = str(report_node)
-        assert len(report1) > 0
-        pp.network.create_line_bays(n, df, reporter=report_node)
-        report2 = str(report_node)
-        assert len(report2) > len(report1)
-        assert 'new_line' in n.get_lines().index
-        assert 'new_line1_BREAKER' in n.get_switches().index
-        assert 'new_line1_DISCONNECTOR_25_0' in n.get_switches().index
-        assert 'new_line2_BREAKER' in n.get_switches().index
-        assert 'new_line2_DISCONNECTOR_8_0' in n.get_switches().index
-        pp.network.remove_feeder_bays(n, 'new_line')
-        assert 'new_line1_BREAKER' not in n.get_switches().index
-        assert 'new_line1_DISCONNECTOR' not in n.get_switches().index
-        assert 'new_line2_BREAKER' not in n.get_switches().index
-        assert 'new_line2_DISCONNECTOR' not in n.get_switches().index
 
 
 def test_remove_feeder_bay():
@@ -1360,27 +1045,6 @@ def test_remove_voltage_level():
     assert 'LINETEST' not in n.get_lines().index
 
 
-def test_remove_voltage_level_deprecated_report():
-    n = pp.network.create_eurostag_tutorial_example1_network()
-    n.create_voltage_levels(id='VLTEST', substation_id='P1', topology_kind='BUS_BREAKER', nominal_v=400, low_voltage_limit=380, high_voltage_limit=420)
-    n.create_buses(id='B1', voltage_level_id='VLTEST')
-    n.create_loads(id='LOADTEST', voltage_level_id='VLTEST', bus_id='B1', p0=100, q0=10)
-    n.create_lines(id='LINETEST', voltage_level1_id='VLTEST', bus1_id='B1', voltage_level2_id='VLGEN', bus2_id='NGEN',
-                   b1=0, b2=0, g1=0, g2=0, r=0.5, x=10)
-
-    assert 'VLTEST' in n.get_voltage_levels().index
-
-    with pytest.warns(DeprecationWarning, match=re.escape("Use of deprecated attribute reporter. Use report_node instead.")):
-        report_node = rp.Reporter()
-        report1 = str(report_node)
-        assert len(report1) > 0
-        pp.network.remove_voltage_levels(n, 'VLTEST', reporter=report_node)
-        report2 = str(report_node)
-        assert len(report2) > len(report1)
-
-        assert 'VLTEST' not in n.get_voltage_levels().index
-
-
 def test_remove_hvdc():
     n = pp.network.create_four_substations_node_breaker_network()
     pp.network.remove_hvdc_lines(n, 'HVDC2', {'HVDC2': 'SHUNT'})
@@ -1393,23 +1057,6 @@ def test_remove_hvdc():
 
     assert 'HVDC1' not in n.get_hvdc_lines().index
     assert n.get_vsc_converter_stations().empty
-
-
-def test_remove_hvdc_deprecated_report():
-    n = pp.network.create_four_substations_node_breaker_network()
-    pp.network.remove_hvdc_lines(n, 'HVDC2', {'HVDC2': 'SHUNT'})
-
-    assert 'HVDC2' not in n.get_hvdc_lines().index
-    assert 'SHUNT' not in n.get_shunt_compensators().index
-    assert n.get_lcc_converter_stations().empty
-
-    with pytest.warns(DeprecationWarning, match=re.escape("Use of deprecated attribute reporter. Use report_node instead.")):
-        report_node = rp.Reporter()
-        report1 = str(report_node)
-        assert len(report1) > 0
-        pp.network.remove_hvdc_lines(n, 'HVDC1', reporter=report_node)
-        report2 = str(report_node)
-        assert len(report2) > len(report1)
 
 
 def test_exception_create_element_with_bay():

@@ -1,0 +1,46 @@
+{
+  "crac-factory" : "CracImplFactory",
+  "default-monitored-line-side" : "monitor-lines-on-both-sides",
+  "ra-usage-limits-per-instant" : [ ],
+  "extensions" : {
+    "CimCracCreatorParameters" : {
+      "voltage-cnecs-creation-parameters" : {
+        "monitored-states-and-thresholds" : [ {
+          "instant" : "outage",
+          "thresholds-per-nominal-v" : [ {
+            "nominalV" : 220.0,
+            "unit" : "kilovolt",
+            "min" : 200.0
+          } ],
+          "contingency-names" : [ "Co-3-name" ]
+        }, {
+          "instant" : "preventive",
+          "thresholds-per-nominal-v" : [ {
+            "nominalV" : 220.0,
+            "unit" : "kilovolt",
+            "min" : 220.0,
+            "max" : 230.0
+          } ]
+        }, {
+          "instant" : "auto",
+          "thresholds-per-nominal-v" : [ {
+            "nominalV" : 220.0,
+            "unit" : "kilovolt"
+          } ],
+          "contingency-names" : [ "Co-2-name" ]
+        }, {
+          "instant" : "curative",
+          "thresholds-per-nominal-v" : [ {
+            "nominalV" : 220.0,
+            "unit" : "kilovolt",
+            "min" : 210.0,
+            "max" : 240.0
+          } ],
+          "contingency-names" : [ "Co-1-name", "Co-4-name" ]
+        } ],
+        "monitored-network-elements" : [ "_2844585c-0d35-488d-a449-685bcd57afbf", "_a708c3bc-465d-4fe7-b6ef-6fa6408a62b0", "_d77b61ef-61aa-4b22-95f6-b56ca080788d" ]
+      },
+      "timestamp" : "2021-04-01T23:00:00Z"
+    }
+  }
+}
