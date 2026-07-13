@@ -262,17 +262,20 @@ public class LoadingLimitsDataframeAdder implements NetworkElementAdder {
 
             @Override
             public CurrentLimitsAdder newCurrentLimits() {
-                return side == TwoSides.ONE ? branch.newCurrentLimits1() : branch.newCurrentLimits2();
+                return side == TwoSides.ONE ? branch.getOrCreateSelectedOperationalLimitsGroup1().newCurrentLimits()
+                        : branch.getOrCreateSelectedOperationalLimitsGroup2().newCurrentLimits();
             }
 
             @Override
             public ApparentPowerLimitsAdder newApparentPowerLimits() {
-                return side == TwoSides.ONE ? branch.newApparentPowerLimits1() : branch.newApparentPowerLimits2();
+                return side == TwoSides.ONE ? branch.getOrCreateSelectedOperationalLimitsGroup1().newApparentPowerLimits()
+                        : branch.getOrCreateSelectedOperationalLimitsGroup2().newApparentPowerLimits();
             }
 
             @Override
             public ActivePowerLimitsAdder newActivePowerLimits() {
-                return side == TwoSides.ONE ? branch.newActivePowerLimits1() : branch.newActivePowerLimits2();
+                return side == TwoSides.ONE ? branch.getOrCreateSelectedOperationalLimitsGroup1().newActivePowerLimits()
+                        : branch.getOrCreateSelectedOperationalLimitsGroup2().newActivePowerLimits();
             }
         };
     }
