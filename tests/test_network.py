@@ -2915,9 +2915,9 @@ def test_update_name():
     assert 'GEN_NAME' == generators.loc['GEN', 'name']
 
 
-def test_deprecated_operational_limits_is_fictitious():
+def test_deprecated_loading_limits_is_fictitious():
     network = pp.network.create_eurostag_tutorial_example1_network()
-    with pytest.warns(DeprecationWarning, match=re.escape("operation limits is_fictitious attribute has been renamed fictitious")):
+    with pytest.warns(DeprecationWarning, match=re.escape("loading limits is_fictitious attribute has been renamed fictitious")):
         network.create_loading_limits(pd.DataFrame.from_records(index='element_id', data=[
             {'element_id': 'NHV1_NHV2_1',
              'name': '',
@@ -2940,7 +2940,7 @@ def test_deprecated_operational_limits_is_fictitious():
 
 def test_deprecated_operational_limits_is_fictitious_kwargs():
     network = pp.network.create_eurostag_tutorial_example1_network()
-    with pytest.warns(DeprecationWarning, match=re.escape("operation limits is_fictitious attribute has been renamed fictitious")):
+    with pytest.warns(DeprecationWarning, match=re.escape("loading limits is_fictitious attribute has been renamed fictitious")):
         network.create_loading_limits(element_id=['NHV1_NHV2_1', 'NHV1_NHV2_1'],
                                       name=['', ''],
                                       side=['ONE', 'ONE'], type=['CURRENT', 'CURRENT'], value=[400.0, 500.0],
@@ -2949,10 +2949,10 @@ def test_deprecated_operational_limits_is_fictitious_kwargs():
     assert limits.query("element_id == 'NHV1_NHV2_1' and side == 'ONE' and acceptable_duration == 60")['fictitious'].all()
 
 
-def test_deprecated_operational_limits_element_type():
+def test_deprecated_loading_limits_element_type():
     # element type should just be ignored and not throw an exception
     network = pp.network.create_eurostag_tutorial_example1_network()
-    with pytest.warns(DeprecationWarning, match=re.escape("useless operation limits element_type attribute has been removed")):
+    with pytest.warns(DeprecationWarning, match=re.escape("useless loading limits element_type attribute has been removed")):
         network.create_loading_limits(pd.DataFrame.from_records(index='element_id', data=[
             {'element_id': 'NHV1_NHV2_1',
              'element_type': 'LINE',
@@ -2965,10 +2965,10 @@ def test_deprecated_operational_limits_element_type():
         ]))
 
 
-def test_deprecated_operational_limits_element_type_kwargs():
+def test_deprecated_loading_limits_element_type_kwargs():
     # element type should just be ignored and not throw an exception
     network = pp.network.create_eurostag_tutorial_example1_network()
-    with pytest.warns(DeprecationWarning, match=re.escape("useless operation limits element_type attribute has been removed")):
+    with pytest.warns(DeprecationWarning, match=re.escape("useless loading limits element_type attribute has been removed")):
         network.create_loading_limits(element_id=['NHV1_NHV2_1', 'NHV1_NHV2_1'], element_type=['LINE', 'LINE'], name=['', ''],
                                       side=['ONE', 'ONE'], type=['CURRENT', 'CURRENT'], value=[400.0, 500.0],
                                       acceptable_duration=[-1, 60], fictitious=[False, True])
