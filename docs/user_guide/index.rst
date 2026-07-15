@@ -21,3 +21,4 @@ relying as much as possible on practical examples.
    shortcircuit
    voltage_initializer
    advanced_parameters
+   opf
