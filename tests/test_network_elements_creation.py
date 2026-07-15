@@ -633,7 +633,7 @@ def test_create_node_breaker_network_and_run_loadflow():
 
 def test_create_limits():
     net = pn.create_eurostag_tutorial_example1_network()
-    net.create_operational_limits(pd.DataFrame.from_records(index=['element_id'], data=[
+    net.create_loading_limits(pd.DataFrame.from_records(index=['element_id'], data=[
         {'element_id': 'NHV1_NHV2_1', 'name': 'permanent_limit', 'side': 'ONE',
          'type': 'APPARENT_POWER', 'value': 600,
          'acceptable_duration': np.inf, 'fictitious': False},
@@ -654,7 +654,7 @@ def test_create_limits():
               ['LINE', 'ONE', 'permanent_limit', 'ACTIVE_POWER', 400, -1, False, 'DEFAULT', True],
               ['LINE', 'ONE', 'permanent_limit', 'APPARENT_POWER', 600, -1, False, 'DEFAULT', True],
               ['LINE', 'TWO', 'permanent_limit', 'CURRENT', 1100, -1, False, 'DEFAULT', True]])
-    limits = net.get_operational_limits(all_attributes=True).loc['NHV1_NHV2_1']
+    limits = net.get_loading_limits(all_attributes=True).loc['NHV1_NHV2_1']
     permanent_limits = limits[limits['name'] == 'permanent_limit']
     pd.testing.assert_frame_equal(expected, permanent_limits, check_dtype=False, check_index_type=False)
 
@@ -666,6 +666,24 @@ def test_create_limits():
               ['LINE', 'TWO', '1\'', 'CURRENT', 1500, 60, False, 'DEFAULT', True]])
     one_minute_limits = limits[limits['name'] == '1\'']
     pd.testing.assert_frame_equal(expected, one_minute_limits, check_dtype=False, check_index_type=False)
+
+def test_deprecated_operational_limits():
+    net = pn.create_eurostag_tutorial_example1_network()
+    with pytest.warns(DeprecationWarning, match=re.escape("create_operational_limits is deprecated, use create_loading_limits instead")):
+        net.create_operational_limits(pd.DataFrame.from_records(index=['element_id'], data=[
+            {'element_id': 'NHV1_NHV2_1', 'name': 'permanent_limit', 'side': 'ONE',
+             'type': 'APPARENT_POWER', 'value': 600,
+             'acceptable_duration': np.inf, 'fictitious': False},
+            {'element_id': 'NHV1_NHV2_1', 'name': '1\'', 'side': 'ONE',
+             'type': 'APPARENT_POWER', 'value': 1000,
+             'acceptable_duration': 60, 'fictitious': False},
+            {'element_id': 'NHV1_NHV2_1', 'name': 'permanent_limit', 'side': 'ONE',
+             'type': 'ACTIVE_POWER', 'value': 400,
+             'acceptable_duration': np.inf, 'fictitious': False},
+            {'element_id': 'NHV1_NHV2_1', 'name': '1\'', 'side': 'ONE',
+             'type': 'ACTIVE_POWER', 'value': 700,
+             'acceptable_duration': 60, 'fictitious': False}
+        ]))
 
 
 def test_create_voltage_angle_limits():
@@ -1064,7 +1082,7 @@ def test_3_windings_transformers_creation():
     assert transformer.phase_tap_position2 == 1
 
     #Add some limits
-    n.create_operational_limits(pd.DataFrame.from_records(index='element_id', data=[
+    n.create_loading_limits(pd.DataFrame.from_records(index='element_id', data=[
         {'element_id': 'TWT_TEST', 'name': 'permanent_limit',
          'side': 'ONE',
          'type': 'APPARENT_POWER', 'value': 600,
@@ -1080,7 +1098,7 @@ def test_3_windings_transformers_creation():
          'type': 'ACTIVE_POWER', 'value': 700,
          'acceptable_duration': 60, 'fictitious': False}
     ]))
-    operational_limits = n.get_operational_limits().loc['TWT_TEST']
+    operational_limits = n.get_loading_limits().loc['TWT_TEST']
     assert operational_limits.shape[0] == 4
 
 
