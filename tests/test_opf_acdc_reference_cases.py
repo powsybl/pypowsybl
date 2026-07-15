@@ -1,7 +1,13 @@
 import math
+import platform
+
 import pytest
+
 import pypowsybl as pp
 import pypowsybl.opf as opf
+
+if platform.system() == 'Darwin' and platform.machine() == 'x86_64':
+    pytest.skip("No version compatible with x86_64 macOS.", allow_module_level=True)
 
 V_DC_REF_KV = 400.0
 P_REF_B_MW = -30.0

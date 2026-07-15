@@ -5,15 +5,15 @@
 # SPDX-License-Identifier: MPL-2.0
 #
 import io
-
-from pypowsybl import _pypowsybl
-from pypowsybl.utils import path_to_str
 from os import PathLike
-
 from typing import (
     Union,
     Any
 )
+
+from pypowsybl import _pypowsybl
+from pypowsybl.utils import path_to_str
+
 
 class TimeCoupledConstraints:
     """

@@ -9,9 +9,9 @@ import logging
 
 from pypowsybl.opf.impl.model.model import Model
 from pypowsybl.opf.impl.model.model_parameters import ModelParameters
+from pypowsybl.opf.impl.model.network_cache import NetworkCache
 from pypowsybl.opf.impl.model.variable_bounds import VariableBounds
 from pypowsybl.opf.impl.model.variable_context import VariableContext
-from pypowsybl.opf.impl.model.network_cache import NetworkCache
 
 logger = logging.getLogger(__name__)
 

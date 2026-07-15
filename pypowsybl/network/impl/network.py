@@ -4747,9 +4747,9 @@ class Network:  # pylint: disable=too-many-public-methods
         """
         return _pp.get_variant_ids(self._handle)
 
-    def get_operational_limits(self, all_attributes: bool = False, attributes: Optional[List[str]] = None, show_inactive_sets: bool = False) -> DataFrame:
+    def get_loading_limits(self, all_attributes: bool = False, attributes: Optional[List[str]] = None, show_inactive_sets: bool = False) -> DataFrame:
         """
-        Get the list of operational limits.
+        Get the list of loading limits.
 
         The resulting dataframe, depending on the parameters, will have some of the following columns:
 
@@ -4776,15 +4776,23 @@ class Network:  # pylint: disable=too-many-public-methods
             show_inactive_sets: flag to choose whether inactive limit sets should also be included in the dataframe
 
         Returns:
-            All limits on the network
+            All loading limits on the network
         """
         if show_inactive_sets:
-            return self.get_elements(ElementType.OPERATIONAL_LIMITS, all_attributes, attributes)
-        return self.get_elements(ElementType.SELECTED_OPERATIONAL_LIMITS, all_attributes, attributes)
+            return self.get_elements(ElementType.LOADING_LIMITS, all_attributes, attributes)
+        return self.get_elements(ElementType.SELECTED_LOADING_LIMITS, all_attributes, attributes)
 
-    def update_operational_limits(self, df: Optional[DataFrame] = None, **kwargs: ArrayLike) -> None:
+    def get_operational_limits(self, all_attributes: bool = False, attributes: Optional[List[str]] = None, show_inactive_sets: bool = False) -> DataFrame:
         """
-        Update operational limits values with data provided as a :class:`~pandas.DataFrame` or as named arguments.
+        .. deprecated:: 1.16.0
+            Use :meth:`get_loading_limits` instead.
+        """
+        warnings.warn("get_operational_limits is deprecated, use get_loading_limits instead", DeprecationWarning)
+        return self.get_loading_limits(all_attributes, attributes, show_inactive_sets)
+
+    def update_loading_limits(self, df: Optional[DataFrame] = None, **kwargs: ArrayLike) -> None:
+        """
+        Update loading limits values with data provided as a :class:`~pandas.DataFrame` or as named arguments.
 
         Args:
             df: the data to be updated, as a dataframe.
@@ -4793,7 +4801,7 @@ class Network:  # pylint: disable=too-many-public-methods
                     In the case of sequences, all arguments must have the same length.
 
         Notes:
-            Only the value of operational limits can be updated.
+            Only the value of loading limits can be updated.
             To define which limit must be modified, the following fields must be present :
 
             - `element_id`
@@ -4803,16 +4811,24 @@ class Network:  # pylint: disable=too-many-public-methods
             - `group_name` (if not specified, will try to update the corresponding limit in the selected set of the element)
 
         See Also:
-            :meth:`get_operational_limits`
+            :meth:`get_loading_limits`
 
         Examples:
             An example using keyword arguments:
 
             .. code-block:: python
 
-                network.update_operational_limits(id='LINE', side='ONE', type='CURRENT', acceptable_duration=600, value=500)
+                network.update_loading_limits(id='LINE', side='ONE', type='CURRENT', acceptable_duration=600, value=500)
         """
-        return self._update_elements(ElementType.OPERATIONAL_LIMITS, df, **kwargs)
+        return self._update_elements(ElementType.LOADING_LIMITS, df, **kwargs)
+
+    def update_operational_limits(self, df: Optional[DataFrame] = None, **kwargs: ArrayLike) -> None:
+        """
+        .. deprecated:: 1.16.0
+            Use :meth:`update_loading_limits` instead.
+        """
+        warnings.warn("update_operational_limits is deprecated, use update_loading_limits instead", DeprecationWarning)
+        return self.update_loading_limits(df, **kwargs)
 
     def get_voltage_angle_limits(self, all_attributes: bool = False, attributes: Optional[List[str]] = None) -> DataFrame:
         """
@@ -6095,9 +6111,9 @@ class Network:  # pylint: disable=too-many-public-methods
         """
         return self._create_elements(ElementType.DC_SWITCH, [df], **kwargs)
 
-    def create_operational_limits(self, df: Optional[DataFrame] = None, **kwargs: ArrayLike) -> None:
+    def create_loading_limits(self, df: Optional[DataFrame] = None, **kwargs: ArrayLike) -> None:
         """
-        Creates operational limits.
+        Creates loading limits.
 
         Notes:
 
@@ -6117,7 +6133,7 @@ class Network:  # pylint: disable=too-many-public-methods
 
             For each location of the network defined by a couple (element_id, side) and each group_name:
 
-            - if operational limits already exist, they will be replaced
+            - if loading limits already exist, they will be replaced
             - multiple limits may be defined, typically with different acceptable_duration
             - you can only define ONE permanent limit, identified by an acceptable_duration of -1
 
@@ -6128,20 +6144,28 @@ class Network:  # pylint: disable=too-many-public-methods
         if df is not None:
             df['acceptable_duration'] = df['acceptable_duration'].map(lambda x: -1 if x == inf else int(x))
             if 'is_fictitious' in df.columns:
-                warnings.warn("operation limits is_fictitious attribute has been renamed fictitious", DeprecationWarning)
+                warnings.warn("loading limits is_fictitious attribute has been renamed fictitious", DeprecationWarning)
                 df = df.rename(columns={'is_fictitious': 'fictitious'})
             if 'element_type' in df.columns:
-                warnings.warn("useless operation limits element_type attribute has been removed", DeprecationWarning)
+                warnings.warn("useless loading limits element_type attribute has been removed", DeprecationWarning)
                 df = df.drop(columns=['element_type'])
 
         if kwargs.get('is_fictitious') is not None:
-            warnings.warn("operation limits is_fictitious attribute has been renamed fictitious", DeprecationWarning)
+            warnings.warn("loading limits is_fictitious attribute has been renamed fictitious", DeprecationWarning)
             kwargs['fictitious'] = kwargs.pop('is_fictitious')
         if kwargs.get('element_type') is not None:
-            warnings.warn("useless operation limits element_type attribute has been removed", DeprecationWarning)
+            warnings.warn("useless loading limits element_type attribute has been removed", DeprecationWarning)
             kwargs.pop('element_type')
 
-        return self._create_elements(ElementType.OPERATIONAL_LIMITS, [df], **kwargs)
+        return self._create_elements(ElementType.LOADING_LIMITS, [df], **kwargs)
+
+    def create_operational_limits(self, df: Optional[DataFrame] = None, **kwargs: ArrayLike) -> None:
+        """
+        .. deprecated:: 1.16.0
+            Use :meth:`create_loading_limits` instead.
+        """
+        warnings.warn("create_operational_limits is deprecated, use create_loading_limits instead", DeprecationWarning)
+        return self.create_loading_limits(df, **kwargs)
 
     def create_voltage_angle_limits(self, df: Optional[DataFrame] = None, **kwargs: ArrayLike) -> None:
         """

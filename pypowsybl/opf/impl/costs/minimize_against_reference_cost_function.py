@@ -8,7 +8,6 @@
 from typing import cast
 
 import pyoptinterface as poi
-from pandas import DataFrame
 from pyoptinterface import ExprBuilder
 
 from pypowsybl.opf.impl.model.cost_function import CostFunction

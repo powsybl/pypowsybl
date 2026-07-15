@@ -5,20 +5,20 @@
 # SPDX-License-Identifier: MPL-2.0
 #
 import io
-
-from pypowsybl import _pypowsybl
-from pypowsybl.network import Network
-from pypowsybl.utils import path_to_str
-from pypowsybl.utils import create_data_frame_from_series_array
-from pandas import DataFrame
-from typing import Optional
-
 from os import PathLike
-
 from typing import (
+    Optional,
     Union,
     Any
 )
+
+from pandas import DataFrame
+
+from pypowsybl import _pypowsybl
+from pypowsybl.network import Network
+from pypowsybl.utils import create_data_frame_from_series_array
+from pypowsybl.utils import path_to_str
+
 
 class Crac:
     """

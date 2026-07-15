@@ -761,6 +761,8 @@ std::string saveNetworkToString(const JavaHandle& network, const std::string& fo
 
 void reduceNetwork(const JavaHandle& network, const double v_min, const double v_max, const std::vector<std::string>& ids, const std::vector<std::string>& vls, const std::vector<int>& depths, bool withBoundaryLines);
 
+bool checkLoadFlowParameters(const LoadFlowParameters& parameters, const std::string& provider, JavaHandle* reportNode);
+
 LoadFlowComponentResultArray* runLoadFlow(const JavaHandle& network, const LoadFlowParameters& parameters, const std::string& provider, JavaHandle* reportNode);
 
 SeriesArray* runLoadFlowValidation(const JavaHandle& network, validation_type validationType, const LoadFlowValidationParameters& validationParameters);

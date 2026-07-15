@@ -66,5 +66,3 @@ class Scalable(ABC):
         """
         c_param = parameters._to_c_parameters()
         return _pp.scale(network._handle, self._handle, c_param, asked)
-
-

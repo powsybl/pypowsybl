@@ -154,7 +154,7 @@ def test_ieee14_redispatching():
     network = pp.network.create_ieee14()
 
     # add a current limit on L7-9-1
-    network.create_operational_limits(pd.DataFrame.from_records(index='element_id', data=[
+    network.create_loading_limits(pd.DataFrame.from_records(index='element_id', data=[
         {'element_id': 'L7-9-1', 'name': 'permanent', 'side': 'ONE',
          'type': 'CURRENT', 'value': 1000, 'acceptable_duration': np.inf,
          'fictitious': False, 'group_name': 'GROUP1'},
