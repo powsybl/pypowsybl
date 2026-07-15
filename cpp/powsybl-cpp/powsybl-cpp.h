@@ -919,7 +919,7 @@ void createElement(pypowsybl::JavaHandle network, dataframe_array* dataframes, e
 
 ::validation_level_type getValidationLevel(const JavaHandle& network);
 
-::validation_level_type validate(const JavaHandle& network);
+::validation_level_type validate(const JavaHandle& network, JavaHandle* reportNode);
 
 void setMinValidationLevel(pypowsybl::JavaHandle network, validation_level_type validationLevel);
 

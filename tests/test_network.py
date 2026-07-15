@@ -2435,6 +2435,15 @@ def test_validate():
         n.validate()
     assert "Generator 'B1-G': invalid value (NaN) for active power setpoint" == str(exc.value)
 
+def test_validate_with_report():
+    n = pp.network.create_ieee14()
+    n.set_min_validation_level(ValidationLevel.EQUIPMENT)
+    n.update_generators(id='B1-G', target_p=np.nan)
+    report_node = pp.report.ReportNode()
+    n.validate(report_node)
+    assert "B1-G" in report_node.to_json()
+    assert "NaN" in report_node.to_json()
+
 
 def test_switches_node_breaker_connection_info():
     n = pp.network.create_four_substations_node_breaker_network()
