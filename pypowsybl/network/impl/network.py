@@ -6548,21 +6548,23 @@ class Network:  # pylint: disable=too-many-public-methods
         """
         return _pp.get_validation_level(self._handle)
 
-    def validate(self) -> ValidationLevel:
+    def validate(self, report_node: Optional[ReportNode] = None) -> ValidationLevel:
         """
         Validate the network.
 
-        The validation will raise an exception if any check is not consistent with the
+        If no report_node is defined, the validation will raise an exception if any check is not consistent with the
         configured minimum validation level.
+        If report_node is defined, the validation will not raise an exception and populate the report_node with all
+        the validation results.
 
         Returns:
             the computed ValidationLevel, which may be higher than the configured minimum level.
 
         Raises:
             pypowsybl.PyPowsyblError: if any validation check is not consistent
-                                      with the configured minimum validation level.
+                                      with the configured minimum validation level (and no report_node is defined).
         """
-        return _pp.validate(self._handle)
+        return _pp.validate(self._handle, None if report_node is None else report_node._report_node)
 
     def set_min_validation_level(self, validation_level: ValidationLevel) -> None:
         """
