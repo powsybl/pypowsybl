@@ -316,6 +316,47 @@ def test_buses():
     pd.testing.assert_frame_equal(expected, buses, check_dtype=False)
 
 
+def test_bus_fictitious_injection():
+    n = pp.network.create_eurostag_tutorial_example1_network()
+    buses = n.get_buses(all_attributes=True)
+    assert 'fictitious_p0' in buses.columns
+    assert 'fictitious_q0' in buses.columns
+    assert buses['fictitious_p0']['VLGEN_0'] == 0
+    assert buses['fictitious_q0']['VLGEN_0'] == 0
+
+    n.update_buses(pd.DataFrame(index=['VLGEN_0'], columns=['fictitious_p0', 'fictitious_q0'], data=[[10.0, 20.0]]))
+    buses = n.get_buses(all_attributes=True)
+    assert buses['fictitious_p0']['VLGEN_0'] == 10.0
+    assert buses['fictitious_q0']['VLGEN_0'] == 20.0
+
+
+def test_bus_breaker_view_fictitious_injection():
+    n = pp.network.create_eurostag_tutorial_example1_network()
+    buses = n.get_bus_breaker_view_buses(all_attributes=True)
+    assert 'fictitious_p0' in buses.columns
+    assert 'fictitious_q0' in buses.columns
+    assert buses['fictitious_p0']['NGEN'] == 0
+    assert buses['fictitious_q0']['NGEN'] == 0
+
+
+def test_bus_fictitious_injection_node_breaker():
+    n = pp.network.create_four_substations_node_breaker_network()
+    # both bus views expose the fictitious injection columns for a node/breaker network
+    buses = n.get_buses(all_attributes=True)
+    assert 'fictitious_p0' in buses.columns
+    assert 'fictitious_q0' in buses.columns
+    bus_breaker_buses = n.get_bus_breaker_view_buses(all_attributes=True)
+    assert 'fictitious_p0' in bus_breaker_buses.columns
+    assert 'fictitious_q0' in bus_breaker_buses.columns
+
+    # updating through the bus view round-trips: the value is aggregated over the calculated bus nodes
+    bus_id = buses.index[0]
+    n.update_buses(pd.DataFrame(index=[bus_id], columns=['fictitious_p0', 'fictitious_q0'], data=[[10.0, 20.0]]))
+    buses = n.get_buses(all_attributes=True)
+    assert buses['fictitious_p0'][bus_id] == 10.0
+    assert buses['fictitious_q0'][bus_id] == 20.0
+
+
 def test_loads_data_frame():
     n = pp.network.create_eurostag_tutorial_example1_network()
     loads = n.get_loads(all_attributes=True)
@@ -2181,11 +2222,11 @@ def test_dataframe_attributes_filtering():
     expected_all_attributes = pd.DataFrame(
         index=pd.Series(name='id', data=['VLGEN_0', 'VLHV1_0', 'VLHV2_0', 'VLLOAD_0']),
         columns=['name', 'v_mag', 'v_angle', 'connected_component', 'synchronous_component',
-                 'voltage_level_id', 'fictitious'],
-        data=[['', nan, nan, 0, 0, 'VLGEN', False],
-              ['', 380, nan, 0, 0, 'VLHV1', False],
-              ['', 380, nan, 0, 0, 'VLHV2', False],
-              ['', nan, nan, 0, 0, 'VLLOAD', False]])
+                 'voltage_level_id', 'fictitious', 'fictitious_p0', 'fictitious_q0'],
+        data=[['', nan, nan, 0, 0, 'VLGEN', False, 0, 0],
+              ['', 380, nan, 0, 0, 'VLHV1', False, 0, 0],
+              ['', 380, nan, 0, 0, 'VLHV2', False, 0, 0],
+              ['', nan, nan, 0, 0, 'VLLOAD', False, 0, 0]])
     pd.testing.assert_frame_equal(expected_all_attributes, buses_all_attributes, check_dtype=False)
     with pytest.raises(RuntimeError) as e:
         n.get_buses(all_attributes=True, attributes=['v_mag', 'voltage_level_id'])

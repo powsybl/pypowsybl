@@ -816,6 +816,8 @@ class Network:  # pylint: disable=too-many-public-methods
               - **connected_component**: The connected component to which the bus belongs
               - **synchronous_component**: The synchronous component to which the bus belongs
               - **voltage_level_id**: at which substation the bus is connected
+              - **fictitious_p0** (optional): the fictitious active power injection of the bus (in MW, using the load sign convention)
+              - **fictitious_q0** (optional): the fictitious reactive power injection of the bus (in MVar, using the load sign convention)
 
             This dataframe is indexed on the bus ID in the bus view.
 
@@ -903,6 +905,8 @@ class Network:  # pylint: disable=too-many-public-methods
               - **synchronous_component**: The synchronous component to which the bus belongs
               - **voltage_level_id**: at which substation the bus is connected
               - **bus_id**: the bus ID in the bus view
+              - **fictitious_p0** (optional): the fictitious active power injection of the bus (in MW, using the load sign convention)
+              - **fictitious_q0** (optional): the fictitious reactive power injection of the bus (in MVar, using the load sign convention)
 
             This dataframe is indexed on the bus ID in the bus/breaker view.
 
@@ -3454,6 +3458,8 @@ class Network:  # pylint: disable=too-many-public-methods
             - `v_mag`
             - `v_angle`
             - `fictitious`
+            - `fictitious_p0`
+            - `fictitious_q0`
 
         See Also:
             :meth:`get_buses`

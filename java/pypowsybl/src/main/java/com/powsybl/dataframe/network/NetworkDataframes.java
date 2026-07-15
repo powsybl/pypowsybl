@@ -392,6 +392,10 @@ public final class NetworkDataframes {
             builder.strings("bus_id", b -> NetworkUtil.getBusViewBus(b).map(Bus::getId).orElse(""));
         }
         return builder.booleans("fictitious", Identifiable::isFictitious, Identifiable::setFictitious, false)
+                .doubles("fictitious_p0", (b, context) -> perUnitPQ(context, b.getFictitiousP0()),
+                    (b, p, context) -> b.setFictitiousP0(unPerUnitPQ(context, p)), false)
+                .doubles("fictitious_q0", (b, context) -> perUnitPQ(context, b.getFictitiousQ0()),
+                    (b, q, context) -> b.setFictitiousQ0(unPerUnitPQ(context, q)), false)
                 .addProperties()
                 .build();
     }
