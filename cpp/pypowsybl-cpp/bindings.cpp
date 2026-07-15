@@ -1171,7 +1171,7 @@ PYBIND11_MODULE(_pypowsybl, m) {
 
     m.def("get_validation_level", &pypowsybl::getValidationLevel, "get the validation level", py::arg("network"));
 
-    m.def("validate", &pypowsybl::validate, "validate", py::arg("network"));
+    m.def("validate", &pypowsybl::validate, "validate", py::arg("network"), py::arg("report_node"));
 
     m.def("set_min_validation_level", pypowsybl::setMinValidationLevel, "set minimum validation level",
           py::call_guard<py::gil_scoped_release>(), py::arg("network"), py::arg("validation_level"));
