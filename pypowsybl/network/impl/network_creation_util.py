@@ -5,7 +5,6 @@
 # SPDX-License-Identifier: MPL-2.0
 #
 import io
-import warnings
 from os import PathLike
 from typing import Union, Dict, List, Optional
 
