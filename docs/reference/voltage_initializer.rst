@@ -46,6 +46,13 @@ VoltageInitializerParameters : How to parameterize the tool
     VoltageInitializerParameters.set_default_constraint_scaling_factor
     VoltageInitializerParameters.set_reactive_slack_variable_scaling_factor
     VoltageInitializerParameters.set_twt_ratio_variable_scaling_factor
+    VoltageInitializerParameters.set_penalty_invest_rea_neg
+    VoltageInitializerParameters.set_penalty_invest_rea_pos
+    VoltageInitializerParameters.set_penalty_active_power
+    VoltageInitializerParameters.set_penalty_units_reactive
+    VoltageInitializerParameters.set_penalty_transfo_ratio
+    VoltageInitializerParameters.set_penalty_voltage_target_ratio
+    VoltageInitializerParameters.set_penalty_voltage_target_data
 
 VoltageInitializerResults : How to exploit the results
 ------------------------------------------------------
