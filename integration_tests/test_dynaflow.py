@@ -5,11 +5,8 @@
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 #
 import pypowsybl as pp
-
-from pypowsybl.loadflow import (
-    run_ac,
-    ComponentStatus
-)
+import pypowsybl.loadflow as lf
+import pypowsybl.report as rp
 
 
 def test_dynaflow_ieee9():
@@ -20,9 +17,16 @@ def test_dynaflow_ieee9():
     network = pp.network.create_ieee9()
     assert network.get_generators()['p'].isna().all()  # No data for computed P
 
-    res = run_ac(network, provider='DynaFlow')
-    assert res[0].status == ComponentStatus.CONVERGED
+    res = lf.run_ac(network, provider='DynaFlow')
+    assert res[0].status == lf.ComponentStatus.CONVERGED
     # checks that computed P is almost equal to target_p
     gens = network.get_generators()
     assert max(abs(gens.p + gens.target_p)) < 0.1
 
+def test_check_loadflow_parameters():
+    assert lf.check_loadflow_parameters(provider='DynaFlow')
+    report_node = rp.ReportNode()
+    parameters = lf.Parameters(distributed_slack=False, dc=True)
+    assert not lf.check_loadflow_parameters(parameters=parameters, provider='DynaFlow', report_node=report_node)
+    assert report_node
+    print(report_node)

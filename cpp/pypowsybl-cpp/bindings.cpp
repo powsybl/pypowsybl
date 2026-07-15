@@ -396,9 +396,9 @@ PYBIND11_MODULE(_pypowsybl, m) {
             .value("RATIO_TAP_CHANGER", element_type::RATIO_TAP_CHANGER)
             .value("PHASE_TAP_CHANGER", element_type::PHASE_TAP_CHANGER)
             .value("REACTIVE_CAPABILITY_CURVE_POINT", element_type::REACTIVE_CAPABILITY_CURVE_POINT)
-            .value("OPERATIONAL_LIMITS", element_type::OPERATIONAL_LIMITS)
+            .value("LOADING_LIMITS", element_type::LOADING_LIMITS)
             .value("VOLTAGE_ANGLE_LIMITS", element_type::VOLTAGE_ANGLE_LIMITS)
-            .value("SELECTED_OPERATIONAL_LIMITS", element_type::SELECTED_OPERATIONAL_LIMITS)
+            .value("SELECTED_LOADING_LIMITS", element_type::SELECTED_LOADING_LIMITS)
             .value("MINMAX_REACTIVE_LIMITS", element_type::MINMAX_REACTIVE_LIMITS)
             .value("ALIAS", element_type::ALIAS)
             .value("IDENTIFIABLE", element_type::IDENTIFIABLE)
@@ -649,6 +649,9 @@ PYBIND11_MODULE(_pypowsybl, m) {
             .def_readwrite("stop_time", &pypowsybl::DynamicSimulationParameters::stop_time)
             .def_readwrite("provider_parameters_keys", &pypowsybl::DynamicSimulationParameters::provider_parameters_keys)
             .def_readwrite("provider_parameters_values", &pypowsybl::DynamicSimulationParameters::provider_parameters_values);
+
+    m.def("check_loadflow_parameters", &pypowsybl::checkLoadFlowParameters, "Check load flow parameters",
+        py::arg("parameters"), py::arg("provider"), py::arg("report_node"));
 
     m.def("run_loadflow", &pypowsybl::runLoadFlow, "Run a load flow", py::call_guard<py::gil_scoped_release>(),
           py::arg("network"), py::arg("parameters"), py::arg("provider"), py::arg("report_node"));

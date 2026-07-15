@@ -105,7 +105,9 @@ All network elements are accessible as dataframes, using the following getters.
    Network.get_loads
    Network.get_linear_shunt_compensator_sections
    Network.get_non_linear_shunt_compensator_sections
+   Network.get_loading_limits
    Network.get_operational_limits
+   Network.get_voltage_angle_limits
    Network.get_phase_tap_changer_steps
    Network.get_phase_tap_changers
    Network.get_ratio_tap_changer_steps
@@ -183,6 +185,7 @@ Network elements can be modified using dataframes:
    Network.update_lines
    Network.update_loads
    Network.update_non_linear_shunt_compensator_sections
+   Network.update_loading_limits
    Network.update_operational_limits
    Network.update_phase_tap_changers
    Network.update_phase_tap_changer_steps
@@ -239,7 +242,9 @@ Network elements can be created or removed using the following methods:
    Network.create_lines
    Network.create_loads
    Network.create_minmax_reactive_limits
+   Network.create_loading_limits
    Network.create_operational_limits
+   Network.create_voltage_angle_limits
    Network.create_phase_tap_changers
    Network.create_ratio_tap_changers
    Network.create_shunt_compensators

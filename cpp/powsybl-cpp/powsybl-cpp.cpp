@@ -1014,6 +1014,11 @@ DynamicSimulationParameters* createDynamicSimulationParameters() {
     return new DynamicSimulationParameters(parameters.get());
 }
 
+bool checkLoadFlowParameters(const LoadFlowParameters& parameters, const std::string& provider, JavaHandle* reportNode) {
+    auto c_parameters = parameters.to_c_struct();
+    return PowsyblCaller::get()->callJava<bool>(::checkLoadFlowParameters, c_parameters.get(), (char *) provider.data(), (reportNode == nullptr) ? nullptr : *reportNode);
+}
+
 LoadFlowComponentResultArray* runLoadFlow(const JavaHandle& network, const LoadFlowParameters& parameters,
                                           const std::string& provider, JavaHandle* reportNode) {
     auto c_parameters = parameters.to_c_struct();
