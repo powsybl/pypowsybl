@@ -59,7 +59,7 @@ def test_parameters():
     params.set_penalty_voltage_target_data(0.001)
 
 
-@pytest.mark.skip(reason="CI doesn't have a Ampl and Knitro runtime.")
+#@pytest.mark.skip(reason="CI doesn't have a Ampl and Knitro runtime.")
 def test_runner():
     from pypowsybl import network, voltage_initializer as v_init
     params = v_init.VoltageInitializerParameters()
@@ -76,4 +76,4 @@ def test_runner():
     results.apply_all_modifications(n)
 
     assert results.status == v_init.VoltageInitializerStatus.OK
-    assert len(results.indicators) == 86
+    assert len(results.indicators) == 92
