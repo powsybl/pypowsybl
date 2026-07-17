@@ -55,12 +55,26 @@ def test_reactive_range():
     assert b.mirror().reduce(0.1).min_value_with_margin == -18.000001
     assert b.mirror().reduce(0.1).max_value_with_margin == -10.999999
 
-
 def create_loadflow_parameters():
-    return pp.loadflow.Parameters(voltage_init_mode=pp.loadflow.VoltageInitMode.DC_VALUES,
-                                  hvdc_ac_emulation=False,
-                                  provider_parameters={'plausibleActivePowerLimit': '10000.0',
-                                                       'svcVoltageMonitoring': 'false'})
+    return pp.loadflow.Parameters(
+        voltage_init_mode=pp.loadflow.VoltageInitMode.DC_VALUES,
+        hvdc_ac_emulation=False,
+        provider_parameters={
+            'plausibleActivePowerLimit': '10000.0',
+            'svcVoltageMonitoring': 'false',
+        }
+    )
+
+def create_acdc_loadflow_parameters():
+    return pp.loadflow.Parameters(
+        voltage_init_mode=pp.loadflow.VoltageInitMode.UNIFORM_VALUES,
+        hvdc_ac_emulation=False,
+        provider_parameters={
+            'plausibleActivePowerLimit': '10000.0',
+            'svcVoltageMonitoring': 'false',
+            'acDcNetwork': 'true',
+        }
+    )
 
 
 def create_opf_parameters():
@@ -70,7 +84,6 @@ def create_opf_parameters():
     #             'opttol': 1e-3,
     #             'feastol': 1e-3,
     #         }))
-
 
 def run_opf_then_lf(network: pp.network.Network,
                     opf_parameters: OptimalPowerFlowParameters = create_opf_parameters(),
@@ -215,3 +228,29 @@ def test_micro_grid_be():
 
 def test_micro_grid_nl():
     run_opf_then_lf(pp.network.create_micro_grid_nl_network())
+
+
+def test_vsc_symmetrical_monopole():
+    opf_parameters = OptimalPowerFlowParameters(mode=OptimalPowerFlowMode.ACDC)
+    assert pp.opf.run_ac(pp.network.create_dc_detailed_vsc_symmetrical_monopole_network(), opf_parameters)
+    
+
+'''
+#VSC assymetrical monopole network is defined in powsybl-core in the file DcDetailedNetworkFactory.java
+#It defines two different nominal voltage for the two VSC DC nodes, which is not compliant with the ACDC OPF validation rules. 
+def test_vsc_asymmetrical_monopole():
+    opf_parameters = OptimalPowerFlowParameters(mode=OptimalPowerFlowMode.ACDC)
+    assert pp.opf.run_ac(pp.network.create_dc_detailed_vsc_asymmetrical_monopole_network(), opf_parameters)
+'''
+
+def test_ac_dc_monopolar_network():
+    opf_parameters = OptimalPowerFlowParameters(mode=OptimalPowerFlowMode.ACDC)
+    assert pp.opf.run_ac(pp.network.create_ac_dc_monopolar_network(), opf_parameters)
+
+def test_ac_dc_bipolar_network():
+    opf_parameters = OptimalPowerFlowParameters(mode=OptimalPowerFlowMode.ACDC)
+    assert pp.opf.run_ac(pp.network.create_ac_dc_bipolar_network(), opf_parameters)
+
+def test_ac_dc_bipolar_metallic_return():
+    opf_parameters = OptimalPowerFlowParameters(mode=OptimalPowerFlowMode.ACDC)
+    assert pp.opf.run_ac(pp.network.create_ac_dc_bipolar_network_with_metallic_return(), opf_parameters)
