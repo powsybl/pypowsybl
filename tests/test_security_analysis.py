@@ -131,9 +131,13 @@ def test_filtering_monitored_results():
     branch_results = sa_result.branch_results
     p1N = branch_results.loc['', '', 'NGEN_NHV1']['p1']
     p1Nm1 = branch_results.loc['NHV1_NHV2_1', '', 'NGEN_NHV1']['p1']
-    assert abs(p1N - p1Nm1) / p1N < 0.01
+    assert abs(p1N - p1Nm1) < 150
 
-    parameters.modified_monitored_elements_parameters.power_modification_threshold = 0.01
+    q1N = branch_results.loc['', '', 'NGEN_NHV1']['q1']
+    q1Nm1 = branch_results.loc['NHV1_NHV2_1', '', 'NGEN_NHV1']['q1']
+    assert abs(q1N - q1Nm1) < 150
+
+    parameters.modified_monitored_elements_parameters.power_modification_threshold = 150
     sa_result = sa.run_ac(n, parameters)
     branch_results = sa_result.branch_results
     assert ('NHV1_NHV2_1', '', 'NGEN_NHV1') not in branch_results.index

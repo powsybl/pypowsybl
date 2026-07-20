@@ -12,8 +12,8 @@ class ModifiedMonitoredElementsParameters:  # pylint: disable=too-few-public-met
     If both voltage thresholds are different from 0, the applied voltage threshold is the minimum of the two.
 
     Args:
-        power_modification_threshold: for branches and 3 windings transformers, if equal to 0.1, their state is stored in the post-contingency results
-                                    only if their power has changed by more than 10% between N and post-contingency situations.
+        power_modification_threshold: for branches and 3 windings transformers, if equal to 1, their state is stored in the post-contingency results
+                                    only if their power (active or reactive) has changed by more than 1MW/MVAR between N and post-contingency situations.
         voltage_modification_proportional_threshold: for buses, if equal to 0.1, their state is stored in the post-contingency results
                                     only if their voltage has changed by more than 10% between N and post-contingency.
         voltage_modification_absolute_threshold: for buses, if equal to 1, their state is stored in the post-contingency results
