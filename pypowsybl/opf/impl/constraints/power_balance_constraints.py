@@ -10,10 +10,10 @@ from typing import cast
 import pyoptinterface as poi
 
 from pypowsybl.opf.impl.model.constraints import Constraints
-from pypowsybl.opf.impl.model.model_parameters import ModelParameters
-from pypowsybl.opf.impl.model.variable_context import VariableContext
-from pypowsybl.opf.impl.model.network_cache import NetworkCache
 from pypowsybl.opf.impl.model.model import Model
+from pypowsybl.opf.impl.model.model_parameters import ModelParameters
+from pypowsybl.opf.impl.model.network_cache import NetworkCache
+from pypowsybl.opf.impl.model.variable_context import VariableContext
 from pypowsybl.opf.impl.util import BranchRow, GeneratorRow, LoadRow, ConnectableRow, BoundaryLineRow
 
 
@@ -86,6 +86,18 @@ class PowerBalanceConstraints(Constraints):
                 buses_balance.p_gen[bus_num].append(variable_context.vsc_cs_p_vars[vsc_cs_index])
                 buses_balance.q_gen[bus_num].append(variable_context.vsc_cs_q_vars[vsc_cs_index])
 
+        # voltage source converters
+        for conv_num, row in enumerate(network_cache.voltage_source_converters.itertuples(index=False)):
+            bus1_id = row.bus1_id
+            if bus1_id:
+                conv_index = variable_context.conv_num_2_index[conv_num]
+                bus_num = network_cache.buses.index.get_loc(bus1_id)
+                assert isinstance(bus_num, int)
+                # VSC AC powers follow the terminal/load convention used by IIDM:
+                # VSC AC powers are added to p_load/q_load.
+                buses_balance.p_load[bus_num] -= variable_context.conv_p_vars[conv_index]
+                buses_balance.q_load[bus_num] -= variable_context.conv_q_vars[conv_index]
+
         # boundary lines
         bl_buses_balance = self.BusesBalance(len(variable_context.bl_v_vars))
         PowerBalanceConstraints._add_bl_buses_expr(buses_balance, bl_buses_balance, network_cache, variable_context)
@@ -95,6 +107,7 @@ class PowerBalanceConstraints(Constraints):
         PowerBalanceConstraints._add_3wts_buses_expr(buses_balance, t3_buses_balance, network_cache, variable_context)
 
         return buses_balance.to_expr() + bl_buses_balance.to_expr() + t3_buses_balance.to_expr()
+
 
     @staticmethod
     def _add_branch_buses_expr(buses_balance: BusesBalance, network_cache: NetworkCache,

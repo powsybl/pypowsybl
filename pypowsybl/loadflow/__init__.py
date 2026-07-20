@@ -13,6 +13,7 @@ from .impl.loadflow import (
     ComponentMode,
     BalanceType,
     VoltageInitMode,
+    check_loadflow_parameters,
     get_provider_parameters_names,
     get_default_provider,
     get_provider_names,

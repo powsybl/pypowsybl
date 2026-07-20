@@ -50,8 +50,6 @@ from .sld_profile import SldProfile
 from .svg import Svg
 from .util import create_data_frame_from_series_array, ParamsDict
 
-DEPRECATED_REPORTER_WARNING = "Use of deprecated attribute reporter. Use report_node instead."
-
 
 class WorkingVariantScope:
     def __init__(self, network: 'Network', variant_id: str):
@@ -227,6 +225,36 @@ class Network:  # pylint: disable=too-many-public-methods
     def close_switch(self, id: str) -> bool:
         return _pp.update_switch_position(self._handle, id, False)
 
+    def open_dc_switch(self, id: str) -> bool:
+        """
+        Opens a DC switch.
+
+        Args:
+            id: the identifier of the DC switch to open.
+
+        Returns:
+            ``True`` if the switch state changed (was closed before), ``False`` if it was already open.
+
+        See Also:
+            :meth:`close_dc_switch`, :meth:`get_dc_switches`
+        """
+        return _pp.update_dc_switch_position(self._handle, id, True)
+
+    def close_dc_switch(self, id: str) -> bool:
+        """
+        Closes a DC switch.
+
+        Args:
+            id: the identifier of the DC switch to close.
+
+        Returns:
+            ``True`` if the switch state changed (was open before), ``False`` if it was already closed.
+
+        See Also:
+            :meth:`open_dc_switch`, :meth:`get_dc_switches`
+        """
+        return _pp.update_dc_switch_position(self._handle, id, False)
+
     def connect(self, id: str, operate_disconnectors: bool = False, operate_fictitious: bool = False) -> bool:
         """
         Connects a connectable element's terminal or terminals.
@@ -265,7 +293,7 @@ class Network:  # pylint: disable=too-many-public-methods
         self.save(file, format, parameters, reporter)
 
     def save(self, file: PathOrStr, format: str = 'XIIDM', parameters: ParamsDict = None,
-             reporter: Optional[ReportNode] = None, report_node: Optional[ReportNode] = None) -> None:
+             report_node: Optional[ReportNode] = None) -> None:
         """
         Save a network to a file using the specified format.
 
@@ -276,7 +304,6 @@ class Network:  # pylint: disable=too-many-public-methods
             file:       path to the exported file
             format:     format to save the network, defaults to 'XIIDM'
             parameters: a dictionary of export parameters
-            reporter: deprecated, use report_node instead
             report_node:   the reporter to be used to create an execution report, default is None (no report)
 
         Examples:
@@ -288,9 +315,6 @@ class Network:  # pylint: disable=too-many-public-methods
                 network.save('network.xiidm.gz')  # produces a gzipped file
                 network.save('/path/to/network.uct', format='UCTE')
         """
-        if reporter is not None:
-            warnings.warn(DEPRECATED_REPORTER_WARNING, DeprecationWarning)
-            report_node = reporter
         file = path_to_str(file)
         if parameters is None:
             parameters = {}
@@ -305,31 +329,24 @@ class Network:  # pylint: disable=too-many-public-methods
         warnings.warn("dump_to_string is deprecated, use save_to_string instead", DeprecationWarning)
         return self.save_to_string(format, parameters, reporter)
 
-    def save_to_string(self, format: str = 'XIIDM', parameters: ParamsDict = None, reporter: Optional[ReportNode] = None,
-                       report_node: Optional[ReportNode] = None) -> str:
+    def save_to_string(self, format: str = 'XIIDM', parameters: ParamsDict = None, report_node: Optional[ReportNode] = None) -> str:
         """
         Save a network to a string using a specified format.
 
         Args:
             format:     format to export, only support mono file type, defaults to 'XIIDM'
             parameters: a dictionary of export parameters
-            reporter: deprecated, use report_node instead
             report_node:   the reporter to be used to create an execution report, default is None (no report)
 
         Returns:
             A string representing this network
         """
-        if reporter is not None:
-            warnings.warn(DEPRECATED_REPORTER_WARNING, DeprecationWarning)
-            report_node = reporter
-
         if parameters is None:
             parameters = {}
         return _pp.save_network_to_string(self._handle, format, parameters,
                                           None if report_node is None else report_node._report_node)  # pylint: disable=protected-access
 
-    def save_to_binary_buffer(self, format: str = 'XIIDM', parameters: ParamsDict = None,
-                              reporter: Optional[ReportNode] = None, report_node: Optional[ReportNode] = None) -> io.BytesIO:
+    def save_to_binary_buffer(self, format: str = 'XIIDM', parameters: ParamsDict = None, report_node: Optional[ReportNode] = None) -> io.BytesIO:
         """
         Save a network to a binary buffer using a specified format.
         In the current implementation, whatever the specified format is (so a format creating a single file or a format
@@ -338,16 +355,11 @@ class Network:  # pylint: disable=too-many-public-methods
         Args:
             format:     format to export, only support mono file type, defaults to 'XIIDM'
             parameters: a dictionary of export parameters
-            reporter: deprecated, use report_node instead
             report_node:   the reporter to be used to create an execution report, default is None (no report)
 
         Returns:
             A BytesIO data buffer representing this network
         """
-        if reporter is not None:
-            warnings.warn(DEPRECATED_REPORTER_WARNING, DeprecationWarning)
-            report_node = reporter
-
         if parameters is None:
             parameters = {}
         return io.BytesIO(_pp.save_network_to_binary_buffer(self._handle, format, parameters,
@@ -358,7 +370,7 @@ class Network:  # pylint: disable=too-many-public-methods
         """
         .. deprecated:: 1.14.0
           Use :meth:`reduce_by_voltage_range`, :meth:`reduce_by_ids` or :meth:`reduce_by_ids_and_depths` instead depending on your use case.
-        
+
         Reduce to a smaller network according to the following parameters
 
         :param v_min: minimum voltage of the voltage levels kept after reducing
@@ -775,6 +787,12 @@ class Network:  # pylint: disable=too-many-public-methods
         Detach a sub network from its parent network.
         """
         self._handle = _pp.detach_sub_network(self._handle)
+
+    def flatten(self) -> None:
+        """
+        Flatten the subnetworks to the current network.
+        """
+        self._handle = _pp.flatten(self._handle)
 
     def get_buses(self, all_attributes: bool = False, attributes: Optional[List[str]] = None,
                   **kwargs: ArrayLike) -> DataFrame:
@@ -2880,9 +2898,13 @@ class Network:  # pylint: disable=too-many-public-methods
         Get a dataframe of aliases of all network elements.
 
         Args:
+            all_attributes: flag for including all attributes in the dataframe, default is false
+            attributes: attributes to include in the dataframe. The 2 parameters are mutually exclusive.
+                        If no parameter is specified, the dataframe will include the default attributes.
+            kwargs: optional filters, passed as named arguments (for example ``id='ELEMENT_ID'``)
 
         Returns:
-            A dataframe of aliases
+            A dataframe of aliases.
 
         Notes:
             The resulting dataframe, depending on the parameters, will include the following columns:
@@ -2892,6 +2914,46 @@ class Network:  # pylint: disable=too-many-public-methods
               - **alias_type**: alias type
 
             This dataframe is indexed on the network element ID.
+
+            For CGMES imports, aliases retention depends on import parameters:
+
+            - If ``iidm.import.cgmes.remove-properties-and-aliases-after-import`` is ``true``,
+              aliases are removed after import and this dataframe may be empty (default behaviour)
+            - If it is ``false``, aliases remain available.
+
+        Examples:
+            Basic usage:
+
+            .. doctest::
+
+                >>> import pypowsybl as pp
+                >>> network = pp.network.create_four_substations_node_breaker_network()
+                >>> network.add_aliases(id='TWT', alias='TWT_ALIAS', alias_type='external')
+                >>> aliases = network.get_aliases()
+                >>> aliases.loc['TWT']['alias']
+                'TWT_ALIAS'
+                >>> aliases.loc['TWT']['alias_type']
+                'external'
+
+            CGMES import example with explicit alias retention to obtain Terminal IDs and other internal CGMES ids:
+
+            .. doctest::
+
+                >>> from pathlib import Path
+                >>> data_dir = globals().get('DATA_DIR', Path().resolve().parents[3] / 'data')
+                >>> cgmes_zip = data_dir / 'CGMES_Full.zip'
+                >>> network = pp.network.load(
+                ...     str(cgmes_zip),
+                ...     {
+                ...         'iidm.import.cgmes.source-for-iidm-id': 'rdfID',
+                ...         'iidm.import.cgmes.remove-properties-and-aliases-after-import': 'false',
+                ...     },
+                ... )
+                >>> aliases = network.get_aliases()
+                >>> list(aliases[['type', 'alias', 'alias_type']].columns)
+                ['type', 'alias', 'alias_type']
+                >>> len(aliases) > 0
+                True
         """
         return self.get_elements(ElementType.ALIAS, all_attributes, attributes, **kwargs)
 
@@ -3177,6 +3239,9 @@ class Network:  # pylint: disable=too-many-public-methods
 
               - **dc_node1_id**: dc node where this dc line is connected, on side 1
               - **dc_node2_id**: dc node where this dc line is connected, on side 2
+              - **connected1**: ``True`` if the dc line is connected to a dc node, side 1
+              - **connected2**: ``True`` if the dc line is connected to a dc node, side 2
+              - **r**: The resistance of the dc line (in Ohm).
               - **p1**: the active flow on the dc line at its "1" side, ``NaN`` if no loadflow has been computed (in MW)
               - **i1**: the current on the dc line at its "1" side, ``NaN`` if no loadflow has been computed (in A)
               - **p2**: the active flow on the dc line at its "2" side, ``NaN`` if no loadflow has been computed (in MW)
@@ -3204,7 +3269,7 @@ class Network:  # pylint: disable=too-many-public-methods
         Notes:
             The resulting dataframe, depending on the parameters, will include the following columns:
 
-              - **nominal_v**: dc node nominal voltage
+              - **nominal_v**: dc node nominal voltage (in kV)
               - **dc_bus_id**: at which dc bus the dc node belongs
               - **fictitious** (optional): ``True`` if the area is part of the model and not of the actual network
 
@@ -3232,25 +3297,42 @@ class Network:  # pylint: disable=too-many-public-methods
               - **voltage_level_id**: at which substation the converter is connected
               - **bus1_id**: bus where this converter is connected, on side 1
               - **bus2_id** (optional): bus where this converter is connected, on side 2
+              - **bus_breaker_bus1_id** (optional) bus of the bus-breaker view where this converter is connected, on side 1
+              - **bus_breaker_bus2_id** (optional) bus of the bus-breaker view where this converter is connected, on side 2
               - **dc_node1_id**: dc node where this converter is connected, on side 1
               - **dc_node2_id**: dc node where this converter is connected, on side 2
-              - **regulated_element_id** (optional): which element of the network is regulating PCC, needed if bus2_id is set
+              - **pcc_terminal_id** (optional): which element of the network is regulating PCC, needed if bus2_id is set
+              - **connected1**: ``True`` if the converter is connected to an ac bus, side 1
+              - **connected2**: ``True`` if the converter is connected to an ac bus, side 2. Defaults to ``False`` if there is no second AC bus.
               - **dc_connected1**: ``True`` if the converter is connected to a dc node, side 1
               - **dc_connected2**: ``True`` if the converter is connected to a dc node, side 2
               - **voltage_regulator_on**: the voltage regulator status
               - **control_mode**: the control mode of the converter
-              - **target_p**: the active power setpoint
-              - **target_q**: the reactive power setpoint
-              - **target_v_dc**: the DC voltage setpoint
-              - **target_v_ac**: the AC voltage setpoint
-              - **idle_loss**: the idle loss coefficient
-              - **switching_loss**: the switching loss coefficient
-              - **resistive_loss**: the resistive loss coefficient
+              - **target_p**: the active power setpoint (in MW, load convention)
+              - **target_q**: the reactive power setpoint (in MVAr, load convention)
+              - **target_v_dc**: the DC voltage setpoint (in kV)
+              - **target_v_ac**: the AC voltage setpoint (in kV)
+              - **idle_loss**: the idle loss coefficient (in MW)
+              - **switching_loss**: the switching loss coefficient (in MW/A)
+              - **resistive_loss**: the resistive loss coefficient (in Ohm)
+              - **min_p** (optional): the minimum active power, ``-inf`` if unbounded (in MW)
+              - **max_p** (optional): the maximum active power, ``inf`` if unbounded (in MW)
               - **p_ac**: the AC active flow on the converter, ``NaN`` if no loadflow has been computed (in MW)
               - **q_ac**: the AC reactive flow on the converter, ``NaN`` if no loadflow has been computed  (in MVAr)
               - **p_dc1**: the DC flow on the converter, side 1 ``NaN`` if no loadflow has been computed (in MW)
               - **p_dc2**: the DC flow on the converter, side 2 ``NaN`` if no loadflow has been computed (in MW)
               - **fictitious** (optional): ``True`` if the area is part of the model and not of the actual network
+
+            .. note::
+
+                ``target_p``, ``min_p`` and ``max_p`` follow the load sign convention at the point of
+                common coupling (PCC): a positive value means active power absorbed by the converter from
+                the AC grid.
+
+            .. warning::
+
+                A finite ``min_p`` / ``max_p`` (any value other than ``-inf`` / ``inf``) is not yet supported
+                by IIDM serialization: saving a network that contains one raises a ``PowsyblException``.
 
             This dataframe is indexed on the converter ID.
         """
@@ -3273,11 +3355,43 @@ class Network:  # pylint: disable=too-many-public-methods
             The resulting dataframe, depending on the parameters, will include the following columns:
 
               - **dc_node_id**: dc node identifier
-              - **r**: dc ground resistance
+              - **connected**: ``True`` if the dc ground is connected to a dc node
+              - **r**: dc ground resistance (in Ohm)
 
             This dataframe is indexed on the dc ground ID.
         """
         return self.get_elements(ElementType.DC_GROUND, all_attributes, attributes, **kwargs)
+
+    def get_dc_switches(self, all_attributes: bool = False, attributes: Optional[List[str]] = None, **kwargs: ArrayLike) -> DataFrame:
+        r"""
+        Get a dataframe of DC switches.
+
+        Args:
+            all_attributes: flag for including all attributes in the dataframe, default is false
+            attributes: attributes to include in the dataframe. The 2 parameters are mutually exclusive.
+                        If no parameter is specified, the dataframe will include the default attributes.
+            kwargs: the data to be selected, as named arguments.
+
+        Returns:
+            the DC switches dataframe
+
+        Notes:
+            The resulting dataframe, depending on the parameters, will include the following columns:
+
+              - **name**: optional human-readable name
+              - **dc_node1_id**: identifier of the first DC node the switch connects
+              - **dc_node2_id**: identifier of the second DC node the switch connects
+              - **kind**: the kind of DC switch (BREAKER or DISCONNECTOR)
+              - **open**: ``True`` if the switch is open, ``False`` if it is closed
+              - **r**: resistance of the DC switch (in Ohm)
+              - **fictitious** (optional): ``True`` if the element is part of the model and not of the actual network
+
+            This dataframe is indexed on the DC switch ID.
+
+        See Also:
+            :meth:`update_dc_switches`, :meth:`create_dc_switches`
+        """
+        return self.get_elements(ElementType.DC_SWITCH, all_attributes, attributes, **kwargs)
 
     def get_dc_buses(self, all_attributes: bool = False, attributes: Optional[List[str]] = None, **kwargs: ArrayLike) -> DataFrame:
         r"""
@@ -3297,7 +3411,7 @@ class Network:  # pylint: disable=too-many-public-methods
 
               - **connected_component**: The connected component to which the dc bus belongs
               - **dc_component**: The dc component to which the dc bus belongs
-              - **v**: dc bus voltage
+              - **v**: dc bus voltage (in kV)
               - **fictitious** (optional): ``True`` if the area is part of the model and not of the actual network
 
 
@@ -4367,6 +4481,8 @@ class Network:  # pylint: disable=too-many-public-methods
             - `r`
             - `i1`
             - `i2`
+            - `connected1`
+            - `connected2`
             - `fictitious`
 
         See Also:
@@ -4423,15 +4539,40 @@ class Network:  # pylint: disable=too-many-public-methods
         Notes:
             Attributes that can be updated are:
 
+            - `bus_breaker_bus1_id`
+            - `bus_breaker_bus2_id`
+            - `connected1`
+            - `connected2`
+            - `dc_connected1`
+            - `dc_connected2`
+            - `pcc_terminal_id`
+            - `voltage_regulator_on`
+            - `control_mode`
             - `target_v_dc`
             - `target_v_ac`
             - `target_p`
             - `target_q`
+            - `min_p`
+            - `max_p`
+            - `idle_loss`
+            - `switching_loss`
+            - `resistive_loss`
             - `p_ac`
             - `q_ac`
             - `p_dc1`
             - `p_dc2`
             - `fictitious`
+
+            .. note::
+
+                ``target_p``, ``min_p`` and ``max_p`` follow the load sign convention at the point of
+                common coupling (PCC): a positive value means active power absorbed by the converter from
+                the AC grid.
+
+            .. warning::
+
+                A finite ``min_p`` / ``max_p`` (any value other than ``-inf`` / ``inf``) is not yet supported
+                by IIDM serialization: saving a network that contains one raises a ``PowsyblException``.
 
         See Also:
             :meth:`get_voltage_source_converters`
@@ -4459,6 +4600,7 @@ class Network:  # pylint: disable=too-many-public-methods
             Attributes that can be updated are:
 
             - `r`
+            - `connected`
             - `fictitious`
 
         See Also:
@@ -4473,6 +4615,38 @@ class Network:  # pylint: disable=too-many-public-methods
                 network.update_dc_grounds(id=['DG1', 'DG2'], r=[2.0, 0.0])
         """
         return self._update_elements(ElementType.DC_GROUND, df, **kwargs)
+
+    def update_dc_switches(self, df: Optional[DataFrame] = None, **kwargs: ArrayLike) -> None:
+        """
+        Update DC switches with data provided as a dataframe or as named arguments.
+
+        Args:
+            df: the data to be updated, as a dataframe.
+            kwargs: the data to be updated, as named arguments.
+                    Arguments can be single values or any type of sequence.
+                    In the case of sequences, all arguments must have the same length.
+
+        Notes:
+            Attributes that can be updated are:
+
+            - `name`
+            - `open`
+            - `r`
+            - `fictitious`
+
+        See Also:
+            :meth:`get_dc_switches`, :meth:`open_dc_switch`, :meth:`close_dc_switch`
+
+        Examples:
+            Some examples using keyword arguments:
+
+            .. code-block:: python
+
+                network.update_dc_switches(id='DS1', r=0.5)
+                network.update_dc_switches(id='DS1', open=True)
+                network.update_dc_switches(id=['DS1', 'DS2'], r=[0.5, 0.0])
+        """
+        return self._update_elements(ElementType.DC_SWITCH, df, **kwargs)
 
     def update_dc_buses(self, df: Optional[DataFrame] = None, **kwargs: ArrayLike) -> None:
         """
@@ -4573,9 +4747,9 @@ class Network:  # pylint: disable=too-many-public-methods
         """
         return _pp.get_variant_ids(self._handle)
 
-    def get_operational_limits(self, all_attributes: bool = False, attributes: Optional[List[str]] = None, show_inactive_sets: bool = False) -> DataFrame:
+    def get_loading_limits(self, all_attributes: bool = False, attributes: Optional[List[str]] = None, show_inactive_sets: bool = False) -> DataFrame:
         """
-        Get the list of operational limits.
+        Get the list of loading limits.
 
         The resulting dataframe, depending on the parameters, will have some of the following columns:
 
@@ -4602,15 +4776,23 @@ class Network:  # pylint: disable=too-many-public-methods
             show_inactive_sets: flag to choose whether inactive limit sets should also be included in the dataframe
 
         Returns:
-            All limits on the network
+            All loading limits on the network
         """
         if show_inactive_sets:
-            return self.get_elements(ElementType.OPERATIONAL_LIMITS, all_attributes, attributes)
-        return self.get_elements(ElementType.SELECTED_OPERATIONAL_LIMITS, all_attributes, attributes)
+            return self.get_elements(ElementType.LOADING_LIMITS, all_attributes, attributes)
+        return self.get_elements(ElementType.SELECTED_LOADING_LIMITS, all_attributes, attributes)
 
-    def update_operational_limits(self, df: Optional[DataFrame] = None, **kwargs: ArrayLike) -> None:
+    def get_operational_limits(self, all_attributes: bool = False, attributes: Optional[List[str]] = None, show_inactive_sets: bool = False) -> DataFrame:
         """
-        Update operational limits values with data provided as a :class:`~pandas.DataFrame` or as named arguments.
+        .. deprecated:: 1.16.0
+            Use :meth:`get_loading_limits` instead.
+        """
+        warnings.warn("get_operational_limits is deprecated, use get_loading_limits instead", DeprecationWarning)
+        return self.get_loading_limits(all_attributes, attributes, show_inactive_sets)
+
+    def update_loading_limits(self, df: Optional[DataFrame] = None, **kwargs: ArrayLike) -> None:
+        """
+        Update loading limits values with data provided as a :class:`~pandas.DataFrame` or as named arguments.
 
         Args:
             df: the data to be updated, as a dataframe.
@@ -4619,7 +4801,7 @@ class Network:  # pylint: disable=too-many-public-methods
                     In the case of sequences, all arguments must have the same length.
 
         Notes:
-            Only the value of operational limits can be updated.
+            Only the value of loading limits can be updated.
             To define which limit must be modified, the following fields must be present :
 
             - `element_id`
@@ -4629,16 +4811,24 @@ class Network:  # pylint: disable=too-many-public-methods
             - `group_name` (if not specified, will try to update the corresponding limit in the selected set of the element)
 
         See Also:
-            :meth:`get_operational_limits`
+            :meth:`get_loading_limits`
 
         Examples:
             An example using keyword arguments:
 
             .. code-block:: python
 
-                network.update_operational_limits(id='LINE', side='ONE', type='CURRENT', acceptable_duration=600, value=500)
+                network.update_loading_limits(id='LINE', side='ONE', type='CURRENT', acceptable_duration=600, value=500)
         """
-        return self._update_elements(ElementType.OPERATIONAL_LIMITS, df, **kwargs)
+        return self._update_elements(ElementType.LOADING_LIMITS, df, **kwargs)
+
+    def update_operational_limits(self, df: Optional[DataFrame] = None, **kwargs: ArrayLike) -> None:
+        """
+        .. deprecated:: 1.16.0
+            Use :meth:`update_loading_limits` instead.
+        """
+        warnings.warn("update_operational_limits is deprecated, use update_loading_limits instead", DeprecationWarning)
+        return self.update_loading_limits(df, **kwargs)
 
     def get_voltage_angle_limits(self, all_attributes: bool = False, attributes: Optional[List[str]] = None) -> DataFrame:
         """
@@ -5823,11 +6013,24 @@ class Network:  # pylint: disable=too-many-public-methods
             - **control_mode** the control mode of the converter (V_DC or P_PCC)
             - **target_p** the AC active power setpoint
             - **target_q** the AC reactive power setpoint
+            - **min_p** the minimum active power in MW (optional, unbounded by default)
+            - **max_p** the maximum active power in MW (optional, unbounded by default)
             - **target_v_ac** the AC voltage setpoint
             - **target_v_dc** the DC voltage setpoint
             - **idle_loss** the idle loss coefficient
             - **switching_loss** the switching loss coefficient
             - **resistive_loss** the resistive loss coefficient
+
+            .. note::
+
+                ``target_p``, ``min_p`` and ``max_p`` follow the load sign convention at the point of
+                common coupling (PCC): a positive value means active power absorbed by the converter from
+                the AC grid.
+
+            .. warning::
+
+                A finite ``min_p`` / ``max_p`` (any value other than ``-inf`` / ``inf``) is not yet supported
+                by IIDM serialization: saving a network that contains one raises a ``PowsyblException``.
 
         Examples:
             Using keyword arguments:
@@ -5871,9 +6074,46 @@ class Network:  # pylint: disable=too-many-public-methods
         """
         return self._create_elements(ElementType.DC_GROUND, [df], **kwargs)
 
-    def create_operational_limits(self, df: Optional[DataFrame] = None, **kwargs: ArrayLike) -> None:
+    def create_dc_switches(self, df: Optional[DataFrame] = None, **kwargs: ArrayLike) -> None:
         """
-        Creates operational limits.
+        Creates DC switches.
+
+        Args:
+            df: Attributes as a dataframe.
+            kwargs: Attributes as keyword arguments.
+
+        Notes:
+
+            Data may be provided as a dataframe or as keyword arguments.
+            In the latter case, all arguments must have the same length.
+
+            Valid attributes are:
+
+            - **id**: the identifier of the new DC switch
+            - **name**: an optional human-readable name
+            - **dc_node1_id**: identifier of the first DC node the switch connects
+            - **dc_node2_id**: identifier of the second DC node the switch connects
+            - **kind**: the kind of DC switch (BREAKER or DISCONNECTOR)
+            - **open**: ``True`` to create the switch in open state, ``False`` for closed (default)
+            - **r**: resistance of the DC switch (in Ohm)
+            - **fictitious**: ``True`` if the element is part of the model and not of the actual network
+
+        See Also:
+            :meth:`get_dc_switches`
+
+        Examples:
+            Using keyword arguments:
+
+            .. code-block:: python
+
+                network.create_dc_switches(id='DS1', dc_node1_id='DN1', dc_node2_id='DN2',
+                                           kind='BREAKER', open=False, r=0.0)
+        """
+        return self._create_elements(ElementType.DC_SWITCH, [df], **kwargs)
+
+    def create_loading_limits(self, df: Optional[DataFrame] = None, **kwargs: ArrayLike) -> None:
+        """
+        Creates loading limits.
 
         Notes:
 
@@ -5893,7 +6133,7 @@ class Network:  # pylint: disable=too-many-public-methods
 
             For each location of the network defined by a couple (element_id, side) and each group_name:
 
-            - if operational limits already exist, they will be replaced
+            - if loading limits already exist, they will be replaced
             - multiple limits may be defined, typically with different acceptable_duration
             - you can only define ONE permanent limit, identified by an acceptable_duration of -1
 
@@ -5904,20 +6144,28 @@ class Network:  # pylint: disable=too-many-public-methods
         if df is not None:
             df['acceptable_duration'] = df['acceptable_duration'].map(lambda x: -1 if x == inf else int(x))
             if 'is_fictitious' in df.columns:
-                warnings.warn("operation limits is_fictitious attribute has been renamed fictitious", DeprecationWarning)
+                warnings.warn("loading limits is_fictitious attribute has been renamed fictitious", DeprecationWarning)
                 df = df.rename(columns={'is_fictitious': 'fictitious'})
             if 'element_type' in df.columns:
-                warnings.warn("useless operation limits element_type attribute has been removed", DeprecationWarning)
+                warnings.warn("useless loading limits element_type attribute has been removed", DeprecationWarning)
                 df = df.drop(columns=['element_type'])
 
         if kwargs.get('is_fictitious') is not None:
-            warnings.warn("operation limits is_fictitious attribute has been renamed fictitious", DeprecationWarning)
+            warnings.warn("loading limits is_fictitious attribute has been renamed fictitious", DeprecationWarning)
             kwargs['fictitious'] = kwargs.pop('is_fictitious')
         if kwargs.get('element_type') is not None:
-            warnings.warn("useless operation limits element_type attribute has been removed", DeprecationWarning)
+            warnings.warn("useless loading limits element_type attribute has been removed", DeprecationWarning)
             kwargs.pop('element_type')
 
-        return self._create_elements(ElementType.OPERATIONAL_LIMITS, [df], **kwargs)
+        return self._create_elements(ElementType.LOADING_LIMITS, [df], **kwargs)
+
+    def create_operational_limits(self, df: Optional[DataFrame] = None, **kwargs: ArrayLike) -> None:
+        """
+        .. deprecated:: 1.16.0
+            Use :meth:`create_loading_limits` instead.
+        """
+        warnings.warn("create_operational_limits is deprecated, use create_loading_limits instead", DeprecationWarning)
+        return self.create_loading_limits(df, **kwargs)
 
     def create_voltage_angle_limits(self, df: Optional[DataFrame] = None, **kwargs: ArrayLike) -> None:
         """
@@ -6300,21 +6548,23 @@ class Network:  # pylint: disable=too-many-public-methods
         """
         return _pp.get_validation_level(self._handle)
 
-    def validate(self) -> ValidationLevel:
+    def validate(self, report_node: Optional[ReportNode] = None) -> ValidationLevel:
         """
         Validate the network.
 
-        The validation will raise an exception if any check is not consistent with the
+        If no report_node is defined, the validation will raise an exception if any check is not consistent with the
         configured minimum validation level.
+        If report_node is defined, the validation will not raise an exception and populate the report_node with all
+        the validation results.
 
         Returns:
             the computed ValidationLevel, which may be higher than the configured minimum level.
 
         Raises:
             pypowsybl.PyPowsyblError: if any validation check is not consistent
-                                      with the configured minimum validation level.
+                                      with the configured minimum validation level (and no report_node is defined).
         """
-        return _pp.validate(self._handle)
+        return _pp.validate(self._handle, None if report_node is None else report_node._report_node)
 
     def set_min_validation_level(self, validation_level: ValidationLevel) -> None:
         """

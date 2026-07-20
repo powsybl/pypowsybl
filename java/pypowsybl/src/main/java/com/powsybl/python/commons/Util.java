@@ -248,9 +248,9 @@ public final class Util {
             case NON_LINEAR_SHUNT_COMPENSATOR_SECTION ->
                 PyPowsyblApiHeader.ElementType.NON_LINEAR_SHUNT_COMPENSATOR_SECTION;
             case LINEAR_SHUNT_COMPENSATOR_SECTION -> PyPowsyblApiHeader.ElementType.LINEAR_SHUNT_COMPENSATOR_SECTION;
-            case OPERATIONAL_LIMITS -> PyPowsyblApiHeader.ElementType.OPERATIONAL_LIMITS;
+            case LOADING_LIMITS -> PyPowsyblApiHeader.ElementType.LOADING_LIMITS;
             case VOLTAGE_ANGLE_LIMITS -> PyPowsyblApiHeader.ElementType.VOLTAGE_ANGLE_LIMITS;
-            case SELECTED_OPERATIONAL_LIMITS -> PyPowsyblApiHeader.ElementType.SELECTED_OPERATIONAL_LIMITS;
+            case SELECTED_LOADING_LIMITS -> PyPowsyblApiHeader.ElementType.SELECTED_LOADING_LIMITS;
             case MINMAX_REACTIVE_LIMITS -> PyPowsyblApiHeader.ElementType.MINMAX_REACTIVE_LIMITS;
             case ALIAS -> PyPowsyblApiHeader.ElementType.ALIAS;
             case TERMINAL -> PyPowsyblApiHeader.ElementType.TERMINAL;
@@ -267,6 +267,7 @@ public final class Util {
             case DC_NODE -> PyPowsyblApiHeader.ElementType.DC_NODE;
             case VOLTAGE_SOURCE_CONVERTER -> PyPowsyblApiHeader.ElementType.VOLTAGE_SOURCE_CONVERTER;
             case DC_GROUND -> PyPowsyblApiHeader.ElementType.DC_GROUND;
+            case DC_SWITCH -> PyPowsyblApiHeader.ElementType.DC_SWITCH;
             case DC_BUS -> PyPowsyblApiHeader.ElementType.DC_BUS;
         };
     }
@@ -301,9 +302,9 @@ public final class Util {
             case REACTIVE_CAPABILITY_CURVE_POINT -> DataframeElementType.REACTIVE_CAPABILITY_CURVE_POINT;
             case NON_LINEAR_SHUNT_COMPENSATOR_SECTION -> DataframeElementType.NON_LINEAR_SHUNT_COMPENSATOR_SECTION;
             case LINEAR_SHUNT_COMPENSATOR_SECTION -> DataframeElementType.LINEAR_SHUNT_COMPENSATOR_SECTION;
-            case OPERATIONAL_LIMITS -> DataframeElementType.OPERATIONAL_LIMITS;
+            case LOADING_LIMITS -> DataframeElementType.LOADING_LIMITS;
             case VOLTAGE_ANGLE_LIMITS -> DataframeElementType.VOLTAGE_ANGLE_LIMITS;
-            case SELECTED_OPERATIONAL_LIMITS -> DataframeElementType.SELECTED_OPERATIONAL_LIMITS;
+            case SELECTED_LOADING_LIMITS -> DataframeElementType.SELECTED_LOADING_LIMITS;
             case MINMAX_REACTIVE_LIMITS -> DataframeElementType.MINMAX_REACTIVE_LIMITS;
             case ALIAS -> DataframeElementType.ALIAS;
             case TERMINAL -> DataframeElementType.TERMINAL;
@@ -320,6 +321,7 @@ public final class Util {
             case DC_NODE -> DataframeElementType.DC_NODE;
             case VOLTAGE_SOURCE_CONVERTER -> DataframeElementType.VOLTAGE_SOURCE_CONVERTER;
             case DC_GROUND -> DataframeElementType.DC_GROUND;
+            case DC_SWITCH -> DataframeElementType.DC_SWITCH;
             case DC_BUS -> DataframeElementType.DC_BUS;
         };
     }
@@ -351,6 +353,11 @@ public final class Util {
             case TRANSFORMER_PHASE_1 -> SensitivityVariableType.TRANSFORMER_PHASE_1;
             case TRANSFORMER_PHASE_2 -> SensitivityVariableType.TRANSFORMER_PHASE_2;
             case TRANSFORMER_PHASE_3 -> SensitivityVariableType.TRANSFORMER_PHASE_3;
+            case SHUNT_COMPENSATOR_SUSCEPTANCE -> SensitivityVariableType.SHUNT_COMPENSATOR_SUSCEPTANCE;
+            case BRANCH_RESISTANCE -> SensitivityVariableType.BRANCH_RESISTANCE;
+            case BRANCH_REACTANCE -> SensitivityVariableType.BRANCH_REACTANCE;
+            case BRANCH_ADMITTANCE -> SensitivityVariableType.BRANCH_ADMITTANCE;
+            case SVC_PILOT_POINT_TARGET_VOLTAGE -> SensitivityVariableType.SVC_PILOT_POINT_TARGET_VOLTAGE;
         };
     }
 

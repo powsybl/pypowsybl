@@ -7,12 +7,12 @@
 from typing import Optional
 
 from pypowsybl import _pypowsybl
+from pypowsybl.loadflow import Parameters as LfParameters
 from pypowsybl.network import Network
-from .rao_result import RaoResult
 from .crac import Crac
 from .glsk import Glsk
 from .parameters import Parameters as RaoParameters
-from pypowsybl.loadflow import Parameters as LfParameters
+from .rao_result import RaoResult
 
 
 class Rao:
@@ -37,8 +37,6 @@ class Rao:
         return RaoResult(rao_result, crac._handle)
 
     def run_voltage_monitoring(self,  crac: Crac, network: Network, rao_result: RaoResult, load_flow_parameters: Optional[LfParameters] = None, provider_str: str = '', monitoring_glsk: Optional[Glsk] = None) -> RaoResult:
-        """
-        """
         p = load_flow_parameters._to_c_parameters() if load_flow_parameters is not None else _pypowsybl.LoadFlowParameters()
 
         if monitoring_glsk is not None:
@@ -48,8 +46,6 @@ class Rao:
         return RaoResult(result_handle, crac._handle)
 
     def run_angle_monitoring(self, crac: Crac, network: Network,  rao_result: RaoResult, load_flow_parameters: Optional[LfParameters] = None, provider_str: str = '', monitoring_glsk: Optional[Glsk] = None) -> RaoResult:
-        """
-        """
         p = load_flow_parameters._to_c_parameters() if load_flow_parameters is not None else _pypowsybl.LoadFlowParameters()
 
         if monitoring_glsk is not None:

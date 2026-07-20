@@ -6,12 +6,8 @@
 #
 from typing import Optional
 
-from pypowsybl._pypowsybl import (
-    RaoParameters,
-    Solver,
-    PstModel,
-    RaRangeShrinking
-)
+from pypowsybl._pypowsybl import RaoParameters
+
 
 class RangeActionOptimizationParameters:
     def __init__(self, pst_ra_min_impact_threshold: Optional[float] = None,

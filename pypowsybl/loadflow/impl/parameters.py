@@ -4,6 +4,9 @@
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 # SPDX-License-Identifier: MPL-2.0
 #
+import warnings
+from typing import Sequence, Dict, Optional, Any
+
 from pypowsybl._pypowsybl import (
     ComponentMode,
     ConnectedComponentMode,
@@ -12,8 +15,6 @@ from pypowsybl._pypowsybl import (
     LoadFlowParameters,
     PyPowsyblError
 )
-import warnings
-from typing import Sequence, Dict, Optional, Any
 
 # enforcing some class metadata on classes imported from C extension,
 # in particular for sphinx documentation to work correctly,

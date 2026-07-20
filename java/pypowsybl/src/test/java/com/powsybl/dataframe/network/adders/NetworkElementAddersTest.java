@@ -560,7 +560,7 @@ class NetworkElementAddersTest {
         addStringColumn(dataframe, "type", "APPARENT_POWER", "APPARENT_POWER");
         addDoubleColumn(dataframe, "value", 600, 1000);
         addIntColumn(dataframe, "acceptable_duration", -1, 60);
-        NetworkElementAdders.addElements(DataframeElementType.OPERATIONAL_LIMITS, network, singletonList(dataframe));
+        NetworkElementAdders.addElements(DataframeElementType.LOADING_LIMITS, network, singletonList(dataframe));
         Optional<ApparentPowerLimits> optionalLimits = network.getLine("NHV1_NHV2_1").getApparentPowerLimits(TwoSides.ONE);
         assertTrue(optionalLimits.isPresent());
         ApparentPowerLimits limits = optionalLimits.get();
@@ -579,7 +579,7 @@ class NetworkElementAddersTest {
         addDoubleColumn(dataframe, "value", 600, 1000);
         addIntColumn(dataframe, "acceptable_duration", -1, 60);
         addStringColumn(dataframe, "group_name", "SUMMER", "SUMMER");
-        NetworkElementAdders.addElements(DataframeElementType.OPERATIONAL_LIMITS, network, singletonList(dataframe));
+        NetworkElementAdders.addElements(DataframeElementType.LOADING_LIMITS, network, singletonList(dataframe));
         Optional<ApparentPowerLimits> optionalLimits = network.getLine("NHV1_NHV2_1").getApparentPowerLimits(TwoSides.ONE);
         assertTrue(optionalLimits.isEmpty());
         Optional<OperationalLimitsGroup> group = network.getLine("NHV1_NHV2_1").getOperationalLimitsGroup1("SUMMER");
@@ -802,5 +802,29 @@ class NetworkElementAddersTest {
         addDoubleColumn(dataframe, "r", 1.0);
         NetworkElementAdders.addElements(DataframeElementType.DC_GROUND, network.getSubnetwork("VscAsymmetricalMonopole"), singletonList(dataframe));
         assertEquals(3, network.getDcGroundCount());
+    }
+
+    @Test
+    void dcSwitch() {
+        Network network = DcDetailedNetworkFactory.createSimple2NodesDcSwitch();
+        DefaultUpdatingDataframe dataframe = new DefaultUpdatingDataframe(1);
+        addStringColumn(dataframe, "id", "DC_SWITCH_TEST");
+        addDoubleColumn(dataframe, "r", 1.23);
+        // deliberately reversed from the factory default to verify node IDs are set correctly
+        addStringColumn(dataframe, "dc_node1_id", "dcNode2");
+        addStringColumn(dataframe, "dc_node2_id", "dcNode1");
+        addStringColumn(dataframe, "kind", "BREAKER");
+        addIntColumn(dataframe, "open", 1);
+
+        NetworkElementAdders.addElements(DataframeElementType.DC_SWITCH, network, singletonList(dataframe));
+
+        assertEquals(2, network.getDcSwitchCount());
+        DcSwitch dcSwitch = network.getDcSwitch("DC_SWITCH_TEST");
+        assertNotNull(dcSwitch);
+        assertEquals(1.23, dcSwitch.getR(), 0.0);
+        assertEquals("dcNode2", dcSwitch.getDcNode1().getId());
+        assertEquals("dcNode1", dcSwitch.getDcNode2().getId());
+        assertEquals(DcSwitchKind.BREAKER, dcSwitch.getKind());
+        assertTrue(dcSwitch.isOpen());
     }
 }

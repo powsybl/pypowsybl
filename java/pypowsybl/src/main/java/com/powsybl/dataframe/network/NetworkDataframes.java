@@ -94,9 +94,9 @@ public final class NetworkDataframes {
         mappers.put(DataframeElementType.RATIO_TAP_CHANGER, rtcs());
         mappers.put(DataframeElementType.PHASE_TAP_CHANGER, ptcs());
         mappers.put(DataframeElementType.REACTIVE_CAPABILITY_CURVE_POINT, reactiveCapabilityCurves());
-        mappers.put(DataframeElementType.OPERATIONAL_LIMITS, operationalLimits(false));
+        mappers.put(DataframeElementType.LOADING_LIMITS, loadingLimits(false));
         mappers.put(DataframeElementType.VOLTAGE_ANGLE_LIMITS, voltageAngleLimits());
-        mappers.put(DataframeElementType.SELECTED_OPERATIONAL_LIMITS, operationalLimits(true));
+        mappers.put(DataframeElementType.SELECTED_LOADING_LIMITS, loadingLimits(true));
         mappers.put(DataframeElementType.ALIAS, aliases());
         mappers.put(DataframeElementType.IDENTIFIABLE, identifiables());
         mappers.put(DataframeElementType.INJECTION, injections());
@@ -107,6 +107,7 @@ public final class NetworkDataframes {
         mappers.put(DataframeElementType.DC_NODE, dcNodes());
         mappers.put(DataframeElementType.VOLTAGE_SOURCE_CONVERTER, voltageSourceConverters());
         mappers.put(DataframeElementType.DC_GROUND, dcGrounds());
+        mappers.put(DataframeElementType.DC_SWITCH, dcSwitches());
         mappers.put(DataframeElementType.DC_BUS, dcBuses());
         return Collections.unmodifiableMap(mappers);
     }
@@ -164,19 +165,19 @@ public final class NetworkDataframes {
     }
 
     static <U extends DcLine> ToDoubleBiFunction<U, NetworkDataframeContext> getPerUnitI1() {
-        return (dl, context) -> perUnitI(context, dl.getDcTerminal1());
+        return (dl, context) -> perUnitDcI(context, dl.getDcTerminal1());
     }
 
     static <U extends DcLine> ToDoubleBiFunction<U, NetworkDataframeContext> getPerUnitI2() {
-        return (dl, context) -> perUnitI(context, dl.getDcTerminal2());
+        return (dl, context) -> perUnitDcI(context, dl.getDcTerminal2());
     }
 
     static <U extends DcLine> DoubleSeriesMapper.DoubleUpdater<U, NetworkDataframeContext> setPerUnitI1() {
-        return (dl, i, context) -> dl.getDcTerminal1().setI(unPerUnitI(context, i, dl.getDcTerminal1().getDcNode().getNominalV()));
+        return (dl, i, context) -> dl.getDcTerminal1().setI(unPerUnitDcI(context, i, dl.getDcTerminal1().getDcNode().getNominalV()));
     }
 
     static <U extends DcLine> DoubleSeriesMapper.DoubleUpdater<U, NetworkDataframeContext> setPerUnitI2() {
-        return (dl, i, context) -> dl.getDcTerminal2().setI(unPerUnitI(context, i, dl.getDcTerminal2().getDcNode().getNominalV()));
+        return (dl, i, context) -> dl.getDcTerminal2().setI(unPerUnitDcI(context, i, dl.getDcTerminal2().getDcNode().getNominalV()));
     }
 
     static <U extends Injection<U>> Function<U, String> getVoltageLevelId() {
@@ -280,6 +281,22 @@ public final class NetworkDataframes {
     private static BooleanSeriesMapper.BooleanUpdater<HvdcLine> connectHvdcStation2() {
         return (g, b) -> {
             Boolean res = b ? g.getConverterStation2().getTerminal().connect() : g.getConverterStation2().getTerminal().disconnect();
+        };
+    }
+
+    private static <U extends AcDcConverter<U>> BooleanSeriesMapper.BooleanUpdater<U> connectConverterAcTerminal1() {
+        return (g, b) -> {
+            Boolean res = b ? g.getTerminal1().connect() : g.getTerminal1().disconnect();
+        };
+    }
+
+    private static <U extends AcDcConverter<U>> BooleanSeriesMapper.BooleanUpdater<U> connectConverterAcTerminal2() {
+        return (g, b) -> {
+            if (g.getTerminal2().isPresent()) {
+                Boolean res = b ? g.getTerminal2().get().connect() : g.getTerminal2().get().disconnect();
+            } else {
+                throw new PowsyblException("Terminal2 of converter " + g.getId() + " is missing");
+            }
         };
     }
 
@@ -997,6 +1014,10 @@ public final class NetworkDataframes {
                 .strings("name", dcLine -> dcLine.getOptionalName().orElse(""), Identifiable::setName)
                 .strings("dc_node1_id", dl -> getDcNodeId(dl.getDcTerminal1()))
                 .strings("dc_node2_id", dl -> getDcNodeId(dl.getDcTerminal2()))
+                .booleans("connected1", dl -> dl.getDcTerminal1().isConnected(),
+                        (dl, dcConnected1) -> dl.getDcTerminal1().setConnected(dcConnected1))
+                .booleans("connected2", dl -> dl.getDcTerminal2().isConnected(),
+                        (dl, dcConnected2) -> dl.getDcTerminal2().setConnected(dcConnected2))
                 .doubles("r", (dcLine, context) -> perUnitR(context, dcLine),
                         (dcLine, r, context) -> dcLine.setR(unPerUnitRX(context, dcLine, r)))
                 .doubles("i1", getPerUnitI1(), setPerUnitI1())
@@ -1019,9 +1040,11 @@ public final class NetworkDataframes {
                 .strings("bus2_id", conv -> conv.getTerminal2().isPresent() ? getBusId(conv.getTerminal2().get()) : null)
                 .strings("bus_breaker_bus2_id", conv -> conv.getTerminal2().isPresent() ? getBusBreakerViewBusId(conv.getTerminal2().get()) : null,
                         (conv, id) -> setBusBreakerViewBusId(conv.getTerminal2().orElseThrow(() ->
-                                new PowsyblException("Terminal2 of converter" + conv.getId() + "is missing")), id), false)
+                                new PowsyblException("Terminal2 of converter " + conv.getId() + " is missing")), id), false)
                 .strings("dc_node1_id", conv -> conv.getDcTerminal1().getDcNode().getId())
                 .strings("dc_node2_id", conv -> conv.getDcTerminal2().getDcNode().getId())
+                .booleans("connected1", conv -> conv.getTerminal1().isConnected(), connectConverterAcTerminal1())
+                .booleans("connected2", conv -> conv.getTerminal2().isPresent() ? conv.getTerminal2().get().isConnected() : false, connectConverterAcTerminal2())
                 .booleans("dc_connected1", conv -> conv.getDcTerminal1().isConnected(),
                         (conv, dcConnected1) -> conv.getDcTerminal1().setConnected(dcConnected1))
                 .booleans("dc_connected2", conv -> conv.getDcTerminal2().isConnected(),
@@ -1039,10 +1062,23 @@ public final class NetworkDataframes {
                         (conv, targetP, context) -> conv.setTargetP(unPerUnitPQ(context, targetP)))
                 .doubles("target_q", (conv, context) -> perUnitPQ(context, conv.getReactivePowerSetpoint()),
                         (conv, targetQ, context) -> conv.setReactivePowerSetpoint(unPerUnitPQ(context, targetQ)))
+                // The core represents the "unbounded" default as -/+ Double.MAX_VALUE; expose it as -/+ infinity
+                // Non-default columns, so absent from the default dataframe.
+                .doubles("min_p",
+                        (conv, context) -> conv.getMinP() == -Double.MAX_VALUE
+                                ? Double.NEGATIVE_INFINITY : perUnitPQ(context, conv.getMinP()),
+                        (conv, minP, context) -> conv.setMinP(minP == Double.NEGATIVE_INFINITY
+                                ? -Double.MAX_VALUE : unPerUnitPQ(context, minP)), false)
+                .doubles("max_p",
+                        (conv, context) -> conv.getMaxP() == Double.MAX_VALUE
+                                ? Double.POSITIVE_INFINITY : perUnitPQ(context, conv.getMaxP()),
+                        (conv, maxP, context) -> conv.setMaxP(maxP == Double.POSITIVE_INFINITY
+                                ? Double.MAX_VALUE : unPerUnitPQ(context, maxP)), false)
                 .doubles("idle_loss", (conv, context) -> perUnitPQ(context, conv.getIdleLoss()),
                         (conv, idleLoss, context) -> conv.setIdleLoss(unPerUnitPQ(context, idleLoss)))
-                .doubles("switching_loss", (conv, context) -> perUnitV(context, conv.getSwitchingLoss(), conv.getTerminal1()),
-                        (conv, switchingLoss, context) -> conv.setSwitchingLoss(unPerUnitV(context, switchingLoss, conv.getTerminal1())))
+                .doubles("switching_loss",
+                        (conv, context) -> perUnitDcSwitchingLoss(context, conv.getSwitchingLoss(), conv.getDcTerminal1()),
+                        (conv, switchingLoss, context) -> conv.setSwitchingLoss(unPerUnitDcSwitchingLoss(context, switchingLoss, conv.getDcTerminal1())))
                 .doubles("resistive_loss", (conv, context) -> perUnitR(context, conv.getResistiveLoss(), conv.getTerminal1().getVoltageLevel().getNominalV()),
                         (conv, r, context) -> conv.setResistiveLoss(unPerUnitRX(context, r,
                                 conv.getTerminal1().getVoltageLevel().getNominalV(), conv.getTerminal1().getVoltageLevel().getNominalV())))
@@ -1064,7 +1100,27 @@ public final class NetworkDataframes {
                 .stringsIndex("id", DcGround::getId)
                 .strings("name", dn -> dn.getOptionalName().orElse(""), Identifiable::setName)
                 .strings("dc_node_id", dg -> dg.getDcTerminal().getDcNode().getId())
+                .booleans("connected", dg -> dg.getDcTerminal().isConnected(),
+                        (dg, dcConnected) -> dg.getDcTerminal().setConnected(dcConnected))
                 .doubles("r", (dg, context) -> dg.getR(), (dg, r, context) -> dg.setR(r))
+                .booleans("fictitious", Identifiable::isFictitious, Identifiable::setFictitious, false)
+                .addProperties()
+                .build();
+    }
+
+    /**
+     * Fetch DC Switches from the network in a Python DataFrame.
+     * @return a data frame with all fields.
+     */
+    private static NetworkDataframeMapper dcSwitches() {
+        return NetworkDataframeMapperBuilder.ofStream(Network::getDcSwitchStream, getOrThrow(Network::getDcSwitch, "Dc switch"))
+                .stringsIndex("id", DcSwitch::getId)
+                .strings("name", ds -> ds.getOptionalName().orElse(""), Identifiable::setName)
+                .strings("dc_node1_id", ds -> ds.getDcNode1().getId())
+                .strings("dc_node2_id", ds -> ds.getDcNode2().getId())
+                .enums("kind", DcSwitchKind.class, DcSwitch::getKind)
+                .booleans("open", DcSwitch::isOpen, DcSwitch::setOpen)
+                .doubles("r", (ds, context) -> ds.getR(), (ds, r, context) -> ds.setR(r))
                 .booleans("fictitious", Identifiable::isFictitious, Identifiable::setFictitious, false)
                 .addProperties()
                 .build();
@@ -1756,7 +1812,7 @@ public final class NetworkDataframes {
         transformer.getPhaseTapChanger().setRegulationTerminal(getBranchTerminal(transformer, side));
     }
 
-    private static NetworkDataframeMapper operationalLimits(boolean onlyActive) {
+    private static NetworkDataframeMapper loadingLimits(boolean onlyActive) {
         return NetworkDataframeMapperBuilder.ofStream(onlyActive ? NetworkUtil::getSelectedLimits : NetworkUtil::getLimits,
                         NetworkDataframes::getLimit)
                 .stringsIndex("element_id", TemporaryLimitData::getId)

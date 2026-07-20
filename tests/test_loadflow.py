@@ -127,6 +127,9 @@ def test_deprecated_connected_component_mode_parameter():
     with pytest.warns(DeprecationWarning, match=re.escape("connected_component_mode is deprecated, use component_mode parameter instead")):
         assert parameters3.connected_component_mode is None
 
+def test_check_loadflow_parameters():
+    assert lf.check_loadflow_parameters()
+
 def test_validation():
     n = pp.network.create_ieee14()
     pp.loadflow.run_ac(n)
@@ -308,7 +311,8 @@ def test_get_provider_parameters_names():
                                    'generatorsWithZeroMwTargetAreNotStarted',
                                    'incrementalShuntControlOuterLoopMaxSectionShift',
                                    'fixVoltageTargets',
-                                   'acDcNetwork']
+                                   'acDcNetwork',
+                                   'allowNonLinearShuntZeroSection']
 
 def test_get_provider_parameters():
     specific_parameters = pp.loadflow.get_provider_parameters('OpenLoadFlow')
@@ -364,24 +368,6 @@ def test_run_lf_with_report():
     pp.loadflow.run_ac(n2, report_node=report_node)
     report3 = str(report_node)
     assert len(report3) > len(report2)
-
-def test_run_lf_with_deprecated_reporter():
-    with pytest.warns(DeprecationWarning, match=re.escape("Use of deprecated attribute reporter. Use report_node instead.")):
-        n = pp.network.create_ieee14()
-        report_node = rp.Reporter()
-        report1 = str(report_node)
-        assert len(report1) > 0
-        pp.loadflow.run_ac(n, reporter=report_node)
-        report2 = str(report_node)
-        assert len(report2) > len(report1)
-        json_report = report_node.to_json()
-        assert len(json_report) > 0
-        json.loads(json_report)
-
-        n2 = pp.network.create_eurostag_tutorial_example1_network()
-        pp.loadflow.run_ac(n2, reporter=report_node)
-        report3 = str(report_node)
-        assert len(report3) > len(report2)
 
 
 def test_result_status_as_bool():

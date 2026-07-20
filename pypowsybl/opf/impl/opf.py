@@ -19,6 +19,9 @@ from pypowsybl.opf.impl.bounds.generator_power_bounds import GeneratorPowerBound
 from pypowsybl.opf.impl.bounds.slack_bus_angle_bounds import SlackBusAngleBounds
 from pypowsybl.opf.impl.bounds.transformer_3w_middle_voltage_bounds import Transformer3wMiddleVoltageBounds
 from pypowsybl.opf.impl.bounds.vsc_cs_power_bounds import VscCsPowerBounds
+from pypowsybl.opf.impl.bounds.dc_node_voltage_bounds import DcNodeVoltageBounds
+from pypowsybl.opf.impl.bounds.dc_line_current_bounds import DcLineCurrentBounds
+from pypowsybl.opf.impl.bounds.voltage_source_converter_power_bounds import VoltageSourceConverterPowerBounds
 from pypowsybl.opf.impl.constraints.branch_flow_constraints import BranchFlowConstraints
 from pypowsybl.opf.impl.constraints.current_limit_constraints import CurrentLimitConstraints
 from pypowsybl.opf.impl.constraints.boundary_line_flow_constraints import BoundaryLineFlowConstraints
@@ -28,8 +31,13 @@ from pypowsybl.opf.impl.constraints.shunt_flow_constraints import ShuntFlowConst
 from pypowsybl.opf.impl.constraints.static_var_compensator_reactive_limits_constraints import \
     StaticVarCompensatorReactiveLimitsConstraints
 from pypowsybl.opf.impl.constraints.transformer_3w_flow_constraints import Transformer3wFlowConstraints
+from pypowsybl.opf.impl.constraints.dc_line_constraints import DcLineConstraints
+from pypowsybl.opf.impl.constraints.voltage_source_converter_constraints import VoltageSourceConverterConstraints
+from pypowsybl.opf.impl.constraints.dc_current_balance_constraints import DcCurrentBalanceConstraints
+from pypowsybl.opf.impl.constraints.dc_ground_constraints import DcGroundConstraints
 from pypowsybl.opf.impl.costs.minimize_against_reference_cost_function import MinimizeAgainstReferenceCostFunction
 from pypowsybl.opf.impl.costs.redispatching_cost_function import RedispatchingCostFunction
+from pypowsybl.opf.impl.costs.minimize_dc_losses import MinimizeDcLossesFunction
 from pypowsybl.opf.impl.model.bounds import Bounds
 from pypowsybl.opf.impl.model.constraints import Constraints
 from pypowsybl.opf.impl.model.cost_function import CostFunction
@@ -38,7 +46,7 @@ from pypowsybl.opf.impl.model.network_cache import NetworkCache
 from pypowsybl.opf.impl.model.opf_model import OpfModel
 from pypowsybl.opf.impl.network_statistics import NetworkStatistics
 from pypowsybl.opf.impl.parameters import OptimalPowerFlowParameters, OptimalPowerFlowMode
-
+from pypowsybl.opf.impl.acdc_network_validator import validate_acdc_network
 logger = logging.getLogger(__name__)
 
 
@@ -64,7 +72,12 @@ class OptimalPowerFlow:
         self._network = network
 
     def run(self, parameters: OptimalPowerFlowParameters) -> bool:
+
+        if parameters.mode == OptimalPowerFlowMode.ACDC:
+            validate_acdc_network(self._network)
+
         network_cache = NetworkCache(self._network)
+
 
         variable_bounds = [BusVoltageBounds(),
                            SlackBusAngleBounds(),
@@ -72,19 +85,28 @@ class OptimalPowerFlow:
                            BatteryPowerBounds(),
                            VscCsPowerBounds(),
                            BoundaryLineVoltageBounds(),
-                           Transformer3wMiddleVoltageBounds()]
+                           Transformer3wMiddleVoltageBounds(),
+                           VoltageSourceConverterPowerBounds(),
+                           DcNodeVoltageBounds(),
+                           DcLineCurrentBounds()]
         constraints: list[Constraints] = [BranchFlowConstraints(),
                                           ShuntFlowConstraints(),
                                           StaticVarCompensatorReactiveLimitsConstraints(),
                                           HvdcLineConstraints(),
                                           PowerBalanceConstraints(),
                                           BoundaryLineFlowConstraints(),
-                                          Transformer3wFlowConstraints()]
+                                          Transformer3wFlowConstraints(),
+                                          DcLineConstraints(),
+                                          VoltageSourceConverterConstraints(),
+                                          DcCurrentBalanceConstraints(),
+                                          DcGroundConstraints()]
         if parameters.mode == OptimalPowerFlowMode.REDISPATCHING:
             constraints.append(CurrentLimitConstraints())
             cost_function: CostFunction = RedispatchingCostFunction(1.0, 1.0, 1.0)
-        else:
+        elif parameters.mode == OptimalPowerFlowMode.LOADFLOW:
             cost_function = MinimizeAgainstReferenceCostFunction()
+        else:
+            cost_function = MinimizeDcLossesFunction()
         model_parameters = ModelParameters(parameters.reactive_bounds_reduction,
                                            parameters.twt_split_shunt_admittance,
                                            Bounds(parameters.default_voltage_bounds[0], parameters.default_voltage_bounds[1]),
@@ -123,5 +145,15 @@ class OptimalPowerFlow:
 
 
 def run_ac(network: Network, parameters: OptimalPowerFlowParameters = OptimalPowerFlowParameters()) -> bool:
+    """Run AC optimal power flow on the provided network.
+
+    Args:
+        network (Network): The network on which to solve the optimal power flow.
+        parameters (OptimalPowerFlowParameters, optional): Optimization parameters and solver settings.
+            Defaults to OptimalPowerFlowParameters().
+
+    Returns:
+        bool: True if the optimization terminated with an optimal or locally solved status, False otherwise.
+    """
     opf = OptimalPowerFlow(network)
     return opf.run(parameters)

@@ -45,7 +45,7 @@ public final class NetworkElementAdders {
             Map.entry(SHUNT_COMPENSATOR, new ShuntDataframeAdder()),
             Map.entry(PHASE_TAP_CHANGER, new PhaseTapChangerDataframeAdder()),
             Map.entry(RATIO_TAP_CHANGER, new RatioTapChangerDataframeAdder()),
-            Map.entry(OPERATIONAL_LIMITS, new OperationalLimitsDataframeAdder()),
+            Map.entry(LOADING_LIMITS, new LoadingLimitsDataframeAdder()),
             Map.entry(VOLTAGE_ANGLE_LIMITS, new VoltageAngleLimitsDataframeAdder()),
             Map.entry(MINMAX_REACTIVE_LIMITS, new MinMaxReactiveLimitsDataframeAdder()),
             Map.entry(REACTIVE_CAPABILITY_CURVE_POINT, new CurveReactiveLimitsDataframeAdder()),
@@ -58,7 +58,8 @@ public final class NetworkElementAdders {
             Map.entry(DC_LINE, new DcLineDataframeAdder()),
             Map.entry(DC_NODE, new DcNodeDataframeAdder()),
             Map.entry(VOLTAGE_SOURCE_CONVERTER, new VoltageSourceConverterDataFrameAdder()),
-            Map.entry(DC_GROUND, new DcGroundDataFrameAdder())
+            Map.entry(DC_GROUND, new DcGroundDataFrameAdder()),
+            Map.entry(DC_SWITCH, new DcSwitchDataFrameAdder())
     );
 
     private static final Map<String, NetworkElementAdder> EXTENSIONS_ADDERS = NetworkExtensions.createExtensionsAdders();
