@@ -394,6 +394,19 @@ public:
     std::vector<std::string> provider_parameters_values;
 };
 
+class DynamicSecurityAnalysisParameters {
+public:
+    DynamicSecurityAnalysisParameters(dynamic_security_analysis_parameters* src);
+    std::shared_ptr<dynamic_security_analysis_parameters> to_c_struct() const;
+
+    double start_time;
+    double stop_time;
+    double contingencies_start_time;
+    std::string debug_dir;
+    std::vector<std::string> provider_parameters_keys;
+    std::vector<std::string> provider_parameters_values;
+};
+
 enum class RescaleMode {
     NONE = 0,
     ACER_METHODOLOGY,
@@ -1019,6 +1032,16 @@ std::string getDynamicSimulationResultsStatusText(JavaHandle resultsHandle);
 SeriesArray* getDynamicCurves(JavaHandle resultHandle);
 SeriesArray* getFinalStateValues(JavaHandle resultHandle);
 SeriesArray* getTimeline(JavaHandle resultHandle);
+
+// dynamic security analysis
+JavaHandle createDynamicSecurityAnalysis();
+void addDynamicMonitoredElements(const JavaHandle& dynamicSecurityAnalysisContext, contingency_context_type contingencyContextType,
+                                 const std::vector<std::string>& branchIds, const std::vector<std::string>& voltageLevelIds,
+                                 const std::vector<std::string>& threeWindingsTransformerIds, const std::vector<std::string>& contingencyIds);
+JavaHandle runDynamicSecurityAnalysis(JavaHandle dynamicSecurityAnalysisContext, JavaHandle network, JavaHandle dynamicMapping,
+                                      JavaHandle* eventMapping, DynamicSecurityAnalysisParameters& parameters, const std::string& provider, JavaHandle* reportNode);
+
+DynamicSecurityAnalysisParameters* createDynamicSecurityAnalysisParameters();
 
 //=======END OF dynamic modeling for dynawo package==========
 

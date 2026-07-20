@@ -1273,6 +1273,37 @@ public final class PyPowsyblApiHeader {
         void setStopTime(double stopTime);
     }
 
+    @CStruct("dynamic_security_analysis_parameters")
+    public interface DynamicSecurityAnalysisParametersPointer extends PointerBase {
+
+        @CFieldAddress("provider_parameters")
+        ProviderParameters getProviderParameters();
+
+        @CField("start_time")
+        double getStartTime();
+
+        @CField("start_time")
+        void setStartTime(double startTime);
+
+        @CField("stop_time")
+        double getStopTime();
+
+        @CField("stop_time")
+        void setStopTime(double stopTime);
+
+        @CField("contingencies_start_time")
+        double getContingenciesStartTime();
+
+        @CField("contingencies_start_time")
+        void setContingenciesStartTime(double contingenciesStartTime);
+
+        @CField("debug_dir")
+        CCharPointer getDebugDir();
+
+        @CField("debug_dir")
+        void setDebugDir(CCharPointer debugDir);
+    }
+
     @CEnum("OutputVariableType")
     public enum OutputVariableType {
         CURVE,

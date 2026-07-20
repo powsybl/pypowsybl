@@ -299,6 +299,21 @@
         </dependency>
         <dependency>
             <groupId>com.powsybl</groupId>
+            <artifactId>powsybl-dynawo-security-analysis</artifactId>
+            <!-- pypowsybl provides contingencies and dynamic models as dataframes/JSON, not through the Groovy DSL -->
+            <exclusions>
+                <exclusion>
+                    <groupId>com.powsybl</groupId>
+                    <artifactId>powsybl-contingency-dsl</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>com.powsybl</groupId>
+                    <artifactId>powsybl-dynamic-simulation-dsl</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>
+        <dependency>
+            <groupId>com.powsybl</groupId>
             <artifactId>powsybl-dynawo-extensions-api</artifactId>
         </dependency>
         <dependency>
