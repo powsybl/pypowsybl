@@ -9,6 +9,7 @@ import pytest
 
 import pypowsybl as pp
 import pandas as pd
+import numpy as np
 from numpy import nan
 
 import util
@@ -227,6 +228,28 @@ def test_get_static_var_compensators_per_unit():
                  'p', 'q', 'i', 'voltage_level_id', 'bus_id', 'connected'],
         data=[['SVC', '', -0.05, 0.05, 3, 4, 'VOLTAGE', True, 'SVC', 0, -0.13, 0.13, 'S4VL1', 'S4VL1_0', True]])
     pd.testing.assert_frame_equal(expected, n.get_static_var_compensators(), check_dtype=False, atol=1e-2)
+
+
+def test_voltage_source_converters_min_max_p():
+    n = pp.network.create_dc_detailed_vsc_symmetrical_monopole_network()
+    n.per_unit = True
+
+    # unbounded default stays +/-inf regardless of per-unit
+    df = n.get_voltage_source_converters(all_attributes=True)
+    assert np.isneginf(df['min_p']['VscFr'])
+    assert np.isposinf(df['max_p']['VscFr'])
+
+    # finite limits are written in per-unit (Sbase default 100 MVA) and read back in per-unit
+    n.update_voltage_source_converters(id='VscFr', min_p=-1.0, max_p=1.0)
+    df = n.get_voltage_source_converters(all_attributes=True)
+    assert df['min_p']['VscFr'] == pytest.approx(-1.0)
+    assert df['max_p']['VscFr'] == pytest.approx(1.0)
+
+    # switching back to SI confirms the per-unit write was scaled by Sbase (-1 pu -> -100 MW)
+    n.per_unit = False
+    df = n.get_voltage_source_converters(all_attributes=True)
+    assert df['min_p']['VscFr'] == pytest.approx(-100.0)
+    assert df['max_p']['VscFr'] == pytest.approx(100.0)
 
 
 def test_voltage_level_per_unit():

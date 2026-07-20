@@ -5,7 +5,6 @@
 # SPDX-License-Identifier: MPL-2.0
 #
 import asyncio
-import warnings
 from asyncio import Future
 from typing import List, Optional
 from pandas import DataFrame
@@ -36,9 +35,8 @@ ConnectedComponentMode.__module__ = __name__
 ComponentMode.__module__ = __name__
 
 
-def run_ac(network: Network, parameters: Optional[Parameters] = None, provider: str = '', reporter: Optional[ReportNode] = None,
-           report_node: Optional[ReportNode] = None) -> \
-        List[ComponentResult]:  # pylint: disable=protected-access
+def run_ac(network: Network, parameters: Optional[Parameters] = None, provider: str = '',
+           report_node: Optional[ReportNode] = None) -> List[ComponentResult]:  # pylint: disable=protected-access
     """
     Run an AC load flow on a network.
 
@@ -46,15 +44,11 @@ def run_ac(network: Network, parameters: Optional[Parameters] = None, provider: 
         network:    a network
         parameters: the load flow parameters, dc attribute is forced to false
         provider:   the load flow implementation provider, default is the default load flow provider
-        reporter: deprecated, use report_node instead
         report_node:   the reporter to be used to create an execution report, default is None (no report)
 
     Returns:
         A list of component results, one for each component of the network.
     """
-    if reporter is not None:
-        warnings.warn("Use of deprecated attribute reporter. Use report_node instead.", DeprecationWarning)
-        report_node = reporter
     p = parameters._to_c_parameters() if parameters is not None else _pypowsybl.LoadFlowParameters()  # pylint: disable=protected-access
     p.dc = False
     return [ComponentResult(res) for res in _pypowsybl.run_loadflow(network._handle, p, provider,
@@ -89,7 +83,7 @@ def run_ac_async(network: Network, variant_id: str = 'InitialState', parameters:
     return results_future
 
 
-def run_dc(network: Network, parameters: Optional[Parameters] = None, provider: str = '', reporter: Optional[ReportNode] = None,
+def run_dc(network: Network, parameters: Optional[Parameters] = None, provider: str = '',
            report_node: Optional[ReportNode] = None) -> List[ComponentResult]:  # pylint: disable=protected-access
     """
     Run a DC load flow on a network.
@@ -98,19 +92,33 @@ def run_dc(network: Network, parameters: Optional[Parameters] = None, provider: 
         network:    a network
         parameters: the load flow parameters, dc attribute is forced to true
         provider:   the load flow implementation provider, default is the default load flow provider
-        reporter: deprecated, use report_node instead
         report_node:   the reporter to be used to create an execution report, default is None (no report)
 
     Returns:
         A list of component results, one for each component of the network.
     """
-    if reporter is not None:
-        warnings.warn("Use of deprecated attribute reporter. Use report_node instead.", DeprecationWarning)
-        report_node = reporter
     p = parameters._to_c_parameters() if parameters is not None else _pypowsybl.LoadFlowParameters()  # pylint: disable=protected-access
     p.dc = True
     return [ComponentResult(res) for res in _pypowsybl.run_loadflow(network._handle, p, provider,
                                                                     None if report_node is None else report_node._report_node)]  # pylint: disable=protected-access
+
+
+def check_loadflow_parameters(parameters: Optional[Parameters] = None, provider: str = '',
+           report_node: Optional[ReportNode] = None) -> bool:  # pylint: disable=protected-access
+    """
+    Verifies if the provider supports the load flow parameters values.
+    Reports the unsupported parameters with the report node.
+
+    Args:
+        parameters: the load flow parameters
+        provider: the load flow implementation provider, default is the default load flow provider
+        report_node: the reporter to be used to create an execution report, default is None (no report)
+
+    Returns:
+        True if the parameters are supported, False otherwise.
+    """
+    p = parameters._to_c_parameters() if parameters is not None else _pypowsybl.LoadFlowParameters()  # pylint: disable=protected-access
+    return _pypowsybl.check_loadflow_parameters(p, provider, None if report_node is None else report_node._report_node)  # pylint: disable=protected-access
 
 
 def set_default_provider(provider: str) -> None:

@@ -30,9 +30,7 @@
         <janino.version>3.1.0</janino.version>
         <mapdb.version>3.0.8</mapdb.version>
         <maven-dependency-plugin.version>3.6.0</maven-dependency-plugin.version>
-        <zstdjni.version>1.5.5-3</zstdjni.version>
         <google.ortools.version>9.10.4067</google.ortools.version>
-        <powsybl-open-rao.version>7.2.0</powsybl-open-rao.version>
     </properties>
 
     <build>
@@ -242,6 +240,10 @@
         </dependency>
         <dependency>
             <groupId>com.powsybl</groupId>
+            <artifactId>powsybl-loadflow-results-completion</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.powsybl</groupId>
             <artifactId>powsybl-single-line-diagram-core</artifactId>
         </dependency>
         <dependency>
@@ -406,7 +408,6 @@
         <dependency>
             <groupId>com.github.luben</groupId>
             <artifactId>zstd-jni</artifactId>
-            <version>${zstdjni.version}</version>
         </dependency>
         <dependency>
             <groupId>com.powsybl</groupId>
@@ -427,7 +428,18 @@
         <dependency>
             <groupId>com.powsybl</groupId>
             <artifactId>open-rao-crac-io-nc</artifactId>
-            <version>${powsybl-open-rao.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>com.powsybl</groupId>
+            <artifactId>open-rao-crac-io-cim</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.powsybl</groupId>
+            <artifactId>open-rao-crac-io-cse</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.powsybl</groupId>
+            <artifactId>open-rao-crac-io-fb-constraint</artifactId>
         </dependency>
         <dependency>
             <groupId>com.powsybl</groupId>

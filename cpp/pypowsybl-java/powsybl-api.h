@@ -133,6 +133,7 @@ typedef struct post_contingency_result_struct {
     char* contingency_id;
     int status;
     array limit_violations;
+    array disconnected_elements;
 } post_contingency_result;
 
 typedef struct pre_contingency_result_struct {
@@ -175,8 +176,9 @@ typedef enum {
     RATIO_TAP_CHANGER,
     PHASE_TAP_CHANGER,
     REACTIVE_CAPABILITY_CURVE_POINT,
-    OPERATIONAL_LIMITS,
-    SELECTED_OPERATIONAL_LIMITS,
+    LOADING_LIMITS,
+    VOLTAGE_ANGLE_LIMITS,
+    SELECTED_LOADING_LIMITS,
     MINMAX_REACTIVE_LIMITS,
     ALIAS,
     IDENTIFIABLE,
@@ -193,6 +195,7 @@ typedef enum {
     DC_NODE,
     VOLTAGE_SOURCE_CONVERTER,
     DC_GROUND,
+    DC_SWITCH,
     DC_BUS
 } element_type;
 
@@ -260,6 +263,11 @@ typedef enum {
     TRANSFORMER_PHASE_1,
     TRANSFORMER_PHASE_2,
     TRANSFORMER_PHASE_3,
+    SHUNT_COMPENSATOR_SUSCEPTANCE,
+    BRANCH_RESISTANCE,
+    BRANCH_REACTANCE,
+    BRANCH_ADMITTANCE,
+    SVC_PILOT_POINT_TARGET_VOLTAGE,
 } sensitivity_variable_type;
 
 typedef enum {

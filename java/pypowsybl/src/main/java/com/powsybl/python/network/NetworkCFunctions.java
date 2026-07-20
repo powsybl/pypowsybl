@@ -37,13 +37,12 @@ import com.powsybl.nad.NadParameters;
 import com.powsybl.nad.layout.*;
 import com.powsybl.nad.model.Point;
 import com.powsybl.nad.svg.*;
-import com.powsybl.nad.svg.EdgeInfoEnum;
-import com.powsybl.nad.svg.EdgeInfoParameters;
 import com.powsybl.nad.svg.iidm.DefaultLabelProviderFactory;
 import com.powsybl.python.commons.CTypeUtil;
 import com.powsybl.python.commons.Directives;
 import com.powsybl.python.commons.PyPowsyblApiHeader;
 import com.powsybl.python.commons.Util;
+import com.powsybl.python.commons.Util.PointerProvider;
 import com.powsybl.python.dataframe.CDoubleSeries;
 import com.powsybl.python.dataframe.CIntSeries;
 import com.powsybl.python.dataframe.CStringSeries;
@@ -60,6 +59,9 @@ import com.powsybl.sld.svg.LabelProvider;
 import com.powsybl.sld.svg.styles.DefaultStyleProviderFactory;
 import com.powsybl.sld.svg.styles.NominalVoltageStyleProviderFactory;
 import com.powsybl.sld.svg.styles.iidm.CustomTopologicalStyleProvider;
+import java.time.Instant;
+import java.time.ZoneOffset;
+import java.time.ZonedDateTime;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.graalvm.nativeimage.IsolateThread;
@@ -167,6 +169,31 @@ public final class NetworkCFunctions {
             @Override
             public void run() {
                 freeNetworkMetadata(ptr);
+            }
+        });
+    }
+
+    @CEntryPoint(name = "setNetworkCaseDate")
+    public static void setNetworkCaseDate(IsolateThread thread, ObjectHandle networkHandle,
+                                          double caseDate, ExceptionHandlerPointer exceptionHandlerPtr) {
+        doCatch(exceptionHandlerPtr, new Runnable() {
+            @Override
+            public void run() {
+                Network network = ObjectHandles.getGlobal().get(networkHandle);
+                network.setCaseDate(ZonedDateTime.ofInstant(
+                    Instant.ofEpochMilli((long) (caseDate * 1000)), ZoneOffset.UTC));
+            }
+        });
+    }
+
+    @CEntryPoint(name = "setNetworkName")
+    public static void setNetworkName(IsolateThread thread, ObjectHandle networkHandle,
+                                      CCharPointer name, ExceptionHandlerPointer exceptionHandlerPtr) {
+        doCatch(exceptionHandlerPtr, new Runnable() {
+            @Override
+            public void run() {
+                Network network = ObjectHandles.getGlobal().get(networkHandle);
+                network.setName(CTypeUtil.toString(name));
             }
         });
     }
@@ -852,6 +879,20 @@ public final class NetworkCFunctions {
         });
     }
 
+    @CEntryPoint(name = "getSwitchFlows")
+    public static ArrayPointer<SeriesPointer> getSwitchFlows(IsolateThread thread, ObjectHandle networkHandle,
+                                                             CCharPointerPointer switchIdsPtr, int switchIdsCount,
+                                                             PyPowsyblApiHeader.ExceptionHandlerPointer exceptionHandlerPtr) {
+        return doCatch(exceptionHandlerPtr, new PointerProvider<>() {
+            @Override
+            public ArrayPointer<SeriesPointer> get() {
+                Network network = ObjectHandles.getGlobal().get(networkHandle);
+                List<String> switchIds = CTypeUtil.toStringList(switchIdsPtr, switchIdsCount);
+                return Dataframes.createCDataframe(Dataframes.switchFlowMapper(), NetworkUtil.getSwitchFlowResults(network, switchIds));
+            }
+        });
+    }
+
     @CEntryPoint(name = "merge")
     public static ObjectHandle merge(IsolateThread thread, VoidPointerPointer networkHandles, int networkCount,
                                      ExceptionHandlerPointer exceptionHandlerPtr) {
@@ -1144,6 +1185,19 @@ public final class NetworkCFunctions {
                 Network network = ObjectHandles.getGlobal().get(networkHandle);
                 String idStr = CTypeUtil.toString(id);
                 return NetworkUtil.updateSwitchPosition(network, idStr, open);
+            }
+        });
+    }
+
+    @CEntryPoint(name = "updateDcSwitchPosition")
+    public static boolean updateDcSwitchPosition(IsolateThread thread, ObjectHandle networkHandle, CCharPointer id, boolean open,
+                                               ExceptionHandlerPointer exceptionHandlerPtr) {
+        return doCatch(exceptionHandlerPtr, new BooleanSupplier() {
+            @Override
+            public boolean getAsBoolean() {
+                Network network = ObjectHandles.getGlobal().get(networkHandle);
+                String idStr = CTypeUtil.toString(id);
+                return NetworkUtil.updateDcSwitchPosition(network, idStr, open);
             }
         });
     }
@@ -1651,21 +1705,23 @@ public final class NetworkCFunctions {
     }
 
     private static Map<String, CustomLabelProvider.BranchLabels> getNadCustomBranchLabels(int rowCount, StringSeries idSeries,
-                                                                                                StringSeries side1Label, StringSeries middleLabel,
-                                                                                                StringSeries side2Label, StringSeries arrow1,
+                                                                                                StringSeries side1InternalLabel, StringSeries side1ExternalLabel,
+                                                                                                StringSeries middle1Label, StringSeries middle2Label,
+                                                                                                StringSeries side2InternalLabel, StringSeries side2ExternalLabel,
+                                                                                                StringSeries arrow1, StringSeries arrowMiddle,
                                                                                                 StringSeries arrow2) {
         Map<String, CustomLabelProvider.BranchLabels> nadCustomBranchLabels = new HashMap<>();
         for (int i = 0; i < rowCount; i++) {
             String id = idSeries.get(i);
             CustomLabelProvider.BranchLabels labels = new CustomLabelProvider.BranchLabels(
-                    getValueFromSeriesOrNull(side1Label, i),
-                    null,
-                    getValueFromSeriesOrNull(middleLabel, i),
-                    null,
-                    getValueFromSeriesOrNull(side2Label, i),
-                    null,
+                    getNonEmptyValueFromSeries(side1InternalLabel, i),
+                    getNonEmptyValueFromSeries(side1ExternalLabel, i),
+                    getNonEmptyValueFromSeries(middle1Label, i),
+                    getNonEmptyValueFromSeries(middle2Label, i),
+                    getNonEmptyValueFromSeries(side2InternalLabel, i),
+                    getNonEmptyValueFromSeries(side2ExternalLabel, i),
                     getDirectionFromSeriesOrNull(arrow1, i),
-                    null,
+                    getDirectionFromSeriesOrNull(arrowMiddle, i),
                     getDirectionFromSeriesOrNull(arrow2, i)
             );
             nadCustomBranchLabels.put(id, labels);
@@ -1676,9 +1732,12 @@ public final class NetworkCFunctions {
     private static Map<String, CustomLabelProvider.ThreeWtLabels> getNadCustomThreeWtLabels(UpdatingDataframe threeWtLabelsDataframe) {
         int rowCount = threeWtLabelsDataframe.getRowCount();
         StringSeries idS = threeWtLabelsDataframe.getStrings("id");
-        StringSeries side1S = threeWtLabelsDataframe.getStrings("side1");
-        StringSeries side2S = threeWtLabelsDataframe.getStrings("side2");
-        StringSeries side3S = threeWtLabelsDataframe.getStrings("side3");
+        StringSeries side1InternalS = threeWtLabelsDataframe.getStrings("side1Internal");
+        StringSeries side1ExternalS = threeWtLabelsDataframe.getStrings("side1External");
+        StringSeries side2InternalS = threeWtLabelsDataframe.getStrings("side2Internal");
+        StringSeries side2ExternalS = threeWtLabelsDataframe.getStrings("side2External");
+        StringSeries side3InternalS = threeWtLabelsDataframe.getStrings("side3Internal");
+        StringSeries side3ExternalS = threeWtLabelsDataframe.getStrings("side3External");
         StringSeries arrow1S = threeWtLabelsDataframe.getStrings("arrow1");
         StringSeries arrow2S = threeWtLabelsDataframe.getStrings("arrow2");
         StringSeries arrow3S = threeWtLabelsDataframe.getStrings("arrow3");
@@ -1687,12 +1746,12 @@ public final class NetworkCFunctions {
         for (int i = 0; i < rowCount; i++) {
             String id = idS.get(i);
             CustomLabelProvider.ThreeWtLabels labels = new CustomLabelProvider.ThreeWtLabels(
-                    getValueFromSeriesOrNull(side1S, i),
-                    null,
-                    getValueFromSeriesOrNull(side2S, i),
-                    null,
-                    getValueFromSeriesOrNull(side3S, i),
-                    null,
+                    getNonEmptyValueFromSeries(side1InternalS, i),
+                    getNonEmptyValueFromSeries(side1ExternalS, i),
+                    getNonEmptyValueFromSeries(side2InternalS, i),
+                    getNonEmptyValueFromSeries(side2ExternalS, i),
+                    getNonEmptyValueFromSeries(side3InternalS, i),
+                    getNonEmptyValueFromSeries(side3ExternalS, i),
                     getDirectionFromSeriesOrNull(arrow1S, i),
                     getDirectionFromSeriesOrNull(arrow2S, i),
                     getDirectionFromSeriesOrNull(arrow3S, i)
@@ -1705,15 +1764,16 @@ public final class NetworkCFunctions {
     private static Map<String, CustomLabelProvider.InjectionLabels> getNadCustomInjectionsLabels(UpdatingDataframe injectionLabelsDataframe) {
         int rowCount = injectionLabelsDataframe.getRowCount();
         StringSeries idS = injectionLabelsDataframe.getStrings("id");
-        StringSeries labelS = injectionLabelsDataframe.getStrings("label");
+        StringSeries labelInternalS = injectionLabelsDataframe.getStrings("labelInternal");
+        StringSeries labelExternalS = injectionLabelsDataframe.getStrings("labelExternal");
         StringSeries arrowS = injectionLabelsDataframe.getStrings("arrow");
 
         Map<String, CustomLabelProvider.InjectionLabels> nadCustomInjectionsLabels = new HashMap<>();
         for (int i = 0; i < rowCount; i++) {
             String id = idS.get(i);
             CustomLabelProvider.InjectionLabels labels = new CustomLabelProvider.InjectionLabels(
-                    getValueFromSeriesOrNull(labelS, i),
-                    null,
+                    getNonEmptyValueFromSeries(labelInternalS, i),
+                    getNonEmptyValueFromSeries(labelExternalS, i),
                     getDirectionFromSeriesOrNull(arrowS, i)
             );
             nadCustomInjectionsLabels.put(id, labels);
@@ -1766,9 +1826,11 @@ public final class NetworkCFunctions {
             final Map<String, CustomLabelProvider.BranchLabels> branchLabels;
             if (customLabelsDataframe != null) {
                 branchLabels = getNadCustomBranchLabels(customLabelsDataframe.getRowCount(), customLabelsDataframe.getStrings("id"),
-                        customLabelsDataframe.getStrings("side1"),
-                        customLabelsDataframe.getStrings("middle"), customLabelsDataframe.getStrings("side2"),
-                        customLabelsDataframe.getStrings("arrow1"), customLabelsDataframe.getStrings("arrow2"));
+                        customLabelsDataframe.getStrings("side1Internal"),
+                        customLabelsDataframe.getStrings("side1External"), customLabelsDataframe.getStrings("middle1"),
+                        customLabelsDataframe.getStrings("middle2"), customLabelsDataframe.getStrings("side2Internal"),
+                        customLabelsDataframe.getStrings("side2External"), customLabelsDataframe.getStrings("arrow1"),
+                        customLabelsDataframe.getStrings("arrowMiddle"), customLabelsDataframe.getStrings("arrow2"));
             } else {
                 branchLabels = Collections.emptyMap();
             }
@@ -2030,11 +2092,14 @@ public final class NetworkCFunctions {
     }
 
     @CEntryPoint(name = "validate")
-    public static ValidationLevelType validate(IsolateThread thread, ObjectHandle networkHandle, ExceptionHandlerPointer exceptionHandlerPtr) {
+    public static ValidationLevelType validate(IsolateThread thread, ObjectHandle networkHandle, ObjectHandle reportNodeHandle,
+                                               ExceptionHandlerPointer exceptionHandlerPtr) {
         exceptionHandlerPtr.setMessage(WordFactory.nullPointer());
+        ReportNode reportNode = ObjectHandles.getGlobal().get(reportNodeHandle);
+        boolean throwException = reportNode == null;
         try {
             Network network = ObjectHandles.getGlobal().get(networkHandle);
-            return Util.convert(network.runValidationChecks());
+            return Util.convert(network.runValidationChecks(throwException, reportNode == null ? ReportNode.NO_OP : reportNode));
         } catch (Throwable t) {
             setException(exceptionHandlerPtr, t);
             return Util.convert(ValidationLevel.MINIMUM_VALUE);
@@ -2103,6 +2168,18 @@ public final class NetworkCFunctions {
                 Network subNetwork = ObjectHandles.getGlobal().get(subNetworkHandle);
                 Network detachNetwork = subNetwork.detach();
                 return ObjectHandles.getGlobal().create(detachNetwork);
+            }
+        });
+    }
+
+    @CEntryPoint(name = "flatten")
+    public static ObjectHandle flatten(IsolateThread thread, ObjectHandle networkHandle, ExceptionHandlerPointer exceptionHandlerPtr) {
+        return doCatch(exceptionHandlerPtr, new PointerProvider<>() {
+            @Override
+            public ObjectHandle get() {
+                Network network = ObjectHandles.getGlobal().get(networkHandle);
+                network.flatten();
+                return ObjectHandles.getGlobal().create(network);
             }
         });
     }

@@ -211,6 +211,13 @@ public final class SecurityAnalysisCFunctions {
         createLimitViolationPtr(limitViolationPtr, limitViolations);
         contingencyPtr.limitViolations().setLength(limitViolations.size());
         contingencyPtr.limitViolations().setPtr(limitViolationPtr);
+        List<String> disconnectedElements = postContingencyResult.getConnectivityResult() == null
+            ? List.of()
+            : List.copyOf(postContingencyResult.getConnectivityResult().getDisconnectedElements());
+        PyPowsyblApiHeader.ArrayPointer<CCharPointerPointer> disconnectedElementsPtr = createCharPtrArray(disconnectedElements);
+        contingencyPtr.disconnectedElements().setLength(disconnectedElementsPtr.getLength());
+        contingencyPtr.disconnectedElements().setPtr(disconnectedElementsPtr.getPtr());
+        UnmanagedMemory.free(disconnectedElementsPtr);
     }
 
     private static void setOperatorStrategyResultInSecurityAnalysisResultPointer(OperatorStrategyResultPointer operatorStrategyPtr, OperatorStrategyResult result) {
@@ -376,6 +383,7 @@ public final class SecurityAnalysisCFunctions {
                         UnmanagedMemory.free(violation.getLimitName());
                     }
                     UnmanagedMemory.free(contingencyResultPtrPlus.limitViolations().getPtr());
+                    freeCharPtrArray(contingencyResultPtrPlus.disconnectedElements());
                 }
                 freeArrayPointer(contingencyResultArrayPtr);
             }

@@ -5,7 +5,6 @@
 # SPDX-License-Identifier: MPL-2.0
 #
 import io
-import warnings
 from os import PathLike
 from typing import Union, Dict, List, Optional
 
@@ -14,8 +13,7 @@ import pypowsybl._pypowsybl as _pp
 from pypowsybl.report import ReportNode
 from pypowsybl.utils import path_to_str
 from .network import Network
-
-DEPRECATED_REPORTER_WARNING = "Use of deprecated attribute reporter. Use report_node instead."
+import pypowsybl as pp
 
 
 def _create_network(name: str, network_id: str = '', allow_variant_multi_thread_access: bool = False) -> Network:
@@ -255,6 +253,148 @@ def create_dc_detailed_vsc_asymmetrical_monopole_network(allow_variant_multi_thr
     """
     return _create_network('dc_detailed_vsc_asymmetrical_monopole', '', allow_variant_multi_thread_access)
 
+def create_ac_dc_monopolar_network(allow_variant_multi_thread_access: bool = False) -> Network:
+    """
+Create an instance of an AC DC monopolar network case, for AC DC loadflow
+
+Returns:
+    a new instance of an AC DC monopolar network case
+"""
+    n = pp.network.create_empty()
+    n.create_dc_nodes(id='dn3p', nominal_v=400)
+    n.create_dc_nodes(id='dn3n', nominal_v=400)
+    n.create_dc_nodes(id='dn4p', nominal_v=400)
+    n.create_dc_nodes(id='dn4n', nominal_v=400)
+    n.create_dc_grounds(id='dg3', r=0.0, dc_node_id='dn3n')
+    n.create_dc_grounds(id='dg4', r=0.0, dc_node_id='dn4n')
+    n.create_voltage_levels(id='vl1', topology_kind='BUS_BREAKER', nominal_v=400)
+    n.create_buses(id='b1', voltage_level_id='vl1')
+    n.create_generators(id='g1', voltage_level_id='vl1', bus_id='b1', target_p=102.56, min_p=0, max_p=500,
+                        target_v=390,
+                        voltage_regulator_on=True)
+    n.create_voltage_levels(id='vl2', topology_kind='BUS_BREAKER', nominal_v=400)
+    n.create_buses(id='b2', voltage_level_id='vl2')
+    n.create_loads(id='ld2', voltage_level_id='vl2', bus_id='b2', p0=20, q0=10)
+    n.create_voltage_levels(id='vl5', topology_kind='BUS_BREAKER', nominal_v=400)
+    n.create_buses(id='b5', voltage_level_id='vl5')
+    n.create_loads(id='ld5', voltage_level_id='vl5', bus_id='b5', p0=50, q0=10)
+    n.create_dc_lines(id='dl34p', dc_node1_id='dn3p', dc_node2_id='dn4p', r=0.1)
+    n.create_lines(id='l12', voltage_level1_id='vl1', bus1_id='b1', voltage_level2_id='vl2', bus2_id='b2', r=1, x=3)
+    n.create_lines(id='l25', voltage_level1_id='vl2', bus1_id='b2', voltage_level2_id='vl5', bus2_id='b5', r=1, x=3)
+    n.create_voltage_source_converters(id='conv23', voltage_level_id='vl2', dc_node1_id='dn3p', dc_node2_id='dn3n',
+                                      bus1_id='b2', voltage_regulator_on=0, control_mode='P_PCC', target_p=-50.0,
+                                       target_q=0.0, idle_loss=0.5, switching_loss=0.001, resistive_loss=0.2,
+                                       dc_connected1=1, dc_connected2=1)
+    n.create_voltage_source_converters(id='conv45', voltage_level_id='vl5', dc_node1_id='dn4p', dc_node2_id='dn4n',
+                                       bus1_id='b5', voltage_regulator_on=0, control_mode='V_DC', target_v_dc=400.0,
+                                       target_q=0.0, idle_loss=0.5, switching_loss=0.001, resistive_loss=0.2,
+                                       dc_connected1=1, dc_connected2=1)
+    return n
+
+def create_ac_dc_bipolar_network(allow_variant_multi_thread_access: bool = False) -> Network:
+    """
+Create an instance of an AC DC bipolar network case, for AC DC loadflow
+
+Returns:
+    a new instance of an AC DC bipolar network case
+"""
+    n = pp.network.create_empty()
+    n.create_dc_nodes(id='dn3p', nominal_v=400)
+    n.create_dc_nodes(id='dn3n', nominal_v=400)
+    n.create_dc_nodes(id='dn4p', nominal_v=400)
+    n.create_dc_nodes(id='dn4n', nominal_v=400)
+    n.create_dc_nodes(id='dnGp', nominal_v=400)
+    n.create_dc_nodes(id='dnGn', nominal_v=400)
+    n.create_dc_nodes(id='dnGr', nominal_v=400)
+    n.create_dc_grounds(id='Gr', r=0.0, dc_node_id='dnGr')
+    n.create_voltage_levels(id='vl1', topology_kind='BUS_BREAKER', nominal_v=400)
+    n.create_buses(id='b1', voltage_level_id='vl1')
+    n.create_generators(id='g1', voltage_level_id='vl1', bus_id='b1', target_p=102.56, min_p=0, max_p=500,
+                        target_v=390,
+                        voltage_regulator_on=True)
+    n.create_voltage_levels(id='vl2', topology_kind='BUS_BREAKER', nominal_v=400)
+    n.create_buses(id='b2', voltage_level_id='vl2')
+    n.create_loads(id='ld2', voltage_level_id='vl2', bus_id='b2', p0=20, q0=10)
+    n.create_voltage_levels(id='vl5', topology_kind='BUS_BREAKER', nominal_v=400)
+    n.create_buses(id='b5', voltage_level_id='vl5')
+    n.create_loads(id='ld5', voltage_level_id='vl5', bus_id='b5', p0=50, q0=10)
+    n.create_dc_lines(id='dl3Gp', dc_node1_id='dn3p', dc_node2_id='dnGp', r=0.1)
+    n.create_dc_lines(id='dl3Gn', dc_node1_id='dn3n', dc_node2_id='dnGn', r=0.1)
+    n.create_dc_lines(id='dlG4p', dc_node1_id='dnGp', dc_node2_id='dn4p', r=0.1)
+    n.create_dc_lines(id='dlG4n', dc_node1_id='dnGn', dc_node2_id='dn4n', r=0.1)
+    n.create_dc_lines(id='dlGp', dc_node1_id='dnGp', dc_node2_id='dnGr', r=1000000)
+    n.create_dc_lines(id='dlGn', dc_node1_id='dnGn', dc_node2_id='dnGr', r=1000000)
+    n.create_lines(id='l12', voltage_level1_id='vl1', bus1_id='b1', voltage_level2_id='vl2', bus2_id='b2', r=1, x=3)
+    n.create_lines(id='l25', voltage_level1_id='vl2', bus1_id='b2', voltage_level2_id='vl5', bus2_id='b5', r=1, x=3)
+    n.create_voltage_source_converters(id='conv23', voltage_level_id='vl2', dc_node1_id='dn3p', dc_node2_id='dn3n',
+                                      bus1_id='b2', voltage_regulator_on=0, control_mode='P_PCC', target_p=-50.0,
+                                       target_q=0.0, idle_loss=0.5, switching_loss=0.001, resistive_loss=0.2,
+                                       dc_connected1=1, dc_connected2=1)
+    n.create_voltage_source_converters(id='conv45', voltage_level_id='vl5', dc_node1_id='dn4p', dc_node2_id='dn4n',
+                                      bus1_id='b5', voltage_regulator_on=0, control_mode='V_DC', target_q=0.0,
+                                      target_v_dc=400.0, idle_loss=0.5, switching_loss=0.001, resistive_loss=0.2,
+                                      dc_connected1=1, dc_connected2=1)
+    return n
+
+def create_ac_dc_bipolar_network_with_metallic_return(allow_variant_multi_thread_access: bool = False) -> Network:
+    """
+Create an instance of an AC DC bipolar network with metallic return case, for AC DC loadflow
+
+Returns:
+    a new instance of an AC DC bipolar network with metallic return case
+"""
+    n = pp.network.create_empty()
+    n.create_dc_nodes(id='dn3p', nominal_v=400)
+    n.create_dc_nodes(id='dn3n', nominal_v=400)
+    n.create_dc_nodes(id='dn4p', nominal_v=400)
+    n.create_dc_nodes(id='dn4n', nominal_v=400)
+    n.create_dc_nodes(id='dn3r', nominal_v=400)
+    n.create_dc_nodes(id='dn4r', nominal_v=400)
+    n.create_dc_nodes(id='dnGr', nominal_v=400)
+    n.create_dc_grounds(id='Gr', r=0.0, dc_node_id="dnGr")
+    n.create_voltage_levels(id='vl1', topology_kind='BUS_BREAKER', nominal_v=400)
+    n.create_buses(id='b1', voltage_level_id='vl1')
+    n.create_generators(id='g1', voltage_level_id='vl1', bus_id='b1', target_p=102.56, min_p=0, max_p=500,
+                        target_v=390,
+                        voltage_regulator_on=True)
+    n.create_voltage_levels(id='vl2', topology_kind='BUS_BREAKER', nominal_v=400)
+    n.create_buses(id='b2', voltage_level_id='vl2')
+    n.create_loads(id='ld2', voltage_level_id='vl2', bus_id='b2', p0=20, q0=10)
+    n.create_voltage_levels(id='vl5', topology_kind='BUS_BREAKER', nominal_v=400)
+    n.create_buses(id='b5', voltage_level_id='vl5')
+    n.create_loads(id='ld5', voltage_level_id='vl5', bus_id='b5', p0=50, q0=10)
+    n.create_dc_lines(id='dl34p', dc_node1_id='dn3p', dc_node2_id='dn4p', r=0.1)
+    n.create_dc_lines(id='dl34n', dc_node1_id='dn3n', dc_node2_id='dn4n', r=0.1)
+    n.create_dc_lines(id='dl3Gr', dc_node1_id='dn3r', dc_node2_id='dnGr', r=0.1)
+    n.create_dc_lines(id='dlG4r', dc_node1_id='dnGr', dc_node2_id='dn4r', r=0.1)
+    n.create_lines(id='l12', voltage_level1_id='vl1', bus1_id='b1', voltage_level2_id='vl2', bus2_id='b2', r=1, x=3)
+    n.create_lines(id='l25', voltage_level1_id='vl2', bus1_id='b2', voltage_level2_id='vl5', bus2_id='b5', r=1, x=3)
+    n.create_voltage_source_converters(id='conv23p', voltage_level_id='vl2', dc_node1_id='dn3p', dc_node2_id='dn3r',
+                                      bus1_id='b2', voltage_regulator_on=0, control_mode='P_PCC', target_p=-25.0,
+                                      target_q=0.0, idle_loss=0.5, switching_loss=0.001, resistive_loss=0.2,
+                                      dc_connected1=1, dc_connected2=1)
+    n.create_voltage_source_converters(id='conv23n', voltage_level_id='vl2', dc_node1_id='dn3n', dc_node2_id='dn3r',
+                                      bus1_id='b2', voltage_regulator_on=0, control_mode='P_PCC', target_p=-25.0,
+                                      target_q=0.0, idle_loss=0.5, switching_loss=0.001, resistive_loss=0.2,
+                                      dc_connected1=1, dc_connected2=1)
+    n.create_voltage_source_converters(id='conv45p', voltage_level_id='vl5', dc_node1_id='dn4p', dc_node2_id='dn4r',
+                                      bus1_id='b5', voltage_regulator_on=0, control_mode='V_DC', target_q=0.0,
+                                      target_v_dc=200.0, idle_loss=0.5, switching_loss=0.001, resistive_loss=0.2,
+                                      dc_connected1=1, dc_connected2=1)
+    n.create_voltage_source_converters(id='conv45n', voltage_level_id='vl5', dc_node1_id='dn4n', dc_node2_id='dn4r',
+                                      bus1_id='b5', voltage_regulator_on=0, control_mode='V_DC', target_q=0.0,
+                                      target_v_dc=-200.0, idle_loss=0.5, switching_loss=0.001, resistive_loss=0.2,
+                                      dc_connected1=1, dc_connected2=1)
+
+    return n
+
+
+def create_dc_detailed_dc_switch_2_nodes(allow_variant_multi_thread_access: bool = False) -> Network:
+    """
+    Create a simple two-DC-node network with a DC switch.
+    """
+    return _create_network('dc_detailed_dc_switch_2_nodes', '', allow_variant_multi_thread_access)
+
 
 def is_loadable(file: Union[str, PathLike]) -> bool:
     """
@@ -277,8 +417,8 @@ def is_loadable(file: Union[str, PathLike]) -> bool:
 
 
 def load(file: Union[str, PathLike], parameters: Optional[Dict[str, str]] = None,
-         post_processors: Optional[List[str]] = None, reporter: Optional[ReportNode] = None,
-         report_node: Optional[ReportNode] = None, allow_variant_multi_thread_access: bool = False) -> Network:
+         post_processors: Optional[List[str]] = None, report_node: Optional[ReportNode] = None,
+         allow_variant_multi_thread_access: bool = False) -> Network:
     """
     Load a network from a file. File should be in a supported format.
 
@@ -288,7 +428,6 @@ def load(file: Union[str, PathLike], parameters: Optional[Dict[str, str]] = None
        file:       path to the network file
        parameters: a dictionary of import parameters
        post_processors: a list of import post processors (will be added to the ones defined by the platform config)
-       reporter: deprecated, use report_node instead
        report_node: the reporter to be used to create an execution report, default is None (no report)
        allow_variant_multi_thread_access: allow multi-thread access to variant (default: False)
 
@@ -307,9 +446,6 @@ def load(file: Union[str, PathLike], parameters: Optional[Dict[str, str]] = None
             network = pp.network.load('network.uct')
             ...
     """
-    if reporter is not None:
-        warnings.warn(DEPRECATED_REPORTER_WARNING, DeprecationWarning)
-        report_node = reporter
     file = path_to_str(file)
     return Network(_pp.load_network(file, {} if parameters is None else parameters,
                                     [] if post_processors is None else post_processors,
@@ -319,8 +455,7 @@ def load(file: Union[str, PathLike], parameters: Optional[Dict[str, str]] = None
 
 
 def load_from_binary_buffer(buffer: io.BytesIO, parameters: Optional[Dict[str, str]] = None,
-                            post_processors: Optional[List[str]] = None, reporter: Optional[ReportNode] = None,
-                            report_node: Optional[ReportNode] = None,
+                            post_processors: Optional[List[str]] = None, report_node: Optional[ReportNode] = None,
                             allow_variant_multi_thread_access: bool = False) -> Network:
     """
     Load a network from a binary buffer.
@@ -329,24 +464,19 @@ def load_from_binary_buffer(buffer: io.BytesIO, parameters: Optional[Dict[str, s
        buffer:    The BytesIO data buffer
        parameters:  A dictionary of import parameters
        post_processors: a list of import post processors (will be added to the ones defined by the platform config)
-       reporter: deprecated, use report_node instead
        report_node: the reporter to be used to create an execution report, default is None (no report)
        allow_variant_multi_thread_access: allow multi-thread access to variant (default: False)
 
     Returns:
         The loaded network
     """
-    if reporter is not None:
-        warnings.warn(DEPRECATED_REPORTER_WARNING, DeprecationWarning)
-        report_node = reporter
     return load_from_binary_buffers([buffer], {} if parameters is None else parameters,
-                                    [] if post_processors is None else post_processors, None, report_node,
+                                    [] if post_processors is None else post_processors, report_node,
                                     allow_variant_multi_thread_access)
 
 
 def load_from_binary_buffers(buffers: List[io.BytesIO], parameters: Optional[Dict[str, str]] = None,
-                             post_processors: Optional[List[str]] = None, reporter: Optional[ReportNode] = None,
-                             report_node: Optional[ReportNode] = None,
+                             post_processors: Optional[List[str]] = None, report_node: Optional[ReportNode] = None,
                              allow_variant_multi_thread_access: bool = False) -> Network:
     """
     Load a network from a list of binary buffers. Only zipped CGMES are supported for several zipped source load.
@@ -355,16 +485,12 @@ def load_from_binary_buffers(buffers: List[io.BytesIO], parameters: Optional[Dic
        buffers:  The list of BytesIO data buffer
        parameters:  A dictionary of import parameters
        post_processors: a list of import post processors (will be added to the ones defined by the platform config)
-       reporter: deprecated, use report_node instead
        report_node: the reporter to be used to create an execution report, default is None (no report)
        allow_variant_multi_thread_access: allow multi-thread access to variant (default: False)
 
     Returns:
         The loaded network
     """
-    if reporter is not None:
-        warnings.warn(DEPRECATED_REPORTER_WARNING, DeprecationWarning)
-        report_node = reporter
     buffer_list = []
     for buff in buffers:
         buffer_list.append(buff.getbuffer())
@@ -376,7 +502,7 @@ def load_from_binary_buffers(buffers: List[io.BytesIO], parameters: Optional[Dic
 
 
 def load_from_string(file_name: str, file_content: str, parameters: Optional[Dict[str, str]] = None,
-                     post_processors: Optional[List[str]] = None, reporter: Optional[ReportNode] = None,
+                     post_processors: Optional[List[str]] = None,
                      report_node: Optional[ReportNode] = None,
                      allow_variant_multi_thread_access: bool = False) -> Network:
     """
@@ -387,16 +513,12 @@ def load_from_string(file_name: str, file_content: str, parameters: Optional[Dic
        file_content: file content
        parameters:   a dictionary of import parameters
        post_processors: a list of import post processors (will be added to the ones defined by the platform config)
-       reporter: deprecated, use report_node instead
        report_node: the reporter to be used to create an execution report, default is None (no report)
        allow_variant_multi_thread_access: allow multi-thread access to variant (default: False)
 
     Returns:
         The loaded network
     """
-    if reporter is not None:
-        warnings.warn(DEPRECATED_REPORTER_WARNING, DeprecationWarning)
-        report_node = reporter
     return Network(_pp.load_network_from_string(file_name, file_content, {} if parameters is None else parameters,
                                                 [] if post_processors is None else post_processors,
                                                 None if report_node is None else report_node._report_node,

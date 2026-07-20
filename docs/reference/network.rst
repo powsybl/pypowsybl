@@ -40,6 +40,14 @@ Following methods may be used to create a new network instance:
    create_micro_grid_nl_network
    create_metrix_tutorial_six_buses_network
 
+   create_dc_detailed_lcc_bipole_ground_return_network
+   create_dc_detailed_lcc_bipole_ground_return_negative_pole_outage_network
+   create_dc_detailed_lcc_bipole_ground_return_with_dc_line_segments_network
+   create_dc_detailed_lcc_bipole_metallic_return_network
+   create_dc_detailed_vsc_symmetrical_monopole_network
+   create_dc_detailed_vsc_asymmetrical_monopole_network
+   create_dc_detailed_dc_switch_2_nodes
+
 
 Network properties
 ------------------
@@ -97,7 +105,9 @@ All network elements are accessible as dataframes, using the following getters.
    Network.get_loads
    Network.get_linear_shunt_compensator_sections
    Network.get_non_linear_shunt_compensator_sections
+   Network.get_loading_limits
    Network.get_operational_limits
+   Network.get_voltage_angle_limits
    Network.get_phase_tap_changer_steps
    Network.get_phase_tap_changers
    Network.get_ratio_tap_changer_steps
@@ -119,6 +129,7 @@ All network elements are accessible as dataframes, using the following getters.
    Network.get_dc_lines
    Network.get_voltage_source_converters
    Network.get_dc_grounds
+   Network.get_dc_switches
    Network.get_dc_buses
 
 Bus/Breaker or Node/Breaker topology description of a given voltage level can be retrieved using the following getters:
@@ -174,6 +185,7 @@ Network elements can be modified using dataframes:
    Network.update_lines
    Network.update_loads
    Network.update_non_linear_shunt_compensator_sections
+   Network.update_loading_limits
    Network.update_operational_limits
    Network.update_phase_tap_changers
    Network.update_phase_tap_changer_steps
@@ -191,6 +203,7 @@ Network elements can be modified using dataframes:
    Network.update_dc_lines
    Network.update_voltage_source_converters
    Network.update_dc_grounds
+   Network.update_dc_switches
    Network.update_dc_buses
    Network.get_elements_properties
    Network.add_elements_properties
@@ -229,7 +242,9 @@ Network elements can be created or removed using the following methods:
    Network.create_lines
    Network.create_loads
    Network.create_minmax_reactive_limits
+   Network.create_loading_limits
    Network.create_operational_limits
+   Network.create_voltage_angle_limits
    Network.create_phase_tap_changers
    Network.create_ratio_tap_changers
    Network.create_shunt_compensators
@@ -243,6 +258,7 @@ Network elements can be created or removed using the following methods:
    Network.create_dc_lines
    Network.create_voltage_source_converters
    Network.create_dc_grounds
+   Network.create_dc_switches
    Network.remove_elements
    Network.remove_internal_connections
 
@@ -290,6 +306,7 @@ Miscellaneous network functions
    Network.reduce_by_voltage_range
    Network.reduce_by_ids_and_depths
    Network.merge
+   Network.flatten
    Network.get_single_line_diagram
    Network.write_single_line_diagram_svg
    Network.get_matrix_multi_substation_single_line_diagram
@@ -303,6 +320,8 @@ Miscellaneous network functions
    Network.connect
    Network.open_switch
    Network.close_switch
+   Network.open_dc_switch
+   Network.close_dc_switch
    Network.get_validation_level
    Network.validate
    Network.set_min_validation_level

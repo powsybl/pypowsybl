@@ -627,7 +627,7 @@ std::shared_ptr<sensitivity_analysis_parameters> SensitivityAnalysisParameters::
         delete ptr;
     });
 }
-  
+
 void SensitivityAnalysisParameters::load_to_c_struct(sensitivity_analysis_parameters& params) const {
     params.flow_flow_sensitivity_value_threshold = flow_flow_sensitivity_value_threshold;
     params.voltage_voltage_sensitivity_value_threshold = voltage_voltage_sensitivity_value_threshold;
@@ -731,17 +731,20 @@ JavaHandle createNetwork(const std::string& name, const std::string& id, bool al
     return PowsyblCaller::get()->callJava<JavaHandle>(::createNetwork, (char*) name.data(), (char*) id.data(), allowVariantMultiThreadAccess);
 }
 
-JavaHandle merge(std::vector<JavaHandle>& networks) {
-    std::vector<void*> networksPtrs;
-    networksPtrs.reserve(networks.size());
-    for (int i = 0; i < networks.size(); ++i) {
-        void* ptr = networks[i];
-        networksPtrs.push_back(ptr);
+std::vector<void*> objectHandleVectorToPtrs(std::vector<JavaHandle>& handles) {
+    std::vector<void*> handlePtrs;
+    handlePtrs.reserve(handles.size());
+    for (auto & i : handles) {
+        void* ptr = i;
+        handlePtrs.push_back(ptr);
     }
-    int networkCount = networksPtrs.size();
-    void** networksData = (void**) networksPtrs.data();
+    return handlePtrs;
+}
 
-    return PowsyblCaller::get()->callJava<JavaHandle>(::merge, networksData, networkCount);
+JavaHandle merge(std::vector<JavaHandle>& networks) {
+    int networkCount = networks.size();
+    std::vector<void*> networksPtrs = objectHandleVectorToPtrs(networks);
+    return PowsyblCaller::get()->callJava<JavaHandle>(::merge, (void**) networksPtrs.data(), networkCount);
 }
 
 JavaHandle getSubNetwork(const JavaHandle& network, const std::string& subNetworkId) {
@@ -750,6 +753,10 @@ JavaHandle getSubNetwork(const JavaHandle& network, const std::string& subNetwor
 
 JavaHandle detachSubNetwork(const JavaHandle& subNetwork) {
     return PowsyblCaller::get()->callJava<JavaHandle>(::detachSubNetwork, subNetwork);
+}
+
+JavaHandle flatten(const JavaHandle& network) {
+    return PowsyblCaller::get()->callJava<JavaHandle>(::flatten, network);
 }
 
 void applySolvedValues(const JavaHandle& network) {
@@ -821,6 +828,14 @@ std::shared_ptr<network_metadata> getNetworkMetadata(const JavaHandle& network) 
     return std::shared_ptr<network_metadata>(attributes, [](network_metadata* ptr){
         PowsyblCaller::get()->callJava(::freeNetworkMetadata, ptr);
     });
+}
+
+void setNetworkCaseDate(const JavaHandle& network, double caseDate) {
+    PowsyblCaller::get()->callJava<>(::setNetworkCaseDate, network, caseDate);
+}
+
+void setNetworkName(const JavaHandle& network, std::string& name) {
+    PowsyblCaller::get()->callJava<>(::setNetworkName, network, (char*) name.c_str());
 }
 
 bool isNetworkLoadable(const std::string& file) {
@@ -925,6 +940,10 @@ bool updateSwitchPosition(const JavaHandle& network, const std::string& id, bool
     return PowsyblCaller::get()->callJava<bool>(::updateSwitchPosition, network, (char*) id.data(), open);
 }
 
+bool updateDcSwitchPosition(const JavaHandle& network, const std::string& id, bool open) {
+    return PowsyblCaller::get()->callJava<bool>(::updateDcSwitchPosition, network, (char*) id.data(), open);
+}
+
 bool updateConnectableStatus(const JavaHandle& network, const std::string& id, bool connected,
                              bool allowDisconnectors, bool allowFictitious) {
     return PowsyblCaller::get()->callJava<bool>(::updateConnectableStatus, network, (char*) id.data(), connected,
@@ -999,6 +1018,11 @@ DynamicSimulationParameters* createDynamicSimulationParameters() {
         PowsyblCaller::get()->callJava(::freeDynamicSimulationParameters, ptr);
     });
     return new DynamicSimulationParameters(parameters.get());
+}
+
+bool checkLoadFlowParameters(const LoadFlowParameters& parameters, const std::string& provider, JavaHandle* reportNode) {
+    auto c_parameters = parameters.to_c_struct();
+    return PowsyblCaller::get()->callJava<bool>(::checkLoadFlowParameters, c_parameters.get(), (char *) provider.data(), (reportNode == nullptr) ? nullptr : *reportNode);
 }
 
 LoadFlowComponentResultArray* runLoadFlow(const JavaHandle& network, const LoadFlowParameters& parameters,
@@ -1254,7 +1278,7 @@ void addFactorMatrix(const JavaHandle& sensitivityAnalysisContext, std::string m
        ToCharPtrPtr variableIdPtr(variablesIds);
        ToCharPtrPtr contingenciesIdPtr(contingenciesIds);
        PowsyblCaller::get()->callJava(::addFactorMatrix, sensitivityAnalysisContext, branchIdPtr.get(), branchesIds.size(),
-                  variableIdPtr.get(), variablesIds.size(), contingenciesIdPtr.get(), contingenciesIds.size(), 
+                  variableIdPtr.get(), variablesIds.size(), contingenciesIdPtr.get(), contingenciesIds.size(),
                   (char*) matrixId.c_str(), ContingencyContextType, sensitivityFunctionType, sensitivityVariableType);
 }
 
@@ -1263,14 +1287,26 @@ JavaHandle runSensitivityAnalysis(const JavaHandle& sensitivityAnalysisContext, 
     return PowsyblCaller::get()->callJava<JavaHandle>(::runSensitivityAnalysis, sensitivityAnalysisContext, network, c_parameters.get(), (char *) provider.data(), (reportNode == nullptr) ? nullptr : *reportNode);
 }
 
-matrix* getSensitivityMatrix(const JavaHandle& sensitivityAnalysisResultContext, const std::string& matrixId, const std::string& contingencyId) {
-    return PowsyblCaller::get()->callJava<matrix*>(::getSensitivityMatrix, sensitivityAnalysisResultContext,
+std::shared_ptr<matrix> getSensitivityMatrix(const JavaHandle& sensitivityAnalysisResultContext, const std::string& matrixId, const std::string& contingencyId) {
+    matrix* m = PowsyblCaller::get()->callJava<matrix*>(::getSensitivityMatrix, sensitivityAnalysisResultContext,
                                 (char*) matrixId.c_str(), (char*) contingencyId.c_str());
+    if (m == nullptr) {
+        return nullptr;
+    }
+    return std::shared_ptr<matrix>(m, [](matrix* ptr) {
+        PowsyblCaller::get()->callJava(::freeSensitivityMatrix, ptr);
+    });
 }
 
-matrix* getReferenceMatrix(const JavaHandle& sensitivityAnalysisResultContext, const std::string& matrixId, const std::string& contingencyId) {
-    return PowsyblCaller::get()->callJava<matrix*>(::getReferenceMatrix, sensitivityAnalysisResultContext,
+std::shared_ptr<matrix> getReferenceMatrix(const JavaHandle& sensitivityAnalysisResultContext, const std::string& matrixId, const std::string& contingencyId) {
+    matrix* m = PowsyblCaller::get()->callJava<matrix*>(::getReferenceMatrix, sensitivityAnalysisResultContext,
                                 (char*) matrixId.c_str(), (char*) contingencyId.c_str());
+    if (m == nullptr) {
+        return nullptr;
+    }
+    return std::shared_ptr<matrix>(m, [](matrix* ptr) {
+        PowsyblCaller::get()->callJava(::freeSensitivityMatrix, ptr);
+    });
 }
 
 SeriesArray* createNetworkElementsSeriesArray(const JavaHandle& network, element_type elementType, filter_attributes_type filterAttributesType, const std::vector<std::string>& attributes, dataframe* dataframe, bool perUnit, double nominalApparentPower) {
@@ -1378,6 +1414,11 @@ SeriesArray* getBusBreakerViewElements(const JavaHandle& network, std::string& v
     return new SeriesArray(PowsyblCaller::get()->callJava<array*>(::getBusBreakerViewElements, network, (char*) voltageLevel.c_str()));
 }
 
+SeriesArray* getSwitchFlows(const JavaHandle& network, const std::vector<std::string>& switchIds) {
+    ToCharPtrPtr switchIdsPtr(switchIds);
+    return new SeriesArray(PowsyblCaller::get()->callJava<array*>(::getSwitchFlows, network, switchIdsPtr.get(), switchIds.size()));
+}
+
 void updateNetworkElementsWithSeries(pypowsybl::JavaHandle network, dataframe* dataframe, element_type elementType, bool perUnit, double nominalApparentPower) {
     pypowsybl::PowsyblCaller::get()->callJava<>(::updateNetworkElementsWithSeries, network, elementType, dataframe, perUnit, nominalApparentPower);
 }
@@ -1421,15 +1462,11 @@ void createElement(pypowsybl::JavaHandle network, dataframe_array* dataframes, e
 }
 
 ::validation_level_type getValidationLevel(const JavaHandle& network) {
-    // TBD
-    //return validation_level_type::EQUIPMENT;
     return PowsyblCaller::get()->callJava<validation_level_type>(::getValidationLevel, network);
 }
 
-::validation_level_type validate(const JavaHandle& network) {
-    // TBD
-    //return validation_level_type::STEADY_STATE_HYPOTHESIS;
-    return PowsyblCaller::get()->callJava<validation_level_type>(::validate, network);
+::validation_level_type validate(const JavaHandle& network, JavaHandle* reportNode) {
+    return PowsyblCaller::get()->callJava<validation_level_type>(::validate, network, (reportNode == nullptr) ? nullptr : *reportNode);
 }
 
 void setMinValidationLevel(pypowsybl::JavaHandle network, validation_level_type validationLevel) {
@@ -1561,8 +1598,8 @@ long getInjectionFactorEndTimestamp(const JavaHandle& importer) {
     return PowsyblCaller::get()->callJava<long>(::getInjectionFactorEndTimestamp, importer);
 }
 
-JavaHandle createReportNode(const std::string& taskKey, const std::string& defaultName) {
-    return PowsyblCaller::get()->callJava<JavaHandle>(::createReportNode, (char*) taskKey.data(), (char*) defaultName.data());
+JavaHandle createReportNode(const std::string& taskKey) {
+    return PowsyblCaller::get()->callJava<JavaHandle>(::createReportNode, (char*) taskKey.data());
 }
 
 std::string printReport(const JavaHandle& reportNodeModel) {
@@ -2248,6 +2285,14 @@ SeriesArray* getCostResults(const JavaHandle& cracHandle, const JavaHandle& resu
     return new SeriesArray(PowsyblCaller::get()->callJava<array*>(::getCostResults, cracHandle, resultHandle));
 }
 
+SeriesArray* getGlobalCostResults(const JavaHandle& cracHandle, const JavaHandle& resultHandle) {
+    return new SeriesArray(PowsyblCaller::get()->callJava<array*>(::getGlobalCostResults, cracHandle, resultHandle));
+}
+
+SeriesArray* getCostResultsForTimestamp(const JavaHandle& cracHandle, const JavaHandle& resultHandle, const std::string& timestamp) {
+    return new SeriesArray(PowsyblCaller::get()->callJava<array*>(::getCostResultsForTimestamp, cracHandle, resultHandle, (char*) timestamp.c_str()));
+}
+
 std::vector<std::string> getVirtualCostNames(const JavaHandle& resultHandle) {
     auto virtulCostArrayPtr = pypowsybl::PowsyblCaller::get()->callJava<array*>(::getVirtualCostNames, resultHandle);
     ToStringVector virtalCosts(virtulCostArrayPtr);
@@ -2407,6 +2452,16 @@ JavaHandle runVoltageMonitoring(const JavaHandle& networkHandle, const JavaHandl
 JavaHandle runAngleMonitoring(const JavaHandle& networkHandle, const JavaHandle& resultHandle, const JavaHandle& cracHandle, const JavaHandle& contextHandle, const LoadFlowParameters& parameters, const std::string& provider) {
     auto c_loadflow_parameters = parameters.to_c_struct();
     return pypowsybl::PowsyblCaller::get()->callJava<JavaHandle>(::runAngleMonitoring, networkHandle, resultHandle, cracHandle, contextHandle, c_loadflow_parameters.get(), (char *) provider.data());
+}
+
+JavaHandle runMarmot(const std::vector<std::string>& timestamps, std::vector<JavaHandle>& networks, std::vector<JavaHandle>& cracs,
+                     const RaoParameters& parameters, const JavaHandle& constraints) {
+    auto c_parameters = parameters.to_c_struct();
+    int count = timestamps.size();
+    ToCharPtrPtr timestampsPtr(timestamps);
+    std::vector<void*> networksPtrs = objectHandleVectorToPtrs(networks);
+    std::vector<void*> cracPtrs = objectHandleVectorToPtrs(cracs);
+    return pypowsybl::PowsyblCaller::get()->callJava<JavaHandle>(::runMarmot, timestampsPtr.get(), (void**) networksPtrs.data(), (void**) cracPtrs.data(), count, c_parameters.get(), constraints);
 }
 
 

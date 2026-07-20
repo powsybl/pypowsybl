@@ -154,6 +154,9 @@ class SensitivityAnalysisContext extends ContingencyContainerImpl {
     private SensitivityVariableType getVariableType(Network network, String variableId) {
         Identifiable<?> identifiable = network.getIdentifiable(variableId);
         if (identifiable instanceof Injection<?>) {
+            if (identifiable instanceof ShuntCompensator) {
+                return SensitivityVariableType.SHUNT_COMPENSATOR_SUSCEPTANCE;
+            }
             return SensitivityVariableType.INJECTION_ACTIVE_POWER;
         } else if (identifiable instanceof TwoWindingsTransformer) {
             return SensitivityVariableType.TRANSFORMER_PHASE;
@@ -216,7 +219,9 @@ class SensitivityAnalysisContext extends ContingencyContainerImpl {
                             }
                         }
                         for (ContingencyContext cCtx : contingencyContexts) {
-                            handler.onFactor(matrix.getFunctionType(), functionId, variableType, variableId, variableSet, cCtx);
+                            SensitivityFunctionType functionType = matrix.getFunctionType();
+                            String finalFunctionId = SensitivityFactor.resolveBusId(functionId, matrix.getFunctionType(), network);
+                            handler.onFactor(functionType, finalFunctionId, variableType, variableId, variableSet, cCtx);
                         }
                     }
                 }

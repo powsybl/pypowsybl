@@ -25,6 +25,7 @@ import com.powsybl.iidm.network.test.HvdcTestNetwork;
 import com.powsybl.iidm.network.test.TwoVoltageLevelNetworkFactory;
 import com.powsybl.python.network.NetworkUtilTest;
 import com.powsybl.python.network.Networks;
+
 import org.junit.jupiter.api.Test;
 
 import java.util.*;
@@ -807,10 +808,10 @@ class NetworkDataframesTest {
     }
 
     @Test
-    void testOperationalLimits() {
+    void testLoadingLimits() {
         Network network = EurostagTutorialExample1Factory.createWithFixedLimits();
-        List<Series> limits = createDataFrame(OPERATIONAL_LIMITS, network);
-        List<Series> selectedLimits = createDataFrame(SELECTED_OPERATIONAL_LIMITS, network);
+        List<Series> limits = createDataFrame(LOADING_LIMITS, network);
+        List<Series> selectedLimits = createDataFrame(SELECTED_LOADING_LIMITS, network);
 
         assertThat(limits)
             .extracting(Series::getName).containsExactly("element_id", "element_type", "side",
@@ -819,6 +820,31 @@ class NetworkDataframesTest {
                 .extracting(Series::getName).containsExactly("element_id", "element_type", "side",
                         "name", "type", "value", "acceptable_duration", "group_name");
         assertThat(limits.get(0).getStrings()).isEqualTo(selectedLimits.get(0).getStrings());
+    }
+
+    @Test
+    void testVoltageAngleLimits() {
+        Network network = EurostagTutorialExample1Factory.create();
+        network.newVoltageAngleLimit()
+                .setId("VAL-1")
+                .from(network.getLine("NHV1_NHV2_1").getTerminal(TwoSides.ONE))
+                .to(network.getLine("NHV1_NHV2_1").getTerminal(TwoSides.TWO))
+                .setLowLimit(-10.0)
+                .setHighLimit(12.0)
+                .add();
+
+        List<Series> limits = createDataFrame(VOLTAGE_ANGLE_LIMITS, network);
+
+        assertThat(limits)
+                .extracting(Series::getName)
+                .containsExactly("id", "from_element_id", "from_side", "to_element_id", "to_side", "low_limit", "high_limit");
+        assertThat(limits.get(0).getStrings()).containsExactly("VAL-1");
+        assertThat(limits.get(1).getStrings()).containsExactly("NHV1_NHV2_1");
+        assertThat(limits.get(2).getStrings()).containsExactly("ONE");
+        assertThat(limits.get(3).getStrings()).containsExactly("NHV1_NHV2_1");
+        assertThat(limits.get(4).getStrings()).containsExactly("TWO");
+        assertThat(limits.get(5).getDoubles()).containsExactly(-10.0);
+        assertThat(limits.get(6).getDoubles()).containsExactly(12.0);
     }
 
     @Test
@@ -879,7 +905,7 @@ class NetworkDataframesTest {
 
         assertThat(series)
                 .extracting(Series::getName)
-                .containsExactly("id", "name", "dc_node1_id", "dc_node2_id", "r", "i1", "p1", "i2", "p2");
+                .containsExactly("id", "name", "dc_node1_id", "dc_node2_id", "connected1", "connected2", "r", "i1", "p1", "i2", "p2");
     }
 
     @Test
@@ -890,9 +916,30 @@ class NetworkDataframesTest {
         assertThat(series)
                 .extracting(Series::getName)
                 .containsExactly("id", "name", "voltage_level_id", "bus1_id", "bus2_id", "dc_node1_id", "dc_node2_id",
-                        "dc_connected1", "dc_connected2", "pcc_terminal_id", "voltage_regulator_on", "control_mode",
+                        "connected1", "connected2", "dc_connected1", "dc_connected2", "pcc_terminal_id", "voltage_regulator_on", "control_mode",
                         "target_v_dc", "target_v_ac", "target_p", "target_q", "idle_loss", "switching_loss", "resistive_loss", "p_ac",
                         "q_ac", "p_dc1", "p_dc2");
+    }
+
+    @Test
+    void voltageSourceConvertersMinMaxP() {
+        Network network = DcDetailedNetworkFactory.createVscSymmetricalMonopole();
+
+        Map<String, Series> attrs = createDataFrame(VOLTAGE_SOURCE_CONVERTER, network,
+                new DataframeFilter(ALL_ATTRIBUTES, Collections.emptyList()))
+                .stream().collect(ImmutableMap.toImmutableMap(Series::getName, Function.identity()));
+        // default unbounded -> +/-inf for both converters (VscFr, VscGb)
+        assertThat(attrs.get("min_p").getDoubles()).containsExactly(Double.NEGATIVE_INFINITY, Double.NEGATIVE_INFINITY);
+        assertThat(attrs.get("max_p").getDoubles()).containsExactly(Double.POSITIVE_INFINITY, Double.POSITIVE_INFINITY);
+
+        // finite values via core API read back
+        network.getVoltageSourceConverter("VscFr").setMinP(-100.0).setMaxP(200.0);
+        attrs = createDataFrame(VOLTAGE_SOURCE_CONVERTER, network, new DataframeFilter(ALL_ATTRIBUTES, Collections.emptyList()))
+                .stream().collect(ImmutableMap.toImmutableMap(Series::getName, Function.identity()));
+        int row = Arrays.asList(attrs.get("id").getStrings()).indexOf("VscFr");
+        assertThat(row).isNotNegative();
+        assertThat(attrs.get("min_p").getDoubles()[row]).isEqualTo(-100.0);
+        assertThat(attrs.get("max_p").getDoubles()[row]).isEqualTo(200.0);
     }
 
     @Test
@@ -902,7 +949,24 @@ class NetworkDataframesTest {
 
         assertThat(series)
                 .extracting(Series::getName)
-                .containsExactly("id", "name", "dc_node_id", "r");
+                .containsExactly("id", "name", "dc_node_id", "connected", "r");
+    }
+
+    @Test
+    void dcSwitches() {
+        Network network = DcDetailedNetworkFactory.createSimple2NodesDcSwitch();
+        List<Series> series = createDataFrame(DC_SWITCH, network);
+
+        assertThat(series)
+                .extracting(Series::getName)
+                .containsExactly("id", "name", "dc_node1_id", "dc_node2_id", "kind", "open", "r");
+        // fictitious is hidden by default
+
+        // With all columns
+        List<Series> allAttributeSeries = createDataFrame(DC_SWITCH, network, new DataframeFilter(ALL_ATTRIBUTES, Collections.emptyList()));
+        assertThat(allAttributeSeries)
+                .extracting(Series::getName)
+                .containsExactly("id", "name", "dc_node1_id", "dc_node2_id", "kind", "open", "r", "fictitious");
     }
 
     @Test

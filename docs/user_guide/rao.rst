@@ -51,12 +51,16 @@ Import a CRAC file from NC profiles
 +++++++++++++++++++++++++++++++++++
 
 You can also import a CRAC from native business data. Currently, pypowsybl allows the import of
-`ENTSO-E's Network Codes profiles <https://www.entsoe.eu/data/cim/cim-for-grid-models-exchange/#_Network_Code__NC__profiles>`_.
-All the profiles need to be gathered in the same ZIP archive.
+`ENTSO-E's Network Codes profiles <https://www.entsoe.eu/data/cim/cim-for-grid-models-exchange/#_Network_Code__NC__profiles>`_,
+`CIM CRAC <https://powsybl.readthedocs.io/projects/openrao/en/stable/input-data/crac/cim.html>`_,
+`CSE CRAC <https://powsybl.readthedocs.io/projects/openrao/en/stable/input-data/crac/cse.html>`_,
+`Flow Based Constraints CRAC <https://powsybl.readthedocs.io/projects/openrao/en/stable/input-data/crac/fbconstraint.html>`_.
+
+For network codes profiles, all the profiles need to be gathered in the same ZIP archive.
 
 To guide the CRAC importer in its interpretation of the native format, you need to provide set of
 `CRAC creation parameters <https://powsybl.readthedocs.io/projects/openrao/en/stable/input-data/crac/creation-parameters.html>`_
-to the ``Crac.from_file_source`` method. A JSON example is provided below.
+to the ``Crac.from_file_source`` method. A JSON example is provided below for network code profiles creation parameters.
 
 .. code-block:: json
 
@@ -107,6 +111,9 @@ to the ``Crac.from_file_source`` method. A JSON example is provided below.
         }
       }
     }
+
+See `OpenRAO creation parameters documentation <https://powsybl.readthedocs.io/projects/openrao/en/stable/input-data/crac/creation-parameters.html>`_
+for more example on creation parameters for each crac format.
 
 In pypowsybl you simply need to provide the path to the JSON CRAC creation parameters file:
 
@@ -262,3 +269,33 @@ open rao, a RaoLogFilter is available :
     >>> logger.setLevel(logging.ERROR)
     >>> logger.addFilter(RaoLogFilter())
     >>> rao_result = rao_runner.run(crac, network, parameters, loop_flow_glsk=glsk)
+
+MARMOT, the time-coupled RAO
+============================
+
+PyPowSyBl provide an API to launch a time-coupled RAO using the MARMOT implementation present in powsybl-open-rao.
+Please see the `PowSyBl RAO MARMOT documentation <https://powsybl.readthedocs.io/projects/openrao/en/stable/algorithms/marmot.html>`_ for more details.
+
+Dedicated classes to build a time coupled input, constraints and runner are available.
+
+.. doctest::
+
+    >>> import pypowsybl as pp
+    >>> import logging
+    >>> import sys
+    >>> import pypowsybl as pp
+    >>> from pypowsybl.rao import Parameters as RaoParameters
+    >>> from pypowsybl.rao import TimeCoupledConstraints, Crac, TimeCoupledRaoInput, TimeCoupledRao
+    >>> from datetime import datetime
+    >>> from pypowsybl._pypowsybl import RaoComputationStatus
+    >>> TC_DATA_DIR = DATA_DIR / 'rao/time_coupled_rao'
+    >>>
+    >>> parameters = RaoParameters.from_file_source(TC_DATA_DIR.joinpath("RaoParameters_minCost_megawatt_dc_0_shift_penalty_100.json"))
+    >>> constraints = TimeCoupledConstraints.from_file_source(TC_DATA_DIR.joinpath("time-coupled-constraints-with-lead-and-lag-times-and-gradients.json"))
+    >>> date_format = '%Y%m%d%H%M'
+    >>> time_coupled_input = TimeCoupledRaoInput()
+    >>> for t in ["202511040030", "202511040130", "202511040230"]:
+    ...   n = pp.network.load(TC_DATA_DIR.joinpath("6Nodes_Pmin1000_Pmax3000.xiidm"))
+    ...   time_coupled_input.add_temporal_data(datetime.strptime(t, date_format), n, Crac.from_file_source(n, TC_DATA_DIR.joinpath("crac_" + t + ".json")))
+    >>> runner = TimeCoupledRao()
+    >>> results_df = runner.run(time_coupled_input, constraints, parameters)

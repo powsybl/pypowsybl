@@ -1,0 +1,102 @@
+#
+# Copyright (c) 2026, RTE (http://www.rte-france.com)
+# This Source Code Form is subject to the terms of the Mozilla Public
+# License, v. 2.0. If a copy of the MPL was not distributed with this
+# file, You can obtain one at http://mozilla.org/MPL/2.0/.
+# SPDX-License-Identifier: MPL-2.0
+#
+from enum import Enum
+
+from pypowsybl.opf.impl.model.model_parameters import SolverType
+
+
+class OptimalPowerFlowMode(Enum):
+    """Enumeration of optimal power flow execution modes.
+    Attributes:
+        LOADFLOW: OPF based on a standard AC load-flow formulation.
+        REDISPATCHING: OPF with a redispatching-oriented objective and current-limit constraints.
+        ACDC: OPF including detailed DC components and associated validation rules.
+    """
+    LOADFLOW = "LOADFLOW"
+    REDISPATCHING = "REDISPATCHING"
+    ACDC = "ACDC"
+
+
+class OptimalPowerFlowParameters:
+    """Container for optimal power flow solver configuration parameters."""
+
+    def __init__(self,
+                 reactive_bounds_reduction: float = 0.1,
+                 twt_split_shunt_admittance: bool = False,
+                 mode: OptimalPowerFlowMode = OptimalPowerFlowMode.LOADFLOW,
+                 default_voltage_bounds: tuple[float, float] = (0.8, 1.1),
+                 solver_type: SolverType = SolverType.IPOPT) -> None:
+        """Initialize optimal power flow parameters.
+
+        Args:
+            reactive_bounds_reduction: Fraction to reduce reactive power bounds.
+            twt_split_shunt_admittance: Whether to split shunt admittance between
+                pi-branch terminals.
+            mode: Optimal power flow mode to use.
+            default_voltage_bounds: Default voltage magnitude bounds as a tuple
+                (min, max).
+            solver_type: Solver type for the optimal power flow solver.
+        """
+        self._reactive_bounds_reduction = reactive_bounds_reduction
+        self._twt_split_shunt_admittance = twt_split_shunt_admittance
+        self._mode = mode
+        self._default_voltage_bounds = default_voltage_bounds
+        self._solver_type = solver_type
+        self._solver_options: dict[str, object] = {}
+
+    @property
+    def reactive_bounds_reduction(self) -> float:
+        return self._reactive_bounds_reduction
+
+    def with_reactive_bounds_reduction(self, reactive_bounds_reduction: float) -> "OptimalPowerFlowParameters":
+        self._reactive_bounds_reduction = reactive_bounds_reduction
+        return self
+
+    @property
+    def twt_split_shunt_admittance(self) -> bool:
+        return self._twt_split_shunt_admittance
+
+    def with_twt_split_shunt_admittance(self, twt_split_shunt_admittance: bool) -> "OptimalPowerFlowParameters":
+        self._twt_split_shunt_admittance = twt_split_shunt_admittance
+        return self
+
+    @property
+    def mode(self) -> OptimalPowerFlowMode:
+        return self._mode
+
+    def with_mode(self, mode: OptimalPowerFlowMode) -> "OptimalPowerFlowParameters":
+        self._mode = mode
+        return self
+
+    @property
+    def default_voltage_bounds(self) -> tuple[float, float]:
+        return self._default_voltage_bounds
+
+    def with_default_voltage_bounds(self, bounds: tuple[float, float]) -> "OptimalPowerFlowParameters":
+        self._default_voltage_bounds = bounds
+        return self
+
+    @property
+    def solver_type(self) -> SolverType:
+        return self._solver_type
+
+    def with_solver_type(self, solver_type: SolverType) -> "OptimalPowerFlowParameters":
+        self._solver_type = solver_type
+        return self
+
+    @property
+    def solver_options(self) -> dict[str, object]:
+        return self._solver_options
+
+    def with_solver_option(self, name: str, value: object) -> "OptimalPowerFlowParameters":
+        self._solver_options[name] = value
+        return self
+
+    def with_solver_options(self, options: dict[str, object]) -> "OptimalPowerFlowParameters":
+        self._solver_options.update(options)
+        return self

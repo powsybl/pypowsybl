@@ -5,4 +5,3 @@
 # SPDX-License-Identifier: MPL-2.0
 #
 from .impl.report_node import ReportNode
-from .impl.reporter import Reporter

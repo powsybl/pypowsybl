@@ -583,6 +583,9 @@ public final class PyPowsyblApiHeader {
         @CFieldAddress("limit_violations")
         ArrayPointer<LimitViolationPointer> limitViolations();
 
+        @CFieldAddress("disconnected_elements")
+        ArrayPointer<CCharPointerPointer> disconnectedElements();
+
         PostContingencyResultPointer addressOf(int index);
     }
 
@@ -637,8 +640,9 @@ public final class PyPowsyblApiHeader {
         RATIO_TAP_CHANGER,
         PHASE_TAP_CHANGER,
         REACTIVE_CAPABILITY_CURVE_POINT,
-        OPERATIONAL_LIMITS,
-        SELECTED_OPERATIONAL_LIMITS,
+        LOADING_LIMITS,
+        VOLTAGE_ANGLE_LIMITS,
+        SELECTED_LOADING_LIMITS,
         MINMAX_REACTIVE_LIMITS,
         ALIAS,
         IDENTIFIABLE,
@@ -655,6 +659,7 @@ public final class PyPowsyblApiHeader {
         DC_NODE,
         VOLTAGE_SOURCE_CONVERTER,
         DC_GROUND,
+        DC_SWITCH,
         DC_BUS;
 
         @CEnumValue
@@ -762,7 +767,12 @@ public final class PyPowsyblApiHeader {
         HVDC_LINE_ACTIVE_POWER,
         TRANSFORMER_PHASE_1,
         TRANSFORMER_PHASE_2,
-        TRANSFORMER_PHASE_3;
+        TRANSFORMER_PHASE_3,
+        SHUNT_COMPENSATOR_SUSCEPTANCE,
+        BRANCH_RESISTANCE,
+        BRANCH_REACTANCE,
+        BRANCH_ADMITTANCE,
+        SVC_PILOT_POINT_TARGET_VOLTAGE;
 
         @CEnumValue
         public native int getCValue();
