@@ -547,8 +547,7 @@ class SecurityAnalysisParameters:
     monitored_element_power_modification_threshold: float
     monitored_element_voltage_modification_proportional_threshold: float
     monitored_element_voltage_modification_absolute_threshold: float
-
-provider_parameters_keys: List[str]
+    provider_parameters_keys: List[str]
     provider_parameters_values: List[str]
     def __init__(self) -> None: ...
 
