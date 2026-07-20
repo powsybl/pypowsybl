@@ -6742,8 +6742,9 @@ class Network:  # pylint: disable=too-many-public-methods
 
             .. code-block:: python
 
-                >>> properties_df = pd.Dataframe(index=pd.Series('id', ['G1', 'G2']),
+                >>> properties_df = pd.DataFrame.from_records(index='id',
                                                  data={
+                                                     'id': ['G1', 'G2'],
                                                      'prop1': [ 'val11', 'val12'],
                                                      'prop2': [ 'val12', 'val22'],
                                                  })
