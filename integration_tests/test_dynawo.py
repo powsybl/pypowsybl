@@ -109,3 +109,46 @@ def test_provider_parameters_list():
     assert 'Simulation step precision' == parameters['description']['precision']
     assert 'DOUBLE' == parameters['type']['precision']
     assert '1.0E-6' == parameters['default']['precision']
+
+def test_security_analysis():
+    """
+    Running that test requires to have installed dynawo,
+    and configured its path in your config.yml.
+    """
+    network = pp.network.create_ieee14()
+    report_node = rp.ReportNode()
+
+    model_mapping = dyn.ModelMapping()
+    generator_mapping_df = pd.DataFrame(
+        index=pd.Series(name='static_id', data=['B6-G', 'B8-G']),
+        data={
+            'parameter_set_id': ['GSTWPR_6', 'GSTWPR_8'],
+            'model_name': 'GeneratorSynchronousThreeWindingsProportionalRegulations'
+        }
+    )
+    model_mapping.add_synchronous_generator(generator_mapping_df)
+
+    event_mapping = dyn.EventMapping()
+    event_mapping.add_disconnection(static_id='L1-2-1', start_time=5, disconnect_only='TWO')
+
+    testPath = Path(__file__).parent
+    dynawo_param = {
+        'parametersFile': str(testPath.joinpath('models.par')),
+        'network.parametersFile': str(testPath.joinpath('network.par')),
+        'network.parametersId': 'Network',
+        'solver.parametersFile': str(testPath.joinpath('solvers.par')),
+        'solver.parametersId': 'IDA',
+        'solver.type': 'IDA',
+    }
+    param = dyn.DynamicSecurityAnalysisParameters(start_time=0, stop_time=100,
+                                                  contingencies_start_time=10,
+                                                  provider_parameters=dynawo_param)
+
+    dsa = dyn.DynamicSecurityAnalysis()
+    dsa.add_single_element_contingency(element_id='L4-5-1', contingency_id='contingency1')
+    dsa.add_monitored_elements(branch_ids=['L1-5-1'])
+    res = dsa.run(network, model_mapping, event_mapping, param, report_node=report_node)
+
+    assert report_node
+    assert res.pre_contingency_result is not None
+    assert 'contingency1' in res.post_contingency_results
