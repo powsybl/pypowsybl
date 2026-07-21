@@ -28,7 +28,6 @@ from pypowsybl import (
 try:
     from pypowsybl import opf
 except ModuleNotFoundError:
-    opf = any
     logging.getLogger("powsybl").warning("'opf' extra dependencies are not installed, some features will not be available")
 from pypowsybl.network import per_unit_view
 
