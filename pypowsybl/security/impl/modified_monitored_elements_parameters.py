@@ -13,15 +13,15 @@ class ModifiedMonitoredElementsParameters:  # pylint: disable=too-few-public-met
 
     Args:
         power_modification_threshold: for branches and 3 windings transformers, if equal to 1, their state is stored in the post-contingency results
-                                    only if their power (active or reactive) has changed by more than 1MW/MVAR between N and post-contingency situations.
+                                    only if their power (active or reactive) has changed by more than 1 MW / MVAR between N and post-contingency situations.
         voltage_modification_proportional_threshold: for buses, if equal to 0.1, their state is stored in the post-contingency results
                                     only if their voltage has changed by more than 10% between N and post-contingency.
         voltage_modification_absolute_threshold: for buses, if equal to 1, their state is stored in the post-contingency results
-                                    only if their voltage has changed by more than 1kV between N and post-contingency.
+                                    only if their voltage has changed by more than 1 kV between N and post-contingency.
     """
 
-    def __init__(self, power_modification_threshold: float, voltage_modification_proportional_threshold: float,
-                 voltage_modification_absolute_threshold: float):
+    def __init__(self, power_modification_threshold: float = 0.0, voltage_modification_proportional_threshold: float = 0.0,
+                 voltage_modification_absolute_threshold: float = 0.0):
         self.power_modification_threshold = power_modification_threshold
         self.voltage_modification_proportional_threshold = voltage_modification_proportional_threshold
         self.voltage_modification_absolute_threshold = voltage_modification_absolute_threshold
