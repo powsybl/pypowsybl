@@ -114,6 +114,14 @@ typedef struct dynamic_simulation_parameters_struct {
     double stop_time;
 } dynamic_simulation_parameters;
 
+typedef struct dynamic_security_analysis_parameters_struct {
+    struct provider_parameters_struct provider_parameters;
+    double start_time;
+    double stop_time;
+    double contingencies_start_time;
+    char* debug_dir;
+} dynamic_security_analysis_parameters;
+
 typedef struct limit_violation_struct {
     char* subject_id;
     char* subject_name;
