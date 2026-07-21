@@ -509,7 +509,7 @@ def load_from_string(file_name: str, file_content: str, parameters: Optional[Dic
     Load a network from a string. File content should be in a supported format.
 
     Args:
-       file_name:    file name
+       file_name:    file name (used to determine the format of the network)
        file_content: file content
        parameters:   a dictionary of import parameters
        post_processors: a list of import post processors (will be added to the ones defined by the platform config)
