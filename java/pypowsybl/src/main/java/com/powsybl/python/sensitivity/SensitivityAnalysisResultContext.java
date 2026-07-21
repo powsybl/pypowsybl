@@ -12,8 +12,11 @@ import com.powsybl.python.commons.PyPowsyblApiHeader;
 import org.graalvm.nativeimage.UnmanagedMemory;
 import org.graalvm.nativeimage.c.struct.SizeOf;
 import org.graalvm.nativeimage.c.type.CDoublePointer;
+import org.graalvm.nativeimage.c.type.CTypeConversion;
 import org.graalvm.word.WordFactory;
 
+import java.nio.ByteBuffer;
+import java.nio.ByteOrder;
 import java.util.Map;
 import java.util.function.Supplier;
 
@@ -73,22 +76,13 @@ public class SensitivityAnalysisResultContext {
         if (sources == null) {
             return WordFactory.nullPointer();
         }
-        double[] values = new double[matRow * matCol];
-        System.arraycopy(sources, srcPos, values, 0, values.length);
-        return doubleArrToMatrix(values, matRow, matCol);
-    }
-
-    private static PyPowsyblApiHeader.MatrixPointer doubleArrToMatrix(double[] values, int rowCount, int colCount) {
-        if (values.length != rowCount * colCount) {
-            throw new IllegalArgumentException("Matrix(" + rowCount + "*" + colCount + ") is not suitable for arrays size:" + values.length);
-        }
-        CDoublePointer valuePtr = UnmanagedMemory.calloc(rowCount * colCount * SizeOf.get(CDoublePointer.class));
-        for (int i = 0; i < colCount * rowCount; i++) {
-            valuePtr.addressOf(i).write(values[i]);
-        }
+        int cellCount = matRow * matCol;
+        CDoublePointer valuePtr = UnmanagedMemory.malloc(cellCount * SizeOf.get(CDoublePointer.class));
+        ByteBuffer buffer = CTypeConversion.asByteBuffer(valuePtr, cellCount * Double.BYTES).order(ByteOrder.nativeOrder());
+        buffer.asDoubleBuffer().put(sources, srcPos, cellCount);
         PyPowsyblApiHeader.MatrixPointer matrixPtr = UnmanagedMemory.calloc(SizeOf.get(PyPowsyblApiHeader.MatrixPointer.class));
-        matrixPtr.setRowCount(rowCount);
-        matrixPtr.setColumnCount(colCount);
+        matrixPtr.setRowCount(matRow);
+        matrixPtr.setColumnCount(matCol);
         matrixPtr.setValues(valuePtr);
         return matrixPtr;
     }
