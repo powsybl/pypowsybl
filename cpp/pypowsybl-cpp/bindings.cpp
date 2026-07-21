@@ -630,6 +630,9 @@ PYBIND11_MODULE(_pypowsybl, m) {
             .def_readwrite("low_voltage_absolute_threshold", &pypowsybl::SecurityAnalysisParameters::low_voltage_absolute_threshold)
             .def_readwrite("high_voltage_proportional_threshold", &pypowsybl::SecurityAnalysisParameters::high_voltage_proportional_threshold)
             .def_readwrite("high_voltage_absolute_threshold", &pypowsybl::SecurityAnalysisParameters::high_voltage_absolute_threshold)
+            .def_readwrite("monitored_element_power_modification_threshold", &pypowsybl::SecurityAnalysisParameters::monitored_element_power_modification_threshold)
+            .def_readwrite("monitored_element_voltage_modification_absolute_threshold", &pypowsybl::SecurityAnalysisParameters::monitored_element_voltage_modification_absolute_threshold)
+            .def_readwrite("monitored_element_voltage_modification_proportional_threshold", &pypowsybl::SecurityAnalysisParameters::monitored_element_voltage_modification_proportional_threshold)
             .def_readwrite("provider_parameters_keys", &pypowsybl::SecurityAnalysisParameters::provider_parameters_keys)
             .def_readwrite("provider_parameters_values", &pypowsybl::SecurityAnalysisParameters::provider_parameters_values);
 

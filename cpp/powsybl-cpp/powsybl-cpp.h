@@ -363,6 +363,9 @@ public:
     double low_voltage_absolute_threshold;
     double high_voltage_proportional_threshold;
     double high_voltage_absolute_threshold;
+    double monitored_element_power_modification_threshold;
+    double monitored_element_voltage_modification_absolute_threshold;
+    double monitored_element_voltage_modification_proportional_threshold;
     std::vector<std::string> provider_parameters_keys;
     std::vector<std::string> provider_parameters_values;
 };

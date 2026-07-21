@@ -9,6 +9,7 @@ from pypowsybl.loadflow.impl.util import parameters_from_c
 from pypowsybl import _pypowsybl
 from pypowsybl.loadflow import Parameters as LfParameters
 from .increased_violations_parameters import IncreasedViolationsParameters
+from .modified_monitored_elements_parameters import ModifiedMonitoredElementsParameters
 
 
 class Parameters:  # pylint: disable=too-few-public-methods
@@ -28,6 +29,7 @@ class Parameters:  # pylint: disable=too-few-public-methods
     Args:
         load_flow_parameters: parameters that are common to loadflow and security analysis
         increased_violations_parameters: Define what violations should be considered increased between N and contingency situations
+        modified_monitored_elements_parameters: Define what monitored elements state should be stored in the post-contingency results
         provider_parameters: Define parameters linked to the security analysis provider
             the names of the existing parameters can be found with method ``get_provider_parameters_names``
     """
@@ -35,12 +37,15 @@ class Parameters:  # pylint: disable=too-few-public-methods
     def __init__(self,
                  load_flow_parameters: Optional[LfParameters] = None,
                  increased_violations_parameters: Optional[IncreasedViolationsParameters] = None,
+                 modified_monitored_elements_parameters: Optional[ModifiedMonitoredElementsParameters] = None,
                  provider_parameters: Optional[Dict[str, str]] = None):
         self._init_with_default_values()
         if load_flow_parameters is not None:
             self.load_flow_parameters = load_flow_parameters
         if increased_violations_parameters:
             self._increased_violations = increased_violations_parameters
+        if modified_monitored_elements_parameters:
+            self.modified_monitored_elements_parameters = modified_monitored_elements_parameters
         if provider_parameters is not None:
             self.provider_parameters = provider_parameters
 
@@ -59,6 +64,11 @@ class Parameters:  # pylint: disable=too-few-public-methods
                                                                    default_parameters.low_voltage_absolute_threshold,
                                                                    default_parameters.high_voltage_proportional_threshold,
                                                                    default_parameters.high_voltage_absolute_threshold)
+        self.modified_monitored_elements_parameters = ModifiedMonitoredElementsParameters(
+            default_parameters.monitored_element_power_modification_threshold,
+            default_parameters.monitored_element_voltage_modification_proportional_threshold,
+            default_parameters.monitored_element_voltage_modification_absolute_threshold
+        )
         self.provider_parameters = dict(
             zip(default_parameters.provider_parameters_keys, default_parameters.provider_parameters_values))
 
@@ -70,6 +80,9 @@ class Parameters:  # pylint: disable=too-few-public-methods
         c_parameters.low_voltage_absolute_threshold = self.increased_violations.low_voltage_absolute_threshold
         c_parameters.high_voltage_proportional_threshold = self.increased_violations.high_voltage_proportional_threshold
         c_parameters.high_voltage_absolute_threshold = self.increased_violations.high_voltage_absolute_threshold
+        c_parameters.monitored_element_power_modification_threshold = self.modified_monitored_elements_parameters.power_modification_threshold
+        c_parameters.monitored_element_voltage_modification_proportional_threshold = self.modified_monitored_elements_parameters.voltage_modification_proportional_threshold
+        c_parameters.monitored_element_voltage_modification_absolute_threshold = self.modified_monitored_elements_parameters.voltage_modification_absolute_threshold
         c_parameters.provider_parameters_keys = list(self.provider_parameters.keys())
         c_parameters.provider_parameters_values = list(self.provider_parameters.values())
         return c_parameters
@@ -78,5 +91,6 @@ class Parameters:  # pylint: disable=too-few-public-methods
         return f"{self.__class__.__name__}(" \
                f", load_flow_parameters={self.load_flow_parameters!r}" \
                f", increased_violations={self.increased_violations!r}" \
+               f", modified_monitored_elements_parameters={self.modified_monitored_elements_parameters!r}" \
                f", provider_parameters={self.provider_parameters!r}" \
                f")"
