@@ -89,3 +89,16 @@ def test_switch_conversion():
     # expected_bus_count is 2 because of the switch between bus 1 and bus 2 in the pdp case
     # causing them to be merged into a single bus in pypowsybl
     run_and_compare(pdp.from_json(DATA_DIR / 'switch_conversion_test_case.json'), 2)
+
+def test_injection_scaling():
+    n_pdp = pdp.create_empty_network()
+    b1 = pdp.create_bus(n_pdp, vn_kv=110.0)
+    b2 = pdp.create_bus(n_pdp, vn_kv=110.0)
+    b3 = pdp.create_bus(n_pdp, vn_kv=110.0)
+    pdp.create_ext_grid(n_pdp, b1, vm_pu=1.0)
+    pdp.create_line(n_pdp, b1, b2, length_km=10.0, std_type='N2XS(FL)2Y 1x300 RM/35 64/110 kV')
+    pdp.create_line(n_pdp, b2, b3, length_km=10.0, std_type='N2XS(FL)2Y 1x300 RM/35 64/110 kV')
+    pdp.create_load(n_pdp, b2, p_mw=30.0, q_mvar=10.0, scaling=0.8)
+    pdp.create_sgen(n_pdp, b2, p_mw=10.0, q_mvar=2.0, scaling=0.5, min_q_mvar=-10.0, max_q_mvar=10.0)
+    pdp.create_gen(n_pdp, b3, p_mw=20.0, vm_pu=1.0, scaling=0.25, min_q_mvar=-30.0, max_q_mvar=30.0)
+    run_and_compare(n_pdp, 3)
