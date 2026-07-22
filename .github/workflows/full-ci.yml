@@ -289,7 +289,7 @@ jobs:
 
       - name: Install the package
         run: |
-          pip install -e .
+          pip install -e .[pandapower,opf]
 
       - name: Generate coverage
         run: |
