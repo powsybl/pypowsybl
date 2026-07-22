@@ -354,7 +354,9 @@ jobs:
         working-directory: ./pypowsybl
 
       - name: Install wheel
-        run: python -m pip install dist/*.whl --user
+        run: |
+          WHEEL_FILE=$(ls /dist/*.whl | head -n 1)
+          python -m pip install "${WHEEL_FILE}[pandapower, opf]" --user
         working-directory: ./pypowsybl
 
       - name: Check pypowsybl versions
@@ -482,7 +484,9 @@ jobs:
         working-directory: ./pypowsybl
 
       - name: Install wheel
-        run: python -m pip install dist/*.whl --user
+        run: |
+          WHEEL_FILE=$(ls /dist/*.whl | head -n 1)
+          python -m pip install "${WHEEL_FILE}[pandapower, opf]" --user
         working-directory: ./pypowsybl
 
       - name: Check pypowsybl versions
