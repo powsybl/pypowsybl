@@ -110,7 +110,7 @@ jobs:
           "$VENV_PY" basic_import_test.py
 
       - name: Install wheel
-        run: ${{ env.PYTHON }} -m pip install ${{ matrix.config.wheel-dir }}/*.whl --user
+        run: ${{ env.PYTHON }} -m pip install "${{ matrix.config.wheel-dir }}/*.whl[pandapower, opf]" --user
 
       - name: Run tests
         working-directory: ./tests # Run in subdir to use installed lib, not sources
