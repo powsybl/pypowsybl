@@ -212,12 +212,23 @@ jobs:
             auditwheel repair dist/*.whl
           fi
 
+      - name: Run basic pypowsybl import (in isolated venv)
+        working-directory: ./tests
+        shell: bash
+        run: |
+          ${{ env.PYTHON }} -m venv "${RUNNER_TEMP:-/tmp}/wheel-only-venv"
+          VENV_DIR="${RUNNER_TEMP:-/tmp}/wheel-only-venv"
+          if [ -x "$VENV_DIR/bin/python" ]; then
+            VENV_PY="$VENV_DIR/bin/python"
+          else
+            VENV_PY="$VENV_DIR/Scripts/python.exe"
+          fi
+          "$VENV_PY" -m pip install --upgrade pip
+          "$VENV_PY" -m pip install ../${{ matrix.config.wheel-dir }}/*.whl
+          "$VENV_PY" basic_import_test.py
+
       - name: Install wheel
         run: ${{ env.PYTHON }} -m pip install ${{ matrix.config.wheel-dir }}/*.whl --user
-
-      - name: Run basic pypowsybl import
-        working-directory: ./tests
-        run: ${{ env.PYTHON }} basic_import_test.py
 
       - name: Run tests
         working-directory: ./tests # Run in subdir to use installed lib, not sources
