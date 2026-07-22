@@ -23,9 +23,12 @@ from pypowsybl import (
     grid2op,
     rao,
     report,
-    voltage_initializer,
-    opf
+    voltage_initializer
 )
+try:
+    from pypowsybl import opf
+except ModuleNotFoundError:
+    logging.getLogger("powsybl").warning("'opf' extra dependencies are not installed, some features will not be available")
 from pypowsybl.network import per_unit_view
 
 __version__ = '1.17.0.dev1'
