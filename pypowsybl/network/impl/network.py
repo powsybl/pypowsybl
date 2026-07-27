@@ -2738,9 +2738,11 @@ class Network:  # pylint: disable=too-many-public-methods
               - **oltc**: true if the tap changer has on-load regulation capability
               - **regulating**: true if the tap changer is in regulation
               - **target_v**: the target voltage in kV, if the tap changer is in regulation
-              - **target_deadband**: the regulation deadband around the target voltage, in kV
-              - **regulating_bus_id**: the bus where the tap changer regulates voltage
-              - **regulated_side** (optional): the side where the tap changer regulates voltage (redundant with regulating_bus_id)
+              - **target_deadband**: the regulation deadband around the target value
+              - **regulating_bus_id**: the bus where the tap changer regulates
+              - **regulation_mode** (optional): the regulation mode, among VOLTAGE and REACTIVE_POWER
+              - **regulation_value** (optional): the target value, in kV for VOLTAGE mode or in MVar for REACTIVE_POWER mode
+              - **regulated_side** (optional): the side where the tap changer regulates (redundant with regulating_bus_id)
 
             This dataframe is indexed by the id of the transformer
 
@@ -5796,9 +5798,11 @@ class Network:  # pylint: disable=too-many-public-methods
             - **low_tap**: the number of the lowest tap position (default 0)
             - **oltc**: true if the transformer has on-load voltage regulation capability
             - **target_v**: the target voltage, in kV
-            - **target_deadband**: the target voltage regulation deadband, in kV
-            - **regulating**: true if the tap changer should regulate voltage (**oltc** must be true to set this to true)
-            - **regulated_side**: the side where voltage is regulated (ONE or TWO if two-winding transformer, ONE, TWO
+            - **target_deadband**: the target regulation deadband, in kV
+            - **regulating**: true if the tap changer should regulate (**oltc** must be true to set this to true)
+            - **regulation_mode**: the regulation mode, among VOLTAGE and REACTIVE_POWER (default VOLTAGE)
+            - **regulation_value**: the target value, in kV for VOLTAGE mode or in MVar for REACTIVE_POWER mode
+            - **regulated_side**: the side where the tap changer regulates (ONE or TWO if two-winding transformer, ONE, TWO
               or THREE if three-winding transformer)
             - **side**: Side of the tap changer (only for three-winding transformers)
 
