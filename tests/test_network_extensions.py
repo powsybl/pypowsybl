@@ -499,6 +499,33 @@ def test_coordinated_reactive_control():
     assert extensions_information.loc[extension_name]['detail'] == 'it allow to specify the percent of the coordinated reactive control that comes from a generator'
     assert extensions_information.loc[extension_name]['attributes'] == 'index : generator_id (str), q_percent (float)'
 
+def test_generator_remote_reactive_power_control():
+    n = pn.create_four_substations_node_breaker_network()
+    extension_name = 'generatorRemoteReactivePowerControl'
+    assert n.get_extensions(extension_name).empty
+
+    n.create_extensions(extension_name, id='GH1', target_q=200.0,
+                        regulated_element_id='LINE_S2S3', regulated_side='ONE', enabled=True)
+    e = n.get_extensions(extension_name).loc['GH1']
+    assert e.target_q == 200.0
+    assert e.regulated_element_id == 'LINE_S2S3'
+    assert e.regulated_side == 'ONE'
+    assert e.enabled
+
+    n.update_extensions(extension_name, id='GH1', target_q=150.0, enabled=False)
+    e = n.get_extensions(extension_name).loc['GH1']
+    assert e.target_q == 150.0
+    assert not e.enabled
+
+    extensions_information = pypowsybl.network.get_extensions_information()
+    assert extensions_information.loc[extension_name]['detail'] == \
+           'it allows to control the reactive power at a remote terminal from a generator'
+    assert extensions_information.loc[extension_name]['attributes'] == \
+           'index : id (str), target_q (float), regulated_element_id (str), regulated_side (str), enabled (bool)'
+
+    n.remove_extensions(extension_name, ['GH1'])
+    assert n.get_extensions(extension_name).empty
+
 def test_standby_automaton():
     n = pn.create_four_substations_node_breaker_network()
     extension_name = 'standbyAutomaton'
