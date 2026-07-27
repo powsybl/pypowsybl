@@ -109,6 +109,7 @@ public final class NetworkDataframes {
         mappers.put(DataframeElementType.DC_GROUND, dcGrounds());
         mappers.put(DataframeElementType.DC_SWITCH, dcSwitches());
         mappers.put(DataframeElementType.DC_BUS, dcBuses());
+        mappers.put(DataframeElementType.OVERLOAD_MANAGEMENT_SYSTEM, overloadManagementSystems());
         return Collections.unmodifiableMap(mappers);
     }
 
@@ -1139,6 +1140,20 @@ public final class NetworkDataframes {
                 .booleans("fictitious", Identifiable::isFictitious, Identifiable::setFictitious, false)
                 .doubles("v", (db, context) -> perUnitV(context, db.getV(), db.getDcNodes().iterator().next().getNominalV()),
                         (db, v, context) -> db.setV(unPerUnitV(context, v, db.getDcNodes().iterator().next().getNominalV())))
+                .addProperties()
+                .build();
+    }
+
+    private static NetworkDataframeMapper overloadManagementSystems() {
+        return NetworkDataframeMapperBuilder.ofStream(Network::getOverloadManagementSystemStream,
+                        getOrThrow(Network::getOverloadManagementSystem, "Overload management system"))
+                .stringsIndex("id", OverloadManagementSystem::getId)
+                .strings("name", oms -> oms.getOptionalName().orElse(""), Identifiable::setName)
+                .strings("substation_id", oms -> oms.getSubstation().getId())
+                .booleans("enabled", OverloadManagementSystem::isEnabled, OverloadManagementSystem::setEnabled)
+                .strings("monitored_element_id", OverloadManagementSystem::getMonitoredElementId)
+                .enums("monitored_element_side", ThreeSides.class, OverloadManagementSystem::getMonitoredSide)
+                .ints("tripping_count", oms -> oms.getTrippings().size())
                 .addProperties()
                 .build();
     }

@@ -196,7 +196,8 @@ typedef enum {
     VOLTAGE_SOURCE_CONVERTER,
     DC_GROUND,
     DC_SWITCH,
-    DC_BUS
+    DC_BUS,
+    OVERLOAD_MANAGEMENT_SYSTEM
 } element_type;
 
 typedef enum {

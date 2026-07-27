@@ -269,6 +269,7 @@ public final class Util {
             case DC_GROUND -> PyPowsyblApiHeader.ElementType.DC_GROUND;
             case DC_SWITCH -> PyPowsyblApiHeader.ElementType.DC_SWITCH;
             case DC_BUS -> PyPowsyblApiHeader.ElementType.DC_BUS;
+            case OVERLOAD_MANAGEMENT_SYSTEM -> PyPowsyblApiHeader.ElementType.OVERLOAD_MANAGEMENT_SYSTEM;
         };
     }
 
@@ -323,6 +324,7 @@ public final class Util {
             case DC_GROUND -> DataframeElementType.DC_GROUND;
             case DC_SWITCH -> DataframeElementType.DC_SWITCH;
             case DC_BUS -> DataframeElementType.DC_BUS;
+            case OVERLOAD_MANAGEMENT_SYSTEM -> DataframeElementType.OVERLOAD_MANAGEMENT_SYSTEM;
         };
     }
 
