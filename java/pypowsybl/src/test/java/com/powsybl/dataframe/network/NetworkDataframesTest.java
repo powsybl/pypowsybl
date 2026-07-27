@@ -733,6 +733,49 @@ class NetworkDataframesTest {
     }
 
     @Test
+    void overloadManagementSystemTrippings() {
+        Network network = EurostagTutorialExample1Factory.create();
+        network.getSubstation("P1").newOverloadManagementSystem()
+                .setId("OMS1")
+                .setMonitoredElementId("NHV1_NHV2_1")
+                .setMonitoredElementSide(ThreeSides.ONE)
+                .newBranchTripping()
+                    .setKey("trip1")
+                    .setCurrentLimit(1000.)
+                    .setOpenAction(true)
+                    .setBranchToOperateId("NHV1_NHV2_2")
+                    .setSideToOperate(TwoSides.ONE)
+                .add()
+                .add();
+
+        List<Series> series = createDataFrame(OVERLOAD_MANAGEMENT_SYSTEM_TRIPPING, network);
+        assertThat(series)
+                .extracting(Series::getName)
+                .containsExactly("id", "tripping_key", "name", "tripping_type", "current_limit", "open_action",
+                        "element_to_operate_id", "side_to_operate");
+        assertThat(series.get(0).getStrings()).containsExactly("OMS1");
+        assertThat(series.get(1).getStrings()).containsExactly("trip1");
+        assertThat(series.get(3).getStrings()).containsExactly("BRANCH_TRIPPING");
+        assertThat(series.get(6).getStrings()).containsExactly("NHV1_NHV2_2");
+        assertThat(series.get(7).getStrings()).containsExactly("ONE");
+
+        DefaultUpdatingDataframe dataframe = new DefaultUpdatingDataframe(1);
+        dataframe.addSeries("id", true, new TestStringSeries("OMS1"));
+        dataframe.addSeries("tripping_key", true, new TestStringSeries("trip1"));
+        dataframe.addSeries("current_limit", false, new TestDoubleSeries(1200.));
+        dataframe.addSeries("element_to_operate_id", false, new TestStringSeries("NHV1_NHV2_1"));
+        dataframe.addSeries("side_to_operate", false, new TestStringSeries("TWO"));
+        NetworkDataframes.getDataframeMapper(OVERLOAD_MANAGEMENT_SYSTEM_TRIPPING)
+                .updateSeries(network, dataframe, NetworkDataframeContext.DEFAULT);
+
+        OverloadManagementSystem.BranchTripping tripping = (OverloadManagementSystem.BranchTripping)
+                network.getOverloadManagementSystem("OMS1").getTrippings().getFirst();
+        assertEquals(1200., tripping.getCurrentLimit(), 0.);
+        assertEquals("NHV1_NHV2_1", tripping.getBranchToOperateId());
+        assertEquals(TwoSides.TWO, tripping.getSideToOperate());
+    }
+
+    @Test
     void phaseTapChangerSteps() {
         Network network = EurostagTutorialExample1Factory.create();
         List<Series> series = createDataFrame(PHASE_TAP_CHANGER_STEP, network);

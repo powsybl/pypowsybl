@@ -109,6 +109,8 @@ public final class NetworkDataframes {
         mappers.put(DataframeElementType.DC_GROUND, dcGrounds());
         mappers.put(DataframeElementType.DC_SWITCH, dcSwitches());
         mappers.put(DataframeElementType.DC_BUS, dcBuses());
+        mappers.put(DataframeElementType.OVERLOAD_MANAGEMENT_SYSTEM, overloadManagementSystems());
+        mappers.put(DataframeElementType.OVERLOAD_MANAGEMENT_SYSTEM_TRIPPING, overloadManagementSystemTrippings());
         return Collections.unmodifiableMap(mappers);
     }
 
@@ -1140,6 +1142,103 @@ public final class NetworkDataframes {
                 .doubles("v", (db, context) -> perUnitV(context, db.getV(), db.getDcNodes().iterator().next().getNominalV()),
                         (db, v, context) -> db.setV(unPerUnitV(context, v, db.getDcNodes().iterator().next().getNominalV())))
                 .addProperties()
+                .build();
+    }
+
+    private static NetworkDataframeMapper overloadManagementSystems() {
+        return NetworkDataframeMapperBuilder.ofStream(Network::getOverloadManagementSystemStream,
+                        getOrThrow(Network::getOverloadManagementSystem, "Overload management system"))
+                .stringsIndex("id", OverloadManagementSystem::getId)
+                .strings("name", oms -> oms.getOptionalName().orElse(""), Identifiable::setName)
+                .strings("substation_id", oms -> oms.getSubstation().getId())
+                .booleans("enabled", OverloadManagementSystem::isEnabled, OverloadManagementSystem::setEnabled)
+                .strings("monitored_element_id", OverloadManagementSystem::getMonitoredElementId)
+                .enums("monitored_element_side", ThreeSides.class, OverloadManagementSystem::getMonitoredSide)
+                .ints("tripping_count", oms -> oms.getTrippings().size())
+                .addProperties()
+                .build();
+    }
+
+    record OverloadManagementSystemTrippingRow(OverloadManagementSystem oms, OverloadManagementSystem.Tripping tripping) {
+        String getId() {
+            return oms.getId();
+        }
+
+        String getKey() {
+            return tripping.getKey();
+        }
+
+        String getElementToOperateId() {
+            return switch (tripping) {
+                case OverloadManagementSystem.BranchTripping t -> t.getBranchToOperateId();
+                case OverloadManagementSystem.ThreeWindingsTransformerTripping t -> t.getThreeWindingsTransformerToOperateId();
+                case OverloadManagementSystem.SwitchTripping t -> t.getSwitchToOperateId();
+                default -> throw new PowsyblException("Unexpected tripping type: " + tripping.getType());
+            };
+        }
+
+        void setElementToOperateId(String elementId) {
+            switch (tripping) {
+                case OverloadManagementSystem.BranchTripping t -> t.setBranchToOperateId(elementId);
+                case OverloadManagementSystem.ThreeWindingsTransformerTripping t -> t.setThreeWindingsTransformerToOperateId(elementId);
+                case OverloadManagementSystem.SwitchTripping t -> t.setSwitchToOperateId(elementId);
+                default -> throw new PowsyblException("Unexpected tripping type: " + tripping.getType());
+            }
+        }
+
+        String getSideToOperate() {
+            return switch (tripping) {
+                case OverloadManagementSystem.BranchTripping t -> t.getSideToOperate().name();
+                case OverloadManagementSystem.ThreeWindingsTransformerTripping t -> t.getSideToOperate().name();
+                default -> "";
+            };
+        }
+
+        void setSideToOperate(String side) {
+            switch (tripping) {
+                case OverloadManagementSystem.BranchTripping t -> t.setSideToOperate(TwoSides.valueOf(side));
+                case OverloadManagementSystem.ThreeWindingsTransformerTripping t -> t.setSideToOperate(ThreeSides.valueOf(side));
+                default -> throw new PowsyblException("Cannot set a side to operate on switch tripping '" + getKey()
+                        + "' of overload management system '" + getId() + "'.");
+            }
+        }
+    }
+
+    private static Stream<OverloadManagementSystemTrippingRow> getOverloadManagementSystemTrippingRows(Network network) {
+        return network.getOverloadManagementSystemStream()
+                .flatMap(oms -> oms.getTrippings().stream().map(tripping -> new OverloadManagementSystemTrippingRow(oms, tripping)));
+    }
+
+    static OverloadManagementSystemTrippingRow getOverloadManagementSystemTrippingRow(Network network, UpdatingDataframe dataframe, int index) {
+        String id = dataframe.getStringValue("id", index)
+                .orElseThrow(() -> new IllegalArgumentException("id column is missing"));
+        String key = dataframe.getStringValue("tripping_key", index)
+                .orElseThrow(() -> new IllegalArgumentException("tripping_key column is missing"));
+        OverloadManagementSystem oms = network.getOverloadManagementSystem(id);
+        if (oms == null) {
+            throw new PowsyblException("Overload management system '" + id + "' does not exist.");
+        }
+        return oms.getTrippings().stream()
+                .filter(tripping -> tripping.getKey().equals(key))
+                .findFirst()
+                .map(tripping -> new OverloadManagementSystemTrippingRow(oms, tripping))
+                .orElseThrow(() -> new PowsyblException("Tripping '" + key + "' does not exist in overload management system '" + id + "'."));
+    }
+
+    private static NetworkDataframeMapper overloadManagementSystemTrippings() {
+        return NetworkDataframeMapperBuilder.ofStream(NetworkDataframes::getOverloadManagementSystemTrippingRows,
+                        NetworkDataframes::getOverloadManagementSystemTrippingRow)
+                .stringsIndex("id", OverloadManagementSystemTrippingRow::getId)
+                .stringsIndex("tripping_key", OverloadManagementSystemTrippingRow::getKey)
+                .strings("name", row -> row.tripping().getNameOrKey(), (row, name) -> row.tripping().setName(name))
+                .enums("tripping_type", OverloadManagementSystem.Tripping.Type.class, row -> row.tripping().getType())
+                .doubles("current_limit", (row, context) -> row.tripping().getCurrentLimit(),
+                    (row, currentLimit, context) -> row.tripping().setCurrentLimit(currentLimit))
+                .booleans("open_action", row -> row.tripping().isOpenAction(), (row, openAction) -> row.tripping().setOpenAction(openAction))
+                .strings("element_to_operate_id", OverloadManagementSystemTrippingRow::getElementToOperateId,
+                    OverloadManagementSystemTrippingRow::setElementToOperateId)
+                .strings("side_to_operate", OverloadManagementSystemTrippingRow::getSideToOperate,
+                    OverloadManagementSystemTrippingRow::setSideToOperate)
                 .build();
     }
 

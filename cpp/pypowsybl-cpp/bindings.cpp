@@ -416,7 +416,9 @@ PYBIND11_MODULE(_pypowsybl, m) {
             .value("VOLTAGE_SOURCE_CONVERTER", element_type::VOLTAGE_SOURCE_CONVERTER)
             .value("DC_GROUND", element_type::DC_GROUND)
             .value("DC_SWITCH", element_type::DC_SWITCH)
-            .value("DC_BUS", element_type::DC_BUS);
+            .value("DC_BUS", element_type::DC_BUS)
+            .value("OVERLOAD_MANAGEMENT_SYSTEM", element_type::OVERLOAD_MANAGEMENT_SYSTEM)
+            .value("OVERLOAD_MANAGEMENT_SYSTEM_TRIPPING", element_type::OVERLOAD_MANAGEMENT_SYSTEM_TRIPPING);
 
     py::enum_<filter_attributes_type>(m, "FilterAttributesType")
             .value("ALL_ATTRIBUTES", filter_attributes_type::ALL_ATTRIBUTES)
