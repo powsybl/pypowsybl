@@ -8,9 +8,11 @@
 package com.powsybl.python.commons;
 
 import com.powsybl.dataframe.SeriesMetadata;
+import com.powsybl.python.commons.PyPowsyblApiHeader.ArrayPointer;
 import com.powsybl.python.commons.PyPowsyblApiHeader.DataframeMetadataPointer;
 import com.powsybl.python.commons.PyPowsyblApiHeader.SeriesMetadataPointer;
 import com.powsybl.python.commons.PyPowsyblApiHeader.StringMap;
+import com.powsybl.python.commons.PyPowsyblApiHeader.StringMapArray;
 import org.graalvm.nativeimage.ObjectHandle;
 import org.graalvm.nativeimage.ObjectHandles;
 import org.graalvm.nativeimage.UnmanagedMemory;
@@ -160,6 +162,34 @@ public final class CTypeUtil {
         });
         mapPtr.setKeys(getStringListAsPtr(keys));
         mapPtr.setValues(getStringListAsPtr(values));
+        return mapPtr;
+    }
+
+    /**
+     * Converts a Java map of strings to lists of strings into a native string-map array.
+     *
+     * @param stringMap Java map to convert
+     * @return native-allocated string-map array containing the same keys and string-list values
+     */
+    public static StringMapArray fromStringListMap(Map<String, List<String>> stringMap) {
+        StringMapArray mapPtr = UnmanagedMemory.calloc(SizeOf.get(StringMapArray.class));
+        mapPtr.setLength(stringMap.size());
+
+        List<String> keys = new ArrayList<>(stringMap.size());
+        List<List<String>> values = new ArrayList<>(stringMap.size());
+        stringMap.forEach((key, value) -> {
+            keys.add(key);
+            values.add(value);
+        });
+
+        mapPtr.setKeys(getStringListAsPtr(keys));
+        ArrayPointer<CCharPointerPointer> valuesPtr = UnmanagedMemory.calloc(values.size() * SizeOf.get(ArrayPointer.class));
+        for (int i = 0; i < values.size(); i++) {
+            ArrayPointer<CCharPointerPointer> valuePtr = valuesPtr.addressOf(i);
+            valuePtr.setPtr(getStringListAsPtr(values.get(i)));
+            valuePtr.setLength(values.get(i).size());
+        }
+        mapPtr.setValues(valuesPtr);
         return mapPtr;
     }
 
