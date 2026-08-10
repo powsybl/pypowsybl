@@ -651,6 +651,42 @@ def test_voltage_per_reactive_power_control():
     assert network.get_extensions('voltagePerReactivePowerControl').empty
 
 
+def test_voltage_level_load_characteristics():
+    network = pn.create_eurostag_tutorial_example1_network()
+    assert network.get_extensions('voltageLevelLoadCharacteristics').empty
+
+    network.create_extensions('voltageLevelLoadCharacteristics', pd.DataFrame.from_records(index='id', data=[
+        {'id': 'VLGEN', 'characteristic': 'CONSTANT'},
+        {'id': 'VLLOAD', 'characteristic': 'INDUSTRIAL'}
+    ]))
+    e = network.get_extensions('voltageLevelLoadCharacteristics')
+    expected = pd.DataFrame(
+        index=pd.Series(name='id', data=['VLGEN', 'VLLOAD']),
+        columns=['characteristic'],
+        data=[['CONSTANT'], ['INDUSTRIAL']])
+    pd.testing.assert_frame_equal(expected, e, check_dtype=False)
+
+    network.update_extensions('voltageLevelLoadCharacteristics', id='VLLOAD', characteristic='CONSTANT')
+    e = network.get_extensions('voltageLevelLoadCharacteristics')
+    assert e['characteristic']['VLLOAD'] == 'CONSTANT'
+
+    network.remove_extensions('voltageLevelLoadCharacteristics', ['VLGEN', 'VLLOAD'])
+    assert network.get_extensions('voltageLevelLoadCharacteristics').empty
+
+
+def test_voltage_level_load_characteristics_errors():
+    network = pn.create_eurostag_tutorial_example1_network()
+
+    with pytest.raises(pypowsybl.PyPowsyblError,
+                       match="Voltage level 'UNKNOWN' does not exist."):
+        network.create_extensions('voltageLevelLoadCharacteristics', id='UNKNOWN', characteristic='CONSTANT')
+
+    # the characteristic has no default value, the extension cannot be created without it
+    with pytest.raises(pypowsybl.PyPowsyblError,
+                       match='Required column characteristic is missing.'):
+        network.create_extensions('voltageLevelLoadCharacteristics', id='VLLOAD')
+
+
 def test_batteries_voltage_regulation():
     network = pn.load(str(TEST_DIR.joinpath('battery.xiidm')))
     assert network.get_extensions('voltageRegulation').empty
@@ -733,3 +769,5 @@ def test_get_extensions_information():
     assert extensions_information.loc['synchronousGeneratorProperties']['attributes'] == 'index : id (str), numberOfWindings (str), governor (str), voltageRegulator (str), pss (str), auxiliaries (bool), internalTransformer (bool), rpcl (str), uva (str), aggregated (bool), qlim (bool)'
     assert extensions_information.loc['synchronizedGeneratorProperties']['attributes'] == 'index : id (str), type (str), rpcl2 (bool)'
     assert extensions_information.loc['generatorConnectionLevel']['attributes'] == 'index : id (str), level (str)'
+    assert extensions_information.loc['voltageLevelLoadCharacteristics']['detail'] == 'Provides information, for dynamic simulation only, about the type of load connected to a voltage level'
+    assert extensions_information.loc['voltageLevelLoadCharacteristics']['attributes'] == 'index : id (str), characteristic (str)'
