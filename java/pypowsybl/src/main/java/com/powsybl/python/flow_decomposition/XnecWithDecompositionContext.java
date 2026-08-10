@@ -7,10 +7,10 @@
  */
 package com.powsybl.python.flow_decomposition;
 
-import com.powsybl.flow_decomposition.DecomposedFlow;
-import com.powsybl.flow_decomposition.DecomposedFlowBuilder;
-import com.powsybl.flow_decomposition.FlowPartition;
-import com.powsybl.flow_decomposition.NetworkUtil;
+import com.powsybl.flowdecomposition.DecomposedFlow;
+import com.powsybl.flowdecomposition.DecomposedFlowBuilder;
+import com.powsybl.flowdecomposition.FlowPartition;
+import com.powsybl.flowdecomposition.NetworkUtil;
 import com.powsybl.iidm.network.Country;
 
 import java.util.Map;
