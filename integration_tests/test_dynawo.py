@@ -152,3 +152,44 @@ def test_security_analysis():
     assert report_node
     assert res.pre_contingency_result is not None
     assert 'contingency1' in res.post_contingency_results
+
+def test_margin_calculation():
+    """
+    Running that test requires to have installed dynawo,
+    and configured its path in your config.yml.
+    """
+    network = pp.network.create_ieee14()
+    report_node = rp.ReportNode()
+
+    model_mapping = dyn.ModelMapping()
+    model_mapping.add_base_load(static_id='B3-L', parameter_set_id='LAB', model_name='LoadAlphaBeta')
+    generator_mapping_df = pd.DataFrame(
+        index=pd.Series(name='static_id', data=['B6-G', 'B8-G']),
+        data={
+            'parameter_set_id': ['GSTWPR_6', 'GSTWPR_8'],
+            'model_name': 'GeneratorSynchronousThreeWindingsProportionalRegulations'
+        }
+    )
+    model_mapping.add_synchronous_generator(generator_mapping_df)
+
+    testPath = Path(__file__).parent
+    dynawo_param = {
+        'parametersFile': str(testPath.joinpath('models.par')),
+        'network.parametersFile': str(testPath.joinpath('network.par')),
+        'network.parametersId': 'Network',
+        'solver.parametersFile': str(testPath.joinpath('solvers.par')),
+        'solver.parametersId': 'IDA',
+        'solver.type': 'IDA',
+    }
+    param = dyn.MarginCalculationParameters(start_time=0, stop_time=200, provider_parameters=dynawo_param)
+
+    loads_variation = dyn.LoadsVariationMapping()
+    loads_variation.add_loads_variation(load_ids=['B3-L'], variation_value=20)
+
+    mc = dyn.MarginCalculation()
+    mc.add_single_element_contingency(element_id='L1-2-1', contingency_id='contingency1')
+    res = mc.run(network, model_mapping, loads_variation, param, report_node)
+
+    assert report_node
+    assert res.load_increase_results is not None
+    assert res.scenario_results is not None

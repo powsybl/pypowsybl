@@ -1,0 +1,26 @@
+[
+  {
+    "name":"com.powsybl.dynawo.margincalculation.MarginCalculationParameters",
+    "queryAllDeclaredConstructors" : true,
+    "queryAllPublicConstructors" : true,
+    "queryAllDeclaredMethods" : true,
+    "queryAllPublicMethods" : true,
+    "allDeclaredClasses" : true,
+    "allDeclaredFields" : true,
+    "allPublicClasses" : true,
+    "allPublicMethods" : true,
+    "allPublicConstructors" : true
+  },
+  {
+    "name":"com.powsybl.dynawo.margincalculation.results.MarginCalculationResult",
+    "allDeclaredFields" : true,
+    "queryAllDeclaredMethods" : true,
+    "queryAllDeclaredConstructors" : true
+  },
+  {
+    "name":"com.powsybl.dynawo.margincalculation.results.LoadIncreaseResult",
+    "allDeclaredFields" : true,
+    "queryAllDeclaredMethods" : true,
+    "queryAllDeclaredConstructors" : true
+  }
+]

@@ -117,6 +117,20 @@ typedef struct dynamic_simulation_parameters_struct {
     double stop_time;
 } dynamic_simulation_parameters;
 
+typedef struct margin_calculation_parameters_struct {
+    struct provider_parameters_struct provider_parameters;
+    double start_time;
+    double stop_time;
+    double margin_calculation_start_time;
+    double load_increase_start_time;
+    double load_increase_stop_time;
+    double contingencies_start_time;
+    int calculation_type;
+    int accuracy;
+    int load_models_rule;
+    char* debug_dir;
+} margin_calculation_parameters;
+
 typedef struct dynamic_security_analysis_parameters_struct {
     struct provider_parameters_struct provider_parameters;
     double start_time;

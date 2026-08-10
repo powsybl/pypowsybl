@@ -314,6 +314,17 @@
         </dependency>
         <dependency>
             <groupId>com.powsybl</groupId>
+            <artifactId>powsybl-dynawo-margin-calculation</artifactId>
+            <!-- pypowsybl provides dynamic models as dataframes, not through the Groovy DSL -->
+            <exclusions>
+                <exclusion>
+                    <groupId>com.powsybl</groupId>
+                    <artifactId>powsybl-dynamic-simulation-dsl</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>
+        <dependency>
+            <groupId>com.powsybl</groupId>
             <artifactId>powsybl-dynawo-extensions-api</artifactId>
         </dependency>
         <dependency>
