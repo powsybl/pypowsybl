@@ -10,15 +10,18 @@ package com.powsybl.dataframe.network;
 import com.google.common.collect.ImmutableMap;
 import com.powsybl.cgmes.extensions.CgmesMetadataModels;
 import com.powsybl.cgmes.extensions.CgmesMetadataModelsAdder;
+import com.powsybl.commons.PowsyblException;
 import com.powsybl.dataframe.DataframeElementType;
 import com.powsybl.dataframe.DataframeFilter;
 import com.powsybl.dataframe.DoubleIndexedSeries;
 import com.powsybl.dataframe.impl.DefaultDataframeHandler;
 import com.powsybl.dataframe.impl.Series;
+import com.powsybl.dataframe.network.adders.NetworkElementAdders;
 import com.powsybl.dataframe.network.extensions.NetworkExtensions;
 import com.powsybl.dataframe.update.*;
 import com.powsybl.iidm.network.*;
 import com.powsybl.iidm.network.extensions.*;
+import com.powsybl.iidm.network.test.BatteryNetworkFactory;
 import com.powsybl.iidm.network.test.DcDetailedNetworkFactory;
 import com.powsybl.iidm.network.test.EurostagTutorialExample1Factory;
 import com.powsybl.iidm.network.test.HvdcTestNetwork;
@@ -305,6 +308,72 @@ class NetworkDataframesTest {
                 network.getGeneratorStream().map(Generator::getNameOrId).collect(Collectors.toList()));
         series = createExtensionDataFrame("activePowerControl", network);
         assertEquals(0, series.get(0).getStrings().length);
+    }
+
+    @Test
+    void batteriesExtension() {
+        Network network = BatteryNetworkFactory.create();
+        network.getBattery("BAT2")
+                .newExtension(ActivePowerControlAdder.class)
+                .withParticipate(true)
+                .withDroop(1.1)
+                .add();
+        List<Series> series = createExtensionDataFrame("activePowerControl", network);
+        assertThat(series.get(0).getStrings())
+                .containsExactly("BAT2");
+        assertThat(series.get(1).getDoubles())
+                .containsExactly(1.1);
+        assertThat(series.get(2).getBooleans())
+                .containsExactly(true);
+
+        DefaultUpdatingDataframe dataframe = new DefaultUpdatingDataframe(1);
+        dataframe.addSeries("id", true, new TestStringSeries("BAT2"));
+        dataframe.addSeries("droop", false, new TestDoubleSeries(1.2));
+        dataframe.addSeries("participation_factor", false, new TestDoubleSeries(1.5));
+        dataframe.addSeries("max_target_p", false, new TestDoubleSeries(150.));
+        dataframe.addSeries("min_target_p", false, new TestDoubleSeries(-150.));
+        updateExtension("activePowerControl", network, dataframe);
+        series = createExtensionDataFrame("activePowerControl", network);
+        assertThat(series.get(1).getDoubles())
+                .containsExactly(1.2);
+        assertThat(series.get(3).getDoubles())
+                .containsExactly(1.5);
+        assertThat(series.get(4).getDoubles())
+                .containsExactly(150.);
+        assertThat(series.get(5).getDoubles())
+                .containsExactly(-150.);
+
+        NetworkExtensions.removeExtensions(network, "activePowerControl", List.of("BAT2"));
+        series = createExtensionDataFrame("activePowerControl", network);
+        assertEquals(0, series.get(0).getStrings().length);
+    }
+
+    @Test
+    void generatorsAndBatteriesExtension() {
+        Network network = BatteryNetworkFactory.create();
+        DefaultUpdatingDataframe dataframe = new DefaultUpdatingDataframe(2);
+        dataframe.addSeries("id", true, new TestStringSeries("GEN", "BAT"));
+        dataframe.addSeries("droop", false, new TestDoubleSeries(1.1, 2.2));
+        dataframe.addSeries("participate", false, new TestIntSeries(1, 0));
+        NetworkElementAdders.addExtensions("activePowerControl", network, List.of(dataframe));
+
+        List<Series> series = createExtensionDataFrame("activePowerControl", network);
+        // generators are listed first, then batteries
+        assertThat(series.get(0).getStrings())
+                .containsExactly("GEN", "BAT");
+        assertThat(series.get(1).getDoubles())
+                .containsExactly(1.1, 2.2);
+        assertThat(series.get(2).getBooleans())
+                .containsExactly(true, false);
+
+        // a load is neither a generator nor a battery
+        DefaultUpdatingDataframe loadDataframe = new DefaultUpdatingDataframe(1);
+        loadDataframe.addSeries("id", true, new TestStringSeries("LOAD"));
+        loadDataframe.addSeries("droop", false, new TestDoubleSeries(1.1));
+        List<UpdatingDataframe> loadDataframes = List.of(loadDataframe);
+        PowsyblException e = assertThrows(PowsyblException.class,
+                () -> NetworkElementAdders.addExtensions("activePowerControl", network, loadDataframes));
+        assertEquals("Network element 'LOAD' is not a generator or a battery", e.getMessage());
     }
 
     @Test
