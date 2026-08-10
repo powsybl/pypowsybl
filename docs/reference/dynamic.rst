@@ -106,6 +106,21 @@ DynamicSecurityAnalysis
     DynamicSecurityAnalysis.add_precontingency_monitored_elements
     DynamicSecurityAnalysis.add_postcontingency_monitored_elements
 
+Margin calculation
+------------------
+.. autosummary::
+    :toctree: api/
+
+    LoadsVariationMapping
+    LoadsVariationMapping.add_loads_variation
+    MarginCalculationParameters
+    MarginCalculation
+    MarginCalculation.run
+    MarginCalculation.add_single_element_contingency
+    MarginCalculation.add_multiple_elements_contingency
+    MarginCalculation.add_single_element_contingencies
+    MarginCalculation.add_contingencies_from_json_file
+
 Results
 -------
 .. autosummary::
@@ -117,3 +132,6 @@ Results
     SimulationResult.curves
     SimulationResult.final_state_values
     SimulationResult.timeline
+    MarginCalculationResult
+    MarginCalculationResult.load_increase_results
+    MarginCalculationResult.scenario_results

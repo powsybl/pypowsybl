@@ -1291,6 +1291,73 @@ public final class PyPowsyblApiHeader {
         void setStopTime(double stopTime);
     }
 
+    @CStruct("margin_calculation_parameters")
+    public interface MarginCalculationParametersPointer extends PointerBase {
+
+        @CFieldAddress("provider_parameters")
+        ProviderParameters getProviderParameters();
+
+        @CField("start_time")
+        double getStartTime();
+
+        @CField("start_time")
+        void setStartTime(double startTime);
+
+        @CField("stop_time")
+        double getStopTime();
+
+        @CField("stop_time")
+        void setStopTime(double stopTime);
+
+        @CField("margin_calculation_start_time")
+        double getMarginCalculationStartTime();
+
+        @CField("margin_calculation_start_time")
+        void setMarginCalculationStartTime(double marginCalculationStartTime);
+
+        @CField("load_increase_start_time")
+        double getLoadIncreaseStartTime();
+
+        @CField("load_increase_start_time")
+        void setLoadIncreaseStartTime(double loadIncreaseStartTime);
+
+        @CField("load_increase_stop_time")
+        double getLoadIncreaseStopTime();
+
+        @CField("load_increase_stop_time")
+        void setLoadIncreaseStopTime(double loadIncreaseStopTime);
+
+        @CField("contingencies_start_time")
+        double getContingenciesStartTime();
+
+        @CField("contingencies_start_time")
+        void setContingenciesStartTime(double contingenciesStartTime);
+
+        @CField("calculation_type")
+        int getCalculationType();
+
+        @CField("calculation_type")
+        void setCalculationType(int calculationType);
+
+        @CField("accuracy")
+        int getAccuracy();
+
+        @CField("accuracy")
+        void setAccuracy(int accuracy);
+
+        @CField("load_models_rule")
+        int getLoadModelsRule();
+
+        @CField("load_models_rule")
+        void setLoadModelsRule(int loadModelsRule);
+
+        @CField("debug_dir")
+        CCharPointer getDebugDir();
+
+        @CField("debug_dir")
+        void setDebugDir(CCharPointer debugDir);
+    }
+
     @CStruct("dynamic_security_analysis_parameters")
     public interface DynamicSecurityAnalysisParametersPointer extends PointerBase {
 

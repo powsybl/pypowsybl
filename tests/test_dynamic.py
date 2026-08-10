@@ -306,6 +306,41 @@ def test_dynamic_security_analysis_monitored_elements_validation():
     with pytest.raises(ValueError):
         dsa.add_monitored_elements(contingency_ids=['contingency1'])
 
+def test_margin_calculation_creation():
+    mc = dyn.MarginCalculation()
+    mc.add_single_element_contingency(element_id='L4-5-1', contingency_id='contingency1')
+    loads_variation = dyn.LoadsVariationMapping()
+    loads_variation.add_loads_variation(load_ids=['B3-L'], variation_value=20)
+
+def test_margin_calculation_parameters():
+    params = dyn.MarginCalculationParameters(start_time=0, stop_time=200,
+                                             calculation_type=dyn.CalculationType.LOCAL_MARGIN,
+                                             accuracy=5,
+                                             load_models_rule=dyn.LoadModelsRule.TARGETED_LOADS,
+                                             debug_dir='/tmp/mc-debug',
+                                             provider_parameters={'a': 'b'})
+    assert params.start_time == 0
+    assert params.stop_time == 200
+    assert params.calculation_type == dyn.CalculationType.LOCAL_MARGIN
+    assert params.accuracy == 5
+    assert params.load_models_rule == dyn.LoadModelsRule.TARGETED_LOADS
+    assert params.debug_dir == '/tmp/mc-debug'
+    c_params = params._to_c_parameters()
+    assert c_params.calculation_type == 1
+    assert c_params.load_models_rule == 1
+    assert c_params.debug_dir == '/tmp/mc-debug'
+
+def test_margin_calculation_invalid_calculation_type():
+    network = pp.network.create_ieee14()
+    model_mapping = dyn.ModelMapping()
+    loads_variation = dyn.LoadsVariationMapping()
+    params = dyn.MarginCalculationParameters()
+    params.calculation_type = 99  # out of range
+    mc = dyn.MarginCalculation()
+    with pytest.raises(Exception) as exc_info:
+        mc.run(network, model_mapping, loads_variation, params)
+    assert 'Invalid margin calculation type' in str(exc_info.value)
+
 def test_dynamic_security_analysis_parameters():
     params = dyn.DynamicSecurityAnalysisParameters(start_time=0, stop_time=150,
                                                    contingencies_start_time=30,

@@ -397,6 +397,25 @@ public:
     std::vector<std::string> provider_parameters_values;
 };
 
+class MarginCalculationParameters {
+public:
+    MarginCalculationParameters(margin_calculation_parameters* src);
+    std::shared_ptr<margin_calculation_parameters> to_c_struct() const;
+
+    double start_time;
+    double stop_time;
+    double margin_calculation_start_time;
+    double load_increase_start_time;
+    double load_increase_stop_time;
+    double contingencies_start_time;
+    int calculation_type;
+    int accuracy;
+    int load_models_rule;
+    std::string debug_dir;
+    std::vector<std::string> provider_parameters_keys;
+    std::vector<std::string> provider_parameters_values;
+};
+
 class DynamicSecurityAnalysisParameters {
 public:
     DynamicSecurityAnalysisParameters(dynamic_security_analysis_parameters* src);
@@ -1045,6 +1064,14 @@ JavaHandle runDynamicSecurityAnalysis(JavaHandle dynamicSecurityAnalysisContext,
                                       JavaHandle* eventMapping, DynamicSecurityAnalysisParameters& parameters, const std::string& provider, JavaHandle* reportNode);
 
 DynamicSecurityAnalysisParameters* createDynamicSecurityAnalysisParameters();
+JavaHandle createMarginCalculation();
+JavaHandle createLoadsVariationMapping();
+void addLoadsVariation(const JavaHandle& loadsVariationSupplier, const std::vector<std::string>& loadIds, double variationValue);
+MarginCalculationParameters* createMarginCalculationParameters();
+JavaHandle runMarginCalculation(JavaHandle marginCalculationContext, JavaHandle network, JavaHandle dynamicMapping,
+                                JavaHandle loadsVariationSupplier, MarginCalculationParameters& parameters, JavaHandle* reportNode);
+SeriesArray* getMarginCalculationLoadIncreaseResults(JavaHandle resultHandle);
+SeriesArray* getMarginCalculationScenarioResults(JavaHandle resultHandle);
 
 //=======END OF dynamic modeling for dynawo package==========
 
