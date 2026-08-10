@@ -651,6 +651,30 @@ def test_voltage_per_reactive_power_control():
     assert network.get_extensions('voltagePerReactivePowerControl').empty
 
 
+def test_reference_terminals():
+    network = pn.create_eurostag_tutorial_example1_network()
+    assert network.get_extensions('referenceTerminals').empty
+
+    network.create_extensions('referenceTerminals', pd.DataFrame.from_records(index='element_id', data=[
+        {'element_id': 'GEN', 'side': ''},
+        {'element_id': 'NHV1_NHV2_1', 'side': 'TWO'}
+    ]))
+    e = network.get_extensions('referenceTerminals')
+    assert len(e) == 2
+    assert sorted(e.index) == ['GEN', 'NHV1_NHV2_1']
+    # an injection terminal has no side
+    assert e['side']['GEN'] == ''
+    assert e['side']['NHV1_NHV2_1'] == 'TWO'
+
+    # creating again replaces the whole set rather than adding to it
+    network.create_extensions('referenceTerminals', element_id='LOAD', side='')
+    e = network.get_extensions('referenceTerminals')
+    assert list(e.index) == ['LOAD']
+
+    network.remove_extensions('referenceTerminals', ['LOAD'])
+    assert network.get_extensions('referenceTerminals').empty
+
+
 def test_batteries_voltage_regulation():
     network = pn.load(str(TEST_DIR.joinpath('battery.xiidm')))
     assert network.get_extensions('voltageRegulation').empty
@@ -733,3 +757,4 @@ def test_get_extensions_information():
     assert extensions_information.loc['synchronousGeneratorProperties']['attributes'] == 'index : id (str), numberOfWindings (str), governor (str), voltageRegulator (str), pss (str), auxiliaries (bool), internalTransformer (bool), rpcl (str), uva (str), aggregated (bool), qlim (bool)'
     assert extensions_information.loc['synchronizedGeneratorProperties']['attributes'] == 'index : id (str), type (str), rpcl2 (bool)'
     assert extensions_information.loc['generatorConnectionLevel']['attributes'] == 'index : id (str), level (str)'
+    assert extensions_information.loc['referenceTerminals']['attributes'] == 'index : element_id (str), side (str)'
