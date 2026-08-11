@@ -315,6 +315,31 @@ NGEN_NHV1  2  2  1  1  0.5
     assert step1.rho == 0.5
 
 
+def test_overload_management_systems_creation():
+    n = pn.create_four_substations_node_breaker_network()
+    assert n.get_overload_management_systems().empty
+
+    oms_df = pd.DataFrame.from_records(index='id', data=[
+        {'id': 'OMS1', 'name': 'OMS 1', 'substation_id': 'S2',
+         'monitored_element_id': 'LINE_S2S3', 'monitored_element_side': 'ONE', 'enabled': True}])
+    trippings_df = pd.DataFrame.from_records(index='id', data=[
+        {'id': 'OMS1', 'tripping_key': 'trip_branch', 'name': 'branch tripping',
+         'tripping_type': 'BRANCH_TRIPPING', 'current_limit': 1000.0, 'open_action': True,
+         'element_to_operate_id': 'LINE_S2S3', 'side_to_operate': 'TWO'},
+        {'id': 'OMS1', 'tripping_key': 'trip_switch', 'name': 'switch tripping',
+         'tripping_type': 'SWITCH_TRIPPING', 'current_limit': 1200.0, 'open_action': True,
+         'element_to_operate_id': 'S2VL1_LINES2S3_BREAKER', 'side_to_operate': ''}])
+    n.create_overload_management_systems(oms_df, trippings_df)
+
+    oms = n.get_overload_management_systems().loc['OMS1']
+    assert oms['name'] == 'OMS 1'
+    assert oms.substation_id == 'S2'
+    assert oms.monitored_element_id == 'LINE_S2S3'
+    assert oms.monitored_element_side == 'ONE'
+    assert oms.enabled
+    assert oms.tripping_count == 2
+
+
 def test_phase_tap_changers_creation():
     n = pn.create_four_substations_node_breaker_network()
     n.create_2_windings_transformers(dataframe_from_string("""

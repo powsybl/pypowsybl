@@ -116,6 +116,7 @@ All network elements are accessible as dataframes, using the following getters.
    Network.get_shunt_compensators
    Network.get_static_var_compensators
    Network.get_substations
+   Network.get_overload_management_systems
    Network.get_switches
    Network.get_terminals
    Network.get_voltage_levels
@@ -247,6 +248,7 @@ Network elements can be created or removed using the following methods:
    Network.create_voltage_angle_limits
    Network.create_phase_tap_changers
    Network.create_ratio_tap_changers
+   Network.create_overload_management_systems
    Network.create_shunt_compensators
    Network.create_static_var_compensators
    Network.create_substations
