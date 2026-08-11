@@ -32,6 +32,8 @@ public class RatioTapChangerDataframeAdder implements NetworkElementAdder {
             SeriesMetadata.doubles("target_v"),
             SeriesMetadata.doubles("target_deadband"),
             SeriesMetadata.booleans("regulating"),
+            SeriesMetadata.strings("regulation_mode"),
+            SeriesMetadata.doubles("regulation_value"),
             SeriesMetadata.strings("regulated_side"),
             SeriesMetadata.strings("side")
     );
@@ -58,6 +60,8 @@ public class RatioTapChangerDataframeAdder implements NetworkElementAdder {
         private final DoubleSeries targetV;
         private final DoubleSeries targetDeadband;
         private final IntSeries regulating;
+        private final StringSeries regulationMode;
+        private final DoubleSeries regulationValue;
         private final StringSeries regulatedSide;
         private final StringSeries sides;
 
@@ -76,6 +80,8 @@ public class RatioTapChangerDataframeAdder implements NetworkElementAdder {
             this.targetV = tapChangersDf.getDoubles("target_v");
             this.targetDeadband = tapChangersDf.getDoubles("target_deadband");
             this.regulating = tapChangersDf.getInts("regulating");
+            this.regulationMode = tapChangersDf.getStrings("regulation_mode");
+            this.regulationValue = tapChangersDf.getDoubles("regulation_value");
             this.regulatedSide = tapChangersDf.getStrings("regulated_side");
             this.sides = tapChangersDf.getStrings("side");
 
@@ -112,6 +118,8 @@ public class RatioTapChangerDataframeAdder implements NetworkElementAdder {
             }
             applyIfPresent(targetDeadband, row, adder::setTargetDeadband);
             applyIfPresent(targetV, row, adder::setTargetV);
+            applyIfPresent(regulationValue, row, adder::setRegulationValue);
+            applyIfPresent(regulationMode, row, value -> adder.setRegulationMode(RatioTapChanger.RegulationMode.valueOf(value)));
             applyBooleanIfPresent(onLoad, row, adder::setLoadTapChangingCapabilities);
             applyIfPresent(lowTaps, row, adder::setLowTapPosition);
             applyIfPresent(taps, row, adder::setTapPosition);
