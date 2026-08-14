@@ -482,13 +482,13 @@ def test_limits_per_unit():
     network = util.create_boundary_lines_network()
     network.per_unit = True
 
-    limits = network.get_operational_limits()
+    limits = network.get_loading_limits()
     values = limits["value"].values.tolist()
     npt.assert_allclose(values, [0.173205, 0.207846, 0.242487], rtol=1e-5)
 
     network = pp.network.create_eurostag_tutorial_example1_with_power_limits_network()
     network.per_unit = True
-    limits = network.get_operational_limits(all_attributes=True).loc['NHV1_NHV2_1']
+    limits = network.get_loading_limits(all_attributes=True).loc['NHV1_NHV2_1']
     limits = limits[limits['name'] == 'permanent_limit']
     values = limits["value"].values.tolist()
     npt.assert_allclose(values, [5, 5, 11, 11])

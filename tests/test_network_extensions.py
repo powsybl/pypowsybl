@@ -651,6 +651,52 @@ def test_voltage_per_reactive_power_control():
     assert network.get_extensions('voltagePerReactivePowerControl').empty
 
 
+def test_batteries_active_power_control():
+    network = pn.load(str(TEST_DIR.joinpath('battery.xiidm')))
+    assert network.get_extensions('activePowerControl').empty
+
+    network.create_extensions('activePowerControl', id='BAT2', droop=1.2, participate=True,
+                              participation_factor=1.5, max_target_p=150., min_target_p=-150.)
+    e = network.get_extensions('activePowerControl')
+    expected = pd.DataFrame(
+        index=pd.Series(name='id', data=['BAT2']),
+        columns=['droop', 'participate', 'participation_factor', 'max_target_p', 'min_target_p'],
+        data=[[1.2, True, 1.5, 150., -150.]])
+    pd.testing.assert_frame_equal(expected, e, check_dtype=False)
+
+    network.update_extensions('activePowerControl', id='BAT2', droop=1.4, participate=False,
+                              participation_factor=1.8, max_target_p=120., min_target_p=-120.)
+    e = network.get_extensions('activePowerControl')
+    expected = pd.DataFrame(
+        index=pd.Series(name='id', data=['BAT2']),
+        columns=['droop', 'participate', 'participation_factor', 'max_target_p', 'min_target_p'],
+        data=[[1.4, False, 1.8, 120., -120.]])
+    pd.testing.assert_frame_equal(expected, e, check_dtype=False)
+
+    network.remove_extensions('activePowerControl', ['BAT2'])
+    assert network.get_extensions('activePowerControl').empty
+
+
+def test_generators_and_batteries_active_power_control():
+    network = pn.load(str(TEST_DIR.joinpath('battery.xiidm')))
+    network.create_extensions('activePowerControl', pd.DataFrame.from_records(index='id', data=[
+        {'id': 'GEN', 'droop': 1.2, 'participate': True},
+        {'id': 'BAT', 'droop': 2.3, 'participate': False}
+    ]))
+    e = network.get_extensions('activePowerControl')
+    # generators come first, then batteries
+    assert list(e.index) == ['GEN', 'BAT']
+    assert e['droop']['GEN'] == pytest.approx(1.2, abs=1e-3)
+    assert e['participate']['GEN']
+    assert e['droop']['BAT'] == pytest.approx(2.3, abs=1e-3)
+    assert not e['participate']['BAT']
+
+    # the extension is only supported by generators and batteries
+    with pytest.raises(pypowsybl.PyPowsyblError,
+                       match="Network element 'LOAD' is not a generator or a battery"):
+        network.create_extensions('activePowerControl', id='LOAD', droop=1.2)
+
+
 def test_batteries_voltage_regulation():
     network = pn.load(str(TEST_DIR.joinpath('battery.xiidm')))
     assert network.get_extensions('voltageRegulation').empty
@@ -700,7 +746,7 @@ def test_get_extensions_information():
                'attributes'] == 'index : id (str), fixed_p0 (float), variable_p0 (float), fixed_q0 (float), variable_q0 (float)'
     assert extensions_information.loc['hvdcOperatorActivePowerRange']['detail'] == ''
     assert extensions_information.loc['hvdcOperatorActivePowerRange']['attributes'] == 'index : id (str), opr_from_cs1_to_cs2 (float), opr_from_cs2_to_cs1 (float)'
-    assert extensions_information.loc['activePowerControl']['detail'] == 'Provides information about the participation of generators to balancing'
+    assert extensions_information.loc['activePowerControl']['detail'] == 'Provides information about the participation of generators and batteries to balancing'
     assert extensions_information.loc['activePowerControl']['attributes'] == 'index : id (str), participate (bool), droop (float), participation_factor (float), max_target_p (float), min_target_p (float)'
     assert extensions_information.loc['entsoeCategory']['detail'] == 'Provides Entsoe category code for a generator'
     assert extensions_information.loc['entsoeCategory']['attributes'] == 'index : id (str), code (int)'

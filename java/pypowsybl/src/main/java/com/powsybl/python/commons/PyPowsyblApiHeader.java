@@ -438,6 +438,24 @@ public final class PyPowsyblApiHeader {
 
         @CField("high_voltage_absolute_threshold")
         void setHighVoltageAbsoluteThreshold(double highVoltageAbsoluteThreshold);
+
+        @CField("monitored_element_power_modification_threshold")
+        double getMonitoredElementPowerModificationThreshold();
+
+        @CField("monitored_element_power_modification_threshold")
+        void setMonitoredElementPowerModificationThreshold(double monitoredElementPowerModificationThreshold);
+
+        @CField("monitored_element_voltage_modification_absolute_threshold")
+        double getMonitoredElementVoltageModificationAbsoluteThreshold();
+
+        @CField("monitored_element_voltage_modification_absolute_threshold")
+        void setMonitoredElementVoltageModificationAbsoluteThreshold(double monitoredElementVoltageModificationAbsoluteThreshold);
+
+        @CField("monitored_element_voltage_modification_proportional_threshold")
+        double getMonitoredElementVoltageModificationProportionalThreshold();
+
+        @CField("monitored_element_voltage_modification_proportional_threshold")
+        void setMonitoredElementVoltageModificationProportionalThreshold(double monitoredElementVoltageModificationProportionalThreshold);
     }
 
     @CStruct("sensitivity_analysis_parameters")
@@ -622,9 +640,9 @@ public final class PyPowsyblApiHeader {
         RATIO_TAP_CHANGER,
         PHASE_TAP_CHANGER,
         REACTIVE_CAPABILITY_CURVE_POINT,
-        OPERATIONAL_LIMITS,
+        LOADING_LIMITS,
         VOLTAGE_ANGLE_LIMITS,
-        SELECTED_OPERATIONAL_LIMITS,
+        SELECTED_LOADING_LIMITS,
         MINMAX_REACTIVE_LIMITS,
         ALIAS,
         IDENTIFIABLE,

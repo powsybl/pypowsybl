@@ -6,20 +6,22 @@
 #
 import io
 import json
-from typing import Union, Dict, Any, Optional
 from os import PathLike
+from typing import Union, Dict, Any, Optional
 
-from pypowsybl import _pypowsybl
 from pypowsybl._pypowsybl import (
     RaoParameters
 )
+
+from pypowsybl import _pypowsybl
+from pypowsybl.utils import path_to_str
+from .fast_rao_parameters import FastRaoParameters
+from .not_optimized_cnecs_parameters import NotOptimizedCnecsParameters
 from .objective_function_parameters import ObjectiveFunctionParameters
 from .range_action_optimization_parameters import RangeActionOptimizationParameters
-from .topo_optimization_parameters import TopoOptimizationParameters
-from .not_optimized_cnecs_parameters import NotOptimizedCnecsParameters
 from .rao_search_tree_parameters import RaoSearchTreeParameters
-from.fast_rao_parameters import FastRaoParameters
-from pypowsybl.utils import path_to_str
+from .topo_optimization_parameters import TopoOptimizationParameters
+
 
 class Parameters:
     def __init__(self, objective_function_parameters: Optional[ObjectiveFunctionParameters] = None,

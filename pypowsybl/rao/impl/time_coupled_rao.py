@@ -6,14 +6,13 @@
 #
 from typing import Optional
 
+import pandas as pd
+
 from pypowsybl import _pypowsybl
-from pypowsybl.network import Network
-from .rao_result import RaoResult
-from .crac import Crac
 from .parameters import Parameters as RaoParameters
+from .rao_result import RaoResult
 from .time_coupled_constraints import TimeCoupledConstraints
 from .time_coupled_rao_input import TimeCoupledRaoInput
-import pandas as pd
 
 
 class TimeCoupledRao:

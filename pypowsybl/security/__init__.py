@@ -6,6 +6,7 @@
 #
 
 from .impl.increased_violations_parameters import IncreasedViolationsParameters
+from .impl.modified_monitored_elements_parameters import ModifiedMonitoredElementsParameters
 from .impl.parameters import Parameters
 from .impl.security_analysis_result import SecurityAnalysisResult
 from .impl.security import SecurityAnalysis, ComputationStatus, ContingencyContextType, ConditionType

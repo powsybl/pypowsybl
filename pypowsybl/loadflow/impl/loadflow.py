@@ -103,6 +103,24 @@ def run_dc(network: Network, parameters: Optional[Parameters] = None, provider: 
                                                                     None if report_node is None else report_node._report_node)]  # pylint: disable=protected-access
 
 
+def check_loadflow_parameters(parameters: Optional[Parameters] = None, provider: str = '',
+           report_node: Optional[ReportNode] = None) -> bool:  # pylint: disable=protected-access
+    """
+    Verifies if the provider supports the load flow parameters values.
+    Reports the unsupported parameters with the report node.
+
+    Args:
+        parameters: the load flow parameters
+        provider: the load flow implementation provider, default is the default load flow provider
+        report_node: the reporter to be used to create an execution report, default is None (no report)
+
+    Returns:
+        True if the parameters are supported, False otherwise.
+    """
+    p = parameters._to_c_parameters() if parameters is not None else _pypowsybl.LoadFlowParameters()  # pylint: disable=protected-access
+    return _pypowsybl.check_loadflow_parameters(p, provider, None if report_node is None else report_node._report_node)  # pylint: disable=protected-access
+
+
 def set_default_provider(provider: str) -> None:
     """
     Set the default load flow provider

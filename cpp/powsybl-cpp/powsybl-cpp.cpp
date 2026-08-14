@@ -579,6 +579,9 @@ SecurityAnalysisParameters::SecurityAnalysisParameters(security_analysis_paramet
     low_voltage_absolute_threshold = (double) src->low_voltage_absolute_threshold;
     high_voltage_proportional_threshold = (double) src->high_voltage_proportional_threshold;
     high_voltage_absolute_threshold = (double) src->high_voltage_absolute_threshold;
+    monitored_element_power_modification_threshold = (double) src->monitored_element_power_modification_threshold;
+    monitored_element_voltage_modification_absolute_threshold = (double) src->monitored_element_voltage_modification_absolute_threshold;
+    monitored_element_voltage_modification_proportional_threshold = (double) src->monitored_element_voltage_modification_proportional_threshold;
     providerParametersFromCStruct(src->provider_parameters, provider_parameters_keys, provider_parameters_values);
 }
 
@@ -590,6 +593,9 @@ std::shared_ptr<security_analysis_parameters> SecurityAnalysisParameters::to_c_s
     res->low_voltage_absolute_threshold = (double) low_voltage_absolute_threshold;
     res->high_voltage_proportional_threshold = (double) high_voltage_proportional_threshold;
     res->high_voltage_absolute_threshold = (double) high_voltage_absolute_threshold;
+    res->monitored_element_power_modification_threshold = (double) monitored_element_power_modification_threshold;
+    res->monitored_element_voltage_modification_absolute_threshold = (double) monitored_element_voltage_modification_absolute_threshold;
+    res->monitored_element_voltage_modification_proportional_threshold = (double) monitored_element_voltage_modification_proportional_threshold;
 
     providerParametersToCStruct(res->provider_parameters, provider_parameters_keys, provider_parameters_values);
     //Memory has been allocated here on C side, we need to clean it up on C side (not java side)
@@ -1012,6 +1018,11 @@ DynamicSimulationParameters* createDynamicSimulationParameters() {
         PowsyblCaller::get()->callJava(::freeDynamicSimulationParameters, ptr);
     });
     return new DynamicSimulationParameters(parameters.get());
+}
+
+bool checkLoadFlowParameters(const LoadFlowParameters& parameters, const std::string& provider, JavaHandle* reportNode) {
+    auto c_parameters = parameters.to_c_struct();
+    return PowsyblCaller::get()->callJava<bool>(::checkLoadFlowParameters, c_parameters.get(), (char *) provider.data(), (reportNode == nullptr) ? nullptr : *reportNode);
 }
 
 LoadFlowComponentResultArray* runLoadFlow(const JavaHandle& network, const LoadFlowParameters& parameters,
@@ -1451,15 +1462,11 @@ void createElement(pypowsybl::JavaHandle network, dataframe_array* dataframes, e
 }
 
 ::validation_level_type getValidationLevel(const JavaHandle& network) {
-    // TBD
-    //return validation_level_type::EQUIPMENT;
     return PowsyblCaller::get()->callJava<validation_level_type>(::getValidationLevel, network);
 }
 
-::validation_level_type validate(const JavaHandle& network) {
-    // TBD
-    //return validation_level_type::STEADY_STATE_HYPOTHESIS;
-    return PowsyblCaller::get()->callJava<validation_level_type>(::validate, network);
+::validation_level_type validate(const JavaHandle& network, JavaHandle* reportNode) {
+    return PowsyblCaller::get()->callJava<validation_level_type>(::validate, network, (reportNode == nullptr) ? nullptr : *reportNode);
 }
 
 void setMinValidationLevel(pypowsybl::JavaHandle network, validation_level_type validationLevel) {
