@@ -97,6 +97,9 @@ typedef struct security_analysis_parameters_struct {
     double low_voltage_absolute_threshold;
     double high_voltage_proportional_threshold;
     double high_voltage_absolute_threshold;
+    double monitored_element_power_modification_threshold;
+    double monitored_element_voltage_modification_absolute_threshold;
+    double monitored_element_voltage_modification_proportional_threshold;
 } security_analysis_parameters;
 
 typedef struct sensitivity_analysis_parameters_struct {
@@ -173,9 +176,9 @@ typedef enum {
     RATIO_TAP_CHANGER,
     PHASE_TAP_CHANGER,
     REACTIVE_CAPABILITY_CURVE_POINT,
-    OPERATIONAL_LIMITS,
+    LOADING_LIMITS,
     VOLTAGE_ANGLE_LIMITS,
-    SELECTED_OPERATIONAL_LIMITS,
+    SELECTED_LOADING_LIMITS,
     MINMAX_REACTIVE_LIMITS,
     ALIAS,
     IDENTIFIABLE,

@@ -94,9 +94,9 @@ public final class NetworkDataframes {
         mappers.put(DataframeElementType.RATIO_TAP_CHANGER, rtcs());
         mappers.put(DataframeElementType.PHASE_TAP_CHANGER, ptcs());
         mappers.put(DataframeElementType.REACTIVE_CAPABILITY_CURVE_POINT, reactiveCapabilityCurves());
-        mappers.put(DataframeElementType.OPERATIONAL_LIMITS, operationalLimits(false));
+        mappers.put(DataframeElementType.LOADING_LIMITS, loadingLimits(false));
         mappers.put(DataframeElementType.VOLTAGE_ANGLE_LIMITS, voltageAngleLimits());
-        mappers.put(DataframeElementType.SELECTED_OPERATIONAL_LIMITS, operationalLimits(true));
+        mappers.put(DataframeElementType.SELECTED_LOADING_LIMITS, loadingLimits(true));
         mappers.put(DataframeElementType.ALIAS, aliases());
         mappers.put(DataframeElementType.IDENTIFIABLE, identifiables());
         mappers.put(DataframeElementType.INJECTION, injections());
@@ -165,19 +165,19 @@ public final class NetworkDataframes {
     }
 
     static <U extends DcLine> ToDoubleBiFunction<U, NetworkDataframeContext> getPerUnitI1() {
-        return (dl, context) -> perUnitI(context, dl.getDcTerminal1());
+        return (dl, context) -> perUnitDcI(context, dl.getDcTerminal1());
     }
 
     static <U extends DcLine> ToDoubleBiFunction<U, NetworkDataframeContext> getPerUnitI2() {
-        return (dl, context) -> perUnitI(context, dl.getDcTerminal2());
+        return (dl, context) -> perUnitDcI(context, dl.getDcTerminal2());
     }
 
     static <U extends DcLine> DoubleSeriesMapper.DoubleUpdater<U, NetworkDataframeContext> setPerUnitI1() {
-        return (dl, i, context) -> dl.getDcTerminal1().setI(unPerUnitI(context, i, dl.getDcTerminal1().getDcNode().getNominalV()));
+        return (dl, i, context) -> dl.getDcTerminal1().setI(unPerUnitDcI(context, i, dl.getDcTerminal1().getDcNode().getNominalV()));
     }
 
     static <U extends DcLine> DoubleSeriesMapper.DoubleUpdater<U, NetworkDataframeContext> setPerUnitI2() {
-        return (dl, i, context) -> dl.getDcTerminal2().setI(unPerUnitI(context, i, dl.getDcTerminal2().getDcNode().getNominalV()));
+        return (dl, i, context) -> dl.getDcTerminal2().setI(unPerUnitDcI(context, i, dl.getDcTerminal2().getDcNode().getNominalV()));
     }
 
     static <U extends Injection<U>> Function<U, String> getVoltageLevelId() {
@@ -392,6 +392,10 @@ public final class NetworkDataframes {
             builder.strings("bus_id", b -> NetworkUtil.getBusViewBus(b).map(Bus::getId).orElse(""));
         }
         return builder.booleans("fictitious", Identifiable::isFictitious, Identifiable::setFictitious, false)
+                .doubles("fictitious_p0", (b, context) -> perUnitPQ(context, b.getFictitiousP0()),
+                    (b, p, context) -> b.setFictitiousP0(unPerUnitPQ(context, p)), false)
+                .doubles("fictitious_q0", (b, context) -> perUnitPQ(context, b.getFictitiousQ0()),
+                    (b, q, context) -> b.setFictitiousQ0(unPerUnitPQ(context, q)), false)
                 .addProperties()
                 .build();
     }
@@ -1076,8 +1080,9 @@ public final class NetworkDataframes {
                                 ? Double.MAX_VALUE : unPerUnitPQ(context, maxP)), false)
                 .doubles("idle_loss", (conv, context) -> perUnitPQ(context, conv.getIdleLoss()),
                         (conv, idleLoss, context) -> conv.setIdleLoss(unPerUnitPQ(context, idleLoss)))
-                .doubles("switching_loss", (conv, context) -> perUnitV(context, conv.getSwitchingLoss(), conv.getTerminal1()),
-                        (conv, switchingLoss, context) -> conv.setSwitchingLoss(unPerUnitV(context, switchingLoss, conv.getTerminal1())))
+                .doubles("switching_loss",
+                        (conv, context) -> perUnitDcSwitchingLoss(context, conv.getSwitchingLoss(), conv.getDcTerminal1()),
+                        (conv, switchingLoss, context) -> conv.setSwitchingLoss(unPerUnitDcSwitchingLoss(context, switchingLoss, conv.getDcTerminal1())))
                 .doubles("resistive_loss", (conv, context) -> perUnitR(context, conv.getResistiveLoss(), conv.getTerminal1().getVoltageLevel().getNominalV()),
                         (conv, r, context) -> conv.setResistiveLoss(unPerUnitRX(context, r,
                                 conv.getTerminal1().getVoltageLevel().getNominalV(), conv.getTerminal1().getVoltageLevel().getNominalV())))
@@ -1490,6 +1495,10 @@ public final class NetworkDataframes {
                 .ints("step_count", row -> row.getRtc().getStepCount())
                 .booleans("oltc", row -> row.getRtc().hasLoadTapChangingCapabilities(), (row, v) -> row.getRtc().setLoadTapChangingCapabilities(v))
                 .booleans(REGULATING, row -> row.getRtc().isRegulating(), (row, v) -> row.getRtc().setRegulating(v))
+                .enums("regulation_mode", RatioTapChanger.RegulationMode.class,
+                    row -> row.getRtc().getRegulationMode(), (row, v) -> row.getRtc().setRegulationMode(v), false)
+                .doubles("regulation_value", (row, context) -> row.getRtc().getRegulationValue(),
+                    (row, v, context) -> row.getRtc().setRegulationValue(v), false)
                 .doubles("target_v", (row, context) -> getTransformerTargetV(row.getRtc(), context),
                         (row, targetV, context) -> setTransformerTargetV(row.getRtc(), targetV, context))
                 .doubles("target_deadband", (row, context) -> row.getRtc().getTargetDeadband(),
@@ -1811,7 +1820,7 @@ public final class NetworkDataframes {
         transformer.getPhaseTapChanger().setRegulationTerminal(getBranchTerminal(transformer, side));
     }
 
-    private static NetworkDataframeMapper operationalLimits(boolean onlyActive) {
+    private static NetworkDataframeMapper loadingLimits(boolean onlyActive) {
         return NetworkDataframeMapperBuilder.ofStream(onlyActive ? NetworkUtil::getSelectedLimits : NetworkUtil::getLimits,
                         NetworkDataframes::getLimit)
                 .stringsIndex("element_id", TemporaryLimitData::getId)

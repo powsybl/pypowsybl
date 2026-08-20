@@ -816,6 +816,8 @@ class Network:  # pylint: disable=too-many-public-methods
               - **connected_component**: The connected component to which the bus belongs
               - **synchronous_component**: The synchronous component to which the bus belongs
               - **voltage_level_id**: at which substation the bus is connected
+              - **fictitious_p0** (optional): the fictitious active power injection of the bus (in MW, using the load sign convention)
+              - **fictitious_q0** (optional): the fictitious reactive power injection of the bus (in MVar, using the load sign convention)
 
             This dataframe is indexed on the bus ID in the bus view.
 
@@ -903,6 +905,8 @@ class Network:  # pylint: disable=too-many-public-methods
               - **synchronous_component**: The synchronous component to which the bus belongs
               - **voltage_level_id**: at which substation the bus is connected
               - **bus_id**: the bus ID in the bus view
+              - **fictitious_p0** (optional): the fictitious active power injection of the bus (in MW, using the load sign convention)
+              - **fictitious_q0** (optional): the fictitious reactive power injection of the bus (in MVar, using the load sign convention)
 
             This dataframe is indexed on the bus ID in the bus/breaker view.
 
@@ -2734,9 +2738,11 @@ class Network:  # pylint: disable=too-many-public-methods
               - **oltc**: true if the tap changer has on-load regulation capability
               - **regulating**: true if the tap changer is in regulation
               - **target_v**: the target voltage in kV, if the tap changer is in regulation
-              - **target_deadband**: the regulation deadband around the target voltage, in kV
-              - **regulating_bus_id**: the bus where the tap changer regulates voltage
-              - **regulated_side** (optional): the side where the tap changer regulates voltage (redundant with regulating_bus_id)
+              - **target_deadband**: the regulation deadband around the target value
+              - **regulating_bus_id**: the bus where the tap changer regulates
+              - **regulation_mode** (optional): the regulation mode, among VOLTAGE and REACTIVE_POWER
+              - **regulation_value** (optional): the target value, in kV for VOLTAGE mode or in MVar for REACTIVE_POWER mode
+              - **regulated_side** (optional): the side where the tap changer regulates (redundant with regulating_bus_id)
 
             This dataframe is indexed by the id of the transformer
 
@@ -3454,6 +3460,8 @@ class Network:  # pylint: disable=too-many-public-methods
             - `v_mag`
             - `v_angle`
             - `fictitious`
+            - `fictitious_p0`
+            - `fictitious_q0`
 
         See Also:
             :meth:`get_buses`
@@ -4747,9 +4755,9 @@ class Network:  # pylint: disable=too-many-public-methods
         """
         return _pp.get_variant_ids(self._handle)
 
-    def get_operational_limits(self, all_attributes: bool = False, attributes: Optional[List[str]] = None, show_inactive_sets: bool = False) -> DataFrame:
+    def get_loading_limits(self, all_attributes: bool = False, attributes: Optional[List[str]] = None, show_inactive_sets: bool = False) -> DataFrame:
         """
-        Get the list of operational limits.
+        Get the list of loading limits.
 
         The resulting dataframe, depending on the parameters, will have some of the following columns:
 
@@ -4776,15 +4784,23 @@ class Network:  # pylint: disable=too-many-public-methods
             show_inactive_sets: flag to choose whether inactive limit sets should also be included in the dataframe
 
         Returns:
-            All limits on the network
+            All loading limits on the network
         """
         if show_inactive_sets:
-            return self.get_elements(ElementType.OPERATIONAL_LIMITS, all_attributes, attributes)
-        return self.get_elements(ElementType.SELECTED_OPERATIONAL_LIMITS, all_attributes, attributes)
+            return self.get_elements(ElementType.LOADING_LIMITS, all_attributes, attributes)
+        return self.get_elements(ElementType.SELECTED_LOADING_LIMITS, all_attributes, attributes)
 
-    def update_operational_limits(self, df: Optional[DataFrame] = None, **kwargs: ArrayLike) -> None:
+    def get_operational_limits(self, all_attributes: bool = False, attributes: Optional[List[str]] = None, show_inactive_sets: bool = False) -> DataFrame:
         """
-        Update operational limits values with data provided as a :class:`~pandas.DataFrame` or as named arguments.
+        .. deprecated:: 1.16.0
+            Use :meth:`get_loading_limits` instead.
+        """
+        warnings.warn("get_operational_limits is deprecated, use get_loading_limits instead", DeprecationWarning)
+        return self.get_loading_limits(all_attributes, attributes, show_inactive_sets)
+
+    def update_loading_limits(self, df: Optional[DataFrame] = None, **kwargs: ArrayLike) -> None:
+        """
+        Update loading limits values with data provided as a :class:`~pandas.DataFrame` or as named arguments.
 
         Args:
             df: the data to be updated, as a dataframe.
@@ -4793,7 +4809,7 @@ class Network:  # pylint: disable=too-many-public-methods
                     In the case of sequences, all arguments must have the same length.
 
         Notes:
-            Only the value of operational limits can be updated.
+            Only the value of loading limits can be updated.
             To define which limit must be modified, the following fields must be present :
 
             - `element_id`
@@ -4803,16 +4819,24 @@ class Network:  # pylint: disable=too-many-public-methods
             - `group_name` (if not specified, will try to update the corresponding limit in the selected set of the element)
 
         See Also:
-            :meth:`get_operational_limits`
+            :meth:`get_loading_limits`
 
         Examples:
             An example using keyword arguments:
 
             .. code-block:: python
 
-                network.update_operational_limits(id='LINE', side='ONE', type='CURRENT', acceptable_duration=600, value=500)
+                network.update_loading_limits(id='LINE', side='ONE', type='CURRENT', acceptable_duration=600, value=500)
         """
-        return self._update_elements(ElementType.OPERATIONAL_LIMITS, df, **kwargs)
+        return self._update_elements(ElementType.LOADING_LIMITS, df, **kwargs)
+
+    def update_operational_limits(self, df: Optional[DataFrame] = None, **kwargs: ArrayLike) -> None:
+        """
+        .. deprecated:: 1.16.0
+            Use :meth:`update_loading_limits` instead.
+        """
+        warnings.warn("update_operational_limits is deprecated, use update_loading_limits instead", DeprecationWarning)
+        return self.update_loading_limits(df, **kwargs)
 
     def get_voltage_angle_limits(self, all_attributes: bool = False, attributes: Optional[List[str]] = None) -> DataFrame:
         """
@@ -5774,9 +5798,11 @@ class Network:  # pylint: disable=too-many-public-methods
             - **low_tap**: the number of the lowest tap position (default 0)
             - **oltc**: true if the transformer has on-load voltage regulation capability
             - **target_v**: the target voltage, in kV
-            - **target_deadband**: the target voltage regulation deadband, in kV
-            - **regulating**: true if the tap changer should regulate voltage (**oltc** must be true to set this to true)
-            - **regulated_side**: the side where voltage is regulated (ONE or TWO if two-winding transformer, ONE, TWO
+            - **target_deadband**: the target regulation deadband, in kV
+            - **regulating**: true if the tap changer should regulate (**oltc** must be true to set this to true)
+            - **regulation_mode**: the regulation mode, among VOLTAGE and REACTIVE_POWER (default VOLTAGE)
+            - **regulation_value**: the target value, in kV for VOLTAGE mode or in MVar for REACTIVE_POWER mode
+            - **regulated_side**: the side where the tap changer regulates (ONE or TWO if two-winding transformer, ONE, TWO
               or THREE if three-winding transformer)
             - **side**: Side of the tap changer (only for three-winding transformers)
 
@@ -6095,9 +6121,9 @@ class Network:  # pylint: disable=too-many-public-methods
         """
         return self._create_elements(ElementType.DC_SWITCH, [df], **kwargs)
 
-    def create_operational_limits(self, df: Optional[DataFrame] = None, **kwargs: ArrayLike) -> None:
+    def create_loading_limits(self, df: Optional[DataFrame] = None, **kwargs: ArrayLike) -> None:
         """
-        Creates operational limits.
+        Creates loading limits.
 
         Notes:
 
@@ -6117,7 +6143,7 @@ class Network:  # pylint: disable=too-many-public-methods
 
             For each location of the network defined by a couple (element_id, side) and each group_name:
 
-            - if operational limits already exist, they will be replaced
+            - if loading limits already exist, they will be replaced
             - multiple limits may be defined, typically with different acceptable_duration
             - you can only define ONE permanent limit, identified by an acceptable_duration of -1
 
@@ -6128,20 +6154,28 @@ class Network:  # pylint: disable=too-many-public-methods
         if df is not None:
             df['acceptable_duration'] = df['acceptable_duration'].map(lambda x: -1 if x == inf else int(x))
             if 'is_fictitious' in df.columns:
-                warnings.warn("operation limits is_fictitious attribute has been renamed fictitious", DeprecationWarning)
+                warnings.warn("loading limits is_fictitious attribute has been renamed fictitious", DeprecationWarning)
                 df = df.rename(columns={'is_fictitious': 'fictitious'})
             if 'element_type' in df.columns:
-                warnings.warn("useless operation limits element_type attribute has been removed", DeprecationWarning)
+                warnings.warn("useless loading limits element_type attribute has been removed", DeprecationWarning)
                 df = df.drop(columns=['element_type'])
 
         if kwargs.get('is_fictitious') is not None:
-            warnings.warn("operation limits is_fictitious attribute has been renamed fictitious", DeprecationWarning)
+            warnings.warn("loading limits is_fictitious attribute has been renamed fictitious", DeprecationWarning)
             kwargs['fictitious'] = kwargs.pop('is_fictitious')
         if kwargs.get('element_type') is not None:
-            warnings.warn("useless operation limits element_type attribute has been removed", DeprecationWarning)
+            warnings.warn("useless loading limits element_type attribute has been removed", DeprecationWarning)
             kwargs.pop('element_type')
 
-        return self._create_elements(ElementType.OPERATIONAL_LIMITS, [df], **kwargs)
+        return self._create_elements(ElementType.LOADING_LIMITS, [df], **kwargs)
+
+    def create_operational_limits(self, df: Optional[DataFrame] = None, **kwargs: ArrayLike) -> None:
+        """
+        .. deprecated:: 1.16.0
+            Use :meth:`create_loading_limits` instead.
+        """
+        warnings.warn("create_operational_limits is deprecated, use create_loading_limits instead", DeprecationWarning)
+        return self.create_loading_limits(df, **kwargs)
 
     def create_voltage_angle_limits(self, df: Optional[DataFrame] = None, **kwargs: ArrayLike) -> None:
         """
@@ -6524,21 +6558,23 @@ class Network:  # pylint: disable=too-many-public-methods
         """
         return _pp.get_validation_level(self._handle)
 
-    def validate(self) -> ValidationLevel:
+    def validate(self, report_node: Optional[ReportNode] = None) -> ValidationLevel:
         """
         Validate the network.
 
-        The validation will raise an exception if any check is not consistent with the
+        If no report_node is defined, the validation will raise an exception if any check is not consistent with the
         configured minimum validation level.
+        If report_node is defined, the validation will not raise an exception and populate the report_node with all
+        the validation results.
 
         Returns:
             the computed ValidationLevel, which may be higher than the configured minimum level.
 
         Raises:
             pypowsybl.PyPowsyblError: if any validation check is not consistent
-                                      with the configured minimum validation level.
+                                      with the configured minimum validation level (and no report_node is defined).
         """
-        return _pp.validate(self._handle)
+        return _pp.validate(self._handle, None if report_node is None else report_node._report_node)
 
     def set_min_validation_level(self, validation_level: ValidationLevel) -> None:
         """
@@ -6716,8 +6752,9 @@ class Network:  # pylint: disable=too-many-public-methods
 
             .. code-block:: python
 
-                >>> properties_df = pd.Dataframe(index=pd.Series('id', ['G1', 'G2']),
+                >>> properties_df = pd.DataFrame.from_records(index='id',
                                                  data={
+                                                     'id': ['G1', 'G2'],
                                                      'prop1': [ 'val11', 'val12'],
                                                      'prop2': [ 'val12', 'val22'],
                                                  })

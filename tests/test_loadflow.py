@@ -127,6 +127,9 @@ def test_deprecated_connected_component_mode_parameter():
     with pytest.warns(DeprecationWarning, match=re.escape("connected_component_mode is deprecated, use component_mode parameter instead")):
         assert parameters3.connected_component_mode is None
 
+def test_check_loadflow_parameters():
+    assert lf.check_loadflow_parameters()
+
 def test_validation():
     n = pp.network.create_ieee14()
     pp.loadflow.run_ac(n)

@@ -17,6 +17,20 @@ from pypowsybl.opf.impl.util import TRACE_LEVEL, HvdcRow
 
 logger = logging.getLogger(__name__)
 
+def set_dc_node_voltage_starts(network_cache: NetworkCache, model: Model, v_dc_vars: Any) -> None:
+    dc_node_count = len(network_cache.dc_nodes)
+    grounded_dc_nodes_ids = {row.dc_node_id for row in network_cache.dc_grounds.itertuples(index=False)}
+
+    for dc_node_num, row in enumerate(network_cache.dc_nodes.itertuples()):
+        if row.Index in grounded_dc_nodes_ids:
+            start_v = 0.0
+        else:
+            #hack to guarantee functional initialization for P_DC = (conv_i * |v1-v2|). The hack avoids V1=V2 at start which stops solver at first iteration
+            start_v = 1.0 + 1e-4 * (dc_node_num - (dc_node_count - 1) / 2)
+        logger.log(TRACE_LEVEL,
+                    f"Set start value {start_v} for voltage variable of dc node '{row.Index}' (num={dc_node_num})")
+        model.set_variable_start(v_dc_vars[dc_node_num], start_v)
+
 
 @dataclass
 class VariableContext:
@@ -53,6 +67,12 @@ class VariableContext:
     t3_closed_branch_q2_vars: Any
     t3_open_side1_branch_p2_vars: Any
     t3_open_side1_branch_q2_vars: Any
+    v_dc_vars: Any
+    closed_dc_line_i1_vars: Any
+    closed_dc_line_i2_vars: Any
+    conv_p_vars: Any
+    conv_q_vars: Any
+    conv_i_vars: Any
     branch_num_2_index: list[int]
     gen_p_num_2_index: list[int]
     gen_q_num_2_index: list[int]
@@ -66,12 +86,18 @@ class VariableContext:
     t3_leg1_num_2_index: list[int]
     t3_leg2_num_2_index: list[int]
     t3_leg3_num_2_index: list[int]
+    dc_line_num_2_index: list[int]
+    conv_num_2_index: list[int]
+
 
     @staticmethod
     def build(network_cache: NetworkCache, model: Model) -> 'VariableContext':
         bus_count = len(network_cache.buses)
+        dc_node_count = len(network_cache.dc_nodes)
         v_vars = model.add_m_variables(bus_count, name="v")
         ph_vars = model.add_m_variables(bus_count, name="ph")
+        v_dc_vars = model.add_m_variables(dc_node_count, name="v_dc")
+        set_dc_node_voltage_starts(network_cache, model, v_dc_vars)
 
         gen_count = len(network_cache.generators)
         gen_p_nums: list[int] = []
@@ -151,7 +177,7 @@ class VariableContext:
         closed_branch_nums: list[int] = []
         open_side1_branch_nums: list[int] = []
         open_side2_branch_nums: list[int] = []
-        branch_count = len(network_cache.lines) + len(network_cache.transformers_2w)
+        branch_count = len(network_cache.branches)
         branch_num_2_index = [-1] * branch_count
         for branch_num, row in enumerate(network_cache.branches.itertuples(index=False)):
             if row.bus1_id and row.bus2_id:
@@ -230,6 +256,27 @@ class VariableContext:
         t3_open_side1_p2_vars = model.add_m_variables(len(t3_open_side2_leg_nums), name="t3_open_side1_branch_p2")
         t3_open_side1_q2_vars = model.add_m_variables(len(t3_open_side2_leg_nums), name="t3_open_side1_branch_q2")
 
+        closed_dc_line_nums: list[int] = []
+        dc_line_count = len(network_cache.dc_lines)
+        dc_line_num_2_index = [-1] * dc_line_count
+        for dc_line_num, row in enumerate(network_cache.dc_lines.itertuples(index=False)):
+            if row.dc_node1_id and row.dc_node2_id:
+                dc_line_num_2_index[dc_line_num] = len(closed_dc_line_nums)
+                closed_dc_line_nums.append(dc_line_num)
+
+        closed_dc_line_i1_vars = model.add_m_variables(len(closed_dc_line_nums), name='closed_dc_line_i1')
+        closed_dc_line_i2_vars = model.add_m_variables(len(closed_dc_line_nums), name='closed_dc_line_i2')
+
+        converter_nums: list[int] = []
+        converter_count = len(network_cache.voltage_source_converters)
+        conv_num_2_index = [-1] * converter_count
+        for converter_num, row in enumerate(network_cache.voltage_source_converters.itertuples()):
+            conv_num_2_index[converter_num] = len(converter_nums)
+            converter_nums.append(converter_num)
+        conv_p_vars = model.add_m_variables(len(converter_nums), name="conv_p_vars")
+        conv_q_vars = model.add_m_variables(len(converter_nums), name="conv_q_vars")
+        conv_i_vars = model.add_m_variables(len(converter_nums), name="conv_i_vars")
+
         return VariableContext(v_vars, ph_vars,
                                gen_p_vars, gen_q_vars,
                                bat_p_vars, bat_q_vars,
@@ -247,6 +294,9 @@ class VariableContext:
                                t3_closed_branch_p1_vars, t3_closed_branch_p2_vars,
                                t3_closed_branch_q1_vars, t3_closed_branch_q2_vars,
                                t3_open_side1_p2_vars, t3_open_side1_q2_vars,
+                               v_dc_vars,
+                               closed_dc_line_i1_vars, closed_dc_line_i2_vars,
+                               conv_p_vars, conv_q_vars, conv_i_vars,
                                branch_num_2_index,
                                gen_p_num_2_index, gen_q_num_2_index,
                                bat_p_num_2_index, bat_q_num_2_index,
@@ -254,7 +304,8 @@ class VariableContext:
                                svc_num_2_index,
                                vsc_cs_num_2_index,
                                bl_num_2_index,
-                               t3_num_2_index, t3_leg1_num_2_index, t3_leg2_num_2_index, t3_leg3_num_2_index)
+                               t3_num_2_index, t3_leg1_num_2_index, t3_leg2_num_2_index, t3_leg3_num_2_index,
+                               dc_line_num_2_index, conv_num_2_index)
 
     def _update_generators(self, network_cache: NetworkCache, model: Model) -> None:
         connected_gen_ids: list[str] = []
@@ -268,7 +319,7 @@ class VariableContext:
         for gen_num, (gen_id, row) in enumerate(network_cache.generators.iterrows()):
             bus_id = row.bus_id
             if bus_id:
-                connected_gen_ids.append(gen_id.__str__())
+                connected_gen_ids.append(str(gen_id))
 
                 gen_p_index = self.gen_p_num_2_index[gen_num]
                 gen_q_index = self.gen_q_num_2_index[gen_num]
@@ -301,7 +352,7 @@ class VariableContext:
 
                 logger.log(TRACE_LEVEL, f"Update generator '{gen_id}' (num={gen_num}): target_p={target_p}, target_q={target_q}, target_v={target_v}, voltage_regulator_on={voltage_regulator_on}, p={p}, q={q}")
             else:
-                disconnected_gen_ids.append(gen_id.__str__())
+                disconnected_gen_ids.append(str(gen_id))
                 logger.log(TRACE_LEVEL, f"Update disconnected generator '{gen_id}' (num={gen_num})")
 
         network_cache.update_generators(connected_gen_ids,
@@ -325,7 +376,7 @@ class VariableContext:
         for bat_num, (bat_id, row) in enumerate(network_cache.batteries.iterrows()):
             bus_id = row.bus_id
             if bus_id:
-                connected_bat_ids.append(bat_id.__str__())
+                connected_bat_ids.append(str(bat_id))
 
                 bat_p_index = self.bat_p_num_2_index[bat_num]
                 bat_q_index = self.bat_q_num_2_index[bat_num]
@@ -358,7 +409,7 @@ class VariableContext:
 
                 logger.log(TRACE_LEVEL, f"Update battery '{bat_id}' (num={bat_num}): target_p={target_p}, target_q={target_q}, target_v={target_v}, voltage_regulator_on={voltage_regulator_on}, p={p}, q={q}")
             else:
-                disconnected_bat_ids.append(bat_id.__str__())
+                disconnected_bat_ids.append(str(bat_id))
                 logger.log(TRACE_LEVEL, f"Update disconnected battery '{bat_id}' (num={bat_num})")
 
         network_cache.update_batteries(connected_bat_ids,
@@ -381,7 +432,7 @@ class VariableContext:
         for vsc_cs_num, (vsc_cs_id, row) in enumerate(network_cache.vsc_converter_stations.iterrows()):
             bus_id = row.bus_id
             if bus_id:
-                connected_vsc_cs_ids.append(vsc_cs_id.__str__())
+                connected_vsc_cs_ids.append(str(vsc_cs_id))
                 vsc_cs_index = self.vsc_cs_num_2_index[vsc_cs_num]
 
                 p = model.get_value(self.vsc_cs_p_vars[vsc_cs_index])
@@ -403,7 +454,7 @@ class VariableContext:
 
                 logger.log(TRACE_LEVEL, f"Update VSC converter station '{vsc_cs_id}' (num={vsc_cs_num}): target_q={target_q}, target_v={target_v}, voltage_regulator_on={voltage_regulator_on}, p={p}, q={q}")
             else:
-                disconnected_vsc_cs_ids.append(vsc_cs_id.__str__())
+                disconnected_vsc_cs_ids.append(str(vsc_cs_id))
                 logger.log(TRACE_LEVEL, f"Update disconnected VSC converter station '{vsc_cs_id}' (num={vsc_cs_num})")
 
         network_cache.update_vsc_converter_stations(connected_vsc_cs_ids,
@@ -441,7 +492,7 @@ class VariableContext:
         for svc_num, (svc_id, row) in enumerate(network_cache.static_var_compensators.iterrows()):
             bus_id = row.bus_id
             if bus_id:
-                connected_svc_ids.append(svc_id.__str__())
+                connected_svc_ids.append(str(svc_id))
 
                 connected_svc_p.append(0.0)
 
@@ -462,7 +513,7 @@ class VariableContext:
 
                 logger.log(TRACE_LEVEL, f"Update SVC '{svc_id}' (num={svc_num}): target_q={target_q}, target_v={target_v}, regulation_mode={regulation_mode}")
             else:
-                disconnected_svc_ids.append(svc_id.__str__())
+                disconnected_svc_ids.append(str(svc_id))
                 logger.log(TRACE_LEVEL, f"Update disconnected SVC '{svc_id}' (num={svc_num})")
 
         network_cache.update_static_var_compensators(connected_svc_ids,
@@ -484,13 +535,13 @@ class VariableContext:
                 shunt_index = self.shunt_num_2_index[shunt_num]
                 p = model.get_value(self.shunt_p_vars[shunt_index])
                 q = model.get_value(self.shunt_q_vars[shunt_index])
-                connected_shunt_ids.append(shunt_id.__str__())
+                connected_shunt_ids.append(str(shunt_id))
                 connected_shunt_p.append(p)
                 connected_shunt_q.append(q)
 
                 logger.log(TRACE_LEVEL, f"Update shunt '{shunt_id}' (num={shunt_num}): p={p} q={q}")
             else:
-                disconnected_shunt_ids.append(shunt_id.__str__())
+                disconnected_shunt_ids.append(str(shunt_id))
                 logger.log(TRACE_LEVEL, f"Update disconnected shunt '{shunt_id}' (num={shunt_num})")
 
         network_cache.update_shunt_compensators(connected_shunt_ids, connected_shunt_p, connected_shunt_q, disconnected_shunt_ids)
@@ -503,7 +554,7 @@ class VariableContext:
         branch_q2 = []
         for branch_num, (branch_id, row) in enumerate(network_cache.branches.iterrows()):
             branch_index = self.branch_num_2_index[branch_num]
-            branch_ids.append(branch_id.__str__())
+            branch_ids.append(str(branch_id))
             if row.bus1_id and row.bus2_id:
                 p1 = model.get_value(self.closed_branch_p1_vars[branch_index])
                 p2 = model.get_value(self.closed_branch_p2_vars[branch_index])
@@ -545,7 +596,7 @@ class VariableContext:
         t3_v = []
         t3_angle = []
         for t3_num, (t3_id, t3_row) in enumerate(network_cache.transformers_3w.iterrows()):
-            t3_ids.append(t3_id.__str__())
+            t3_ids.append(str(t3_id))
             t3_index = self.t3_num_2_index[t3_num]
             if t3_row.bus1_id or t3_row.bus2_id or t3_row.bus3_id:
                 leg1_index = self.t3_leg1_num_2_index[t3_num]
@@ -603,7 +654,7 @@ class VariableContext:
         bus_v_mag = []
         bus_v_angle = []
         for bus_num, (bus_id, row) in enumerate(network_cache.buses.iterrows()):
-            bus_ids.append(bus_id.__str__())
+            bus_ids.append(str(bus_id))
             v = model.get_value(self.v_vars[bus_num])
             bus_v_mag.append(v)
             angle = model.get_value(self.ph_vars[bus_num])
@@ -613,7 +664,7 @@ class VariableContext:
 
         network_cache.update_buses(bus_ids, bus_v_mag, bus_v_angle)
 
-    def _update_boundary_lines(self, network_cache: NetworkCache, model: Model)-> None:
+    def _update_boundary_lines(self, network_cache: NetworkCache, model: Model) -> None:
         connected_bl_ids = []
         connected_bl_v = []
         connected_bl_angle = []
@@ -626,7 +677,7 @@ class VariableContext:
             if row.bus_id:
                 v = model.get_value(self.bl_v_vars[bl_index])
                 angle = model.get_value(self.bl_ph_vars[bl_index])
-                connected_bl_ids.append(bl_id.__str__())
+                connected_bl_ids.append(str(bl_id))
                 connected_bl_v.append(v * row.nominal_v)
                 connected_bl_angle.append(math.degrees(angle))
                 p = model.get_value(self.bl_branch_p1_vars[bl_index])
@@ -635,7 +686,7 @@ class VariableContext:
                 connected_bl_q.append(q)
                 logger.log(TRACE_LEVEL, f"Update boundary line '{bl_id}' (num={bl_num}): v={v}, angle={angle}, p={p}, q={q}")
             else:
-                disconnected_bl_ids.append(bl_id.__str__())
+                disconnected_bl_ids.append(str(bl_id))
                 logger.log(TRACE_LEVEL, f"Update disconnected boundary line '{bl_id}' (num={bl_num})")
 
         network_cache.update_boundary_lines(connected_bl_ids,
@@ -644,6 +695,91 @@ class VariableContext:
                                             connected_bl_p,
                                             connected_bl_q,
                                             disconnected_bl_ids)
+
+    def _update_dc_nodes(self, network_cache: NetworkCache, model: Model) -> None:
+        dc_node_ids: list[str] = []
+        dc_node_v = []
+        for dc_node_num, (dc_node_id, row) in enumerate(network_cache.dc_nodes.iterrows()):
+            dc_node_ids.append(str(dc_node_id))
+            v = model.get_value(self.v_dc_vars[dc_node_num])
+            dc_node_v.append(v)
+
+            logger.log(TRACE_LEVEL, f"Update dc_node '{dc_node_id}' (num={dc_node_num}): v={v}")
+
+        network_cache.update_dc_nodes(dc_node_ids, dc_node_v)
+
+    def _update_dc_lines(self, network_cache: NetworkCache, model: Model) -> None:
+        dc_line_ids: list[str] = []
+        dc_line_i1 = []
+        dc_line_i2 = []
+        for dc_line_num, (dc_line_id, row) in enumerate(network_cache.dc_lines.iterrows()):
+            dc_line_index = self.dc_line_num_2_index[dc_line_num]
+            dc_line_ids.append(str(dc_line_id))
+            i1 = model.get_value(self.closed_dc_line_i1_vars[dc_line_index])
+            i2 = model.get_value(self.closed_dc_line_i2_vars[dc_line_index])
+
+            dc_line_i1.append(i1)
+            dc_line_i2.append(i2)
+
+            logger.log(TRACE_LEVEL, f"Update dc_line '{dc_line_id}': i1={i1} i2={i2}")
+
+        network_cache.update_dc_lines(dc_line_ids, dc_line_i1, dc_line_i2)
+
+    def _update_voltage_source_converters(self, network_cache: NetworkCache, model: Model) -> None:
+        conv_ids: list[str] = []
+        conv_p = []
+        conv_q = []
+        conv_target_p = []
+        conv_target_q = []
+        conv_target_v_dc = []
+        conv_target_v_ac = []
+        conv_p_dc1 = []
+        conv_p_dc2 = []
+        for conv_num, (conv_id, row) in enumerate(network_cache.voltage_source_converters.iterrows()):
+            bus1_id = row.bus1_id
+            dc_node1_id = row.dc_node1_id
+            dc_node2_id = row.dc_node2_id
+            v1 = 0.0
+            v2 = 0.0
+
+            if row.dc_connected1:
+                dc_node1_num = network_cache.dc_nodes.index.get_loc(dc_node1_id)
+                v1 = model.get_value(self.v_dc_vars[dc_node1_num])
+            if row.dc_connected2:
+                dc_node2_num = network_cache.dc_nodes.index.get_loc(dc_node2_id)
+                v2 = model.get_value(self.v_dc_vars[dc_node2_num])
+            v_dc = v1 - v2
+            if bus1_id:
+                bus_num = network_cache.buses.index.get_loc(bus1_id)
+
+                conv_ids.append(str(conv_id))
+                conv_index = self.conv_num_2_index[conv_num]
+
+                p_ac = model.get_value(self.conv_p_vars[conv_index])
+                conv_p.append(p_ac)
+                conv_target_p.append(p_ac)
+
+                q_ac = model.get_value(self.conv_q_vars[conv_index])
+                conv_q.append(q_ac)
+                conv_target_q.append(q_ac)
+
+                i = model.get_value(self.conv_i_vars[conv_index])
+                p_dc1 = i * v1
+                p_dc2 = i * v2
+                conv_p_dc1.append(p_dc1)
+                conv_p_dc2.append(p_dc2)
+                
+                conv_target_v_dc.append(v_dc)
+
+                v_ac = model.get_value(self.v_vars[bus_num])
+                conv_target_v_ac.append(v_ac)
+
+                logger.log(TRACE_LEVEL,
+                           f"Update voltage source converter '{conv_id}' (num={conv_num}): p_ac={p_ac}, q_ac={q_ac}, "
+                           f"p_dc1={p_dc1}, p_dc2={p_dc2}, target_p={p_ac}, target_q={q_ac}, target_v_dc={v_dc}, target_v_ac={v_ac}")
+
+        network_cache.update_voltage_source_converters(conv_ids, conv_p, conv_q, conv_p_dc1, conv_p_dc2, conv_target_p,
+                                                       conv_target_q, conv_target_v_dc, conv_target_v_ac)
 
     def update_network(self, network_cache: NetworkCache, model: Model) -> None:
         self._update_generators(network_cache, model)
@@ -656,3 +792,7 @@ class VariableContext:
         self._update_transformers_3w(network_cache, model)
         self._update_buses(network_cache, model)
         self._update_boundary_lines(network_cache, model)
+        self._update_dc_nodes(network_cache, model)
+        self._update_dc_lines(network_cache, model)
+        self._update_voltage_source_converters(network_cache, model)
+

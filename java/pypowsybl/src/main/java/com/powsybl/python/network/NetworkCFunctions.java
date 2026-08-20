@@ -2092,11 +2092,14 @@ public final class NetworkCFunctions {
     }
 
     @CEntryPoint(name = "validate")
-    public static ValidationLevelType validate(IsolateThread thread, ObjectHandle networkHandle, ExceptionHandlerPointer exceptionHandlerPtr) {
+    public static ValidationLevelType validate(IsolateThread thread, ObjectHandle networkHandle, ObjectHandle reportNodeHandle,
+                                               ExceptionHandlerPointer exceptionHandlerPtr) {
         exceptionHandlerPtr.setMessage(WordFactory.nullPointer());
+        ReportNode reportNode = ObjectHandles.getGlobal().get(reportNodeHandle);
+        boolean throwException = reportNode == null;
         try {
             Network network = ObjectHandles.getGlobal().get(networkHandle);
-            return Util.convert(network.runValidationChecks());
+            return Util.convert(network.runValidationChecks(throwException, reportNode == null ? ReportNode.NO_OP : reportNode));
         } catch (Throwable t) {
             setException(exceptionHandlerPtr, t);
             return Util.convert(ValidationLevel.MINIMUM_VALUE);

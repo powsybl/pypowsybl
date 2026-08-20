@@ -6,22 +6,23 @@
 #
 import io
 import json
-
-from pypowsybl import _pypowsybl
-from pypowsybl._pypowsybl import RaoComputationStatus
-from pypowsybl.utils import create_data_frame_from_series_array
-from .crac import Crac
-from pandas import DataFrame
-from pypowsybl.utils import path_to_str
-from os import PathLike
 from datetime import datetime as Datetime
-
+from os import PathLike
 from typing import (
     Union,
     Dict,
     Any,
     List
 )
+
+from pandas import DataFrame
+from pypowsybl._pypowsybl import RaoComputationStatus
+
+from pypowsybl import _pypowsybl
+from pypowsybl.utils import create_data_frame_from_series_array
+from pypowsybl.utils import path_to_str
+from .crac import Crac
+
 
 class RaoResult:
     """

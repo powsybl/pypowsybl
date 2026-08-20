@@ -3,10 +3,7 @@
   "extensions": {
     "NcCracCreatorParameters": {
       "timestamp": "2026-04-27T16:58:00Z",
-      "capacity-calculation-region-eic-code": "10Y1001C--00095L",
-      "tsos-which-do-not-use-patl-in-final-state": [
-        "REE"
-      ],
+      "capacity-calculation-region": "10Y1001C--00095L",
       "curative-instants": [
         {
           "name": "curative 1",
@@ -20,28 +17,7 @@
           "name": "curative 3",
           "application-time": 1200
         }
-      ],
-      "borders": [
-        {
-          "name": "ES-FR",
-          "eic": "10YDOM--ES-FR--D",
-          "default-for-tso": "RTE"
-        },
-        {
-          "name": "ES-PT",
-          "eic": "10YDOM--ES-PT--T",
-          "default-for-tso": "REN"
-        }
-      ],
-      "restricted-curative-batches-per-tso": {
-        "REE": [
-          "curative 1",
-          "curative 2"
-        ],
-        "REN": [
-          "curative 1"
-        ]
-      }
+      ]
     }
   }
 }

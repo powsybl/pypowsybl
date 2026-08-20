@@ -93,5 +93,4 @@ class ProportionalScalable(Scalable):
                      f", percentages={self.percentages}"
         desc += f", min_value={self.min_value}" if self.min_value != -float('inf') else ""
         desc += f", max_value={self.max_value}" if self.max_value != float('inf') else ""
-        return desc + f")"
-
+        return desc + ")"

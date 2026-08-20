@@ -13,10 +13,7 @@ import com.powsybl.commons.parameters.Parameter;
 import com.powsybl.commons.report.ReportNode;
 import com.powsybl.iidm.network.Country;
 import com.powsybl.iidm.network.Network;
-import com.powsybl.loadflow.LoadFlow;
-import com.powsybl.loadflow.LoadFlowParameters;
-import com.powsybl.loadflow.LoadFlowProvider;
-import com.powsybl.loadflow.LoadFlowResult;
+import com.powsybl.loadflow.*;
 import com.powsybl.loadflow.json.JsonLoadFlowParameters;
 import com.powsybl.python.commons.*;
 import com.powsybl.python.commons.PyPowsyblApiHeader.ArrayPointer;
@@ -48,6 +45,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.function.BiConsumer;
 import java.util.Map;
+import java.util.function.BooleanSupplier;
 import java.util.stream.Collectors;
 
 import static com.powsybl.python.commons.PyPowsyblApiHeader.allocArrayPointer;
@@ -121,6 +119,26 @@ public final class LoadFlowCFunctions {
             public ArrayPointer<CCharPointerPointer> get() {
                 return createCharPtrArray(LoadFlowProvider.findAll()
                         .stream().map(LoadFlowProvider::getName).collect(Collectors.toList()));
+            }
+        });
+    }
+
+    @CEntryPoint(name = "checkLoadFlowParameters")
+    public static boolean checkLoadFlowParameters(IsolateThread thread,
+                                                  LoadFlowParametersPointer loadFlowParametersPtr,
+                                                  CCharPointer provider, ObjectHandle reportNodeHandle,
+                                                  PyPowsyblApiHeader.ExceptionHandlerPointer exceptionHandlerPtr) {
+        return doCatch(exceptionHandlerPtr, new BooleanSupplier() {
+            @Override
+            public boolean getAsBoolean() {
+                String providerStr = CTypeUtil.toString(provider);
+                LoadFlowProvider loadFlowProvider = LoadFlowCUtils.getLoadFlowProvider(providerStr);
+                LoadFlow.Runner runner = new LoadFlow.Runner(loadFlowProvider);
+                LoadFlowRunParameters runParameters = new LoadFlowRunParameters()
+                        .setComputationManager(CommonObjects.getComputationManager())
+                        .setParameters(LoadFlowCUtils.createLoadFlowParameters(loadFlowParametersPtr, loadFlowProvider))
+                        .setReportNode(ReportCUtils.getReportNode(reportNodeHandle));
+                return runner.checkParameters(runParameters);
             }
         });
     }

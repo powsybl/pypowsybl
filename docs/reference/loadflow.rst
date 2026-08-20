@@ -21,6 +21,7 @@ Running a loadflow
     get_provider_names
     get_provider_parameters_names
     get_provider_parameters
+    check_loadflow_parameters
 
 Parameters
 ----------
