@@ -16,11 +16,7 @@ from pypowsybl.opf.impl.model.variable_context import VariableContext
 class DcLineConstraints(Constraints):
     def add(self, parameters: ModelParameters, network_cache: NetworkCache, variable_context: VariableContext,
             model: Model) -> None:
-        
-        # FIXME add DC switch support once the PyPowSyBl DC switch API is available.
-        # DC switches may affect the effective DC topology and/or add additional branches
-        # The DC equations currently only account for DC lines.
-        
+
         for dc_line_num, dc_line_row in enumerate(network_cache.dc_lines.itertuples(index=False)):
             dc_node1_id, dc_node2_id, r = dc_line_row.dc_node1_id, dc_line_row.dc_node2_id, dc_line_row.r
             dc_node1_num = network_cache.dc_nodes.index.get_loc(dc_node1_id)

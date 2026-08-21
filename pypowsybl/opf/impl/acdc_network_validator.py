@@ -28,9 +28,6 @@ def validate_acdc_network(network: Network) -> None:
     if dc_nodes.empty:
         return
 
-
-    # TODO: add DC switch validation once the PyPowSyBl DC switch API is available.
-
     dc_buses = network.get_dc_buses()
     dc_lines = network.get_dc_lines()
     voltage_source_converters = network.get_voltage_source_converters()

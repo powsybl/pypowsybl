@@ -32,6 +32,7 @@ from pypowsybl.opf.impl.constraints.static_var_compensator_reactive_limits_const
     StaticVarCompensatorReactiveLimitsConstraints
 from pypowsybl.opf.impl.constraints.transformer_3w_flow_constraints import Transformer3wFlowConstraints
 from pypowsybl.opf.impl.constraints.dc_line_constraints import DcLineConstraints
+from pypowsybl.opf.impl.constraints.dc_switch_constraints import DcSwitchConstraints
 from pypowsybl.opf.impl.constraints.voltage_source_converter_constraints import VoltageSourceConverterConstraints
 from pypowsybl.opf.impl.constraints.dc_current_balance_constraints import DcCurrentBalanceConstraints
 from pypowsybl.opf.impl.constraints.dc_ground_constraints import DcGroundConstraints
@@ -97,6 +98,7 @@ class OptimalPowerFlow:
                                           BoundaryLineFlowConstraints(),
                                           Transformer3wFlowConstraints(),
                                           DcLineConstraints(),
+                                          DcSwitchConstraints(),
                                           VoltageSourceConverterConstraints(),
                                           DcCurrentBalanceConstraints(),
                                           DcGroundConstraints()]

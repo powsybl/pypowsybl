@@ -40,6 +40,7 @@ class NetworkCache:
         self._dc_buses = self._build_dc_buses(network)
         self._dc_nodes = self._build_dc_nodes(network, self.dc_buses)
         self._dc_lines = self._build_dc_lines(network)
+        self._dc_switches = self._build_dc_switches(network)
         self._voltage_source_converters = self._build_voltage_source_converters(network)
         self._dc_grounds = self._build_dc_grounds(network)
     @staticmethod
@@ -233,6 +234,10 @@ class NetworkCache:
         return network.get_dc_lines(attributes=['dc_node1_id', 'dc_node2_id', 'r'])
 
     @staticmethod
+    def _build_dc_switches(network: Network) -> DataFrame:
+        return network.get_dc_switches(attributes=['dc_node1_id', 'dc_node2_id', 'open', 'r'])
+
+    @staticmethod
     def _build_voltage_source_converters(network: Network) -> DataFrame:
         return network.get_voltage_source_converters(attributes=['voltage_level_id', 'bus1_id', 'bus2_id', 'dc_node1_id', 'dc_node2_id',
                                      'dc_connected1', 'dc_connected2', 'pcc_terminal_id', 'voltage_regulator_on',
@@ -330,6 +335,10 @@ class NetworkCache:
     @property
     def dc_nodes(self) -> DataFrame:
         return self._dc_nodes
+
+    @property
+    def dc_switches(self) -> DataFrame:
+        return self._dc_switches
 
     @property
     def voltage_source_converters(self) -> DataFrame:

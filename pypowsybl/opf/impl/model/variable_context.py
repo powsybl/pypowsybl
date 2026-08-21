@@ -70,6 +70,7 @@ class VariableContext:
     v_dc_vars: Any
     closed_dc_line_i1_vars: Any
     closed_dc_line_i2_vars: Any
+    closed_dc_switch_i_vars: Any
     conv_p_vars: Any
     conv_q_vars: Any
     conv_i_vars: Any
@@ -87,6 +88,7 @@ class VariableContext:
     t3_leg2_num_2_index: list[int]
     t3_leg3_num_2_index: list[int]
     dc_line_num_2_index: list[int]
+    dc_switch_num_2_index: list[int]
     conv_num_2_index: list[int]
 
 
@@ -267,6 +269,16 @@ class VariableContext:
         closed_dc_line_i1_vars = model.add_m_variables(len(closed_dc_line_nums), name='closed_dc_line_i1')
         closed_dc_line_i2_vars = model.add_m_variables(len(closed_dc_line_nums), name='closed_dc_line_i2')
 
+        closed_dc_switch_nums: list[int] = []
+        dc_switch_count = len(network_cache.dc_switches)
+        dc_switch_num_2_index = [-1] * dc_switch_count
+        for dc_switch_num, row in enumerate(network_cache.dc_switches.itertuples(index=False)):
+            if not row.open:
+                dc_switch_num_2_index[dc_switch_num] = len(closed_dc_switch_nums)
+                closed_dc_switch_nums.append(dc_switch_num)
+
+        closed_dc_switch_i_vars = model.add_m_variables(len(closed_dc_switch_nums), name='closed_dc_switch_i')
+
         converter_nums: list[int] = []
         converter_count = len(network_cache.voltage_source_converters)
         conv_num_2_index = [-1] * converter_count
@@ -296,6 +308,7 @@ class VariableContext:
                                t3_open_side1_p2_vars, t3_open_side1_q2_vars,
                                v_dc_vars,
                                closed_dc_line_i1_vars, closed_dc_line_i2_vars,
+                               closed_dc_switch_i_vars,
                                conv_p_vars, conv_q_vars, conv_i_vars,
                                branch_num_2_index,
                                gen_p_num_2_index, gen_q_num_2_index,
@@ -305,7 +318,7 @@ class VariableContext:
                                vsc_cs_num_2_index,
                                bl_num_2_index,
                                t3_num_2_index, t3_leg1_num_2_index, t3_leg2_num_2_index, t3_leg3_num_2_index,
-                               dc_line_num_2_index, conv_num_2_index)
+                               dc_line_num_2_index, dc_switch_num_2_index, conv_num_2_index)
 
     def _update_generators(self, network_cache: NetworkCache, model: Model) -> None:
         connected_gen_ids: list[str] = []
