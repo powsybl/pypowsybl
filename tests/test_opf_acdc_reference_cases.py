@@ -5,6 +5,8 @@ import pytest
 
 import pypowsybl as pp
 import pypowsybl.opf as opf
+from pypowsybl.opf.impl.model.dc_voltage_starts import compute_dc_node_voltage_starts
+from pypowsybl.opf.impl.model.network_cache import NetworkCache
 
 if platform.system() == 'Darwin' and platform.machine() == 'x86_64':
     pytest.skip("No version compatible with x86_64 macOS.", allow_module_level=True)
@@ -322,20 +324,13 @@ def test_official_asymmetrical_monopole_run_ac_is_rejected_for_mixed_nominal_vol
     with pytest.raises(ValueError, match="has several nominal voltages"):
         opf.run_ac(n, params)
 
-# --- DC switches -------------------------------------------------------------------------------
-# A closed DC switch must appear in the equations as an element carrying current; an open one must
-# not. Each test adds a second path to create_ac_dc_bipolar_network, between two DC nodes a first
-# path already joins:
-#
-#     original    dn3p --[dl3Gp r=0.1]-- dnGp --[dlG4p r=0.1]-- dn4p
-#     added       dn3p --[dsXp  switch]-- dnXp --[dlX4p r=0.2]-- dn4p
-#
-# Both total 0.2 ohm, so a closed switch must split the pole current about evenly and an open one
-# must leave all of it on the original path. Parallel rather than carved out of an existing line
-# because DC lines cannot be removed ("identifiable with id : dlG4p can't be removed"), and because
-# a switch in a parallel path carries real current instead of hanging off a dead-end stub.
+
+# --- DC switches ---------------------------------------------------------------------------------
+# Each test adds a second dn3p -> dn4p path in parallel with the existing one and of the same total
+# resistance, so a closed switch must split the pole current about evenly and an open one must not.
+# Parallel rather than carved out of a line because DC lines cannot be removed.
+PARALLEL_PATH_R_OHM = 0.2
 POLE_CURRENT_A = -126.5905
-ATOL_A = 1e-3
 
 
 def create_bipolar_network_with_parallel_switch_path(switch_open, switch_r_ohm=0.0):
@@ -343,65 +338,74 @@ def create_bipolar_network_with_parallel_switch_path(switch_open, switch_r_ohm=0
     n.create_dc_nodes(id='dnXp', nominal_v=400.0)
     n.create_dc_switches(id='dsXp', dc_node1_id='dn3p', dc_node2_id='dnXp',
                          kind='BREAKER', open=switch_open, r=switch_r_ohm)
-    n.create_dc_lines(id='dlX4p', dc_node1_id='dnXp', dc_node2_id='dn4p', r=0.2 - switch_r_ohm)
+    n.create_dc_lines(id='dlX4p', dc_node1_id='dnXp', dc_node2_id='dn4p',
+                      r=PARALLEL_PATH_R_OHM - switch_r_ohm)
     return n
 
 
 def test_closed_dc_switch_conducts_and_shorts_its_two_dc_nodes():
-    """A closed zero-resistance switch carries current and leaves its two DC nodes at one voltage.
-
-    Before DC switch equations existed the OPF returned LOCALLY_SOLVED with the added path at 0 A
-    and 25.3 V standing across the closed switch.
-    """
     n = create_bipolar_network_with_parallel_switch_path(switch_open=False)
 
-    assert run_acdc(n), "OPF did not converge with a closed DC switch"
+    assert run_acdc(n)
 
     voltages = n.get_dc_nodes()['v']
     assert voltages['dn3p'] == pytest.approx(voltages['dnXp'], abs=1e-6)
 
     currents = n.get_dc_lines()['i1']
     total = currents['dlX4p'] + currents['dl3Gp']
-    # Equal resistance, so an equal split - but not exactly equal: the original path passes dnGp,
-    # where the metallic return draws 0.2 A off it, and half of that is the whole difference.
+    assert total == pytest.approx(POLE_CURRENT_A, abs=0.01)
+    # Not exactly half each: the original path passes dnGp, where the metallic return draws 0.2 A.
     assert currents['dlX4p'] == pytest.approx(total / 2, abs=0.2)
     assert currents['dl3Gp'] == pytest.approx(total / 2, abs=0.2)
-    # The pole current barely moves: a second path halves the corridor resistance, lowering the
-    # losses the converter must supply, by a few milliamperes.
-    assert total == pytest.approx(POLE_CURRENT_A, abs=0.01)
 
 
 def test_resistive_closed_dc_switch_drops_r_times_current():
-    """A closed switch obeys Ohm's law, v1 - v2 = r * i, not just the short-circuit case.
-
-    Written in the network's own units - ohms, amperes, kilovolts - so it holds whatever the
-    internal per-unit scaling does, and turns red if DcSwitch.r is ever converted twice.
-    """
     switch_r_ohm = 0.05
-    n = create_bipolar_network_with_parallel_switch_path(switch_open=False, switch_r_ohm=switch_r_ohm)
+    n = create_bipolar_network_with_parallel_switch_path(switch_open=False,
+                                                         switch_r_ohm=switch_r_ohm)
 
-    assert run_acdc(n), "OPF did not converge with a resistive closed DC switch"
+    assert run_acdc(n)
 
     voltages = n.get_dc_nodes()['v']
     # The added line is the only other element at dnXp, so it carries the switch current exactly.
     switch_current_a = n.get_dc_lines()['i1']['dlX4p']
-    assert voltages['dn3p'] - voltages['dnXp'] == pytest.approx(switch_r_ohm * switch_current_a / 1000.0,
-                                                                abs=1e-6)
+    assert voltages['dn3p'] - voltages['dnXp'] == pytest.approx(
+        switch_r_ohm * switch_current_a / 1000.0, abs=1e-6)
 
 
 def test_open_dc_switch_conducts_nothing():
-    """An open switch leaves the untouched network's answer unchanged.
-
-    Catches a fix that connects every switch regardless of position.
-    """
     reference = pp.network.create_ac_dc_bipolar_network()
     assert run_acdc(reference)
     reference_currents = reference.get_dc_lines()['i1']
 
     n = create_bipolar_network_with_parallel_switch_path(switch_open=True)
-    assert run_acdc(n), "OPF did not converge with an open DC switch"
+    assert run_acdc(n)
 
     currents = n.get_dc_lines()['i1']
-    assert currents['dlX4p'] == pytest.approx(0.0, abs=ATOL_A)
+    assert currents['dlX4p'] == pytest.approx(0.0, abs=1e-3)
     for dc_line_id in reference_currents.index:
-        assert currents[dc_line_id] == pytest.approx(reference_currents[dc_line_id], abs=ATOL_A)
+        assert currents[dc_line_id] == pytest.approx(reference_currents[dc_line_id], abs=1e-3)
+
+
+# --- DC node voltage start values ----------------------------------------------------------------
+
+def test_dc_voltage_starts_place_every_node_from_the_declared_voltages():
+    """A converter's target_v_dc anchors the walk; a ground places what the walk cannot reach.
+
+    create_ac_dc_monopolar_network exercises both: conv45 declares 1.0 pu, and dn3n is related to
+    nothing because the other converter is in P_PCC mode and declares no target.
+    """
+    starts = compute_dc_node_voltage_starts(NetworkCache(pp.network.create_ac_dc_monopolar_network()))
+
+    assert starts == pytest.approx({'dn4p': 0.5, 'dn4n': -0.5, 'dn3p': 0.5, 'dn3n': 0.0})
+
+
+def test_dc_current_bound_does_not_cut_off_an_ordinary_operating_point():
+    """2.0 pu was only 500 A on this network's base, below what an ordinary HVDC cable carries."""
+    n = pp.network.create_ac_dc_bipolar_network()
+    n.update_voltage_source_converters(id='conv23', target_p=-250.0)
+
+    assert run_acdc(n)
+
+    base_current_a = 100e3 / 400.0
+    assert n.get_dc_lines()['i1'].abs().max() > 2.0 * base_current_a
