@@ -6,7 +6,7 @@ The network model
 The :class:`Network` object is the main data structure of pypowsybl.
 It contains all the data of a power network: substations, generators, lines,
 transformers, ...
-The specific documentation about the network model can be found `here <inv:powsyblcore:std:doc#grid_model/network_subnetwork>`_.
+The specific documentation about the network model can be found `in the powsybl-core documentation <inv:powsyblcore:std:doc#grid_model/network_subnetwork>`_.
 It details the equipment supported as well as their characteristics.
 
 pypowsybl provides methods to create networks, and to access and modify their data.
@@ -49,8 +49,9 @@ The supported formats are the following:
     .. code-block::
     >>> pp.network.get_import_parameters("XIIDM")
 
+
     An exhaustive list of these parameters as well as their description is available in the section dedicated to each
-    supported format `here <inv:powsyblcore:std:doc#grid_exchange_formats/index>`_.
+    supported format `on this page <inv:powsyblcore:std:doc#grid_exchange_formats/index>`_.
 
     Then, to use these specific parameters, they should be added as the second argument of the :func:`load` function as
     a dictionary:
@@ -115,6 +116,7 @@ To save a network, you can use the :func:`save` function with the path to the ne
     .. code-block::
     >>> pp.network.get_export_parameters("XIIDM")
 
+
     An exhaustive list of these parameters as well as their description is available in the section dedicated to each
     supported format `here <inv:powsyblcore:std:doc#grid_exchange_formats/index>`_.
 
@@ -157,6 +159,7 @@ Reading network elements data
 All network elements data can be read as :class:`DataFrames <pandas.DataFrame>`.
 Supported elements are:
 - areas
+
  - buses (from the bus view)
  - buses (from the bus/breaker view)
  - lines
