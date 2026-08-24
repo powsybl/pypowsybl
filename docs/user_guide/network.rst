@@ -47,8 +47,8 @@ The supported formats are the following:
     For example, to find the parameters available when loading a network with the XIIDM format:
 
     .. code-block::
-    >>> pp.network.get_import_parameters("XIIDM")
 
+    >>> pp.network.get_import_parameters("XIIDM")
 
     An exhaustive list of these parameters as well as their description is available in the section dedicated to each
     supported format `on this page <inv:powsyblcore:std:doc#grid_exchange_formats/index>`_.
@@ -114,8 +114,8 @@ To save a network, you can use the :func:`save` function with the path to the ne
     For example, to find the parameters available when exporting a network with the XIIDM format:
 
     .. code-block::
-    >>> pp.network.get_export_parameters("XIIDM")
 
+    >>> pp.network.get_export_parameters("XIIDM")
 
     An exhaustive list of these parameters as well as their description is available in the section dedicated to each
     supported format `here <inv:powsyblcore:std:doc#grid_exchange_formats/index>`_.
