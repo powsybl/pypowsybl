@@ -34,7 +34,9 @@ def validate_acdc_network(network: Network) -> None:
     dc_nodes_with_component = get_dc_nodes_with_component(dc_nodes, dc_buses)
 
     check_no_dangling_dc_lines(dc_lines)
+    
     check_dc_nodes_have_same_nominal_voltage_per_dc_component(dc_nodes_with_component)
+    
     check_dc_components_have_vdc_converter(voltage_source_converters, dc_nodes_with_component)
 
 
@@ -74,30 +76,59 @@ def check_dc_nodes_have_same_nominal_voltage_per_dc_component(dc_nodes_with_comp
                 f"DC nodes: {component_node_ids}"
             )
 
-def check_dc_components_have_vdc_converter(voltage_source_converters: DataFrame, dc_nodes_with_component: DataFrame) -> None:
-    node_to_component = dc_nodes_with_component["dc_component"].to_dict()
-    all_dc_components = set(dc_nodes_with_component["dc_component"])
+def check_dc_components_have_vdc_converter(
+    voltage_source_converters: DataFrame,
+    dc_nodes_with_component: DataFrame,
+) -> None:
+    node_to_component = (
+        dc_nodes_with_component["dc_component"]
+        .dropna()
+        .to_dict()
+    )
+
+    connected_converter_nodes = set()
+
+    for _, converter in voltage_source_converters.iterrows():
+        if converter.dc_connected1:
+            connected_converter_nodes.add(converter.dc_node1_id)
+
+        if converter.dc_connected2:
+            connected_converter_nodes.add(converter.dc_node2_id)
+
+    # Validate components participating in the converter network.
+    # Do not require isolated topology fragments to contain a VDC converter.
+    relevant_dc_components = {
+        node_to_component[node_id]
+        for node_id in connected_converter_nodes
+        if node_id in node_to_component
+    }
 
     vdc_controlled_components = set()
+
     vdc_converters = voltage_source_converters[
         voltage_source_converters["control_mode"] == "V_DC"
     ]
 
-    # A DC component is considered voltage-controlled only if at least one VSC in V_DC mode
-    # is electrically connected to one of its DC nodes (via dc_connected1/2).
     for _, converter in vdc_converters.iterrows():
         if converter.dc_connected1:
-            vdc_controlled_components.add(node_to_component[converter.dc_node1_id])
+            component = node_to_component.get(converter.dc_node1_id)
+            if component is not None:
+                vdc_controlled_components.add(component)
 
         if converter.dc_connected2:
-            vdc_controlled_components.add(node_to_component[converter.dc_node2_id])
+            component = node_to_component.get(converter.dc_node2_id)
+            if component is not None:
+                vdc_controlled_components.add(component)
 
-    if vdc_controlled_components != all_dc_components:
-        components_without_vdc = sorted(all_dc_components - vdc_controlled_components)
+    components_without_vdc = (
+        relevant_dc_components - vdc_controlled_components
+    )
 
+    if components_without_vdc:
         raise ValueError(
             "Invalid detailed-DC network for ACDC OPF: "
-            f"DC components have no VSC in V_DC mode: {components_without_vdc}"
+            "converter-connected DC components have no VSC in V_DC mode: "
+            f"{sorted(components_without_vdc)}"
         )
 
 def check_no_dangling_dc_lines(dc_lines: DataFrame) -> None:
