@@ -6,6 +6,8 @@ The network model
 The :class:`Network` object is the main data structure of pypowsybl.
 It contains all the data of a power network: substations, generators, lines,
 transformers, ...
+The specific documentation about the network model can be found `in the powsybl-core documentation <inv:powsyblcore:std:doc#grid_model/network_subnetwork>`_.
+It details the equipment supported as well as their characteristics.
 
 pypowsybl provides methods to create networks, and to access and modify their data.
 
@@ -13,12 +15,14 @@ pypowsybl provides methods to create networks, and to access and modify their da
 Create a network
 ----------------
 
-pypowsybl provides several factory methods to create well known network models.
+pypowsybl provides several factory methods to create well-known network models.
 For example, you can create the IEEE 9-bus network case:
 
 .. doctest::
 
     >>> network = pp.network.create_ieee9()
+
+To know which networks are available in pypowsybl, you can check the list of creation functions in the `API guide <:ref:/reference/network>`_.
 
 Another common way of creating a network is to load it from a file:
 
@@ -38,16 +42,27 @@ The supported formats are the following:
 
 .. Note::
 
-    Import formats may support specific parameters,
-    which you can find by using :func:`get_import_parameters`.
+    Import formats may support specific parameters, which you can find by using :func:`get_import_parameters`.
+
+    For example, to find the parameters available when loading a network with the XIIDM format:
+
+    .. code-block::
+
+    pp.network.get_import_parameters("XIIDM")
+
+    An exhaustive list of these parameters as well as their description is available in the section dedicated to each
+    supported format `on this page <inv:powsyblcore:std:doc#grid_exchange_formats/index>`_.
+
+    Then, to use these specific parameters, they should be added as the second argument of the :func:`load` function as
+    a dictionary:
 
     .. code-block:: python
 
        network = pp.network.load('ieee14.raw', {'psse.import.ignore-base-voltage': 'true'})
 
 
-Loading a network from a binary byte buffer (io.BytesIO) is possible.
-Only zipped network loading are supported for now, but inside the zip file the supported network format are the same as pp.network.load.
+Loading a network from a binary byte buffer (io.BytesIO) is also possible.
+Only zipped network loading is supported for now, but inside the zip file, the supported network formats are the same as pp.network.load.
 
 .. doctest::
 
@@ -74,11 +89,39 @@ Then a list of post processors can be pass to the load function:
 Save a network
 --------------
 
-Networks can be written to the filesystem, using one of the available export formats:
+Networks can be written to the filesystem, using one of the available export formats.
+
+The supported export formats are:
+
+.. doctest::
+
+   >>> pp.network.get_export_formats()
+   ['AMPL', 'BIIDM', 'CGMES', 'JIIDM', 'MATPOWER', 'PSS/E', 'UCTE', 'XIIDM']
+
+Note that for some formats, only the updated export is available, which means that it is only possible to export only if
+the network was loaded from the same format. On this `page <inv:powsyblcore:std:doc#grid_exchange_formats/index>`_, you
+can see details about the supported import and export formats.
+
+To save a network, you can use the :func:`save` function with the path to the network, the format and optionally some parameters:
 
 .. code-block:: python
 
    network.save('network.xiidm', format='XIIDM')
+
+.. Note::
+
+    Export formats may support specific parameters, which you can find by using :func:`get_export_parameters`.
+    For example, to find the parameters available when exporting a network with the XIIDM format:
+
+    .. code-block::
+
+    pp.network.get_export_parameters("XIIDM")
+
+    An exhaustive list of these parameters as well as their description is available in the section dedicated to each
+    supported format `here <inv:powsyblcore:std:doc#grid_exchange_formats/index>`_.
+
+    The parameters must then be added in the :func:`save` function with the keyword argument `parameters`.
+
 
 You can also serialize networks to a string:
 
@@ -86,23 +129,12 @@ You can also serialize networks to a string:
 
    xiidm_str = network.save_to_string('XIIDM')
 
-And also to a zip file as a (io.BytesIO) binary buffer.
+And to a zip file as a (io.BytesIO) binary buffer.
 
 .. code-block:: python
 
    zipped_xiidm = network.save_to_binary_buffer('XIIDM')
 
-The supported formats are:
-
-.. doctest::
-
-   >>> pp.network.get_export_formats()
-   ['AMPL', 'BIIDM', 'CGMES', 'JIIDM', 'MATPOWER', 'PSS/E', 'UCTE', 'XIIDM']
-
-.. Note::
-
-    Export formats may support specific parameters,
-    which you can find by using :func:`get_export_parameters`.
 
 Updating a network from a file
 ------------------------------
@@ -126,13 +158,13 @@ Reading network elements data
 
 All network elements data can be read as :class:`DataFrames <pandas.DataFrame>`.
 Supported elements are:
+- areas
 
- - areas
- - buses (from bus view)
- - buses from bus/breaker view
+ - buses (from the bus view)
+ - buses (from the bus/breaker view)
  - lines
- - 2 windings transformers
- - 3 windings transformers
+ - two-winding transformers
+ - three-winding transformers
  - generators
  - loads
  - shunt compensators
@@ -155,7 +187,7 @@ Supported elements are:
  - DC grounds
  - DC switches
 
-Each element of the network is mapped to one row of the dataframe, an each element attribute
+Each element of the network is mapped to one row of the dataframe, and each element attribute
 is mapped to one column of the dataframe (a :class:`~pandas.Series`).
 
 For example, you can retrieve generators data as follows:
@@ -1066,7 +1098,7 @@ Using the same example as above :
 Using voltage angle limits
 --------------------------
 
-Voltage angle limits are defined between two terminals. Unlike operational limits, they are not attached to a single element 
+Voltage angle limits are defined between two terminals. Unlike operational limits, they are not attached to a single element
 side and they are not organized in operational-limit groups. Also there is currently no temporary/permanent distinction for
 voltage angles.
 

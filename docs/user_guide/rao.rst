@@ -1,8 +1,6 @@
 Running a RAO
 ===========================
 
-The RAO is currently in **beta** version.
-
 You can use the module :mod:`pypowsybl.rao` in order to perform a remedial actions optimization on a network.
 
 For detailed documentation of involved classes and methods, please refer to the :mod:`API reference <pypowsybl.rao>`.

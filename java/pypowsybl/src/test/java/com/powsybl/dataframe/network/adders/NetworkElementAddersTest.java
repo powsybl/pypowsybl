@@ -369,6 +369,41 @@ class NetworkElementAddersTest {
     }
 
     @Test
+    void activePowerControlExtensionOnBattery() {
+        var network = BatteryNetworkFactory.create();
+        String batteryId = "BAT2";
+        assertNull(network.getBattery(batteryId).getExtension(ActivePowerControl.class));
+        double droop = 4.0;
+
+        DefaultUpdatingDataframe dataframe = new DefaultUpdatingDataframe(1);
+        addStringColumn(dataframe, "id", batteryId);
+        addDoubleColumn(dataframe, "droop", droop);
+        addIntColumn(dataframe, "participate", 1);
+        addDoubleColumn(dataframe, "min_target_p", -150.0);
+        addDoubleColumn(dataframe, "max_target_p", 150.0);
+        NetworkElementAdders.addExtensions("activePowerControl", network, singletonList(dataframe));
+
+        ActivePowerControl extension = network.getBattery(batteryId).getExtension(ActivePowerControl.class);
+        assertNotNull(extension);
+        assertEquals(droop, extension.getDroop());
+        assertTrue(extension.isParticipate());
+        assertEquals(-150.0, extension.getMinTargetP().orElseThrow());
+        assertEquals(150.0, extension.getMaxTargetP().orElseThrow());
+    }
+
+    @Test
+    void activePowerControlExtensionOnUnsupportedElement() {
+        var network = BatteryNetworkFactory.create();
+        DefaultUpdatingDataframe dataframe = new DefaultUpdatingDataframe(1);
+        addStringColumn(dataframe, "id", "LOAD");
+        addDoubleColumn(dataframe, "droop", 4.0);
+        List<UpdatingDataframe> dataframes = singletonList(dataframe);
+        PowsyblException e = assertThrows(PowsyblException.class,
+                () -> NetworkElementAdders.addExtensions("activePowerControl", network, dataframes));
+        assertEquals("Network element 'LOAD' is not a generator or a battery", e.getMessage());
+    }
+
+    @Test
     void hvdcAngleDroopActivePowerControlExtension() {
         Network network = HvdcTestNetwork.createLcc();
         String lId = "L";
