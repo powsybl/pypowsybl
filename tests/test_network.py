@@ -2073,6 +2073,30 @@ def test_switch_flows():
     assert flow['q'] == pytest.approx(-side1_flow[1], abs=maxActivePowerMismatch)
 
 
+def test_outage_group_types():
+    network = pp.network.create_four_substations_node_breaker_network()
+
+    outage_group = network.get_outage_group('S4VL1_BBS')
+
+    assert isinstance(outage_group, list)
+    assert all(isinstance(equipment_id, str) for equipment_id in outage_group)
+
+
+def test_outage_groups_types():
+    network = pp.network.create_four_substations_node_breaker_network()
+    element_ids = ('S4VL1_BBS', 'LD6')
+
+    outage_groups = network.get_outage_groups(element_ids=element_ids)
+
+    assert isinstance(outage_groups, dict)
+    assert all(isinstance(group_id, str) for group_id in outage_groups)
+    assert set(outage_groups) == set(element_ids)
+    assert all(isinstance(outage_group, list) for outage_group in outage_groups.values())
+    assert all(isinstance(equipment_id, str)
+               for outage_group in outage_groups.values()
+               for equipment_id in outage_group)
+
+
 def test_bus_breaker_view_buses():
     n = pp.network.create_eurostag_tutorial_example1_network()
     buses = n.get_bus_breaker_view_buses()

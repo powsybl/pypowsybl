@@ -601,6 +601,51 @@ public final class NetworkCFunctions {
         });
     }
 
+    /**
+     * Native entry point returning the propagated outage group for one initiating equipment.
+     *
+     * @param thread current isolate thread
+     * @param networkHandle handle of the network to inspect
+     * @param equipmentId native string containing the initiating equipment identifier
+     * @param exceptionHandlerPtr native exception handler used to report Java failures
+     * @return native array of disconnected equipment identifiers
+     */
+    @CEntryPoint(name = "getOutageGroup")
+    public static ArrayPointer<CCharPointerPointer> getOutageGroup(IsolateThread thread, ObjectHandle networkHandle, CCharPointer equipmentId,
+                                                                   ExceptionHandlerPointer exceptionHandlerPtr) {
+        return doCatch(exceptionHandlerPtr, new PointerProvider<>() {
+            @Override
+            public ArrayPointer<CCharPointerPointer> get() {
+                Network network = ObjectHandles.getGlobal().get(networkHandle);
+                return createCharPtrArray(NetworkUtil.getOutageGroup(network, CTypeUtil.toString(equipmentId)));
+            }
+        });
+    }
+
+    /**
+     * Native entry point returning propagated outage groups for a batch of initiating equipments.
+     *
+     * @param thread current isolate thread
+     * @param networkHandle handle of the network to inspect
+     * @param elementIdsPtr pointer to the first native string containing an initiating equipment identifier
+     * @param elementIdsCount number of initiating equipment identifiers available through {@code elementIdsPtr}
+     * @param exceptionHandlerPtr native exception handler used to report Java failures
+     * @return native string-map array keyed by initiating equipment identifier
+     */
+    @CEntryPoint(name = "getOutageGroups")
+    public static StringMapArray getOutageGroups(IsolateThread thread, ObjectHandle networkHandle,
+                                                 CCharPointerPointer elementIdsPtr, int elementIdsCount,
+                                                 ExceptionHandlerPointer exceptionHandlerPtr) {
+        return doCatch(exceptionHandlerPtr, new PointerProvider<>() {
+            @Override
+            public StringMapArray get() {
+                Network network = ObjectHandles.getGlobal().get(networkHandle);
+                List<String> elementIds = toStringList(elementIdsPtr, elementIdsCount);
+                return CTypeUtil.fromStringListMap(NetworkUtil.getOutageGroups(network, elementIds));
+            }
+        });
+    }
+
     private static DataframeFilter createDataframeFilter(FilterAttributesType filterAttributesType, CCharPointerPointer attributesPtrPtr, int attributesCount, DataframePointer selectedElementsDataframe) {
         List<String> attributes = toStringList(attributesPtrPtr, attributesCount);
         AttributeFilterType filterType = switch (filterAttributesType) {
