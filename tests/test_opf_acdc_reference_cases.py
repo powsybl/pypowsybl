@@ -400,6 +400,16 @@ def test_dc_voltage_starts_place_every_node_from_the_declared_voltages():
     assert starts == pytest.approx({'dn4p': 0.5, 'dn4n': -0.5, 'dn3p': 0.5, 'dn3n': 0.0})
 
 
+def test_network_cache_builds_on_a_pure_dc_network_with_no_ac_buses():
+    """NetworkCache used to raise on any network with zero AC buses: an empty get_buses()
+    carries voltage_level_id as float64 while get_voltage_levels() carries it as object,
+    and the merge between the two rejected the mismatch.
+    """
+    network = pp.network.create_dc_detailed_dc_switch_2_nodes()
+    cache = NetworkCache(network)
+    assert len(cache.buses) == 0
+
+
 def test_dc_current_bound_does_not_cut_off_an_ordinary_operating_point():
     """2.0 pu was only 500 A on this network's base, below what an ordinary HVDC cable carries."""
     n = pp.network.create_ac_dc_bipolar_network()

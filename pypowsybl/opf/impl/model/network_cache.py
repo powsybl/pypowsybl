@@ -171,6 +171,7 @@ class NetworkCache:
     def _build_buses(network: Network, voltage_levels: DataFrame) -> DataFrame:
         buses = network.get_buses(attributes=['voltage_level_id', 'connected_component', 'synchronous_component'])
         buses = buses[buses['connected_component'] == 0]
+        buses = buses.astype({'voltage_level_id': object})
         return pd.merge(buses, voltage_levels, left_on='voltage_level_id', right_index=True, how='left', validate='m:1')
 
     @staticmethod
@@ -225,8 +226,8 @@ class NetworkCache:
 
     @staticmethod
     def _build_dc_nodes(network: Network, dc_buses: DataFrame) -> DataFrame:
-        # FIXME : when dc_nodes is empty, its type is float64 and not object
-        dc_nodes = network.get_dc_nodes(attributes=['dc_bus_id', 'nominal_v']).astype(object)
+        dc_nodes = network.get_dc_nodes(attributes=['dc_bus_id', 'nominal_v'])
+        dc_nodes = dc_nodes.astype({'dc_bus_id': object})
         return pd.merge(dc_nodes, dc_buses, left_on='dc_bus_id', right_index=True, how='left')
 
     @staticmethod
