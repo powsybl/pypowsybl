@@ -419,6 +419,7 @@ PYBIND11_MODULE(_pypowsybl, m) {
             .value("DC_BUS", element_type::DC_BUS)
             .value("OVERLOAD_MANAGEMENT_SYSTEM", element_type::OVERLOAD_MANAGEMENT_SYSTEM)
             .value("OVERLOAD_MANAGEMENT_SYSTEM_TRIPPING", element_type::OVERLOAD_MANAGEMENT_SYSTEM_TRIPPING);
+            .value("DROOP_CURVE_SEGMENT", element_type::DROOP_CURVE_SEGMENT)
 
     py::enum_<filter_attributes_type>(m, "FilterAttributesType")
             .value("ALL_ATTRIBUTES", filter_attributes_type::ALL_ATTRIBUTES)
