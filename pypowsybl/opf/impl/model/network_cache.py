@@ -43,6 +43,13 @@ class NetworkCache:
         self._dc_switches = self._build_dc_switches(network)
         self._voltage_source_converters = self._build_voltage_source_converters(network)
         self._dc_grounds = self._build_dc_grounds(network)
+
+    def __enter__(self) -> 'NetworkCache':
+        return self
+
+    def __exit__(self, exc_type: object, exc_value: object, traceback: object) -> None:
+        self._network.per_unit = False
+
     @staticmethod
     def _filter_injections(injections: DataFrame, buses: DataFrame) -> DataFrame:
         if len(injections) == 0:
