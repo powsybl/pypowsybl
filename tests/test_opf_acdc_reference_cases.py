@@ -6,8 +6,13 @@ import pytest
 
 import pypowsybl as pp
 import pypowsybl.opf as opf
+from pypowsybl.opf.impl.bounds.transformer_3w_middle_voltage_bounds import Transformer3wMiddleVoltageBounds
+from pypowsybl.opf.impl.model.bounds import Bounds
 from pypowsybl.opf.impl.model.dc_voltage_starts import compute_dc_node_voltage_starts
+from pypowsybl.opf.impl.model.model import create_model
+from pypowsybl.opf.impl.model.model_parameters import ModelParameters, SolverType
 from pypowsybl.opf.impl.model.network_cache import NetworkCache
+from pypowsybl.opf.impl.model.variable_context import VariableContext
 
 if platform.system() == 'Darwin' and platform.machine() == 'x86_64':
     pytest.skip("No version compatible with x86_64 macOS.", allow_module_level=True)
@@ -399,6 +404,31 @@ def test_dc_voltage_starts_place_every_node_from_the_declared_voltages():
     starts = compute_dc_node_voltage_starts(NetworkCache(pp.network.create_ac_dc_monopolar_network()))
 
     assert starts == pytest.approx({'dn4p': 0.5, 'dn4n': -0.5, 'dn3p': 0.5, 'dn3n': 0.0})
+
+
+def test_transformer_3w_middle_start_lands_on_voltage_not_angle():
+    """Transformer3wMiddleVoltageBounds used to call set_variable_start on t3_middle_ph_vars
+    (the angle) instead of t3_middle_v_vars (the voltage magnitude) two lines above, where the
+    bounds are set. That left the magnitude variable to default to a start of 0.0 and forced the
+    angle to 1.0 rad (~57 degrees) instead of the 0.0 every other free angle defaults to.
+
+    No public getter reads a start value before solving, so this reaches the underlying
+    pyoptinterface model directly (get_variable_start), the same way set_variable_start does.
+    """
+    network = pp.network.create_micro_grid_be_network()
+    cache = NetworkCache(network)
+    model_parameters = ModelParameters(0.1, False, Bounds(0.8, 1.1), SolverType.IPOPT, {})
+    model = create_model(SolverType.IPOPT, {})
+    variable_context = VariableContext.build(cache, model)
+
+    Transformer3wMiddleVoltageBounds().add(model_parameters, cache, variable_context, model)
+
+    t3_index = variable_context.t3_num_2_index[0]
+    v_start = model._model.get_variable_start(variable_context.t3_middle_v_vars[t3_index])
+    ph_start = model._model.get_variable_start(variable_context.t3_middle_ph_vars[t3_index])
+
+    assert v_start == 1.0
+    assert ph_start == 0.0
 
 
 def test_run_ac_has_no_shared_mutable_default_parameters():
