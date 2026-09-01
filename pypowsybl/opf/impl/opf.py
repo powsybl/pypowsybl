@@ -137,14 +137,15 @@ class OptimalPowerFlow:
         # for debugging
         opf_model.analyze_violations(model_parameters)
 
-        # update network
-        opf_model.update_network()
+        converged = status in (poi.TerminationStatusCode.OPTIMAL, poi.TerminationStatusCode.LOCALLY_SOLVED)
+        if converged:
+            opf_model.update_network()
 
         network_stats.print()
 
         network_cache.network.per_unit = False # FIXME design to improve
 
-        return status in (poi.TerminationStatusCode.OPTIMAL, poi.TerminationStatusCode.LOCALLY_SOLVED)
+        return converged
 
 
 def run_ac(network: Network, parameters: Optional[OptimalPowerFlowParameters] = None) -> bool:
