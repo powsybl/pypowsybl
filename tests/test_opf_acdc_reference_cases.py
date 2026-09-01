@@ -1,3 +1,4 @@
+import inspect
 import math
 import platform
 
@@ -398,6 +399,15 @@ def test_dc_voltage_starts_place_every_node_from_the_declared_voltages():
     starts = compute_dc_node_voltage_starts(NetworkCache(pp.network.create_ac_dc_monopolar_network()))
 
     assert starts == pytest.approx({'dn4p': 0.5, 'dn4n': -0.5, 'dn3p': 0.5, 'dn3n': 0.0})
+
+
+def test_run_ac_has_no_shared_mutable_default_parameters():
+    """run_ac() used to default to a single OptimalPowerFlowParameters() instance built once
+    at import time. Every OptimalPowerFlowParameters.with_*() setter mutates self in place and
+    returns it (no copy anywhere), so anyone who got hold of that default and configured it would
+    have silently reconfigured every later caller relying on the default in the same process.
+    """
+    assert inspect.signature(opf.run_ac).parameters['parameters'].default is None
 
 
 def test_network_cache_builds_on_a_pure_dc_network_with_no_ac_buses():

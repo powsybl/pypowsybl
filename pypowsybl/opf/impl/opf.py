@@ -7,6 +7,7 @@
 #
 import logging
 import time
+from typing import Optional
 
 import pyoptinterface as poi
 from pypowsybl._pypowsybl import ElementType
@@ -146,16 +147,18 @@ class OptimalPowerFlow:
         return status in (poi.TerminationStatusCode.OPTIMAL, poi.TerminationStatusCode.LOCALLY_SOLVED)
 
 
-def run_ac(network: Network, parameters: OptimalPowerFlowParameters = OptimalPowerFlowParameters()) -> bool:
+def run_ac(network: Network, parameters: Optional[OptimalPowerFlowParameters] = None) -> bool:
     """Run AC optimal power flow on the provided network.
 
     Args:
         network (Network): The network on which to solve the optimal power flow.
         parameters (OptimalPowerFlowParameters, optional): Optimization parameters and solver settings.
-            Defaults to OptimalPowerFlowParameters().
+            Defaults to a fresh OptimalPowerFlowParameters().
 
     Returns:
         bool: True if the optimization terminated with an optimal or locally solved status, False otherwise.
     """
+    if parameters is None:
+        parameters = OptimalPowerFlowParameters()
     opf = OptimalPowerFlow(network)
     return opf.run(parameters)
