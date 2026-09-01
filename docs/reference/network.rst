@@ -113,6 +113,7 @@ All network elements are accessible as dataframes, using the following getters.
    Network.get_ratio_tap_changer_steps
    Network.get_ratio_tap_changers
    Network.get_reactive_capability_curve_points
+   Network.get_droop_curve_segments
    Network.get_shunt_compensators
    Network.get_static_var_compensators
    Network.get_substations
@@ -232,6 +233,7 @@ Network elements can be created or removed using the following methods:
    Network.create_busbar_sections
    Network.create_buses
    Network.create_curve_reactive_limits
+   Network.create_droop_curve_segments
    Network.create_boundary_lines
    Network.create_dangling_lines
    Network.create_generators

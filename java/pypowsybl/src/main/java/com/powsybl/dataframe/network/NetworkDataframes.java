@@ -109,6 +109,7 @@ public final class NetworkDataframes {
         mappers.put(DataframeElementType.DC_GROUND, dcGrounds());
         mappers.put(DataframeElementType.DC_SWITCH, dcSwitches());
         mappers.put(DataframeElementType.DC_BUS, dcBuses());
+        mappers.put(DataframeElementType.DROOP_CURVE_SEGMENT, droopCurveSegments());
         return Collections.unmodifiableMap(mappers);
     }
 
@@ -1993,6 +1994,32 @@ public final class NetworkDataframes {
                 .doubles("p", (t, context) -> perUnitPQ(context, t.getMiddle().getP()))
                 .doubles("min_q", (t, context) -> perUnitPQ(context, t.getMiddle().getMinQ()))
                 .doubles("max_q", (t, context) -> perUnitPQ(context, t.getMiddle().getMaxQ()))
+                .build();
+    }
+
+    private static Stream<Triple<VoltageSourceConverter, DroopCurve.Segment, Integer>> streamDroopCurveSegments(Network network) {
+        return network.getVoltageSourceConverterStream()
+                .filter(converter -> !converter.getDroopCurve().getSegments().isEmpty())
+                .flatMap(NetworkDataframes::indexDroopCurveSegments);
+    }
+
+    private static Stream<Triple<VoltageSourceConverter, DroopCurve.Segment, Integer>> indexDroopCurveSegments(VoltageSourceConverter converter) {
+        List<Triple<VoltageSourceConverter, DroopCurve.Segment, Integer>> values = new ArrayList<>();
+        int num = 0;
+        for (DroopCurve.Segment segment : converter.getDroopCurve().getSegments()) {
+            values.add(Triple.of(converter, segment, num));
+            num++;
+        }
+        return values.stream();
+    }
+
+    private static NetworkDataframeMapper droopCurveSegments() {
+        return NetworkDataframeMapperBuilder.ofStream(NetworkDataframes::streamDroopCurveSegments)
+                .stringsIndex("id", t -> t.getLeft().getId())
+                .intsIndex("num", Triple::getRight)
+                .doubles("min_v", (t, context) -> perUnitV(context, t.getMiddle().getMinV(), t.getLeft().getDcTerminal1()))
+                .doubles("max_v", (t, context) -> perUnitV(context, t.getMiddle().getMaxV(), t.getLeft().getDcTerminal1()))
+                .doubles("k", (t, context) -> perUnitK(context, t.getMiddle().getK(), t.getLeft().getDcTerminal1()))
                 .build();
     }
 
