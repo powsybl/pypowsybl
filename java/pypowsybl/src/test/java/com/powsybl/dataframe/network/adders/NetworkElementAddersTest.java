@@ -828,6 +828,36 @@ class NetworkElementAddersTest {
     }
 
     @Test
+    void droopCurveSegment() {
+        var network = DcDetailedNetworkFactory.createVscSymmetricalMonopole();
+        DefaultUpdatingDataframe dataframe = new DefaultUpdatingDataframe(3);
+        dataframe.addSeries("id", true, new TestStringSeries("VscFr", "VscFr", "VscFr"));
+        dataframe.addSeries("min_v", false, new TestDoubleSeries(-500.0, -100.0, 100.0));
+        dataframe.addSeries("max_v", false, new TestDoubleSeries(-100.0, 100.0, 500.0));
+        dataframe.addSeries("k", false, new TestDoubleSeries(-10.0, -5.0, -1.0));
+        NetworkElementAdders.addElements(DataframeElementType.DROOP_CURVE_SEGMENT, network, singletonList(dataframe));
+
+        VoltageSourceConverter vscFr = network.getVoltageSourceConverter("VscFr");
+        assertEquals(3, vscFr.getDroopCurve().getSegments().size());
+        assertEquals(-10.0, vscFr.getDroopCurve().getK(-1000.0));
+        assertEquals(-5.0, vscFr.getDroopCurve().getK(0.0));
+        assertEquals(-1.0, vscFr.getDroopCurve().getK(1000.0));
+    }
+
+    @Test
+    void droopCurveSegmentOverlapError() {
+        var network = DcDetailedNetworkFactory.createVscSymmetricalMonopole();
+        DefaultUpdatingDataframe dataframe = new DefaultUpdatingDataframe(2);
+        dataframe.addSeries("id", true, new TestStringSeries("VscFr", "VscFr"));
+        dataframe.addSeries("min_v", false, new TestDoubleSeries(-500.0, -150.0));
+        dataframe.addSeries("max_v", false, new TestDoubleSeries(-100.0, 100.0));
+        dataframe.addSeries("k", false, new TestDoubleSeries(-10.0, -5.0));
+        PowsyblException e = assertThrows(PowsyblException.class, () ->
+                NetworkElementAdders.addElements(DataframeElementType.DROOP_CURVE_SEGMENT, network, singletonList(dataframe)));
+        assertTrue(e.getMessage().contains("Droop segments are overlapping"));
+    }
+
+    @Test
     void dcGround() {
         var network = DcDetailedNetworkFactory.createVscAsymmetricalMonopole();
         var dataframe = new DefaultUpdatingDataframe(1);
