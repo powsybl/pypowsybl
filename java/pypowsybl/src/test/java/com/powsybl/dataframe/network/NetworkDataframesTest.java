@@ -1077,6 +1077,16 @@ class NetworkDataframesTest {
     }
 
     @Test
+    void droopCurveSegments() {
+        Network network = DcDetailedNetworkFactory.createVscSymmetricalMonopole();
+        List<Series> series = createDataFrame(DROOP_CURVE_SEGMENT, network);
+
+        assertThat(series)
+                .extracting(Series::getName)
+                .containsExactly("id", "num", "min_v", "max_v", "k");
+    }
+
+    @Test
     void dcSwitches() {
         Network network = DcDetailedNetworkFactory.createSimple2NodesDcSwitch();
         List<Series> series = createDataFrame(DC_SWITCH, network);
