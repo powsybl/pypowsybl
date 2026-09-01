@@ -1079,6 +1079,9 @@ class NetworkDataframesTest {
     @Test
     void droopCurveSegments() {
         Network network = DcDetailedNetworkFactory.createVscSymmetricalMonopole();
+        network.getVoltageSourceConverter("VscFr").newDroopCurve()
+                .beginSegment().setMinV(-500.0).setMaxV(-100.0).setK(-10.0).endSegment()
+                .add();
         List<Series> series = createDataFrame(DROOP_CURVE_SEGMENT, network);
 
         assertThat(series)
