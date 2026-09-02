@@ -23,6 +23,7 @@ def validate_acdc_network(network: Network) -> None:
         ValueError: If any of the following conditions are violated:
             - A DC component uses multiple nominal voltages.
             - A DC component has no connected DcGround.
+            - A DC component has a converter but none in V_DC mode.
     """
     dc_nodes = network.get_dc_nodes()
     if dc_nodes.empty:
@@ -31,6 +32,7 @@ def validate_acdc_network(network: Network) -> None:
     dc_buses = network.get_dc_buses()
     dc_lines = network.get_dc_lines()
     dc_grounds = network.get_dc_grounds()
+    voltage_source_converters = network.get_voltage_source_converters()
     dc_nodes_with_component = get_dc_nodes_with_component(dc_nodes, dc_buses)
 
     check_no_dangling_dc_lines(dc_lines)
@@ -38,6 +40,8 @@ def validate_acdc_network(network: Network) -> None:
     check_dc_nodes_have_same_nominal_voltage_per_dc_component(dc_nodes_with_component)
 
     check_dc_components_have_a_connected_ground(dc_grounds, dc_nodes_with_component)
+
+    check_dc_components_have_a_power_balancing_v_dc_converter(voltage_source_converters, dc_nodes_with_component)
 
 
 def get_dc_nodes_with_component(dc_nodes: DataFrame, dc_buses: DataFrame) -> DataFrame:
@@ -100,6 +104,36 @@ def check_dc_components_have_a_connected_ground(
             "Invalid detailed-DC network for ACDC OPF: "
             "DC components have no connected ground: "
             f"{sorted(ungrounded_components)}"
+        )
+
+def check_dc_components_have_a_power_balancing_v_dc_converter(
+    voltage_source_converters: DataFrame,
+    dc_nodes_with_component: DataFrame,
+) -> None:
+    # Only V_DC leaves a converter's power free; P_PCC pins it.
+    node_to_component = (
+        dc_nodes_with_component["dc_component"]
+        .dropna()
+        .to_dict()
+    )
+
+    components_with_a_converter: set = set()
+    components_with_a_v_dc_converter: set = set()
+    for converter in voltage_source_converters.itertuples():
+        component = node_to_component.get(converter.dc_node1_id)
+        if component is None:
+            continue
+        components_with_a_converter.add(component)
+        if converter.control_mode == "V_DC":
+            components_with_a_v_dc_converter.add(component)
+
+    components_missing_one = components_with_a_converter - components_with_a_v_dc_converter
+
+    if components_missing_one:
+        raise ValueError(
+            "Invalid detailed-DC network for ACDC OPF: "
+            "DC components have a converter but none in V_DC mode to absorb resistive losses: "
+            f"{sorted(components_missing_one)}"
         )
 
 def check_no_dangling_dc_lines(dc_lines: DataFrame) -> None:

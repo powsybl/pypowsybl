@@ -128,30 +128,9 @@ def test_validation_accepts_different_nominal_voltages_in_different_dc_component
     validate_acdc_network(network)
 
 
-def test_validation_no_longer_requires_a_vdc_converter_when_grounded():
-    """A grounded DC component with no V_DC converter used to be rejected for the wrong reason (no
-    V_DC converter); grounding, not a V_DC converter, is what anchors a component's absolute
-    voltage, so this must now be accepted."""
-    network = pp.network.create_empty()
-
-    voltage_level_id, bus_id = build_ac_bus(network, "A")
-
-    add_vsc_island_on_ac_bus(
-        network,
-        "A",
-        voltage_level_id,
-        bus_id,
-        nominal_v=400.0,
-        control_mode="P_PCC",
-    )
-
-    validate_acdc_network(network)
-
-
 def test_validation_rejects_an_ungrounded_dc_component_even_with_a_vdc_converter():
-    """red->green: a V_DC converter used to be treated as sufficient on its own. target_v_dc is a
-    difference between two converter terminals, so it can never anchor a component's absolute
-    level - only a connected DcGround can. Fails to raise before the fix; raises after."""
+    """target_v_dc constrains a voltage difference between two converter terminals, not an
+    absolute level, so a V_DC converter alone cannot ground a DC component."""
     network = pp.network.create_empty()
 
     voltage_level_id, bus_id = build_ac_bus(network, "A")
@@ -265,10 +244,34 @@ def create_two_vsc_same_dc_component_network(conv_a_control_mode: str):
     return network
     
 def test_validation_accepts_a_grounded_dc_component_regardless_of_converter_control_mode():
-    """Both converters on the same, grounded DC component - control mode no longer decides
-    validity, grounding does. One V_DC + one P_PCC, and two P_PCC, both accepted."""
+    """Grounding does not depend on converter control mode."""
     validate_acdc_network(create_two_vsc_same_dc_component_network("V_DC"))
-    validate_acdc_network(create_two_vsc_same_dc_component_network("P_PCC"))
+
+
+def test_validation_rejects_a_dc_component_with_no_v_dc_converter():
+    """Two P_PCC converters on the same grounded component leave nothing to absorb line losses
+    that cannot be known before solving."""
+    with pytest.raises(ValueError, match="none in V_DC mode"):
+        validate_acdc_network(create_two_vsc_same_dc_component_network("P_PCC"))
+
+
+def test_validation_rejects_a_dc_component_whose_only_converter_is_in_droop_mode():
+    """P_PCC_DROOP is not implemented by this OPF yet - it pins neither power nor voltage - so it must
+    not count as a valid power-balancing converter for now."""
+    with pytest.raises(ValueError, match="none in V_DC mode"):
+        validate_acdc_network(create_two_vsc_same_dc_component_network("P_PCC_DROOP"))
+
+
+def test_validation_accepts_an_isolated_dc_component_with_no_converter_at_all():
+    """A DC component with no converter has no power to balance, so it is exempt from this
+    check."""
+    network = create_two_vsc_same_dc_component_network("V_DC")
+    network.create_dc_nodes(id="dn_orphan1", nominal_v=400.0)
+    network.create_dc_nodes(id="dn_orphan2", nominal_v=400.0)
+    network.create_dc_lines(id="dl_orphan", dc_node1_id="dn_orphan1", dc_node2_id="dn_orphan2", r=2.0)
+    network.create_dc_grounds(id="dg_orphan", r=0.0, dc_node_id="dn_orphan2")
+
+    validate_acdc_network(network)
 
 import pandas as pd
 import pytest
@@ -316,18 +319,13 @@ def test_check_no_dangling_dc_lines_rejects_disconnected_existing_dc_line():
 # --- validate_acdc_network runs regardless of mode -------------------------------------------------
 
 def test_validate_acdc_network_is_a_no_op_on_a_network_with_no_dc_nodes():
-    """trap: validate_acdc_network already returns immediately when the network has no DC nodes at
-    all - true before and after this fix. That is what makes calling it on every run() safe: it is
-    not the caller's job to decide whether the network needs validating, the function already knows.
-    """
+    """validate_acdc_network returns immediately on a network with no DC nodes, so it is always
+    safe to call regardless of mode."""
     validate_acdc_network(pp.network.create_ieee14())
 
 
 def test_run_ac_default_mode_rejects_mixed_nominal_voltages():
-    """red->green: run_ac's default mode (LOADFLOW) used to skip validate_acdc_network entirely,
-    solving a network ACDC mode would have rejected outright. Fails to raise before the fix
-    (silently attempts to solve instead); raises after.
-    """
+    """run_ac's default mode (LOADFLOW) must validate the network, not only ACDC mode."""
     network = pp.network.create_dc_detailed_vsc_asymmetrical_monopole_network()
 
     with pytest.raises(ValueError, match="has several nominal voltages"):
@@ -335,12 +333,7 @@ def test_run_ac_default_mode_rejects_mixed_nominal_voltages():
 
 
 def test_run_ac_default_mode_rejects_an_ungrounded_dc_component():
-    """This assertion (validate-on-network-not-mode: the default mode used to skip validation
-    entirely) was originally written against the missing-V_DC-converter check;
-    grounding-not-control-mode retired that check, so it is rewritten here against its
-    replacement - an ungrounded DC component - to keep testing the same thing: the validator runs
-    regardless of mode.
-    """
+    """run_ac's default mode (LOADFLOW) must validate the network, not only ACDC mode."""
     network = pp.network.create_empty()
     voltage_level_id, bus_id = build_ac_bus(network, "A")
     add_vsc_island_on_ac_bus(network, "A", voltage_level_id, bus_id, nominal_v=400.0,
