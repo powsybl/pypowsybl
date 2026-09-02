@@ -239,7 +239,7 @@ class NetworkCache:
 
     @staticmethod
     def _build_dc_lines(network: Network) -> DataFrame:
-        return network.get_dc_lines(attributes=['dc_node1_id', 'dc_node2_id', 'r'])
+        return network.get_dc_lines(attributes=['dc_node1_id', 'dc_node2_id', 'connected1', 'connected2', 'r'])
 
     @staticmethod
     def _build_dc_switches(network: Network) -> DataFrame:
@@ -254,7 +254,7 @@ class NetworkCache:
 
     @staticmethod
     def _build_dc_grounds(network: Network) -> DataFrame:
-        return network.get_dc_grounds(attributes=['dc_node_id', 'r'])
+        return network.get_dc_grounds(attributes=['dc_node_id', 'connected', 'r'])
 
     @property
     def network(self) -> Network:

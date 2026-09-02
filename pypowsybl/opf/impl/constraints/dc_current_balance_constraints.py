@@ -27,7 +27,7 @@ class DcCurrentBalanceConstraints(Constraints):
 def create_dc_current_balance_expressions(network_cache: NetworkCache,
                                            variable_context: VariableContext) -> list[poi.ExprBuilder]:
 
-    grounded_dc_node_ids = set(network_cache.dc_grounds["dc_node_id"])  
+    grounded_dc_node_ids = set(network_cache.dc_grounds[network_cache.dc_grounds["connected"]]["dc_node_id"])
     
     expressions_by_dc_node_id = {
         dc_node_id: poi.ExprBuilder()

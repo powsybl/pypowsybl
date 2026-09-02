@@ -22,7 +22,8 @@ def dc_voltage_differences(network_cache: NetworkCache) -> list[VoltageDifferenc
     differences = []
 
     for row in network_cache.dc_lines.itertuples(index=False):
-        differences.append((str(row.dc_node1_id), str(row.dc_node2_id), 0.0))
+        if row.connected1 and row.connected2:
+            differences.append((str(row.dc_node1_id), str(row.dc_node2_id), 0.0))
 
     for row in network_cache.dc_switches.itertuples(index=False):
         if not row.open:
@@ -68,7 +69,7 @@ def compute_dc_node_voltage_starts(network_cache: NetworkCache) -> dict[str, flo
 
     # Grounds last. Applied first, their 0 spreads and lands both terminals of a converter together.
     for row in network_cache.dc_grounds.itertuples(index=False):
-        if str(row.dc_node_id) not in starts:
+        if row.connected and str(row.dc_node_id) not in starts:
             starts[str(row.dc_node_id)] = 0.0
             starts = propagate_dc_voltages(differences, starts)
 

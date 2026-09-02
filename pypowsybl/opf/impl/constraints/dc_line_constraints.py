@@ -18,10 +18,13 @@ class DcLineConstraints(Constraints):
             model: Model) -> None:
 
         for dc_line_num, dc_line_row in enumerate(network_cache.dc_lines.itertuples(index=False)):
+            dc_line_index = variable_context.dc_line_num_2_index[dc_line_num]
+            if dc_line_index == -1:
+                continue
+
             dc_node1_id, dc_node2_id, r = dc_line_row.dc_node1_id, dc_line_row.dc_node2_id, dc_line_row.r
             dc_node1_num = network_cache.dc_nodes.index.get_loc(dc_node1_id)
             dc_node2_num = network_cache.dc_nodes.index.get_loc(dc_node2_id)
-            dc_line_index = variable_context.dc_line_num_2_index[dc_line_num]
 
             v1_var = variable_context.v_dc_vars[dc_node1_num]
             v2_var = variable_context.v_dc_vars[dc_node2_num]

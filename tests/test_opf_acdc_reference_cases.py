@@ -624,3 +624,71 @@ def test_slack_bus_angle_bounds_does_not_crash_on_zero_ac_buses():
     network = pp.network.create_dc_detailed_dc_switch_2_nodes()
     cache, model, variable_context = _add_slack_bus_angle_bounds(network)
     assert len(cache.buses) == 0
+
+
+def _build_two_converter_dc_network(convA_mode="V_DC", convB_mode="V_DC"):
+    n = pp.network.create_empty()
+    n.create_substations(id='sA')
+    n.create_substations(id='sB')
+    n.create_voltage_levels(id='vlA', substation_id='sA', topology_kind='BUS_BREAKER', nominal_v=400.0)
+    n.create_voltage_levels(id='vlB', substation_id='sB', topology_kind='BUS_BREAKER', nominal_v=400.0)
+    n.create_buses(id='bA', voltage_level_id='vlA')
+    n.create_buses(id='bB', voltage_level_id='vlB')
+    n.create_generators(id='gA', voltage_level_id='vlA', bus_id='bA', target_p=0.0, min_p=-500, max_p=500,
+                         target_v=400.0, voltage_regulator_on=True)
+    n.create_generators(id='gB', voltage_level_id='vlB', bus_id='bB', target_p=0.0, min_p=-500, max_p=500,
+                         target_v=400.0, voltage_regulator_on=True)
+    for node in ['dnAp', 'dnAn', 'dnBp', 'dnBn']:
+        n.create_dc_nodes(id=node, nominal_v=400.0)
+    n.create_dc_lines(id='dlP', dc_node1_id='dnAp', dc_node2_id='dnBp', r=0.5)
+    n.create_dc_lines(id='dlN', dc_node1_id='dnAn', dc_node2_id='dnBn', r=0.5)
+    n.create_dc_grounds(id='dg', r=0.0, dc_node_id='dnAn')
+    for suffix, mode in [('A', convA_mode), ('B', convB_mode)]:
+        kwargs = dict(id=f'conv{suffix}', voltage_level_id=f'vl{suffix}', bus1_id=f'b{suffix}',
+                      dc_node1_id=f'dn{suffix}p', dc_node2_id=f'dn{suffix}n', voltage_regulator_on=False,
+                      control_mode=mode, target_q=0.0, idle_loss=0.0, switching_loss=0.0, resistive_loss=0.0,
+                      dc_connected1=True, dc_connected2=True)
+        if mode == 'V_DC':
+            kwargs['target_v_dc'] = 400.0
+        else:
+            kwargs['target_p'] = 30.0
+        n.create_voltage_source_converters(**kwargs)
+    return n
+
+
+def test_disconnected_dc_line_is_excluded_from_the_solve():
+    """dnBp's only path to the rest of the network is dlP; excluding it forces converter B's
+    current to 0 there, which its fixed P_PCC target of 30 MW cannot satisfy - infeasible, not a
+    silently unchanged answer."""
+    network = _build_two_converter_dc_network(convA_mode="V_DC", convB_mode="P_PCC")
+    assert opf.run_ac(network)
+
+    network.update_dc_lines(id='dlP', connected1=False)
+    assert not opf.run_ac(network)
+
+
+def test_disconnected_dc_ground_no_longer_pins_voltage():
+    """A disconnected DcGround no longer anchors its node's absolute voltage to 0. The validator
+    already rejects a component left with no connected ground at all,
+    so this patches it out to isolate the constraint-level behaviour it would otherwise mask."""
+    import pypowsybl.opf.impl.opf as opf_impl
+    network = _build_two_converter_dc_network(convA_mode="V_DC", convB_mode="P_PCC")
+    opf.run_ac(network)
+    assert network.get_dc_nodes().loc['dnAn', 'v'] == pytest.approx(0.0, abs=ATOL_KV)
+
+    network.update_dc_grounds(id='dg', connected=False)
+    original_validate = opf_impl.validate_acdc_network
+    opf_impl.validate_acdc_network = lambda n: None
+    try:
+        assert opf.run_ac(network)
+    finally:
+        opf_impl.validate_acdc_network = original_validate
+    assert network.get_dc_nodes().loc['dnAn', 'v'] != pytest.approx(0.0, abs=ATOL_KV)
+
+
+def test_acdc_mode_loss_objective_handles_a_disconnected_dc_line():
+    """The DC-losses objective must skip an open line's current variable, not index it by raw
+    position among all DC lines."""
+    network = _build_two_converter_dc_network()
+    network.update_dc_lines(id='dlP', connected1=False)
+    assert opf.run_ac(network, opf.OptimalPowerFlowParameters(mode=opf.OptimalPowerFlowMode.ACDC))

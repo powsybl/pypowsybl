@@ -246,7 +246,7 @@ class VariableContext:
         dc_line_count = len(network_cache.dc_lines)
         dc_line_num_2_index = [-1] * dc_line_count
         for dc_line_num, row in enumerate(network_cache.dc_lines.itertuples(index=False)):
-            if row.dc_node1_id and row.dc_node2_id:
+            if row.dc_node1_id and row.dc_node2_id and row.connected1 and row.connected2:
                 dc_line_num_2_index[dc_line_num] = len(closed_dc_line_nums)
                 closed_dc_line_nums.append(dc_line_num)
 
@@ -711,7 +711,8 @@ class VariableContext:
         for dc_line_num, (dc_line_id, row) in enumerate(network_cache.dc_lines.iterrows()):
             dc_line_index = self.dc_line_num_2_index[dc_line_num]
             dc_line_ids.append(str(dc_line_id))
-            i = model.get_value(self.closed_dc_line_i_vars[dc_line_index])
+            # An open line has no equation and no current variable: it carries no current.
+            i = 0.0 if dc_line_index == -1 else model.get_value(self.closed_dc_line_i_vars[dc_line_index])
 
             dc_line_i.append(i)
 

@@ -19,5 +19,8 @@ class MinimizeDcLossesFunction(CostFunction):
     def create(self, network_cache: NetworkCache, variable_context: VariableContext) -> ExprBuilder:
         cost = poi.ExprBuilder()
         for dc_line_num, dc_line_row in enumerate(network_cache.dc_lines.itertuples()):
-            cost+= variable_context.closed_dc_line_i_vars[dc_line_num]**2
+            dc_line_index = variable_context.dc_line_num_2_index[dc_line_num]
+            if dc_line_index == -1:
+                continue
+            cost += variable_context.closed_dc_line_i_vars[dc_line_index]**2
         return cost
