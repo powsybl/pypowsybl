@@ -30,5 +30,4 @@ class DcLineCurrentBounds(VariableBounds):
 
             logger.log(TRACE_LEVEL, f"Add current bounds: [{MIN_DC_CURRENT}, {MAX_DC_CURRENT}] to dc line '{row.Index}' (num={dc_line_num})'")
 
-            model.set_variable_bounds(variable_context.closed_dc_line_i1_vars[dc_line_index], MIN_DC_CURRENT, MAX_DC_CURRENT)
-            model.set_variable_bounds(variable_context.closed_dc_line_i2_vars[dc_line_index], MIN_DC_CURRENT, MAX_DC_CURRENT)
+            model.set_variable_bounds(variable_context.closed_dc_line_i_vars[dc_line_index], MIN_DC_CURRENT, MAX_DC_CURRENT)

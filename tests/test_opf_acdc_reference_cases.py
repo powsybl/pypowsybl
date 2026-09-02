@@ -331,6 +331,38 @@ def test_official_asymmetrical_monopole_run_ac_is_rejected_for_mixed_nominal_vol
         opf.run_ac(n, params)
 
 
+# --- DC line current -------------------------------------------------------------------------------
+
+def test_dc_line_current_read_back_stays_mirrored():
+    """trap: a DC line's i2 is always -i1, both before and after collapse-dc-line-current -- this
+    is the fact that makes carrying only one solver variable safe. Ohm's law forces i2 = -i1
+    structurally, so the network's own i1/i2 columns stay mirrored regardless of how many solver
+    variables produced them."""
+    network = pp.network.create_ac_dc_bipolar_network()
+    parameters = opf.OptimalPowerFlowParameters(mode=opf.OptimalPowerFlowMode.ACDC)
+    assert opf.run_ac(network, parameters)
+
+    dc_lines = network.get_dc_lines()[['i1', 'i2']]
+    assert len(dc_lines) > 0
+    for i1, i2 in zip(dc_lines['i1'], dc_lines['i2']):
+        assert i2 == pytest.approx(-i1, abs=1e-6)
+
+
+def test_dc_line_carries_one_current_variable_not_two():
+    """red->green: a DC line used to carry two solver variables (closed_dc_line_i1_vars,
+    closed_dc_line_i2_vars) for the same physical current, constrained i2 = -i1 by two copies of
+    Ohm's law. Collapsed to one (closed_dc_line_i_vars); network_cache.update_dc_lines mirrors it
+    back into the network's own two columns."""
+    network = pp.network.create_ac_dc_bipolar_network()
+    cache = NetworkCache(network)
+    model = create_model(SolverType.IPOPT, {})
+    variable_context = VariableContext.build(cache, model)
+
+    assert len(variable_context.closed_dc_line_i_vars) == len(cache.dc_lines)
+    assert not hasattr(variable_context, 'closed_dc_line_i1_vars')
+    assert not hasattr(variable_context, 'closed_dc_line_i2_vars')
+
+
 # --- DC switches ---------------------------------------------------------------------------------
 # Each test adds a second dn3p -> dn4p path in parallel with the existing one and of the same total
 # resistance, so a closed switch must split the pole current about evenly and an open one must not.

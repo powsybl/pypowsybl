@@ -562,10 +562,11 @@ class NetworkCache:
 
     def update_dc_lines(self,
                         dc_line_ids: list[str],
-                        dc_line_i1: list[float],
-                        dc_line_i2: list[float]) -> None:
+                        dc_line_i: list[float]) -> None:
+        # i2 is the mirror of i1: oriented dc_node2 -> dc_node1.
+        dc_line_i2 = [-i for i in dc_line_i]
         self._network.update_dc_lines(id=dc_line_ids,
-                                      i1=dc_line_i1,
+                                      i1=dc_line_i,
                                       i2=dc_line_i2)
         self._dc_lines = self._build_dc_lines(self._network)
 

@@ -25,20 +25,9 @@ class DcLineConstraints(Constraints):
 
             v1_var = variable_context.v_dc_vars[dc_node1_num]
             v2_var = variable_context.v_dc_vars[dc_node2_num]
-            i1_var = variable_context.closed_dc_line_i1_vars[dc_line_index]
-            i2_var = variable_context.closed_dc_line_i2_vars[dc_line_index]
+            i_var = variable_context.closed_dc_line_i_vars[dc_line_index]
 
+            # i is oriented from dc_node1 to dc_node2.
+            i_eq = (v1_var - v2_var) / r - i_var
 
-            # FIXME consider using a single oriented current variable per DC line.
-            # The current formulation uses i1 and i2, but Ohm's law enforces i2 = -i1,
-            # so one variable is redundant. A single current variable would reduce the
-            # OPF dimension, but requires updating DC line variables, bounds, write-back,
-            # current balance constraints, and the DC losses objective consistently.
-
-            # i1 is oriented from dc_node1 to dc_node2; i2 is oriented from dc_node2 to dc_node1.
-            # Positive terminal current means current leaves the corresponding node and enters the DC line.
-            i1_eq = (v1_var - v2_var) / r - i1_var 
-            i2_eq = (v2_var - v1_var) / r - i2_var
-
-            model.add_linear_constraint(i1_eq, poi.Eq, 0.0)
-            model.add_linear_constraint(i2_eq, poi.Eq, 0.0)
+            model.add_linear_constraint(i_eq, poi.Eq, 0.0)

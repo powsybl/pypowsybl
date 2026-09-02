@@ -41,12 +41,11 @@ def create_dc_current_balance_expressions(network_cache: NetworkCache,
         if dc_line_index == -1:
             continue
 
-        add_current_to_dc_node(expressions_by_dc_node_id,
-                                str(row.dc_node1_id),
-                                variable_context.closed_dc_line_i1_vars[dc_line_index])
-        add_current_to_dc_node(expressions_by_dc_node_id,
-                                str(row.dc_node2_id),
-                                variable_context.closed_dc_line_i2_vars[dc_line_index])
+        dc_line_current = variable_context.closed_dc_line_i_vars[dc_line_index]
+
+        # Oriented dc_node1 -> dc_node2.
+        add_current_to_dc_node(expressions_by_dc_node_id, str(row.dc_node1_id), dc_line_current)
+        add_current_to_dc_node(expressions_by_dc_node_id, str(row.dc_node2_id), -dc_line_current)
         
     # Add current from closed DC switches to DC node current balance expression
     for dc_switch_num, row in enumerate(network_cache.dc_switches.itertuples(index=False)):

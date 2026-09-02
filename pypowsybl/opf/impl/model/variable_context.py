@@ -54,8 +54,7 @@ class VariableContext:
     t3_open_side1_branch_p2_vars: Any
     t3_open_side1_branch_q2_vars: Any
     v_dc_vars: Any
-    closed_dc_line_i1_vars: Any
-    closed_dc_line_i2_vars: Any
+    closed_dc_line_i_vars: Any
     closed_dc_switch_i_vars: Any
     conv_p_vars: Any
     conv_q_vars: Any
@@ -251,8 +250,8 @@ class VariableContext:
                 dc_line_num_2_index[dc_line_num] = len(closed_dc_line_nums)
                 closed_dc_line_nums.append(dc_line_num)
 
-        closed_dc_line_i1_vars = model.add_m_variables(len(closed_dc_line_nums), name='closed_dc_line_i1')
-        closed_dc_line_i2_vars = model.add_m_variables(len(closed_dc_line_nums), name='closed_dc_line_i2')
+        # Oriented dc_node1 -> dc_node2.
+        closed_dc_line_i_vars = model.add_m_variables(len(closed_dc_line_nums), name='closed_dc_line_i')
 
         closed_dc_switch_nums: list[int] = []
         dc_switch_count = len(network_cache.dc_switches)
@@ -292,7 +291,7 @@ class VariableContext:
                                t3_closed_branch_q1_vars, t3_closed_branch_q2_vars,
                                t3_open_side1_p2_vars, t3_open_side1_q2_vars,
                                v_dc_vars,
-                               closed_dc_line_i1_vars, closed_dc_line_i2_vars,
+                               closed_dc_line_i_vars,
                                closed_dc_switch_i_vars,
                                conv_p_vars, conv_q_vars, conv_i_vars,
                                branch_num_2_index,
@@ -708,20 +707,17 @@ class VariableContext:
 
     def _update_dc_lines(self, network_cache: NetworkCache, model: Model) -> None:
         dc_line_ids: list[str] = []
-        dc_line_i1 = []
-        dc_line_i2 = []
+        dc_line_i = []
         for dc_line_num, (dc_line_id, row) in enumerate(network_cache.dc_lines.iterrows()):
             dc_line_index = self.dc_line_num_2_index[dc_line_num]
             dc_line_ids.append(str(dc_line_id))
-            i1 = model.get_value(self.closed_dc_line_i1_vars[dc_line_index])
-            i2 = model.get_value(self.closed_dc_line_i2_vars[dc_line_index])
+            i = model.get_value(self.closed_dc_line_i_vars[dc_line_index])
 
-            dc_line_i1.append(i1)
-            dc_line_i2.append(i2)
+            dc_line_i.append(i)
 
-            logger.log(TRACE_LEVEL, f"Update dc_line '{dc_line_id}': i1={i1} i2={i2}")
+            logger.log(TRACE_LEVEL, f"Update dc_line '{dc_line_id}': i={i}")
 
-        network_cache.update_dc_lines(dc_line_ids, dc_line_i1, dc_line_i2)
+        network_cache.update_dc_lines(dc_line_ids, dc_line_i)
 
     def _update_voltage_source_converters(self, network_cache: NetworkCache, model: Model) -> None:
         conv_ids: list[str] = []
