@@ -6,6 +6,7 @@ import pytest
 
 import pypowsybl as pp
 import pypowsybl.opf as opf
+from pypowsybl.opf.impl.bounds.slack_bus_angle_bounds import SlackBusAngleBounds
 from pypowsybl.opf.impl.bounds.transformer_3w_middle_voltage_bounds import Transformer3wMiddleVoltageBounds
 from pypowsybl.opf.impl.model.bounds import Bounds
 from pypowsybl.opf.impl.model.dc_voltage_starts import compute_dc_node_voltage_starts
@@ -556,3 +557,70 @@ def test_dc_current_bound_does_not_cut_off_an_ordinary_operating_point():
 
     base_current_a = 100e3 / 400.0
     assert n.get_dc_lines()['i1'].abs().max() > 2.0 * base_current_a
+
+
+# --- slack bus angle reference (one per synchronous component) --------------------------------------
+
+def _add_slack_bus_angle_bounds(network):
+    """Build just enough of the model to inspect SlackBusAngleBounds's own bounds, no solve."""
+    cache = NetworkCache(network)
+    model = create_model(SolverType.IPOPT, {})
+    variable_context = VariableContext.build(cache, model)
+    model_parameters = ModelParameters(0.1, False, Bounds(0.8, 1.1), SolverType.IPOPT, {})
+    SlackBusAngleBounds().add(model_parameters, cache, variable_context, model)
+    return cache, model, variable_context
+
+
+def test_ac_islands_joined_only_by_dc_are_different_synchronous_components():
+    """trap: the data SlackBusAngleBounds needs was already sitting in NetworkCache.buses, unused -
+    every AC bus carries its own synchronous_component number, and two AC islands joined only by a
+    DC link (no shared AC path) get two different ones. True before and after the fix; it is what
+    makes per-component grouping possible at all."""
+    network = create_back_to_back_dc_network()
+    cache = NetworkCache(network)
+    assert cache.buses['synchronous_component'].nunique() == 2
+
+
+def test_slack_bus_angle_bounds_pins_one_bus_per_synchronous_component():
+    """red->green: SlackBusAngleBounds used to pin exactly one bus, globally (the first declared
+    slack terminal, or else the first bus of the whole network) - every synchronous component after
+    the first got no angle reference at all. Fails before the fix (only one component ends up with
+    a (0.0, 0.0)-bounded bus); passes after, one per component."""
+    network = create_back_to_back_dc_network()
+    cache, model, variable_context = _add_slack_bus_angle_bounds(network)
+
+    for component, buses_in_component in cache.buses.groupby('synchronous_component'):
+        pinned = [
+            (model._model.get_variable_lb(variable_context.ph_vars[cache.buses.index.get_loc(bus_id)]),
+             model._model.get_variable_ub(variable_context.ph_vars[cache.buses.index.get_loc(bus_id)]))
+            == (0.0, 0.0)
+            for bus_id in buses_in_component.index
+        ]
+        assert any(pinned), f"synchronous component {component} has no angle reference"
+
+
+def test_slack_bus_angle_bounds_matches_prior_behavior_on_a_single_component_network():
+    """Regression guard: on a network with one synchronous component and no declared slack terminal,
+    the new per-component grouping must still pin exactly the bus the old global rule would have
+    picked - the first bus of the network, in table order."""
+    network = pp.network.create_ac_dc_bipolar_network()
+    cache, model, variable_context = _add_slack_bus_angle_bounds(network)
+
+    assert cache.buses['synchronous_component'].nunique() == 1
+    old_rule_bus_id = cache.buses.index[0]
+    pinned_bus_nums = [
+        i for i, bus_id in enumerate(cache.buses.index)
+        if (model._model.get_variable_lb(variable_context.ph_vars[i]),
+            model._model.get_variable_ub(variable_context.ph_vars[i])) == (0.0, 0.0)
+    ]
+    assert pinned_bus_nums == [cache.buses.index.get_loc(old_rule_bus_id)]
+
+
+def test_slack_bus_angle_bounds_does_not_crash_on_zero_ac_buses():
+    """red->green, found while fixing angle-reference-per-component: SlackBusAngleBounds's old
+    fallback, network_cache.buses.iloc[0].name, raised IndexError on a network with zero AC buses -
+    reachable under LOADFLOW/REDISPATCHING mode, which do not gate on validate_acdc_network the way
+    ACDC mode does. groupby over an empty frame simply iterates zero times instead."""
+    network = pp.network.create_dc_detailed_dc_switch_2_nodes()
+    cache, model, variable_context = _add_slack_bus_angle_bounds(network)
+    assert len(cache.buses) == 0
