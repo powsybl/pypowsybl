@@ -1,5 +1,6 @@
 import pytest
 import pypowsybl as pp
+import pypowsybl.opf as opf
 
 from pypowsybl.opf.impl.acdc_network_validator import validate_acdc_network
 
@@ -288,3 +289,33 @@ def test_check_no_dangling_dc_lines_rejects_disconnected_existing_dc_line():
 
     with pytest.raises(ValueError, match="DC lines must be connected on both sides"):
         check_no_dangling_dc_lines(dc_lines)
+
+
+# --- validate_acdc_network runs regardless of mode -------------------------------------------------
+
+def test_validate_acdc_network_is_a_no_op_on_a_network_with_no_dc_nodes():
+    """trap: validate_acdc_network already returns immediately when the network has no DC nodes at
+    all - true before and after this fix. That is what makes calling it on every run() safe: it is
+    not the caller's job to decide whether the network needs validating, the function already knows.
+    """
+    validate_acdc_network(pp.network.create_ieee14())
+
+
+def test_run_ac_default_mode_rejects_mixed_nominal_voltages():
+    """red->green: run_ac's default mode (LOADFLOW) used to skip validate_acdc_network entirely,
+    solving a network ACDC mode would have rejected outright. Fails to raise before the fix
+    (silently attempts to solve instead); raises after.
+    """
+    network = pp.network.create_dc_detailed_vsc_asymmetrical_monopole_network()
+
+    with pytest.raises(ValueError, match="has several nominal voltages"):
+        opf.run_ac(network)
+
+
+def test_run_ac_default_mode_rejects_dc_component_without_vdc_converter():
+    """red->green: same bug, the other validator check. Fails to raise before the fix; raises after.
+    """
+    network = create_two_vsc_same_dc_component_network("P_PCC")
+
+    with pytest.raises(ValueError, match="no VSC in V_DC mode"):
+        opf.run_ac(network)

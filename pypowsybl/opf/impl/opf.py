@@ -75,8 +75,7 @@ class OptimalPowerFlow:
 
     def run(self, parameters: OptimalPowerFlowParameters) -> bool:
 
-        if parameters.mode == OptimalPowerFlowMode.ACDC:
-            validate_acdc_network(self._network)
+        validate_acdc_network(self._network)
 
         with NetworkCache(self._network) as network_cache:
             variable_bounds = [BusVoltageBounds(),
