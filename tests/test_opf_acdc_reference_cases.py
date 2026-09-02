@@ -331,6 +331,30 @@ def test_official_asymmetrical_monopole_run_ac_is_rejected_for_mixed_nominal_vol
         opf.run_ac(n, params)
 
 
+# --- bus_id crash on run_ac's default entry point -------------------------------------------------
+
+def test_voltage_source_converters_have_no_bus_id_column():
+    """trap: vsc_converter_stations has a bus_id column, voltage_source_converters doesn't."""
+    network = pp.network.create_ac_dc_bipolar_network()
+    assert 'bus_id' in network.get_vsc_converter_stations().columns
+    assert 'bus_id' not in network.get_voltage_source_converters().columns
+    assert 'bus1_id' in network.get_voltage_source_converters().columns
+
+
+def test_run_ac_default_mode_on_detailed_dc_network():
+    """red->green: run_ac(network) must not crash on a new-model AcDcConverter."""
+    assert pp.opf.run_ac(pp.network.create_ac_dc_bipolar_network())
+
+
+def test_run_ac_default_mode_with_voltage_regulator_on():
+    """red->green: same bug, second bus_id read (inside voltage_regulator_on).
+    No other test here reaches that branch, so a guard-only fix would pass everything but this."""
+    network = pp.network.create_ac_dc_bipolar_network()
+    network.update_voltage_source_converters(id='conv23', target_v_ac=400.0)
+    network.update_voltage_source_converters(id='conv23', voltage_regulator_on=True)
+    assert pp.opf.run_ac(network)
+
+
 # --- DC line current -------------------------------------------------------------------------------
 
 def test_dc_line_current_read_back_stays_mirrored():

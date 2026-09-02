@@ -269,24 +269,3 @@ def test_ac_dc_bipolar_metallic_return():
     opf_parameters = OptimalPowerFlowParameters(mode=OptimalPowerFlowMode.ACDC)
     assert pp.opf.run_ac(pp.network.create_ac_dc_bipolar_network_with_metallic_return(), opf_parameters)
 
-
-def test_voltage_source_converters_have_no_bus_id_column():
-    """trap: vsc_converter_stations has a bus_id column, voltage_source_converters doesn't."""
-    network = pp.network.create_ac_dc_bipolar_network()
-    assert 'bus_id' in network.get_vsc_converter_stations().columns
-    assert 'bus_id' not in network.get_voltage_source_converters().columns
-    assert 'bus1_id' in network.get_voltage_source_converters().columns
-
-
-def test_run_ac_default_mode_on_detailed_dc_network():
-    """red->green: run_ac(network) must not crash on a new-model AcDcConverter."""
-    assert pp.opf.run_ac(pp.network.create_ac_dc_bipolar_network())
-
-
-def test_run_ac_default_mode_with_voltage_regulator_on():
-    """red->green: same bug, second bus_id read (inside voltage_regulator_on).
-    No other test here reaches that branch, so a guard-only fix would pass everything but this."""
-    network = pp.network.create_ac_dc_bipolar_network()
-    network.update_voltage_source_converters(id='conv23', target_v_ac=400.0)
-    network.update_voltage_source_converters(id='conv23', voltage_regulator_on=True)
-    assert pp.opf.run_ac(network)
