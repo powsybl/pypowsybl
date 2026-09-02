@@ -482,6 +482,47 @@ def test_network_cache_builds_on_a_pure_dc_network_with_no_ac_buses():
     assert len(cache.buses) == 0
 
 
+def test_get_voltage_bounds_uses_declared_limits_when_present():
+    """red->green: a bus whose voltage level declares real limits gets those limits, not the
+    generic default. Bounds.get_voltage_bounds used to return default_voltage_bounds
+    unconditionally, discarding whatever the network declared - this failed before the fix
+    (returned [0.8, 1.1]) and passes after.
+    """
+    default = Bounds(0.8, 1.1)
+    declared = Bounds.get_voltage_bounds(0.95, 1.05, default)
+    assert declared.min_value == 0.95
+    assert declared.max_value == 1.05
+
+
+def test_get_voltage_bounds_falls_back_per_side_independently():
+    """red->green: a voltage level declaring only one side keeps that side; the other still falls
+    back to the default. A voltage level may legitimately declare a floor with no ceiling (or the
+    reverse) - an all-or-nothing fallback would discard the declared side too.
+    """
+    default = Bounds(0.8, 1.1)
+    only_low_declared = Bounds.get_voltage_bounds(0.95, float('nan'), default)
+    assert only_low_declared.min_value == 0.95
+    assert only_low_declared.max_value == 1.1
+
+    only_high_declared = Bounds.get_voltage_bounds(None, 1.05, default)
+    assert only_high_declared.min_value == 0.8
+    assert only_high_declared.max_value == 1.05
+
+
+def test_voltage_level_undeclared_limit_is_nan_not_none():
+    """trap: an undeclared voltage-level limit surfaces as float NaN, not None, once read through
+    the per-unit dataframe (create_ieee14 declares no voltage-level limits at all). True before and
+    after declared-ac-voltage-limits - it is why get_voltage_bounds's fallback must check for NaN,
+    not just `is None`.
+    """
+    network = pp.network.create_ieee14()
+    network.per_unit = True
+    voltage_levels = network.get_voltage_levels(attributes=['low_voltage_limit', 'high_voltage_limit'])
+    value = voltage_levels['low_voltage_limit'].iloc[0]
+    assert value is not None
+    assert value != value  # NaN is the only value that does not equal itself
+
+
 def test_dc_current_bound_does_not_cut_off_an_ordinary_operating_point():
     """2.0 pu was only 500 A on this network's base, below what an ordinary HVDC cable carries."""
     n = pp.network.create_ac_dc_bipolar_network()
