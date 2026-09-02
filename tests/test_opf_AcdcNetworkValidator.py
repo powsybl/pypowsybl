@@ -39,13 +39,15 @@ def add_vsc_island_on_ac_bus(
     bus_id,
     nominal_v,
     control_mode="V_DC",
+    grounded=True,
 ):
     dc_node1_id = f"dn1{suffix}"
     dc_node2_id = f"dn2{suffix}"
 
     network.create_dc_nodes(id=dc_node1_id, nominal_v=nominal_v)
     network.create_dc_nodes(id=dc_node2_id, nominal_v=nominal_v)
-    network.create_dc_grounds(id=f"dg{suffix}", r=0.0, dc_node_id=dc_node2_id)
+    if grounded:
+        network.create_dc_grounds(id=f"dg{suffix}", r=0.0, dc_node_id=dc_node2_id)
 
     kwargs = dict(
         id=f"conv{suffix}",
@@ -126,7 +128,10 @@ def test_validation_accepts_different_nominal_voltages_in_different_dc_component
     validate_acdc_network(network)
 
 
-def test_validation_rejects_dc_component_without_vdc_converter():
+def test_validation_no_longer_requires_a_vdc_converter_when_grounded():
+    """A grounded DC component with no V_DC converter used to be rejected for the wrong reason (no
+    V_DC converter); grounding, not a V_DC converter, is what anchors a component's absolute
+    voltage, so this must now be accepted."""
     network = pp.network.create_empty()
 
     voltage_level_id, bus_id = build_ac_bus(network, "A")
@@ -140,7 +145,28 @@ def test_validation_rejects_dc_component_without_vdc_converter():
         control_mode="P_PCC",
     )
 
-    with pytest.raises(ValueError, match="no VSC in V_DC mode"):
+    validate_acdc_network(network)
+
+
+def test_validation_rejects_an_ungrounded_dc_component_even_with_a_vdc_converter():
+    """red->green: a V_DC converter used to be treated as sufficient on its own. target_v_dc is a
+    difference between two converter terminals, so it can never anchor a component's absolute
+    level - only a connected DcGround can. Fails to raise before the fix; raises after."""
+    network = pp.network.create_empty()
+
+    voltage_level_id, bus_id = build_ac_bus(network, "A")
+
+    add_vsc_island_on_ac_bus(
+        network,
+        "A",
+        voltage_level_id,
+        bus_id,
+        nominal_v=400.0,
+        control_mode="V_DC",
+        grounded=False,
+    )
+
+    with pytest.raises(ValueError, match="no connected ground"):
         validate_acdc_network(network)
 
 
@@ -238,15 +264,11 @@ def create_two_vsc_same_dc_component_network(conv_a_control_mode: str):
 
     return network
     
-def test_validation_accepts_one_vdc_and_one_pcc_vsc_on_same_dc_component_then_rejects_two_pcc():
-    valid_network = create_two_vsc_same_dc_component_network("V_DC")
-
-    validate_acdc_network(valid_network)
-
-    invalid_network = create_two_vsc_same_dc_component_network("P_PCC")
-
-    with pytest.raises(ValueError, match="no VSC in V_DC mode"):
-        validate_acdc_network(invalid_network)
+def test_validation_accepts_a_grounded_dc_component_regardless_of_converter_control_mode():
+    """Both converters on the same, grounded DC component - control mode no longer decides
+    validity, grounding does. One V_DC + one P_PCC, and two P_PCC, both accepted."""
+    validate_acdc_network(create_two_vsc_same_dc_component_network("V_DC"))
+    validate_acdc_network(create_two_vsc_same_dc_component_network("P_PCC"))
 
 import pandas as pd
 import pytest
@@ -312,10 +334,17 @@ def test_run_ac_default_mode_rejects_mixed_nominal_voltages():
         opf.run_ac(network)
 
 
-def test_run_ac_default_mode_rejects_dc_component_without_vdc_converter():
-    """red->green: same bug, the other validator check. Fails to raise before the fix; raises after.
+def test_run_ac_default_mode_rejects_an_ungrounded_dc_component():
+    """This assertion (validate-on-network-not-mode: the default mode used to skip validation
+    entirely) was originally written against the missing-V_DC-converter check;
+    grounding-not-control-mode retired that check, so it is rewritten here against its
+    replacement - an ungrounded DC component - to keep testing the same thing: the validator runs
+    regardless of mode.
     """
-    network = create_two_vsc_same_dc_component_network("P_PCC")
+    network = pp.network.create_empty()
+    voltage_level_id, bus_id = build_ac_bus(network, "A")
+    add_vsc_island_on_ac_bus(network, "A", voltage_level_id, bus_id, nominal_v=400.0,
+                              control_mode="V_DC", grounded=False)
 
-    with pytest.raises(ValueError, match="no VSC in V_DC mode"):
+    with pytest.raises(ValueError, match="no connected ground"):
         opf.run_ac(network)
