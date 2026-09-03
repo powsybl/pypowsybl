@@ -250,7 +250,7 @@ class NetworkCache:
         return network.get_voltage_source_converters(attributes=['voltage_level_id', 'bus1_id', 'bus2_id', 'dc_node1_id', 'dc_node2_id',
                                      'dc_connected1', 'dc_connected2', 'pcc_terminal_id', 'voltage_regulator_on',
                                      'control_mode', 'target_v_dc', 'target_v_ac', 'target_p', 'target_q', 'idle_loss',
-                                     'switching_loss', 'resistive_loss'])
+                                     'switching_loss', 'resistive_loss', 'min_p', 'max_p'])
 
     @staticmethod
     def _build_dc_grounds(network: Network) -> DataFrame:

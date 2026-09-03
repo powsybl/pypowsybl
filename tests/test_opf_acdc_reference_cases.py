@@ -746,3 +746,38 @@ def test_loss_objective_is_resistance_weighted_and_includes_converter_losses():
 
     objective = opf_model.model.get_model_attribute(poi.ModelAttribute.ObjectiveValue)
     assert objective == pytest.approx(line_loss + converter_loss, rel=1e-6)
+
+
+# --- declared converter power limits -----------------------------------------------------------------
+
+def _add_voltage_source_converter_power_bounds(network):
+    """Build just enough of the model to inspect VoltageSourceConverterPowerBounds's own bounds,
+    no solve - same shape as _add_slack_bus_angle_bounds."""
+    cache = NetworkCache(network)
+    model = create_model(SolverType.IPOPT, {})
+    variable_context = VariableContext.build(cache, model)
+    model_parameters = ModelParameters(0.1, False, Bounds(0.8, 1.1), SolverType.IPOPT, {})
+    VoltageSourceConverterPowerBounds().add(model_parameters, cache, variable_context, model)
+    return cache, model, variable_context
+
+
+def test_voltage_source_converter_power_bounds_uses_declared_min_max_p():
+    """red->green: a converter's own declared min_p/max_p used to be discarded in favour of a
+    hardcoded +-100 pu regardless of what the network declares. A converter that declares a real,
+    finite rating must get exactly that rating; a converter that declares nothing (pypowsybl's own
+    default, -inf/inf) must get no bound at all, not the old +-100 pu placeholder either."""
+    network = pp.network.create_ac_dc_bipolar_network()
+    network.per_unit = True
+    network.update_voltage_source_converters(id=['conv23'], min_p=[-0.6], max_p=[0.6])
+    network.per_unit = False
+
+    cache, model, variable_context = _add_voltage_source_converter_power_bounds(network)
+
+    declared_index = variable_context.conv_num_2_index[cache.voltage_source_converters.index.get_loc('conv23')]
+    undeclared_index = variable_context.conv_num_2_index[cache.voltage_source_converters.index.get_loc('conv45')]
+
+    declared_p_var = variable_context.conv_p_vars[declared_index]
+    undeclared_p_var = variable_context.conv_p_vars[undeclared_index]
+
+    assert (model._model.get_variable_lb(declared_p_var), model._model.get_variable_ub(declared_p_var)) == (-0.6, 0.6)
+    assert (model._model.get_variable_lb(undeclared_p_var), model._model.get_variable_ub(undeclared_p_var)) == (float('-inf'), float('inf'))
