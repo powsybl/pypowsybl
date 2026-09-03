@@ -11,6 +11,7 @@ import pyoptinterface as poi
 from pyoptinterface import ExprBuilder
 
 from pypowsybl.opf.impl.model.cost_function import CostFunction
+from pypowsybl.opf.impl.model.model import Model
 from pypowsybl.opf.impl.model.network_cache import NetworkCache
 from pypowsybl.opf.impl.model.variable_context import VariableContext
 from pypowsybl.opf.impl.util import ConverterStationRow
@@ -20,7 +21,7 @@ class MinimizeAgainstReferenceCostFunction(CostFunction):
     def __init__(self) -> None:
         super().__init__('Minimize against reference')
 
-    def create(self, network_cache: NetworkCache, variable_context: VariableContext) -> ExprBuilder:
+    def create(self, network_cache: NetworkCache, variable_context: VariableContext, model: Model) -> ExprBuilder:
         cost = poi.ExprBuilder()
 
         cost += self._create_generators_cost(network_cache, variable_context)
@@ -75,14 +76,14 @@ class MinimizeAgainstReferenceCostFunction(CostFunction):
                     v_var = variable_context.v_vars[bus_num]
                     res += (v_var - vsc_cs_row.target_v) * (v_var - vsc_cs_row.target_v)
         for conv_num, conv_row in enumerate(network_cache.voltage_source_converters.itertuples()):
-            if conv_row.bus_id:
+            if conv_row.bus1_id:
                 if conv_row.control_mode == "P_PCC":
                     conv_p_expr = poi.ExprBuilder()
                     conv_p_expr += variable_context.conv_p_vars[conv_num]
                     conv_p_expr -= conv_row.target_p
                     res += conv_p_expr * conv_p_expr
                 if conv_row.voltage_regulator_on:
-                    bus_num = network_cache.buses.index.get_loc(conv_row.bus_id)
+                    bus_num = network_cache.buses.index.get_loc(conv_row.bus1_id)
                     v_var = variable_context.v_vars[bus_num]
                     res += (v_var - conv_row.target_v_ac) * (v_var - conv_row.target_v_ac)
 

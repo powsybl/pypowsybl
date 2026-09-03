@@ -1,10 +1,33 @@
+import inspect
 import math
 import platform
 
+import pyoptinterface as poi
 import pytest
 
 import pypowsybl as pp
 import pypowsybl.opf as opf
+from pypowsybl.opf.impl.bounds.bus_voltage_bounds import BusVoltageBounds
+from pypowsybl.opf.impl.bounds.dc_line_current_bounds import DcLineCurrentBounds
+from pypowsybl.opf.impl.bounds.dc_node_voltage_bounds import DcNodeVoltageBounds
+from pypowsybl.opf.impl.bounds.generator_power_bounds import GeneratorPowerBounds
+from pypowsybl.opf.impl.bounds.slack_bus_angle_bounds import SlackBusAngleBounds
+from pypowsybl.opf.impl.bounds.transformer_3w_middle_voltage_bounds import Transformer3wMiddleVoltageBounds
+from pypowsybl.opf.impl.bounds.voltage_source_converter_power_bounds import VoltageSourceConverterPowerBounds
+from pypowsybl.opf.impl.constraints.branch_flow_constraints import BranchFlowConstraints
+from pypowsybl.opf.impl.constraints.dc_current_balance_constraints import DcCurrentBalanceConstraints
+from pypowsybl.opf.impl.constraints.dc_ground_constraints import DcGroundConstraints
+from pypowsybl.opf.impl.constraints.dc_line_constraints import DcLineConstraints
+from pypowsybl.opf.impl.constraints.power_balance_constraints import PowerBalanceConstraints
+from pypowsybl.opf.impl.constraints.voltage_source_converter_constraints import VoltageSourceConverterConstraints
+from pypowsybl.opf.impl.costs.minimize_dc_losses import MinimizeDcLossesFunction
+from pypowsybl.opf.impl.model.bounds import Bounds
+from pypowsybl.opf.impl.model.dc_voltage_starts import compute_dc_node_voltage_starts
+from pypowsybl.opf.impl.model.model import create_model
+from pypowsybl.opf.impl.model.model_parameters import ModelParameters, SolverType
+from pypowsybl.opf.impl.model.network_cache import NetworkCache
+from pypowsybl.opf.impl.model.opf_model import OpfModel
+from pypowsybl.opf.impl.model.variable_context import VariableContext
 
 if platform.system() == 'Darwin' and platform.machine() == 'x86_64':
     pytest.skip("No version compatible with x86_64 macOS.", allow_module_level=True)
@@ -321,3 +344,440 @@ def test_official_asymmetrical_monopole_run_ac_is_rejected_for_mixed_nominal_vol
 
     with pytest.raises(ValueError, match="has several nominal voltages"):
         opf.run_ac(n, params)
+
+
+# --- bus_id crash on run_ac's default entry point -------------------------------------------------
+
+def test_voltage_source_converters_have_no_bus_id_column():
+    """trap: vsc_converter_stations has a bus_id column, voltage_source_converters doesn't."""
+    network = pp.network.create_ac_dc_bipolar_network()
+    assert 'bus_id' in network.get_vsc_converter_stations().columns
+    assert 'bus_id' not in network.get_voltage_source_converters().columns
+    assert 'bus1_id' in network.get_voltage_source_converters().columns
+
+
+def test_run_ac_default_mode_on_detailed_dc_network():
+    """red->green: run_ac(network) must not crash on a new-model AcDcConverter."""
+    assert pp.opf.run_ac(pp.network.create_ac_dc_bipolar_network())
+
+
+def test_run_ac_default_mode_with_voltage_regulator_on():
+    """red->green: same bug, second bus_id read (inside voltage_regulator_on).
+    No other test here reaches that branch, so a guard-only fix would pass everything but this."""
+    network = pp.network.create_ac_dc_bipolar_network()
+    network.update_voltage_source_converters(id='conv23', target_v_ac=400.0)
+    network.update_voltage_source_converters(id='conv23', voltage_regulator_on=True)
+    assert pp.opf.run_ac(network)
+
+
+# --- DC line current -------------------------------------------------------------------------------
+
+def test_dc_line_current_read_back_stays_mirrored():
+    """trap: a DC line's i2 is always -i1, both before and after collapse-dc-line-current -- this
+    is the fact that makes carrying only one solver variable safe. Ohm's law forces i2 = -i1
+    structurally, so the network's own i1/i2 columns stay mirrored regardless of how many solver
+    variables produced them."""
+    network = pp.network.create_ac_dc_bipolar_network()
+    parameters = opf.OptimalPowerFlowParameters(mode=opf.OptimalPowerFlowMode.ACDC)
+    assert opf.run_ac(network, parameters)
+
+    dc_lines = network.get_dc_lines()[['i1', 'i2']]
+    assert len(dc_lines) > 0
+    for i1, i2 in zip(dc_lines['i1'], dc_lines['i2']):
+        assert i2 == pytest.approx(-i1, abs=1e-6)
+
+
+def test_dc_line_carries_one_current_variable_not_two():
+    """red->green: a DC line used to carry two solver variables (closed_dc_line_i1_vars,
+    closed_dc_line_i2_vars) for the same physical current, constrained i2 = -i1 by two copies of
+    Ohm's law. Collapsed to one (closed_dc_line_i_vars); network_cache.update_dc_lines mirrors it
+    back into the network's own two columns."""
+    network = pp.network.create_ac_dc_bipolar_network()
+    cache = NetworkCache(network)
+    model = create_model(SolverType.IPOPT, {})
+    variable_context = VariableContext.build(cache, model)
+
+    assert len(variable_context.closed_dc_line_i_vars) == len(cache.dc_lines)
+    assert not hasattr(variable_context, 'closed_dc_line_i1_vars')
+    assert not hasattr(variable_context, 'closed_dc_line_i2_vars')
+
+
+# --- DC switches ---------------------------------------------------------------------------------
+# Each test adds a second dn3p -> dn4p path in parallel with the existing one and of the same total
+# resistance, so a closed switch must split the pole current about evenly and an open one must not.
+# Parallel rather than carved out of a line because DC lines cannot be removed.
+PARALLEL_PATH_R_OHM = 0.2
+POLE_CURRENT_A = -126.5905
+
+
+def create_bipolar_network_with_parallel_switch_path(switch_open, switch_r_ohm=0.0):
+    n = pp.network.create_ac_dc_bipolar_network()
+    n.create_dc_nodes(id='dnXp', nominal_v=400.0)
+    n.create_dc_switches(id='dsXp', dc_node1_id='dn3p', dc_node2_id='dnXp',
+                         kind='BREAKER', open=switch_open, r=switch_r_ohm)
+    n.create_dc_lines(id='dlX4p', dc_node1_id='dnXp', dc_node2_id='dn4p',
+                      r=PARALLEL_PATH_R_OHM - switch_r_ohm)
+    return n
+
+
+def test_closed_dc_switch_conducts_and_shorts_its_two_dc_nodes():
+    n = create_bipolar_network_with_parallel_switch_path(switch_open=False)
+
+    assert run_acdc(n)
+
+    voltages = n.get_dc_nodes()['v']
+    assert voltages['dn3p'] == pytest.approx(voltages['dnXp'], abs=1e-6)
+
+    currents = n.get_dc_lines()['i1']
+    total = currents['dlX4p'] + currents['dl3Gp']
+    assert total == pytest.approx(POLE_CURRENT_A, abs=0.01)
+    # Not exactly half each: the original path passes dnGp, where the metallic return draws 0.2 A.
+    assert currents['dlX4p'] == pytest.approx(total / 2, abs=0.2)
+    assert currents['dl3Gp'] == pytest.approx(total / 2, abs=0.2)
+
+
+def test_resistive_closed_dc_switch_drops_r_times_current():
+    switch_r_ohm = 0.05
+    n = create_bipolar_network_with_parallel_switch_path(switch_open=False,
+                                                         switch_r_ohm=switch_r_ohm)
+
+    assert run_acdc(n)
+
+    voltages = n.get_dc_nodes()['v']
+    # The added line is the only other element at dnXp, so it carries the switch current exactly.
+    switch_current_a = n.get_dc_lines()['i1']['dlX4p']
+    assert voltages['dn3p'] - voltages['dnXp'] == pytest.approx(
+        switch_r_ohm * switch_current_a / 1000.0, abs=1e-6)
+
+
+def test_open_dc_switch_conducts_nothing():
+    reference = pp.network.create_ac_dc_bipolar_network()
+    assert run_acdc(reference)
+    reference_currents = reference.get_dc_lines()['i1']
+
+    n = create_bipolar_network_with_parallel_switch_path(switch_open=True)
+    assert run_acdc(n)
+
+    currents = n.get_dc_lines()['i1']
+    assert currents['dlX4p'] == pytest.approx(0.0, abs=1e-3)
+    for dc_line_id in reference_currents.index:
+        assert currents[dc_line_id] == pytest.approx(reference_currents[dc_line_id], abs=1e-3)
+
+
+# --- DC node voltage start values ----------------------------------------------------------------
+
+def test_dc_voltage_starts_place_every_node_from_the_declared_voltages():
+    """A converter's target_v_dc anchors the walk; a ground places what the walk cannot reach.
+
+    create_ac_dc_monopolar_network exercises both: conv45 declares 1.0 pu, and dn3n is related to
+    nothing because the other converter is in P_PCC mode and declares no target.
+    """
+    starts = compute_dc_node_voltage_starts(NetworkCache(pp.network.create_ac_dc_monopolar_network()))
+
+    assert starts == pytest.approx({'dn4p': 0.5, 'dn4n': -0.5, 'dn3p': 0.5, 'dn3n': 0.0})
+
+
+def test_transformer_3w_middle_start_lands_on_voltage_not_angle():
+    """Transformer3wMiddleVoltageBounds used to call set_variable_start on t3_middle_ph_vars
+    (the angle) instead of t3_middle_v_vars (the voltage magnitude) two lines above, where the
+    bounds are set. That left the magnitude variable to default to a start of 0.0 and forced the
+    angle to 1.0 rad (~57 degrees) instead of the 0.0 every other free angle defaults to.
+
+    No public getter reads a start value before solving, so this reaches the underlying
+    pyoptinterface model directly (get_variable_start), the same way set_variable_start does.
+    """
+    network = pp.network.create_micro_grid_be_network()
+    cache = NetworkCache(network)
+    model_parameters = ModelParameters(0.1, False, Bounds(0.8, 1.1), SolverType.IPOPT, {})
+    model = create_model(SolverType.IPOPT, {})
+    variable_context = VariableContext.build(cache, model)
+
+    Transformer3wMiddleVoltageBounds().add(model_parameters, cache, variable_context, model)
+
+    t3_index = variable_context.t3_num_2_index[0]
+    v_start = model._model.get_variable_start(variable_context.t3_middle_v_vars[t3_index])
+    ph_start = model._model.get_variable_start(variable_context.t3_middle_ph_vars[t3_index])
+
+    assert v_start == 1.0
+    assert ph_start == 0.0
+
+
+def test_run_ac_has_no_shared_mutable_default_parameters():
+    """run_ac() used to default to a single OptimalPowerFlowParameters() instance built once
+    at import time. Every OptimalPowerFlowParameters.with_*() setter mutates self in place and
+    returns it (no copy anywhere), so anyone who got hold of that default and configured it would
+    have silently reconfigured every later caller relying on the default in the same process.
+    """
+    assert inspect.signature(opf.run_ac).parameters['parameters'].default is None
+
+
+def test_network_cache_builds_on_a_pure_dc_network_with_no_ac_buses():
+    """NetworkCache used to raise on any network with zero AC buses: an empty get_buses()
+    carries voltage_level_id as float64 while get_voltage_levels() carries it as object,
+    and the merge between the two rejected the mismatch.
+    """
+    network = pp.network.create_dc_detailed_dc_switch_2_nodes()
+    cache = NetworkCache(network)
+    assert len(cache.buses) == 0
+
+
+def test_get_voltage_bounds_uses_declared_limits_when_present():
+    """red->green: a bus whose voltage level declares real limits gets those limits, not the
+    generic default. Bounds.get_voltage_bounds used to return default_voltage_bounds
+    unconditionally, discarding whatever the network declared - this failed before the fix
+    (returned [0.8, 1.1]) and passes after.
+    """
+    default = Bounds(0.8, 1.1)
+    declared = Bounds.get_voltage_bounds(0.95, 1.05, default)
+    assert declared.min_value == 0.95
+    assert declared.max_value == 1.05
+
+
+def test_get_voltage_bounds_falls_back_per_side_independently():
+    """red->green: a voltage level declaring only one side keeps that side; the other still falls
+    back to the default. A voltage level may legitimately declare a floor with no ceiling (or the
+    reverse) - an all-or-nothing fallback would discard the declared side too.
+    """
+    default = Bounds(0.8, 1.1)
+    only_low_declared = Bounds.get_voltage_bounds(0.95, float('nan'), default)
+    assert only_low_declared.min_value == 0.95
+    assert only_low_declared.max_value == 1.1
+
+    only_high_declared = Bounds.get_voltage_bounds(None, 1.05, default)
+    assert only_high_declared.min_value == 0.8
+    assert only_high_declared.max_value == 1.05
+
+
+def test_voltage_level_undeclared_limit_is_nan_not_none():
+    """trap: an undeclared voltage-level limit surfaces as float NaN, not None, once read through
+    the per-unit dataframe (create_ieee14 declares no voltage-level limits at all). True before and
+    after declared-ac-voltage-limits - it is why get_voltage_bounds's fallback must check for NaN,
+    not just `is None`.
+    """
+    network = pp.network.create_ieee14()
+    network.per_unit = True
+    voltage_levels = network.get_voltage_levels(attributes=['low_voltage_limit', 'high_voltage_limit'])
+    value = voltage_levels['low_voltage_limit'].iloc[0]
+    assert value is not None
+    assert value != value  # NaN is the only value that does not equal itself
+
+
+def test_dc_current_bound_does_not_cut_off_an_ordinary_operating_point():
+    """2.0 pu was only 500 A on this network's base, below what an ordinary HVDC cable carries."""
+    n = pp.network.create_ac_dc_bipolar_network()
+    n.update_voltage_source_converters(id='conv23', target_p=-250.0)
+
+    assert run_acdc(n)
+
+    base_current_a = 100e3 / 400.0
+    assert n.get_dc_lines()['i1'].abs().max() > 2.0 * base_current_a
+
+
+# --- slack bus angle reference (one per synchronous component) --------------------------------------
+
+def _add_slack_bus_angle_bounds(network):
+    """Build just enough of the model to inspect SlackBusAngleBounds's own bounds, no solve."""
+    cache = NetworkCache(network)
+    model = create_model(SolverType.IPOPT, {})
+    variable_context = VariableContext.build(cache, model)
+    model_parameters = ModelParameters(0.1, False, Bounds(0.8, 1.1), SolverType.IPOPT, {})
+    SlackBusAngleBounds().add(model_parameters, cache, variable_context, model)
+    return cache, model, variable_context
+
+
+def test_ac_islands_joined_only_by_dc_are_different_synchronous_components():
+    """trap: the data SlackBusAngleBounds needs was already sitting in NetworkCache.buses, unused -
+    every AC bus carries its own synchronous_component number, and two AC islands joined only by a
+    DC link (no shared AC path) get two different ones. True before and after the fix; it is what
+    makes per-component grouping possible at all."""
+    network = create_back_to_back_dc_network()
+    cache = NetworkCache(network)
+    assert cache.buses['synchronous_component'].nunique() == 2
+
+
+def test_slack_bus_angle_bounds_pins_one_bus_per_synchronous_component():
+    """red->green: SlackBusAngleBounds used to pin exactly one bus, globally (the first declared
+    slack terminal, or else the first bus of the whole network) - every synchronous component after
+    the first got no angle reference at all. Fails before the fix (only one component ends up with
+    a (0.0, 0.0)-bounded bus); passes after, one per component."""
+    network = create_back_to_back_dc_network()
+    cache, model, variable_context = _add_slack_bus_angle_bounds(network)
+
+    for component, buses_in_component in cache.buses.groupby('synchronous_component'):
+        pinned = [
+            (model._model.get_variable_lb(variable_context.ph_vars[cache.buses.index.get_loc(bus_id)]),
+             model._model.get_variable_ub(variable_context.ph_vars[cache.buses.index.get_loc(bus_id)]))
+            == (0.0, 0.0)
+            for bus_id in buses_in_component.index
+        ]
+        assert any(pinned), f"synchronous component {component} has no angle reference"
+
+
+def test_slack_bus_angle_bounds_matches_prior_behavior_on_a_single_component_network():
+    """Regression guard: on a network with one synchronous component and no declared slack terminal,
+    the new per-component grouping must still pin exactly the bus the old global rule would have
+    picked - the first bus of the network, in table order."""
+    network = pp.network.create_ac_dc_bipolar_network()
+    cache, model, variable_context = _add_slack_bus_angle_bounds(network)
+
+    assert cache.buses['synchronous_component'].nunique() == 1
+    old_rule_bus_id = cache.buses.index[0]
+    pinned_bus_nums = [
+        i for i, bus_id in enumerate(cache.buses.index)
+        if (model._model.get_variable_lb(variable_context.ph_vars[i]),
+            model._model.get_variable_ub(variable_context.ph_vars[i])) == (0.0, 0.0)
+    ]
+    assert pinned_bus_nums == [cache.buses.index.get_loc(old_rule_bus_id)]
+
+
+def test_slack_bus_angle_bounds_does_not_crash_on_zero_ac_buses():
+    """red->green, found while fixing angle-reference-per-component: SlackBusAngleBounds's old
+    fallback, network_cache.buses.iloc[0].name, raised IndexError on a network with zero AC buses -
+    reachable under LOADFLOW/REDISPATCHING mode, which do not gate on validate_acdc_network the way
+    ACDC mode does. groupby over an empty frame simply iterates zero times instead."""
+    network = pp.network.create_dc_detailed_dc_switch_2_nodes()
+    cache, model, variable_context = _add_slack_bus_angle_bounds(network)
+    assert len(cache.buses) == 0
+
+
+def _build_two_converter_dc_network(convA_mode="V_DC", convB_mode="V_DC"):
+    n = pp.network.create_empty()
+    n.create_substations(id='sA')
+    n.create_substations(id='sB')
+    n.create_voltage_levels(id='vlA', substation_id='sA', topology_kind='BUS_BREAKER', nominal_v=400.0)
+    n.create_voltage_levels(id='vlB', substation_id='sB', topology_kind='BUS_BREAKER', nominal_v=400.0)
+    n.create_buses(id='bA', voltage_level_id='vlA')
+    n.create_buses(id='bB', voltage_level_id='vlB')
+    n.create_generators(id='gA', voltage_level_id='vlA', bus_id='bA', target_p=0.0, min_p=-500, max_p=500,
+                         target_v=400.0, voltage_regulator_on=True)
+    n.create_generators(id='gB', voltage_level_id='vlB', bus_id='bB', target_p=0.0, min_p=-500, max_p=500,
+                         target_v=400.0, voltage_regulator_on=True)
+    for node in ['dnAp', 'dnAn', 'dnBp', 'dnBn']:
+        n.create_dc_nodes(id=node, nominal_v=400.0)
+    n.create_dc_lines(id='dlP', dc_node1_id='dnAp', dc_node2_id='dnBp', r=0.5)
+    n.create_dc_lines(id='dlN', dc_node1_id='dnAn', dc_node2_id='dnBn', r=0.5)
+    n.create_dc_grounds(id='dg', r=0.0, dc_node_id='dnAn')
+    for suffix, mode in [('A', convA_mode), ('B', convB_mode)]:
+        kwargs = dict(id=f'conv{suffix}', voltage_level_id=f'vl{suffix}', bus1_id=f'b{suffix}',
+                      dc_node1_id=f'dn{suffix}p', dc_node2_id=f'dn{suffix}n', voltage_regulator_on=False,
+                      control_mode=mode, target_q=0.0, idle_loss=0.0, switching_loss=0.0, resistive_loss=0.0,
+                      dc_connected1=True, dc_connected2=True)
+        if mode == 'V_DC':
+            kwargs['target_v_dc'] = 400.0
+        else:
+            kwargs['target_p'] = 30.0
+        n.create_voltage_source_converters(**kwargs)
+    return n
+
+
+def test_disconnected_dc_line_is_excluded_from_the_solve():
+    """dnBp's only path to the rest of the network is dlP; excluding it forces converter B's
+    current to 0 there, which its fixed P_PCC target of 30 MW cannot satisfy - infeasible, not a
+    silently unchanged answer."""
+    network = _build_two_converter_dc_network(convA_mode="V_DC", convB_mode="P_PCC")
+    assert opf.run_ac(network)
+
+    network.update_dc_lines(id='dlP', connected1=False)
+    assert not opf.run_ac(network)
+
+
+def test_disconnected_dc_ground_no_longer_pins_voltage():
+    """A disconnected DcGround no longer anchors its node's absolute voltage to 0. The validator
+    already rejects a component left with no connected ground at all,
+    so this patches it out to isolate the constraint-level behaviour it would otherwise mask."""
+    import pypowsybl.opf.impl.opf as opf_impl
+    network = _build_two_converter_dc_network(convA_mode="V_DC", convB_mode="P_PCC")
+    opf.run_ac(network)
+    assert network.get_dc_nodes().loc['dnAn', 'v'] == pytest.approx(0.0, abs=ATOL_KV)
+
+    network.update_dc_grounds(id='dg', connected=False)
+    original_validate = opf_impl.validate_acdc_network
+    opf_impl.validate_acdc_network = lambda n: None
+    try:
+        assert opf.run_ac(network)
+    finally:
+        opf_impl.validate_acdc_network = original_validate
+    assert network.get_dc_nodes().loc['dnAn', 'v'] != pytest.approx(0.0, abs=ATOL_KV)
+
+
+def test_acdc_mode_loss_objective_handles_a_disconnected_dc_line():
+    """The DC-losses objective must skip an open line's current variable, not index it by raw
+    position among all DC lines."""
+    network = _build_two_converter_dc_network()
+    network.update_dc_lines(id='dlP', connected1=False)
+    assert opf.run_ac(network, opf.OptimalPowerFlowParameters(mode=opf.OptimalPowerFlowMode.ACDC))
+
+
+def _solve_with_minimize_dc_losses(network):
+    """Builds and solves the same model run_ac would under ACDC mode, returning the model so a
+    test can read back both variable values and the solved objective."""
+    with NetworkCache(network) as cache:
+        variable_bounds = [BusVoltageBounds(), SlackBusAngleBounds(), GeneratorPowerBounds(),
+                            VoltageSourceConverterPowerBounds(), DcNodeVoltageBounds(), DcLineCurrentBounds()]
+        constraints = [BranchFlowConstraints(), PowerBalanceConstraints(), DcLineConstraints(),
+                       VoltageSourceConverterConstraints(), DcCurrentBalanceConstraints(), DcGroundConstraints()]
+        model_parameters = ModelParameters(0.1, False, Bounds(0.8, 1.2), SolverType.IPOPT, {})
+        opf_model = OpfModel.build(cache, model_parameters, variable_bounds, constraints, MinimizeDcLossesFunction())
+        opf_model.model.optimize()
+        return cache, opf_model
+
+
+def test_loss_objective_is_resistance_weighted_and_includes_converter_losses():
+    """The objective must equal the true physical DC loss - resistance-weighted line current
+    squared, plus each converter's idle/switching/resistive loss - not an unweighted, line-only
+    proxy. All figures are read in the same per-unit terms the solver itself uses."""
+    network = _build_two_converter_dc_network(convA_mode="V_DC", convB_mode="P_PCC")
+    network.update_voltage_source_converters(id=['convA', 'convB'], idle_loss=[0.5, 0.5],
+                                              switching_loss=[0.1, 0.1], resistive_loss=[0.2, 0.2])
+
+    cache, opf_model = _solve_with_minimize_dc_losses(network)
+    vc = opf_model.variable_context
+
+    line_loss = sum(
+        row.r * opf_model.model.get_value(vc.closed_dc_line_i_vars[vc.dc_line_num_2_index[num]]) ** 2
+        for num, row in enumerate(cache.dc_lines.itertuples())
+    )
+    converter_loss = sum(
+        row.idle_loss
+        + row.switching_loss * abs(opf_model.model.get_value(vc.conv_i_vars[num]))
+        + row.resistive_loss * opf_model.model.get_value(vc.conv_i_vars[num]) ** 2
+        for num, row in enumerate(cache.voltage_source_converters.itertuples())
+    )
+
+    objective = opf_model.model.get_model_attribute(poi.ModelAttribute.ObjectiveValue)
+    assert objective == pytest.approx(line_loss + converter_loss, rel=1e-6)
+
+
+# --- declared converter power limits -----------------------------------------------------------------
+
+def _add_voltage_source_converter_power_bounds(network):
+    """Build just enough of the model to inspect VoltageSourceConverterPowerBounds's own bounds,
+    no solve - same shape as _add_slack_bus_angle_bounds."""
+    cache = NetworkCache(network)
+    model = create_model(SolverType.IPOPT, {})
+    variable_context = VariableContext.build(cache, model)
+    model_parameters = ModelParameters(0.1, False, Bounds(0.8, 1.1), SolverType.IPOPT, {})
+    VoltageSourceConverterPowerBounds().add(model_parameters, cache, variable_context, model)
+    return cache, model, variable_context
+
+
+def test_voltage_source_converter_power_bounds_uses_declared_min_max_p():
+    """red->green: a converter's own declared min_p/max_p used to be discarded in favour of a
+    hardcoded +-100 pu regardless of what the network declares. A converter that declares a real,
+    finite rating must get exactly that rating; a converter that declares nothing (pypowsybl's own
+    default, -inf/inf) must get no bound at all, not the old +-100 pu placeholder either."""
+    network = pp.network.create_ac_dc_bipolar_network()
+    network.per_unit = True
+    network.update_voltage_source_converters(id=['conv23'], min_p=[-0.6], max_p=[0.6])
+    network.per_unit = False
+
+    cache, model, variable_context = _add_voltage_source_converter_power_bounds(network)
+
+    declared_index = variable_context.conv_num_2_index[cache.voltage_source_converters.index.get_loc('conv23')]
+    undeclared_index = variable_context.conv_num_2_index[cache.voltage_source_converters.index.get_loc('conv45')]
+
+    declared_p_var = variable_context.conv_p_vars[declared_index]
+    undeclared_p_var = variable_context.conv_p_vars[undeclared_index]
+
+    assert (model._model.get_variable_lb(declared_p_var), model._model.get_variable_ub(declared_p_var)) == (-0.6, 0.6)
+    assert (model._model.get_variable_lb(undeclared_p_var), model._model.get_variable_ub(undeclared_p_var)) == (float('-inf'), float('inf'))

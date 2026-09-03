@@ -268,3 +268,4 @@ def test_ac_dc_bipolar_network():
 def test_ac_dc_bipolar_metallic_return():
     opf_parameters = OptimalPowerFlowParameters(mode=OptimalPowerFlowMode.ACDC)
     assert pp.opf.run_ac(pp.network.create_ac_dc_bipolar_network_with_metallic_return(), opf_parameters)
+

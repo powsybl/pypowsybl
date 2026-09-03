@@ -9,6 +9,7 @@ from abc import ABC, abstractmethod
 
 from pyoptinterface import ExprBuilder
 
+from pypowsybl.opf.impl.model.model import Model
 from pypowsybl.opf.impl.model.network_cache import NetworkCache
 from pypowsybl.opf.impl.model.variable_context import VariableContext
 
@@ -22,5 +23,5 @@ class CostFunction(ABC):
         return self._name
 
     @abstractmethod
-    def create(self, network_cache: NetworkCache, variable_context: VariableContext) -> ExprBuilder:
+    def create(self, network_cache: NetworkCache, variable_context: VariableContext, model: Model) -> ExprBuilder:
         pass
