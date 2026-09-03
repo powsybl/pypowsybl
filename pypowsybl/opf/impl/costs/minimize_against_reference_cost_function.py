@@ -11,6 +11,7 @@ import pyoptinterface as poi
 from pyoptinterface import ExprBuilder
 
 from pypowsybl.opf.impl.model.cost_function import CostFunction
+from pypowsybl.opf.impl.model.model import Model
 from pypowsybl.opf.impl.model.network_cache import NetworkCache
 from pypowsybl.opf.impl.model.variable_context import VariableContext
 from pypowsybl.opf.impl.util import ConverterStationRow
@@ -20,7 +21,7 @@ class MinimizeAgainstReferenceCostFunction(CostFunction):
     def __init__(self) -> None:
         super().__init__('Minimize against reference')
 
-    def create(self, network_cache: NetworkCache, variable_context: VariableContext) -> ExprBuilder:
+    def create(self, network_cache: NetworkCache, variable_context: VariableContext, model: Model) -> ExprBuilder:
         cost = poi.ExprBuilder()
 
         cost += self._create_generators_cost(network_cache, variable_context)

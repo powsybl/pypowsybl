@@ -2,17 +2,31 @@ import inspect
 import math
 import platform
 
+import pyoptinterface as poi
 import pytest
 
 import pypowsybl as pp
 import pypowsybl.opf as opf
+from pypowsybl.opf.impl.bounds.bus_voltage_bounds import BusVoltageBounds
+from pypowsybl.opf.impl.bounds.dc_line_current_bounds import DcLineCurrentBounds
+from pypowsybl.opf.impl.bounds.dc_node_voltage_bounds import DcNodeVoltageBounds
+from pypowsybl.opf.impl.bounds.generator_power_bounds import GeneratorPowerBounds
 from pypowsybl.opf.impl.bounds.slack_bus_angle_bounds import SlackBusAngleBounds
 from pypowsybl.opf.impl.bounds.transformer_3w_middle_voltage_bounds import Transformer3wMiddleVoltageBounds
+from pypowsybl.opf.impl.bounds.voltage_source_converter_power_bounds import VoltageSourceConverterPowerBounds
+from pypowsybl.opf.impl.constraints.branch_flow_constraints import BranchFlowConstraints
+from pypowsybl.opf.impl.constraints.dc_current_balance_constraints import DcCurrentBalanceConstraints
+from pypowsybl.opf.impl.constraints.dc_ground_constraints import DcGroundConstraints
+from pypowsybl.opf.impl.constraints.dc_line_constraints import DcLineConstraints
+from pypowsybl.opf.impl.constraints.power_balance_constraints import PowerBalanceConstraints
+from pypowsybl.opf.impl.constraints.voltage_source_converter_constraints import VoltageSourceConverterConstraints
+from pypowsybl.opf.impl.costs.minimize_dc_losses import MinimizeDcLossesFunction
 from pypowsybl.opf.impl.model.bounds import Bounds
 from pypowsybl.opf.impl.model.dc_voltage_starts import compute_dc_node_voltage_starts
 from pypowsybl.opf.impl.model.model import create_model
 from pypowsybl.opf.impl.model.model_parameters import ModelParameters, SolverType
 from pypowsybl.opf.impl.model.network_cache import NetworkCache
+from pypowsybl.opf.impl.model.opf_model import OpfModel
 from pypowsybl.opf.impl.model.variable_context import VariableContext
 
 if platform.system() == 'Darwin' and platform.machine() == 'x86_64':
@@ -692,3 +706,43 @@ def test_acdc_mode_loss_objective_handles_a_disconnected_dc_line():
     network = _build_two_converter_dc_network()
     network.update_dc_lines(id='dlP', connected1=False)
     assert opf.run_ac(network, opf.OptimalPowerFlowParameters(mode=opf.OptimalPowerFlowMode.ACDC))
+
+
+def _solve_with_minimize_dc_losses(network):
+    """Builds and solves the same model run_ac would under ACDC mode, returning the model so a
+    test can read back both variable values and the solved objective."""
+    with NetworkCache(network) as cache:
+        variable_bounds = [BusVoltageBounds(), SlackBusAngleBounds(), GeneratorPowerBounds(),
+                            VoltageSourceConverterPowerBounds(), DcNodeVoltageBounds(), DcLineCurrentBounds()]
+        constraints = [BranchFlowConstraints(), PowerBalanceConstraints(), DcLineConstraints(),
+                       VoltageSourceConverterConstraints(), DcCurrentBalanceConstraints(), DcGroundConstraints()]
+        model_parameters = ModelParameters(0.1, False, Bounds(0.8, 1.2), SolverType.IPOPT, {})
+        opf_model = OpfModel.build(cache, model_parameters, variable_bounds, constraints, MinimizeDcLossesFunction())
+        opf_model.model.optimize()
+        return cache, opf_model
+
+
+def test_loss_objective_is_resistance_weighted_and_includes_converter_losses():
+    """The objective must equal the true physical DC loss - resistance-weighted line current
+    squared, plus each converter's idle/switching/resistive loss - not an unweighted, line-only
+    proxy. All figures are read in the same per-unit terms the solver itself uses."""
+    network = _build_two_converter_dc_network(convA_mode="V_DC", convB_mode="P_PCC")
+    network.update_voltage_source_converters(id=['convA', 'convB'], idle_loss=[0.5, 0.5],
+                                              switching_loss=[0.1, 0.1], resistive_loss=[0.2, 0.2])
+
+    cache, opf_model = _solve_with_minimize_dc_losses(network)
+    vc = opf_model.variable_context
+
+    line_loss = sum(
+        row.r * opf_model.model.get_value(vc.closed_dc_line_i_vars[vc.dc_line_num_2_index[num]]) ** 2
+        for num, row in enumerate(cache.dc_lines.itertuples())
+    )
+    converter_loss = sum(
+        row.idle_loss
+        + row.switching_loss * abs(opf_model.model.get_value(vc.conv_i_vars[num]))
+        + row.resistive_loss * opf_model.model.get_value(vc.conv_i_vars[num]) ** 2
+        for num, row in enumerate(cache.voltage_source_converters.itertuples())
+    )
+
+    objective = opf_model.model.get_model_attribute(poi.ModelAttribute.ObjectiveValue)
+    assert objective == pytest.approx(line_loss + converter_loss, rel=1e-6)
