@@ -24,6 +24,12 @@ jobs:
             wheel-dir: "wheelhouse",
           }
           - {
+            name: linux-arm64,
+            os: ubuntu-24.04-arm,
+            container: "quay.io/pypa/manylinux_2_28_aarch64: 2026.09.02-0",
+            wheel-dir: "wheelhouse",
+          }
+          - {
             name: darwin,
             os: macos-15-intel,
             macosx_deployment_target: "10.16", # to ensure pip finds wheel when Big Sur is configured to return 10.16 as version instead of 11.0
@@ -42,7 +48,7 @@ jobs:
             version: '3.10',
           }
     env:
-      PYTHON: ${{ matrix.config.name == 'linux' && format('/opt/python/{0}-{1}/bin/python', matrix.python.name, matrix.python.abi) || 'python' }}
+      PYTHON: ${{ (matrix.config.name == 'linux' || matrix.config.name == 'linux-arm64') && format('/opt/python/{0}-{1}/bin/python', matrix.python.name, matrix.python.abi) || 'python' }}
     defaults:
       run:
         shell: bash
@@ -54,7 +60,7 @@ jobs:
           submodules: true
 
       - name: Install Linux Packages
-        if: matrix.config.name == 'linux'
+        if: matrix.config.name == 'linux' || matrix.config.name == 'linux-arm'
         shell: bash
         run: dnf install -y wget
 
@@ -67,11 +73,11 @@ jobs:
           python-command: ${{ env.PYTHON }}
 
       - name: Setup path
-        if: matrix.config.name == 'linux'
+        if: matrix.config.name == 'linux' || matrix.config.name == 'linux-arm'
         run: echo "/opt/python/${{ matrix.python.name }}-${{ matrix.python.abi }}/bin/" >> $GITHUB_PATH
 
       - name: Install Ipopt (Linux, via micromamba)
-        if: matrix.config.name == 'linux'
+        if: matrix.config.name == 'linux' || matrix.config.name == 'linux-arm'
         shell: bash
         run: |
           curl -Ls https://micro.mamba.pm/api/micromamba/linux-64/latest | tar -xvj bin/micromamba
