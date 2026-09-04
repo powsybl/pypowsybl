@@ -68,7 +68,7 @@ jobs:
         uses: ./.github/actions/setup-before-build
         with:
           cache-prefix: ${{ matrix.config.name }}
-          python-already-available: ${{ matrix.config.name == 'linux' && 'true' || 'false' }}
+          python-already-available: ${{ (matrix.config.name == 'linux' || matrix.config.name == 'linux-arm64') && 'true' || 'false' }}
           python-version: ${{ matrix.python.version }}
           python-command: ${{ env.PYTHON }}
 
