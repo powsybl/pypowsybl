@@ -81,7 +81,7 @@ jobs:
         shell: bash
         run: |
           curl -Ls https://micro.mamba.pm/api/micromamba/$(uname)-$(uname -m)/latest | tar -xvj bin/micromamba
-          ./bin/micromamba create -y -p $HOME/ipopt-env -c conda-forge ipopt==3.14.19 mumps==5.1.2
+          ./bin/micromamba create -y -p $HOME/ipopt-env -c conda-forge ipopt==3.14.19
           echo "LD_LIBRARY_PATH=$HOME/ipopt-env/lib:${LD_LIBRARY_PATH}" >> $GITHUB_ENV
 
       - name: Install Ipopt (Windows, via miniconda)
