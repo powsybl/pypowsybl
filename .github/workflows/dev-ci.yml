@@ -60,7 +60,7 @@ jobs:
           submodules: true
 
       - name: Install Linux Packages
-        if: matrix.config.name == 'linux' || matrix.config.name == 'linux-arm'
+        if: (matrix.config.name == 'linux' || matrix.config.name == 'linux-arm')
         shell: bash
         run: dnf install -y wget
 
@@ -73,11 +73,11 @@ jobs:
           python-command: ${{ env.PYTHON }}
 
       - name: Setup path
-        if: matrix.config.name == 'linux' || matrix.config.name == 'linux-arm'
+        if: (matrix.config.name == 'linux' || matrix.config.name == 'linux-arm')
         run: echo "/opt/python/${{ matrix.python.name }}-${{ matrix.python.abi }}/bin/" >> $GITHUB_PATH
 
       - name: Install Ipopt (Linux, via micromamba)
-        if: matrix.config.name == 'linux' || matrix.config.name == 'linux-arm'
+        if: (matrix.config.name == 'linux' || matrix.config.name == 'linux-arm')
         shell: bash
         run: |
           curl -Ls https://micro.mamba.pm/api/micromamba/linux-64/latest | tar -xvj bin/micromamba
