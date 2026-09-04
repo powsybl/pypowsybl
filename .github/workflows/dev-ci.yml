@@ -98,7 +98,7 @@ jobs:
           MACOSX_DEPLOYMENT_TARGET: ${{ matrix.config.macosx_deployment_target }}
         run: |
           ${{ env.PYTHON }} setup.py bdist_wheel ${{ matrix.config.bdist_wheel_args }}
-          if [ "${{ matrix.config.name }}" == "linux" || "${{ matrix.config.name }}" == "linux-arm64" ]; then
+          if [ "${{ matrix.config.name }}" == "linux" ] || [ "${{ matrix.config.name }}" == "linux-arm64" ]; then
             auditwheel repair dist/*.whl
           fi
 
