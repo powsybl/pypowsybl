@@ -355,7 +355,7 @@ jobs:
 
       - name: Install wheel
         run: |
-          WHEEL_FILE=$(ls /dist/*.whl | head -n 1)
+          WHEEL_FILE=$(ls dist/*.whl | head -n 1)
           python -m pip install "${WHEEL_FILE}[pandapower, opf]" --user
         working-directory: ./pypowsybl
 
@@ -485,7 +485,7 @@ jobs:
 
       - name: Install wheel
         run: |
-          WHEEL_FILE=$(ls /dist/*.whl | head -n 1)
+          WHEEL_FILE=$(ls dist/*.whl | head -n 1)
           python -m pip install "${WHEEL_FILE}[pandapower, opf]" --user
         working-directory: ./pypowsybl
 
