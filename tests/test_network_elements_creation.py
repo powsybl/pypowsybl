@@ -832,12 +832,13 @@ VscFr  100    500    -1
 
 def test_create_droop_curve_segments_overlap_error():
     n = pypowsybl.network.create_dc_detailed_vsc_symmetrical_monopole_network()
-    with pytest.raises(PyPowsyblError) as exc:
-        n.create_droop_curve_segments(dataframe_from_string("""
+    segments_df = dataframe_from_string("""
 id     min_v  max_v  k
 VscFr  -500   -100   -10
 VscFr  -150   100    -5
-        """))
+        """)
+    with pytest.raises(PyPowsyblError) as exc:
+        n.create_droop_curve_segments(segments_df)
     assert exc.match('Droop segments are overlapping')
 
 
