@@ -986,6 +986,17 @@ def test_droop_curve_segments_data_frame():
     assert 300.0 == pytest.approx(segments.loc['VscFr']['max_v'][1])
     assert -2.0 == pytest.approx(segments.loc['VscFr']['k'][1])
 
+    # VscFr's DC node is rated at 250 kV, network default sn is 100 MVA:
+    # v_pu = v / nominal_v, k_pu = k * sn / nominal_v
+    n.per_unit = True
+    segments_pu = n.get_droop_curve_segments()
+    assert -2.0 == pytest.approx(segments_pu.loc['VscFr']['min_v'][0])
+    assert -0.4 == pytest.approx(segments_pu.loc['VscFr']['max_v'][0])
+    assert -4.0 == pytest.approx(segments_pu.loc['VscFr']['k'][0])
+    assert -0.4 == pytest.approx(segments_pu.loc['VscFr']['min_v'][1])
+    assert 1.2 == pytest.approx(segments_pu.loc['VscFr']['max_v'][1])
+    assert -0.8 == pytest.approx(segments_pu.loc['VscFr']['k'][1])
+
 
 def test_exception():
     n = pp.network.create_ieee14()

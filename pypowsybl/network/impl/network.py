@@ -6374,11 +6374,6 @@ class Network:  # pylint: disable=too-many-public-methods
             converter must be contiguous and non-overlapping; providing segments for a converter
             that already has a droop curve replaces it entirely.
 
-            .. note::
-
-                Unlike most other dataframes, ``min_v``, ``max_v`` and ``k`` are always in physical
-                units here, regardless of the network's per-unit mode.
-
         Examples:
             Converter VSC-1 will use a droop coefficient of -10 kV/MW below -100kV, and -5 kV/MW
             between -100kV and 100kV:
