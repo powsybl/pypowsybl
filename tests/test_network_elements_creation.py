@@ -810,6 +810,37 @@ VSC1  60   -100       50
     assert vsc_curve_points.loc[1]['max_q'] == 50
 
 
+def test_create_droop_curve_segments():
+    n = pypowsybl.network.create_dc_detailed_vsc_symmetrical_monopole_network()
+    n.create_droop_curve_segments(dataframe_from_string("""
+id     min_v  max_v  k
+VscFr  -500   -100   -10
+VscFr  -100   100    -5
+VscFr  100    500    -1
+    """))
+    segments = n.get_droop_curve_segments()
+    pd.testing.assert_series_equal(segments.loc[('VscFr', 0)],
+                                   pd.Series(data={'min_v': -500.0, 'max_v': -100.0, 'k': -10.0},
+                                             name=('VscFr', 0)), check_dtype=False)
+    pd.testing.assert_series_equal(segments.loc[('VscFr', 1)],
+                                   pd.Series(data={'min_v': -100.0, 'max_v': 100.0, 'k': -5.0},
+                                             name=('VscFr', 1)), check_dtype=False)
+    pd.testing.assert_series_equal(segments.loc[('VscFr', 2)],
+                                   pd.Series(data={'min_v': 100.0, 'max_v': 500.0, 'k': -1.0},
+                                             name=('VscFr', 2)), check_dtype=False)
+
+
+def test_create_droop_curve_segments_overlap_error():
+    n = pypowsybl.network.create_dc_detailed_vsc_symmetrical_monopole_network()
+    with pytest.raises(PyPowsyblError) as exc:
+        n.create_droop_curve_segments(dataframe_from_string("""
+id     min_v  max_v  k
+VscFr  -500   -100   -10
+VscFr  -150   100    -5
+        """))
+    assert exc.match('Droop segments are overlapping')
+
+
 def test_delete_elements_eurostag():
     net = pypowsybl.network.create_eurostag_tutorial_example1_network()
     net.remove_elements(['GEN', 'GEN2'])

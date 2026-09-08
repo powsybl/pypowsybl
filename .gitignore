@@ -62,7 +62,3 @@ tests/_trial_temp/*
 
 # Documentation generated files (autosummary)
 docs/reference/api/
-
-# Local working docs (specs, plans) - not part of the published repo
-docs/specs/
-docs/superpowers/

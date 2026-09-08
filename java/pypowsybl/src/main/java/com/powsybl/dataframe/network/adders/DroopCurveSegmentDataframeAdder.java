@@ -21,7 +21,7 @@ import static com.powsybl.dataframe.network.adders.SeriesUtils.getRequiredDouble
 import static com.powsybl.dataframe.network.adders.SeriesUtils.getRequiredStrings;
 
 /**
- * @author SuperGrid Institute
+ * @author Landry Huet {@literal <landry.huet at supergrid-institute.com>}
  */
 public class DroopCurveSegmentDataframeAdder implements NetworkElementAdder {
 
