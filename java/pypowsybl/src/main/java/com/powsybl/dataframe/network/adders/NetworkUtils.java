@@ -90,6 +90,14 @@ public final class NetworkUtils {
         return (Injection<?>) identifiable;
     }
 
+    public static Injection<?> getGenOrBatteryOrThrow(Network network, String id) {
+        Identifiable<?> identifiable = getIdentifiableOrThrow(network, id);
+        if (!(identifiable instanceof Generator) && !(identifiable instanceof Battery)) {
+            throw new PowsyblException("Network element '" + id + "' is not a generator or a battery");
+        }
+        return (Injection<?>) identifiable;
+    }
+
     public static Area getAreaOrThrow(Network network, String id) {
         Area area = network.getArea(id);
         if (area == null) {
