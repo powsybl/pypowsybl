@@ -10,10 +10,12 @@
 #include <string>
 #include <vector>
 #include <map>
+#include <unordered_map>
 #include <memory>
 #include <stdexcept>
 #include <functional>
 #include <mutex>
+#include <utility>
 #include "powsybl-api.h"
 #include "pypowsybl-java.h"
 
@@ -875,6 +877,10 @@ void removeVariant(const JavaHandle& network, std::string& variant);
 void cloneVariant(const JavaHandle& network, std::string& src, std::string& variant, bool mayOverwrite);
 
 std::vector<std::string> getVariantsIds(const JavaHandle& network);
+
+std::vector<std::string> getOutageGroup(const JavaHandle& network, const std::string& equipmentId);
+
+std::unordered_map<std::string, std::vector<std::string>> getOutageGroups(const JavaHandle& network, const std::vector<std::string>& elementIds);
 
 void addMonitoredElements(const JavaHandle& securityAnalysisContext, contingency_context_type contingencyContextType, const std::vector<std::string>& branchIds,
                       const std::vector<std::string>& voltageLevelIds, const std::vector<std::string>& threeWindingsTransformerIds,

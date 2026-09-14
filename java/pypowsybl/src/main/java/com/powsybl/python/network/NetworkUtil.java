@@ -7,12 +7,28 @@
  */
 package com.powsybl.python.network;
 
+import com.powsybl.commons.report.ReportNode;
+import com.powsybl.contingency.Contingency;
+import com.powsybl.contingency.ContingencyElementFactory;
 import com.powsybl.commons.PowsyblException;
 import com.powsybl.dataframe.network.extensions.ConnectablePositionFeederData;
 import com.powsybl.iidm.network.*;
 import com.powsybl.iidm.network.extensions.ConnectablePosition;
 import com.powsybl.iidm.network.util.SwitchPredicates;
 import com.powsybl.iidm.network.util.SwitchesFlow;
+import com.powsybl.loadflow.LoadFlowParameters;
+import com.powsybl.math.matrix.SparseMatrixFactory;
+import com.powsybl.openloadflow.OpenLoadFlowParameters;
+import com.powsybl.openloadflow.graph.EvenShiloachGraphDecrementalConnectivityFactory;
+import com.powsybl.openloadflow.network.LfBranch;
+import com.powsybl.openloadflow.network.LfBus;
+import com.powsybl.openloadflow.network.LfNetwork;
+import com.powsybl.openloadflow.network.LfNetworkParameters;
+import com.powsybl.openloadflow.network.LfTopoConfig;
+import com.powsybl.openloadflow.network.impl.LfNetworkList;
+import com.powsybl.openloadflow.network.impl.Networks;
+import com.powsybl.openloadflow.network.impl.PropagatedContingency;
+import com.powsybl.openloadflow.network.impl.PropagatedContingencyCreationParameters;
 import com.powsybl.python.commons.PyPowsyblApiHeader;
 
 import java.util.*;
@@ -197,6 +213,143 @@ public final class NetworkUtil {
                     switchesFlow.getP1(switchId),
                     switchesFlow.getQ1(switchId));
         }).toList();
+    }
+
+    /**
+     * Computes the propagated outage group created by tripping a single equipment.
+     *
+     * @param network network containing the equipment
+     * @param equipmentId identifier of the initiating equipment
+     * @return sorted identifiers of disconnected equipments caused by the outage, following
+     * the connectivity-result semantics used for outage-group computation
+     */
+    static List<String> getOutageGroup(Network network, String equipmentId) {
+        return computeOutageGroupsByEquipmentId(network, List.of(equipmentId)).get(equipmentId);
+    }
+
+    /**
+     * Computes propagated outage groups for the requested initiating equipments.
+     *
+     * @param network network containing the initiating equipments
+     * @param equipmentIds identifiers of the equipments to trip
+     * @return map keyed by initiating equipment identifier with sorted disconnected equipment identifiers as values,
+     * following the connectivity-result semantics used for outage-group computation
+     */
+    static Map<String, List<String>> getOutageGroups(Network network, List<String> equipmentIds) {
+        if (equipmentIds.isEmpty()) {
+            return Collections.emptyMap();
+        }
+
+        return computeOutageGroupsByEquipmentId(network, new HashSet<>(equipmentIds));
+    }
+
+    /**
+     * Builds propagated outage groups for a set of initiating equipments using the OpenLoadFlow contingency path.
+     *
+     * @param network network containing the initiating equipments
+     * @param equipmentIds identifiers of the equipments to trip
+     * @return map keyed by initiating equipment identifier with sorted disconnected equipment identifiers as values,
+     * following the connectivity-result semantics used for outage-group computation
+     */
+    private static Map<String, List<String>> computeOutageGroupsByEquipmentId(Network network, Collection<String> equipmentIds) {
+        if (equipmentIds.isEmpty()) {
+            return Collections.emptyMap();
+        }
+
+        LoadFlowParameters loadFlowParameters = new LoadFlowParameters();
+        LfTopoConfig topoConfig = new LfTopoConfig();
+        List<Contingency> contingencies = equipmentIds.stream()
+            .map(equipmentId -> createOutageGroupContingency(network, equipmentId))
+            .toList();
+        List<PropagatedContingency> propagatedContingencies = PropagatedContingency.createList(
+            network,
+            contingencies,
+            topoConfig,
+            createOutageGroupContingencyCreationParameters());
+
+        Map<String, List<String>> disconnectedElementsByEquipmentId = new HashMap<>();
+        try (LfNetworkList lfNetworks = Networks.loadWithReconnectableElements(network, topoConfig,
+            createOutageGroupLfNetworkParameters(network, loadFlowParameters, topoConfig.isBreaker()),
+            ReportNode.NO_OP)) {
+            getOutageGroupNetworksToEvaluate(lfNetworks, loadFlowParameters.getComponentMode()).forEach(lfNetwork ->
+                propagatedContingencies.forEach(propagatedContingency ->
+                    propagatedContingency.toLfContingency(lfNetwork).ifPresent(lfContingency ->
+                        disconnectedElementsByEquipmentId
+                            .putIfAbsent(propagatedContingency.getContingency().getId(),
+                                lfContingency.getDisconnectedElementIds().stream().sorted().toList()))));
+        }
+
+        equipmentIds.forEach(equipmentId -> disconnectedElementsByEquipmentId.putIfAbsent(equipmentId, List.of()));
+        return disconnectedElementsByEquipmentId;
+    }
+
+    /**
+     * Creates a validated contingency for one initiating equipment.
+     *
+     * @param network network containing the equipment
+     * @param equipmentId identifier of the equipment to convert into a contingency
+     * @return contingency ready to be propagated by OpenLoadFlow
+     */
+    private static Contingency createOutageGroupContingency(Network network, String equipmentId) {
+        Identifiable<?> identifiable = network.getIdentifiable(equipmentId);
+        if (identifiable == null) {
+            throw new PowsyblException("Equipment '" + equipmentId + "' not found");
+        }
+        try {
+            return new Contingency(equipmentId, List.of(ContingencyElementFactory.create(identifiable)));
+        } catch (PowsyblException e) {
+            throw new PowsyblException("Equipment '" + equipmentId + "' is not supported for outage groups");
+        }
+    }
+
+    /**
+     * Creates the contingency propagation options used to derive outage groups.
+     *
+     * @return contingency creation parameters with propagation enabled
+     */
+    private static PropagatedContingencyCreationParameters createOutageGroupContingencyCreationParameters() {
+        return new PropagatedContingencyCreationParameters()
+            .setContingencyPropagation(true);
+    }
+
+    /**
+     * Creates the load-flow network parameters required for outage-group evaluation.
+     *
+     * @param network network being evaluated
+     * @param loadFlowParameters base load-flow parameters used to derive OpenLoadFlow settings
+     * @param breakers whether breaker topology must be modeled in the load-flow network
+     * @return OpenLoadFlow network parameters configured for outage-group computation
+     */
+    private static LfNetworkParameters createOutageGroupLfNetworkParameters(Network network, LoadFlowParameters loadFlowParameters,
+                                                                            boolean breakers) {
+        return OpenLoadFlowParameters.createAcParameters(network, loadFlowParameters,
+            OpenLoadFlowParameters.get(loadFlowParameters), new SparseMatrixFactory(), new EvenShiloachGraphDecrementalConnectivityFactory<LfBus, LfBranch>(), breakers, false)
+            .getNetworkParameters();
+    }
+
+    /**
+     * Selects the load-flow networks whose connectivity results should contribute to outage-group evaluation.
+     *
+     * @param lfNetworks load-flow networks derived from the IIDM network
+     * @param componentMode component selection mode coming from the load-flow parameters
+     * @return list of valid load-flow networks that match the requested component mode
+     */
+    private static List<LfNetwork> getOutageGroupNetworksToEvaluate(LfNetworkList lfNetworks,
+                                                                    LoadFlowParameters.ComponentMode componentMode) {
+        return switch (componentMode) {
+            case MAIN_CONNECTED -> lfNetworks.getList().stream()
+                .filter(lfNetwork -> lfNetwork.getNumCC() == ComponentConstants.MAIN_NUM
+                    && lfNetwork.getValidity().equals(LfNetwork.Validity.VALID))
+                .toList();
+            case MAIN_SYNCHRONOUS -> lfNetworks.getList().stream()
+                .filter(lfNetwork -> lfNetwork.getSynchronousNetworks().size() == 1
+                    && lfNetwork.getSynchronousNetworks().getFirst().getNumSC() == ComponentConstants.MAIN_NUM
+                    && lfNetwork.getValidity().equals(LfNetwork.Validity.VALID))
+                .toList();
+            case ALL_CONNECTED -> lfNetworks.getList().stream()
+                .filter(lfNetwork -> lfNetwork.getValidity().equals(LfNetwork.Validity.VALID))
+                .toList();
+        };
     }
 
     public static Stream<TemporaryLimitData> getLimits(Network network) {

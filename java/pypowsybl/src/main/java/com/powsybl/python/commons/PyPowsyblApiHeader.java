@@ -56,7 +56,7 @@ public final class PyPowsyblApiHeader {
         @CField("length")
         void setLength(int length);
 
-        ArrayPointer addressOf(int index);
+        ArrayPointer<T> addressOf(int index);
 
     }
 
@@ -91,6 +91,27 @@ public final class PyPowsyblApiHeader {
 
         @CField("values")
         void setValues(CCharPointerPointer values);
+    }
+
+    @CStruct("string_map_array")
+    public interface StringMapArray extends PointerBase {
+        @CField("length")
+        int getLength();
+
+        @CField("length")
+        void setLength(int length);
+
+        @CField("keys")
+        CCharPointerPointer getKeys();
+
+        @CField("keys")
+        void setKeys(CCharPointerPointer keys);
+
+        @CField("values")
+        ArrayPointer<CCharPointerPointer> getValues();
+
+        @CField("values")
+        void setValues(ArrayPointer<CCharPointerPointer> values);
     }
 
     @CStruct("network_metadata")

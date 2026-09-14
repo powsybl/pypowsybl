@@ -7,16 +7,31 @@
  */
 package com.powsybl.python.network;
 
+import com.powsybl.commons.PowsyblException;
+import com.powsybl.commons.report.ReportNode;
+import com.powsybl.contingency.ContingenciesProvider;
+import com.powsybl.contingency.Contingency;
+import com.powsybl.contingency.ContingencyElementFactory;
 import com.powsybl.iidm.network.*;
 import com.powsybl.iidm.network.test.EurostagTutorialExample1Factory;
+import com.powsybl.iidm.network.test.FourSubstationsNodeBreakerFactory;
+import com.powsybl.openloadflow.sa.OpenSecurityAnalysisParameters;
+import com.powsybl.python.commons.CommonObjects;
 import com.powsybl.python.commons.PyPowsyblApiHeader;
+import com.powsybl.security.SecurityAnalysis;
+import com.powsybl.security.SecurityAnalysisParameters;
+import com.powsybl.security.SecurityAnalysisResult;
+import com.powsybl.security.SecurityAnalysisRunParameters;
 import org.junit.jupiter.api.Test;
 
 import java.util.Collections;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.*;
 
 /**
@@ -50,6 +65,52 @@ public class NetworkUtilTest {
                 assertTrue(bus.isEmpty());
             }
         });
+    }
+
+    @Test
+    void testOutageGroupsMatchSecurityAnalysisConnectivityResults() {
+        Network network = FourSubstationsNodeBreakerFactory.create();
+        List<Contingency> contingencies = network.getIdentifiables().stream()
+            .map(NetworkUtilTest::createContingency)
+            .flatMap(Optional::stream)
+            .toList();
+        ContingenciesProvider contingenciesProvider = ignored -> contingencies;
+
+        SecurityAnalysisParameters parameters = new SecurityAnalysisParameters();
+        parameters.addExtension(OpenSecurityAnalysisParameters.class,
+                new OpenSecurityAnalysisParameters()
+                        .setContingencyPropagation(true)
+                        .setCreateResultExtension(true));
+        SecurityAnalysisRunParameters runParameters = new SecurityAnalysisRunParameters()
+            .setSecurityAnalysisParameters(parameters)
+            .setComputationManager(CommonObjects.getComputationManager())
+            .setReportNode(ReportNode.NO_OP);
+
+        SecurityAnalysisResult securityAnalysisResult = SecurityAnalysis.find("OpenLoadFlow")
+            .run(network, network.getVariantManager().getWorkingVariantId(), contingenciesProvider, runParameters)
+            .getResult();
+        Map<String, List<String>> expectedOutageGroups = securityAnalysisResult.getPostContingencyResults().stream()
+            .collect(Collectors.toMap(postContingencyResult -> postContingencyResult.getContingency().getId(),
+                postContingencyResult -> postContingencyResult.getConnectivityResult().getDisconnectedElements().stream().sorted().toList(),
+                (left, right) -> left,
+                LinkedHashMap::new));
+
+        List<String> elementIds = contingencies.stream()
+            .map(Contingency::getId)
+            .toList();
+        Map<String, List<String>> outageGroups = NetworkUtil.getOutageGroups(network, elementIds);
+
+        assertThat(outageGroups.values()).allSatisfy(outageGroup -> assertThat(outageGroup).isSorted());
+        assertThat(outageGroups).containsOnlyKeys(elementIds);
+        elementIds.forEach(elementId -> assertThat(outageGroups.get(elementId)).isEqualTo(expectedOutageGroups.getOrDefault(elementId, List.of())));
+    }
+
+    private static Optional<Contingency> createContingency(Identifiable<?> identifiable) {
+        try {
+            return Optional.of(new Contingency(identifiable.getId(), List.of(ContingencyElementFactory.create(identifiable))));
+        } catch (PowsyblException e) {
+            return Optional.empty();
+        }
     }
 
     public static Network createTopologyTestNetwork() {

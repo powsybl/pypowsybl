@@ -213,6 +213,18 @@ std::map<std::string, std::string> convertMapStructToStdMap(string_map* map) {
     return stdStringMap;
 }
 
+std::unordered_map<std::string, std::vector<std::string>> convertStringMapArrayStructToUnorderedMap(string_map_array* map) {
+    std::unordered_map<std::string, std::vector<std::string>> stdStringMapArray;
+    stdStringMapArray.reserve(map->length);
+    for (int i = 0; i < map->length; i++) {
+        char** keyPtr = (char**) map->keys + i;
+        array* valuePtr = map->values + i;
+        stdStringMapArray.emplace(std::string(*keyPtr ? *keyPtr : ""), toVector<std::string>(valuePtr));
+    }
+    PowsyblCaller::get()->callJava<>(::freeStringMapArray, map);
+    return stdStringMapArray;
+}
+
 char* copyStringToCharPtr(const std::string& str) {
     char* c = new char[str.size() + 1];
     str.copy(c, str.size());
@@ -1348,6 +1360,18 @@ std::vector<std::string> getVariantsIds(const JavaHandle& network) {
     auto formatsArrayPtr = PowsyblCaller::get()->callJava<array*>(::getVariantsIds, network);
     ToStringVector formats(formatsArrayPtr);
     return formats.get();
+}
+
+std::vector<std::string> getOutageGroup(const JavaHandle& network, const std::string& equipmentId) {
+    auto outageGroupArrayPtr = PowsyblCaller::get()->callJava<array*>(::getOutageGroup, network, (char*) equipmentId.c_str());
+    ToStringVector outageGroup(outageGroupArrayPtr);
+    return outageGroup.get();
+}
+
+std::unordered_map<std::string, std::vector<std::string>> getOutageGroups(const JavaHandle& network, const std::vector<std::string>& elementIds) {
+    ToCharPtrPtr elementIdsPtr(elementIds);
+    auto outageGroupsPtr = PowsyblCaller::get()->callJava<string_map_array*>(::getOutageGroups, network, elementIdsPtr.get(), elementIds.size());
+    return convertStringMapArrayStructToUnorderedMap(outageGroupsPtr);
 }
 
 void addMonitoredElements(const JavaHandle& securityAnalysisContext, contingency_context_type contingencyContextType, const std::vector<std::string>& branchIds,
