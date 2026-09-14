@@ -29,6 +29,11 @@ jobs:
             container: "quay.io/pypa/manylinux_2_28_x86_64:2026.03.09-1",
           }
           - {
+              name: linux-arm64,
+              os: ubuntu-24.04-arm,
+              container: "quay.io/pypa/manylinux_2_28_aarch64:2026.09.02-0",
+          }
+          - {
             name: darwin,
             os: macos-15-intel,
             macosx_deployment_target: "10.16", # to ensure pip finds wheel when Big Sur is configured to return 10.16 as version instead of 11.0
@@ -49,7 +54,7 @@ jobs:
             version: '3.10'
           }
     env:
-      PYTHON: ${{ matrix.config.name == 'linux' && format('/opt/python/{0}-{1}/bin/python', matrix.python.name, matrix.python.abi) || 'python' }}
+      PYTHON: ${{ (matrix.config.name == 'linux' || matrix.config.name == 'linux-arm64') && format('/opt/python/{0}-{1}/bin/python', matrix.python.name, matrix.python.abi) || 'python' }}
     defaults:
       run:
         shell: bash
@@ -61,7 +66,7 @@ jobs:
           submodules: true
 
       - name: Install Linux Packages
-        if: matrix.config.name == 'linux'
+        if: (matrix.config.name == 'linux' || matrix.config.name == 'linux-arm64')
         shell: bash
         run: dnf install -y wget
 
@@ -69,12 +74,12 @@ jobs:
         uses: ./.github/actions/setup-before-build
         with:
           cache-prefix: ${{ matrix.config.name }}
-          python-already-available: ${{ matrix.config.name == 'linux' && 'true' || 'false' }}
+          python-already-available: ${{ (matrix.config.name == 'linux' || matrix.config.name == 'linux-arm64') && 'true' || 'false' }}
           python-version: ${{ matrix.python.version }}
           python-command: ${{ env.PYTHON }}
 
       - name: Setup path
-        if: matrix.config.name == 'linux'
+        if: (matrix.config.name == 'linux' || matrix.config.name == 'linux-arm64')
         run: echo "/opt/python/${{ matrix.python.name }}-${{ matrix.python.abi }}/bin/" >> $GITHUB_PATH
 
       - name: Build wheel
@@ -82,7 +87,7 @@ jobs:
           MACOSX_DEPLOYMENT_TARGET: ${{ matrix.config.macosx_deployment_target }}
         run: |
           ${{ env.PYTHON }} setup.py bdist_wheel ${{ matrix.config.bdist_wheel_args }}
-          if [ "${{ matrix.config.name }}" == "linux" ]; then
+          if [ "${{ matrix.config.name }}" == "linux" ] || [ "${{ matrix.config.name }}" == "linux-arm64" ]; then
             auditwheel repair dist/*.whl
           fi
 
@@ -100,6 +105,12 @@ jobs:
             name: linux,
             os: ubuntu-latest,
             container: "quay.io/pypa/manylinux_2_28_x86_64:2026.03.09-1",
+            wheel-dir: "wheelhouse",
+          }
+          - {
+            name: linux-arm64,
+            os: ubuntu-24.04-arm,
+            container: "quay.io/pypa/manylinux_2_28_aarch64:2026.09.02-0",
             wheel-dir: "wheelhouse",
           }
           - {
@@ -148,7 +159,7 @@ jobs:
             version: '3.14'
           }
     env:
-      PYTHON: ${{ matrix.config.name == 'linux' && format('/opt/python/{0}-{1}/bin/python', matrix.python.name, matrix.python.abi) || 'python' }}
+      PYTHON: ${{ (matrix.config.name == 'linux' || matrix.config.name == 'linux-arm64') && format('/opt/python/{0}-{1}/bin/python', matrix.python.name, matrix.python.abi) || 'python' }}
     defaults:
       run:
         shell: bash
@@ -160,7 +171,7 @@ jobs:
           submodules: true
 
       - name: Install Linux Packages
-        if: matrix.config.name == 'linux'
+        if: (matrix.config.name == 'linux' || matrix.config.name == 'linux-arm64')
         shell: bash
         run: dnf install -y wget
 
@@ -168,20 +179,20 @@ jobs:
         uses: ./.github/actions/setup-before-build
         with:
           cache-prefix: ${{ matrix.config.name }}
-          python-already-available: ${{ matrix.config.name == 'linux' && 'true' || 'false' }}
+          python-already-available: ${{ (matrix.config.name == 'linux' || matrix.config.name == 'linux-arm64') && 'true' || 'false' }}
           python-version: ${{ matrix.python.version }}
           python-command: ${{ env.PYTHON }}
 
       - name: Setup path
-        if: matrix.config.name == 'linux'
+        if: (matrix.config.name == 'linux' || matrix.config.name == 'linux-arm64')
         run: echo "/opt/python/${{ matrix.python.name }}-${{ matrix.python.abi }}/bin/" >> $GITHUB_PATH
 
       - name: Install Ipopt (Linux, via micromamba)
-        if: matrix.config.name == 'linux'
+        if: (matrix.config.name == 'linux' || matrix.config.name == 'linux-arm64')
         shell: bash
         run: |
-          curl -Ls https://micro.mamba.pm/api/micromamba/linux-64/latest | tar -xvj bin/micromamba
-          ./bin/micromamba create -y -p $HOME/ipopt-env -c conda-forge ipopt==3.14.19 mumps==5.1.2
+          curl -Ls https://micro.mamba.pm/api/micromamba/$(uname)-$(uname -m)/latest | tar -xvj bin/micromamba
+          ./bin/micromamba create -y -p $HOME/ipopt-env -c conda-forge ipopt==3.14.19
           echo "LD_LIBRARY_PATH=$HOME/ipopt-env/lib:${LD_LIBRARY_PATH}" >> $GITHUB_ENV
 
       - name: Install Ipopt (macOS arm64, via Homebrew)
@@ -208,7 +219,7 @@ jobs:
           MACOSX_DEPLOYMENT_TARGET: ${{ matrix.config.macosx_deployment_target }}
         run: |
           ${{ env.PYTHON }} setup.py bdist_wheel ${{ matrix.config.bdist_wheel_args }}
-          if [ "${{ matrix.config.name }}" == "linux" ]; then
+          if [ "${{ matrix.config.name }}" == "linux" ] || [ "${{ matrix.config.name }}" == "linux-arm64" ]; then
             auditwheel repair dist/*.whl
           fi
 
@@ -350,6 +361,11 @@ jobs:
             container: "quay.io/pypa/manylinux_2_28_x86_64:2026.03.09-1",
           }
           - {
+            name: linux-arm64,
+            os: ubuntu-24.04-arm,
+            container: "quay.io/pypa/manylinux_2_28_aarch64:2026.03.09-1",
+          }
+          - {
             name: darwin,
             os: macos-15-intel,
             macosx_deployment_target: "10.16", # to ensure pip finds wheel when Big Sur is configured to return 10.16 as version instead of 11.0
@@ -370,7 +386,7 @@ jobs:
             version: '3.10'
           }
     env:
-      PYTHON: ${{ matrix.config.name == 'linux' && format('/opt/python/{0}-{1}/bin/python', matrix.python.name, matrix.python.abi) || 'python' }}
+      PYTHON: ${{ (matrix.config.name == 'linux' || matrix.config.name == 'linux-arm64') && format('/opt/python/{0}-{1}/bin/python', matrix.python.name, matrix.python.abi) || 'python' }}
 
     steps:
       - name: Checkout sources
@@ -382,7 +398,7 @@ jobs:
         uses: ./.github/actions/setup-before-build
         with:
           cache-prefix: ${{ matrix.config.name }}
-          python-already-available: ${{ matrix.config.name == 'linux' && 'true' || 'false' }}
+          python-already-available: ${{ (matrix.config.name == 'linux' || matrix.config.name == 'linux-arm64') && 'true' || 'false' }}
           python-version: ${{ matrix.python.version }}
           python-command: ${{ env.PYTHON }}
 
