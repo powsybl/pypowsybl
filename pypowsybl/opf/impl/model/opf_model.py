@@ -59,7 +59,7 @@ class OpfModel:
 
         # cost function
         logger.debug(f"Using cost function: '{cost_function.name}'")
-        cost = cost_function.create(network_cache, variable_context)
+        cost = cost_function.create(network_cache, variable_context, model)
         model.set_objective(cost)
 
         logger.info(f"Model built in {time.perf_counter() - start:.3f} seconds")

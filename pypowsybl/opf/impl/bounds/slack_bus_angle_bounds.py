@@ -18,8 +18,13 @@ logger = logging.getLogger(__name__)
 class SlackBusAngleBounds(VariableBounds):
     def add(self, parameters: ModelParameters, network_cache: NetworkCache,
             variable_context: VariableContext, model: Model) -> None:
-        # slack bus angle forced to 0
-        slack_bus_id = network_cache.slack_terminal.iloc[0].bus_id if len(network_cache.slack_terminal) > 0 else network_cache.buses.iloc[0].name
-        slack_bus_num = network_cache.buses.index.get_loc(slack_bus_id)
-        model.set_variable_bounds(variable_context.ph_vars[slack_bus_num], 0.0, 0.0)
-        logger.info(f"Angle reference is at bus '{slack_bus_id}' (num={slack_bus_num})")
+        # each synchronous component needs its own angle reference
+        for component, buses_in_component in network_cache.buses.groupby('synchronous_component'):
+            declared_in_component = network_cache.slack_terminal[network_cache.slack_terminal.bus_id.isin(buses_in_component.index)]
+            if declared_in_component.empty:
+                slack_bus_id = buses_in_component.index[0]
+            else:
+                slack_bus_id = declared_in_component.iloc[0].bus_id
+            slack_bus_num = network_cache.buses.index.get_loc(slack_bus_id)
+            model.set_variable_bounds(variable_context.ph_vars[slack_bus_num], 0.0, 0.0)
+            logger.info(f"Angle reference for synchronous component {component} is at bus '{slack_bus_id}' (num={slack_bus_num})")

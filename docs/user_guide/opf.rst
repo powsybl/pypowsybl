@@ -87,13 +87,15 @@ In AC/DC mode, OPF solves AC and DC equations in the same optimization problem. 
 AC/DC objective function
 ~~~~~~~~~~~~~~~~~~~~~~~~
 
-In AC/DC mode, the current objective function minimizes DC line current usage:
+In AC/DC mode, the current objective function minimizes the resistive losses of the DC lines
+and the losses of the converters:
 
 .. math::
 
-    \min \sum_l \left(I_{1,l}^2 + I_{2,l}^2\right)
+    \min \sum_l R_l I_l^2 + \sum_c P_{loss,c}
 
-where ``I1`` and ``I2`` are the two oriented current variables of each modeled DC line.
+where ``I`` is the current variable of each modeled DC line, ``R`` its resistance, and
+:math:`P_{loss,c}` the converter loss defined below.
 
 
 DC buses
@@ -117,13 +119,23 @@ For a line resistance ``R`` and node voltages ``V1`` and ``V2``:
 
 .. math::
 
-    I_1 = \frac{V_1 - V_2}{R}
+    I = \frac{V_1 - V_2}{R}
+
+``I`` is oriented from ``dc_node1`` to ``dc_node2``: it is positive when current flows out of
+``dc_node1`` towards the line.
+
+
+DC switches
+~~~~~~~~~~~
+
+A closed DC switch between ``dc_node1`` and ``dc_node2`` is modeled with a resistance ``r``:
 
 .. math::
 
-    I_2 = \frac{V_2 - V_1}{R}
+    V_1 - V_2 - r \cdot I = 0
 
-``I1`` is positive when current flows out of ``dc_node1`` towards the line. ``I2`` is positive when current flows out of ``dc_node2`` towards the line.
+with ``I`` oriented from ``dc_node1`` to ``dc_node2``. The equation is written in this form
+rather than as :math:`I = (V_1 - V_2) / r` because ``r = 0`` is a normal value for a switch.
 
 
 Voltage source converters
@@ -205,10 +217,8 @@ In AC/DC OPF, networks with several nominal voltages inside the same DC componen
 Scope and limitations
 ---------------------
 
-As a beta, the optimal power flow in the AC/DC mode applies fixed placeholder operating limits instead of reading them from the network:
+As a beta, the optimal power flow in the AC/DC mode applies fixed placeholder for these operating limits instead of reading them from the network:
 
-- VSC active and reactive power bounds;
+- VSC reactive power bounds;
 - DC node voltage bounds;
 - DC line current bounds.
-
-DC switches are not yet modeled.

@@ -6,6 +6,7 @@
 # SPDX-License-Identifier: MPL-2.0
 #
 import logging
+import math
 from typing import Any
 
 logger = logging.getLogger(__name__)
@@ -48,8 +49,15 @@ class Bounds:
         return f"[{self._min_value}, {self._max_value}]"
 
     @staticmethod
-    def get_voltage_bounds(_low_voltage_limit: float | None, _high_voltage_limit: float | None, default_voltage_bounds: 'Bounds') -> 'Bounds':
-        return default_voltage_bounds  # FIXME get from voltage level dataframe
+    def get_voltage_bounds(low_voltage_limit: float | None, high_voltage_limit: float | None, default_voltage_bounds: 'Bounds') -> 'Bounds':
+        return Bounds(
+            Bounds._or_default(low_voltage_limit, default_voltage_bounds.min_value),
+            Bounds._or_default(high_voltage_limit, default_voltage_bounds.max_value),
+        )
+
+    @staticmethod
+    def _or_default(value: float | None, default: float) -> float:
+        return default if value is None or math.isnan(value) else value
 
     @staticmethod
     def get_reactive_power_bounds(row: Any) -> 'Bounds':
