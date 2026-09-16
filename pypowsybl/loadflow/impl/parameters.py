@@ -4,6 +4,7 @@
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 # SPDX-License-Identifier: MPL-2.0
 #
+import json
 import warnings
 from typing import Sequence, Dict, Optional, Any
 
@@ -25,6 +26,16 @@ ConnectedComponentMode.__module__ = __name__
 ComponentMode.__module__ = __name__
 
 import pypowsybl._pypowsybl
+
+
+def _with_version_first(json_str: str) -> str:
+    try:
+        content = json.loads(json_str)
+    except ValueError:
+        return json_str
+    if isinstance(content, dict) and 'version' in content:
+        return json.dumps({'version': content.pop('version'), **content})
+    return json_str
 
 
 class Parameters:  # pylint: disable=too-few-public-methods
@@ -214,12 +225,14 @@ class Parameters:  # pylint: disable=too-few-public-methods
         """
         Creates a Parameters object from a JSON string.
         Only provider parameters corresponding to the default_provider (see ``get_default_provider``) will be loaded from the JSON.
+        The keys of the JSON object may appear in any order.
 
         Args:
             json_str: JSON string containing the parameters.
         """
         parameters = Parameters()
-        parameters._init_from_c(pypowsybl._pypowsybl.create_loadflow_parameters_from_json(json_str))
+        c_parameters = pypowsybl._pypowsybl.create_loadflow_parameters_from_json(_with_version_first(json_str))
+        parameters._init_from_c(c_parameters)
         return parameters
 
     def to_json(self) -> str:
