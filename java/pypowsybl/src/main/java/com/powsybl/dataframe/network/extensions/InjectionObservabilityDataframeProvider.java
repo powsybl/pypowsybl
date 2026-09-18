@@ -64,48 +64,48 @@ public class InjectionObservabilityDataframeProvider extends AbstractSingleDataf
         return NetworkDataframeMapperBuilder.ofStream(this::itemsStream, this::getOrThrow)
                 .stringsIndex("id", injectionObservability -> ((Injection) injectionObservability.getExtendable()).getId())
                 .booleans("observable", InjectionObservability::isObservable)
-                .doubles("p_standard_deviation", (injectionObservability, context) -> injectionObservability.getQualityP() != null ?
-                                injectionObservability.getQualityP().getStandardDeviation() : Double.NaN,
+                .doubles("p_standard_deviation", (injectionObservability, context) -> injectionObservability.getQualityP().isPresent() ?
+                                injectionObservability.getNullableQualityP().getStandardDeviation() : Double.NaN,
                     (injectionObservability, standardDeviation, context) -> {
-                        if (injectionObservability.getQualityP() != null) {
-                            injectionObservability.getQualityP().setStandardDeviation(standardDeviation);
+                        if (injectionObservability.getQualityP().isPresent()) {
+                            injectionObservability.getNullableQualityP().setStandardDeviation(standardDeviation);
                         } else {
                             injectionObservability.setQualityP(standardDeviation);
                         }
                     })
-                .booleans("p_redundant", injectionObservability -> injectionObservability.getQualityP() != null &&
-                                (boolean) injectionObservability.getQualityP().isRedundant().orElse(false),
-                    (injectionObservability, redundant) -> injectionObservability.getQualityP().setRedundant(redundant))
-                .booleans("p_redundant_null", injectionObservability -> injectionObservability.getQualityP() == null ||
-                        injectionObservability.getQualityP().isRedundant().isEmpty())
-                .doubles("q_standard_deviation", (injectionObservability, context) -> injectionObservability.getQualityQ() != null ?
-                                injectionObservability.getQualityQ().getStandardDeviation() : Double.NaN,
+                .booleans("p_redundant", injectionObservability -> injectionObservability.getQualityP().isPresent() &&
+                                (boolean) injectionObservability.getNullableQualityP().isRedundant().orElse(false),
+                    (injectionObservability, redundant) -> injectionObservability.getNullableQualityP().setRedundant(redundant))
+                .booleans("p_redundant_null", injectionObservability -> injectionObservability.getQualityP().isEmpty() ||
+                        injectionObservability.getNullableQualityP().isRedundant().isEmpty())
+                .doubles("q_standard_deviation", (injectionObservability, context) -> injectionObservability.getQualityQ().isPresent() ?
+                                injectionObservability.getNullableQualityQ().getStandardDeviation() : Double.NaN,
                     (injectionObservability, standardDeviation, context) -> {
-                        if (injectionObservability.getQualityQ() != null) {
-                            injectionObservability.getQualityQ().setStandardDeviation(standardDeviation);
+                        if (injectionObservability.getQualityQ().isPresent()) {
+                            injectionObservability.getNullableQualityQ().setStandardDeviation(standardDeviation);
                         } else {
                             injectionObservability.setQualityQ(standardDeviation);
                         }
                     })
-                .booleans("q_redundant", injectionObservability -> injectionObservability.getQualityQ() != null &&
-                                (boolean) injectionObservability.getQualityQ().isRedundant().orElse(false),
-                    (injectionObservability, redundant) -> injectionObservability.getQualityQ().setRedundant(redundant))
-                .booleans("q_redundant_null", injectionObservability -> injectionObservability.getQualityQ() == null ||
-                        injectionObservability.getQualityQ().isRedundant().isEmpty())
-                .doubles("v_standard_deviation", (injectionObservability, context) -> injectionObservability.getQualityV() != null ?
-                                injectionObservability.getQualityV().getStandardDeviation() : Double.NaN,
+                .booleans("q_redundant", injectionObservability -> injectionObservability.getQualityQ().isPresent() &&
+                                (boolean) injectionObservability.getNullableQualityQ().isRedundant().orElse(false),
+                    (injectionObservability, redundant) -> injectionObservability.getNullableQualityQ().setRedundant(redundant))
+                .booleans("q_redundant_null", injectionObservability -> injectionObservability.getQualityQ().isEmpty() ||
+                        injectionObservability.getNullableQualityQ().isRedundant().isEmpty())
+                .doubles("v_standard_deviation", (injectionObservability, context) -> injectionObservability.getQualityV().isPresent() ?
+                                injectionObservability.getNullableQualityV().getStandardDeviation() : Double.NaN,
                     (injectionObservability, standardDeviation, context) -> {
-                        if (injectionObservability.getQualityV() != null) {
-                            injectionObservability.getQualityV().setStandardDeviation(standardDeviation);
+                        if (injectionObservability.getQualityV().isPresent()) {
+                            injectionObservability.getNullableQualityV().setStandardDeviation(standardDeviation);
                         } else {
                             injectionObservability.setQualityV(standardDeviation);
                         }
                     })
-                .booleans("v_redundant", injectionObservability -> injectionObservability.getQualityV() != null &&
-                                (boolean) injectionObservability.getQualityV().isRedundant().orElse(false),
-                    (injectionObservability, redundant) -> injectionObservability.getQualityV().setRedundant(redundant))
-                .booleans("v_redundant_null", injectionObservability -> injectionObservability.getQualityV() == null ||
-                        injectionObservability.getQualityV().isRedundant().isEmpty())
+                .booleans("v_redundant", injectionObservability -> injectionObservability.getQualityV().isPresent() &&
+                                (boolean) injectionObservability.getNullableQualityV().isRedundant().orElse(false),
+                    (injectionObservability, redundant) -> injectionObservability.getNullableQualityV().setRedundant(redundant))
+                .booleans("v_redundant_null", injectionObservability -> injectionObservability.getQualityV().isEmpty() ||
+                        injectionObservability.getNullableQualityV().isRedundant().isEmpty())
                 .build();
     }
 
