@@ -315,6 +315,28 @@ NGEN_NHV1  2  2  1  1  0.5
     assert step1.rho == 0.5
 
 
+def test_ratio_tap_changers_creation_reactive_power_mode():
+    n = pn.create_eurostag_tutorial_example1_network()
+    rtc_df = dataframe_from_string("""
+id         target_deadband  regulation_mode  regulation_value  oltc  low_tap  tap  regulating  regulated_side
+NGEN_NHV1                2   REACTIVE_POWER                50  True        0    1        True             ONE
+""")
+
+    steps_df = dataframe_from_string("""
+id         b  g  r  x  rho
+NGEN_NHV1  2  2  1  1  0.5
+NGEN_NHV1  2  2  1  1  0.5
+""")
+
+    n.create_ratio_tap_changers(rtc_df, steps_df)
+
+    rtc = n.get_ratio_tap_changers(all_attributes=True).loc['NGEN_NHV1']
+    assert rtc.regulation_mode == 'REACTIVE_POWER'
+    assert rtc.regulation_value == 50
+    assert rtc.regulated_side == 'ONE'
+    assert rtc.regulating
+
+
 def test_phase_tap_changers_creation():
     n = pn.create_four_substations_node_breaker_network()
     n.create_2_windings_transformers(dataframe_from_string("""

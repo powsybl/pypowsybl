@@ -1495,6 +1495,10 @@ public final class NetworkDataframes {
                 .ints("step_count", row -> row.getRtc().getStepCount())
                 .booleans("oltc", row -> row.getRtc().hasLoadTapChangingCapabilities(), (row, v) -> row.getRtc().setLoadTapChangingCapabilities(v))
                 .booleans(REGULATING, row -> row.getRtc().isRegulating(), (row, v) -> row.getRtc().setRegulating(v))
+                .enums("regulation_mode", RatioTapChanger.RegulationMode.class,
+                    row -> row.getRtc().getRegulationMode(), (row, v) -> row.getRtc().setRegulationMode(v), false)
+                .doubles("regulation_value", (row, context) -> row.getRtc().getRegulationValue(),
+                    (row, v, context) -> row.getRtc().setRegulationValue(v), false)
                 .doubles("target_v", (row, context) -> getTransformerTargetV(row.getRtc(), context),
                         (row, targetV, context) -> setTransformerTargetV(row.getRtc(), targetV, context))
                 .doubles("target_deadband", (row, context) -> row.getRtc().getTargetDeadband(),
