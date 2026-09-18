@@ -59,36 +59,38 @@ public class BranchObservabilityDataframeProvider extends AbstractSingleDatafram
         return NetworkDataframeMapperBuilder.ofStream(this::itemsStream, this::getOrThrow)
                 .stringsIndex("id", branchObservability -> ((Branch<?>) branchObservability.getExtendable()).getId())
                 .booleans("observable", BranchObservability::isObservable)
-                .doubles("p1_standard_deviation", (branchObservability, context) -> branchObservability.getQualityP1() != null ?
-                                branchObservability.getQualityP1().getStandardDeviation() : Double.NaN,
-                    (branchObservability, standardDeviation, context) -> branchObservability.getQualityP1().setStandardDeviation(standardDeviation))
-                .booleans("p1_redundant", branchObservability -> branchObservability.getQualityP1() != null &&
-                                (boolean) branchObservability.getQualityP1().isRedundant().orElse(false),
-                    (branchObservability, redundant) -> branchObservability.getQualityP1().setRedundant(redundant))
-                .booleans("p1_redundant_null", branchObservability -> branchObservability.getQualityP1() == null || branchObservability.getQualityP1().isRedundant().isEmpty())
-                .doubles("p2_standard_deviation", (branchObservability, context) -> branchObservability.getQualityP2() != null ? branchObservability.getQualityP2().getStandardDeviation() : Double.NaN,
-                    (branchObservability, standardDeviation, context) -> branchObservability.getQualityP2().setStandardDeviation(standardDeviation))
-                .booleans("p2_redundant", branchObservability -> branchObservability.getQualityP2() != null &&
-                                (boolean) branchObservability.getQualityP2().isRedundant().orElse(false),
-                    (branchObservability, redundant) -> branchObservability.getQualityP2().setRedundant(redundant))
-                .booleans("p2_redundant_null", branchObservability -> branchObservability.getQualityP2() == null ||
-                        branchObservability.getQualityP2().isRedundant().isEmpty())
-                .doubles("q1_standard_deviation", (branchObservability, context) -> branchObservability.getQualityQ1() != null ?
-                                branchObservability.getQualityQ1().getStandardDeviation() : Double.NaN,
-                    (branchObservability, standardDeviation, context) -> branchObservability.getQualityQ1().setStandardDeviation(standardDeviation))
-                .booleans("q1_redundant", branchObservability -> branchObservability.getQualityQ1() != null &&
-                                (boolean) branchObservability.getQualityQ1().isRedundant().orElse(false),
-                    (branchObservability, redundant) -> branchObservability.getQualityQ1().setRedundant(redundant))
-                .booleans("q1_redundant_null", branchObservability -> branchObservability.getQualityQ1() == null ||
-                        branchObservability.getQualityQ1().isRedundant().isEmpty())
-                .doubles("q2_standard_deviation", (branchObservability, context) -> branchObservability.getQualityQ2() != null ?
-                                branchObservability.getQualityQ2().getStandardDeviation() : Double.NaN,
-                    (branchObservability, standardDeviation, context) -> branchObservability.getQualityQ2().setStandardDeviation(standardDeviation))
-                .booleans("q2_redundant", branchObservability -> branchObservability.getQualityQ2() != null &&
-                                (boolean) branchObservability.getQualityQ2().isRedundant().orElse(false),
-                    (branchObservability, redundant) -> branchObservability.getQualityQ2().setRedundant(redundant))
-                .booleans("q2_redundant_null", branchObservability -> branchObservability.getQualityQ2() == null ||
-                        branchObservability.getQualityQ2().isRedundant().isEmpty())
+                .doubles("p1_standard_deviation", (branchObservability, context) -> branchObservability.getQualityP1().isPresent() ?
+                                branchObservability.getNullableQualityP1().getStandardDeviation() : Double.NaN,
+                    (branchObservability, standardDeviation, context) -> branchObservability.getNullableQualityP1().setStandardDeviation(standardDeviation))
+                .booleans("p1_redundant", branchObservability -> branchObservability.getQualityP1().isPresent() &&
+                                (boolean) branchObservability.getNullableQualityQ1().isRedundant().orElse(false),
+                    (branchObservability, redundant) -> branchObservability.getNullableQualityQ1().setRedundant(redundant))
+                .booleans("p1_redundant_null", branchObservability -> branchObservability.getQualityP1().isEmpty() || branchObservability.getNullableQualityQ1().isRedundant().isEmpty())
+                .doubles("p2_standard_deviation", (branchObservability, context) -> branchObservability.getQualityP2().isPresent() ?
+                                branchObservability.getNullableQualityP2().getStandardDeviation() : Double.NaN,
+                    (branchObservability, standardDeviation, context) -> branchObservability.getNullableQualityP2().setStandardDeviation(standardDeviation))
+                .booleans("p2_redundant", branchObservability -> branchObservability.getQualityP2().isPresent() &&
+                                (boolean) branchObservability.getNullableQualityP2().isRedundant().orElse(false),
+                    (branchObservability, redundant) -> branchObservability.getNullableQualityP2().setRedundant(redundant))
+                .booleans("p2_redundant_null", branchObservability -> branchObservability.getQualityP2().isEmpty() ||
+                        branchObservability.getNullableQualityP2().isRedundant().isEmpty())
+                .doubles("q1_standard_deviation", (branchObservability, context) -> branchObservability.getQualityQ1().isPresent() ?
+                                branchObservability.getNullableQualityQ1().getStandardDeviation() : Double.NaN,
+                    (branchObservability, standardDeviation, context) -> branchObservability.getNullableQualityQ1().setStandardDeviation(standardDeviation))
+                .booleans("q1_redundant", branchObservability -> branchObservability.getQualityQ1().isPresent() &&
+                                (boolean) branchObservability.getNullableQualityQ1().isRedundant().orElse(false),
+                    (branchObservability, redundant) -> branchObservability.getNullableQualityQ1().setRedundant(redundant))
+                .booleans("q1_redundant_null", branchObservability -> branchObservability.getQualityQ1().isEmpty() ||
+                        branchObservability.getNullableQualityQ1().isRedundant().isEmpty())
+                .doubles("q2_standard_deviation", (branchObservability, context) -> branchObservability.getQualityQ2().isPresent() ?
+                                branchObservability.getNullableQualityQ2().getStandardDeviation() : Double.NaN,
+                    (branchObservability, standardDeviation, context) ->
+                            branchObservability.getNullableQualityQ2().setStandardDeviation(standardDeviation))
+                .booleans("q2_redundant", branchObservability -> branchObservability.getQualityQ2().isPresent() &&
+                                (boolean) branchObservability.getNullableQualityQ2().isRedundant().orElse(false),
+                    (branchObservability, redundant) -> branchObservability.getNullableQualityQ2().setRedundant(redundant))
+                .booleans("q2_redundant_null", branchObservability -> branchObservability.getQualityQ2().isEmpty() ||
+                        branchObservability.getNullableQualityQ2().isRedundant().isEmpty())
                 .build();
     }
 
