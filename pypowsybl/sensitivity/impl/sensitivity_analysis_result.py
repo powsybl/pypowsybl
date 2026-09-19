@@ -15,6 +15,24 @@ DEFAULT_MATRIX_ID = 'default'
 TO_REMOVE = 'TO_REMOVE'
 
 
+def process_ptdf_rows(df: pd.DataFrame, row_index: List[str]) -> pd.DataFrame:
+    """
+    Collapse the two rows a power-transfer variable occupies into one: a transfer between two zones is
+    declared as the pair of zones, so the second zone's row is subtracted from the first and then dropped.
+
+    Shared by the forward matrix and the reverse-mode gradient, which are indexed by the same rows and must
+    therefore fold them the same way.
+    """
+    # substract second power transfer zone to first one
+    i = 0
+    while i < len(row_index):
+        if row_index[i] == TO_REMOVE:
+            df.iloc[i - 1] = df.iloc[i - 1] - df.iloc[i]
+        i += 1
+    # remove rows corresponding to power transfer second zone
+    return df.drop([TO_REMOVE], errors='ignore')
+
+
 class SensitivityAnalysisResult:
     """
     Represents the result of a sensitivity analysis.
@@ -37,14 +55,7 @@ class SensitivityAnalysisResult:
         return '' if contingency_id is None else contingency_id
 
     def process_ptdf(self, df: pd.DataFrame, matrix_id: str) -> pd.DataFrame:
-        # substract second power transfer zone to first one
-        i = 0
-        while i < len(self.function_data_frame_index[matrix_id]):
-            if self.function_data_frame_index[matrix_id][i] == TO_REMOVE:
-                df.iloc[i - 1] = df.iloc[i - 1] - df.iloc[i]
-            i += 1
-        # remove rows corresponding to power transfer second zone
-        return df.drop([TO_REMOVE], errors='ignore')
+        return process_ptdf_rows(df, self.function_data_frame_index[matrix_id])
 
     def get_sensitivity_matrix(self, matrix_id: str = DEFAULT_MATRIX_ID, contingency_id:  Optional[str] = None) -> Optional[
         pd.DataFrame]:

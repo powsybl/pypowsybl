@@ -1038,6 +1038,12 @@ PYBIND11_MODULE(_pypowsybl, m) {
     m.def("get_reference_matrix", &pypowsybl::getReferenceMatrix, "Get sensitivity analysis result reference matrix for a given contingency",
           py::arg("sensitivity_analysis_result_context"), py::arg("matrix_id"), py::arg("contingency_id"));
 
+    m.def("run_sensitivity_analysis_adjoint", &pypowsybl::runSensitivityAnalysisAdjoint, "Run a reverse-mode (adjoint / VJP) sensitivity analysis", py::call_guard<py::gil_scoped_release>(),
+          py::arg("sensitivity_analysis_context"), py::arg("network"), py::arg("cotangents"), py::arg("parameters"), py::arg("provider"));
+
+    m.def("get_gradient", &pypowsybl::getGradient, "Get the adjoint (dL/dvariable) column for a given factor matrix",
+          py::arg("sensitivity_analysis_adjoint_result_context"), py::arg("matrix_id"));
+
     py::class_<series>(m, "Series")
             .def_property_readonly("name", [](const series& s) {
                 return s.name;

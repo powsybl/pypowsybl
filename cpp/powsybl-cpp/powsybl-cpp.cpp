@@ -1309,6 +1309,25 @@ std::shared_ptr<matrix> getReferenceMatrix(const JavaHandle& sensitivityAnalysis
     });
 }
 
+JavaHandle runSensitivityAnalysisAdjoint(const JavaHandle& sensitivityAnalysisContext, const JavaHandle& network, const std::vector<double>& cotangents, SensitivityAnalysisParameters& parameters, const std::string& provider) {
+    auto c_parameters = parameters.to_c_struct();
+    return PowsyblCaller::get()->callJava<JavaHandle>(::runSensitivityAnalysisAdjoint, sensitivityAnalysisContext, network,
+                                (double*) cotangents.data(), (int) cotangents.size(), c_parameters.get(), (char*) provider.data());
+}
+
+std::shared_ptr<matrix> getGradient(const JavaHandle& sensitivityAnalysisAdjointResultContext, const std::string& matrixId) {
+    matrix* m = PowsyblCaller::get()->callJava<matrix*>(::getGradient, sensitivityAnalysisAdjointResultContext, (char*) matrixId.c_str());
+    if (m == nullptr) {
+        return nullptr;
+    }
+    // Same ownership as getSensitivityMatrix: the struct and its values buffer are UnmanagedMemory allocations on the
+    // Java side, so they must be released through freeSensitivityMatrix, never by the C++ delete pybind11 would apply
+    // to a raw pointer (which also leaked the values buffer).
+    return std::shared_ptr<matrix>(m, [](matrix* ptr) {
+        PowsyblCaller::get()->callJava(::freeSensitivityMatrix, ptr);
+    });
+}
+
 SeriesArray* createNetworkElementsSeriesArray(const JavaHandle& network, element_type elementType, filter_attributes_type filterAttributesType, const std::vector<std::string>& attributes, dataframe* dataframe, bool perUnit, double nominalApparentPower) {
 	ToCharPtrPtr attributesPtr(attributes);
     return new SeriesArray(PowsyblCaller::get()->callJava<array*>(::createNetworkElementsSeriesArray, network, elementType, filterAttributesType, attributesPtr.get(), attributes.size(), dataframe, perUnit, nominalApparentPower));
