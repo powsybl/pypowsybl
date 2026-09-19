@@ -467,21 +467,335 @@ def test_add_svc_pilot_factor_matrix():
                                       data=[{'unit_id': 'B6-G', 'zone_name': 'z1', 'participate': True},
                                             {'unit_id': 'B8-G', 'zone_name': 'z1', 'participate': True}])
     n.create_extensions('secondaryVoltageControl', [zones, units])
+    params = pp.loadflow.Parameters(use_reactive_limits=False,
+                                    provider_parameters={'networkCacheEnabled': 'true',
+                                                         'secondaryVoltageControl': 'true',
+                                                         'maxPlausibleTargetVoltage': '1.6'})
+    pp.loadflow.run_ac(n, params)
 
-    params = pp.sensitivity.Parameters()
-    params.load_flow_parameters.use_reactive_limits = False
-    params.load_flow_parameters.provider_parameters = {'secondaryVoltageControl': 'true',
-                                                       'maxPlausibleTargetVoltage': '1.6'}
+    analysis = pp.sensitivity.create_ac_analysis()
+    analysis.add_svc_pilot_factor_matrix(['B10'], ['z1'], SensitivityFunctionType.BUS_VOLTAGE, 'm')
+    gradient = analysis.run_adjoint(n, [1.0], params).get_gradient('m')
 
-    via_wrapper = pp.sensitivity.create_ac_analysis()
-    via_wrapper.add_svc_pilot_factor_matrix(['B10'], ['z1'], SensitivityFunctionType.BUS_VOLTAGE, 'm')
-    by_hand = pp.sensitivity.create_ac_analysis()
-    by_hand.add_factor_matrix(['B10'], ['z1'], [], ContingencyContextType.ALL,
-                              SensitivityFunctionType.BUS_VOLTAGE,
-                              SensitivityVariableType.SVC_PILOT_POINT_TARGET_VOLTAGE, 'm')
-
-    wrapped = via_wrapper.run(n, params).get_sensitivity_matrix('m')
-    manual = by_hand.run(n, params).get_sensitivity_matrix('m')
-    pd.testing.assert_frame_equal(manual, wrapped)
     # the closed loop makes the pilot bus track its own target
-    assert wrapped['B10']['z1'] == pytest.approx(1.0, abs=1e-3)
+    assert gradient['z1'] == pytest.approx(1.0, abs=1e-3)
+
+
+def _adjoint_lf_parameters():
+    # run_adjoint reuses the AC load flow OpenLoadFlow retains in its network cache, so the warm-up run and
+    # the adjoint run must agree on the load flow parameters.
+    return pp.loadflow.Parameters(distributed_slack=False,
+                                  provider_parameters={'networkCacheEnabled': 'true'})
+
+
+def _ieee14_with_warm_cache(params):
+    n = pp.network.create_ieee14()
+    pp.loadflow.run_ac(n, params)
+    return n
+
+
+def _monitored_voltages(n, bus_ids):
+    # BUS_VOLTAGE functions are in kV, so an objective written on them, and the cotangents derived from it,
+    # are in kV too: dV/dtarget_v comes back as kV per kV, not per unit per unit.
+    return n.get_buses().loc[bus_ids]['v_mag']
+
+
+def _voltage_loss(n, bus_ids, wanted_voltages):
+    # L = 0.5 * sum_i (V_i - V_i*)^2, whose derivative dL/dV_i is the plain voltage deviation
+    return 0.5 * float(((_monitored_voltages(n, bus_ids) - wanted_voltages) ** 2).sum())
+
+
+def _loss_central_difference(lever, bus_ids, wanted_voltages, params, step=0.05):
+    # dL/dtarget_v of one generator, by re-solving the whole load flow on either side of it
+    losses = {}
+    for sign in (1, -1):
+        n = pp.network.create_ieee14()
+        target_v = float(n.get_generators().loc[lever]['target_v'])
+        n.update_generators(id=lever, target_v=target_v + sign * step)
+        pp.loadflow.run_ac(n, params)
+        losses[sign] = _voltage_loss(n, bus_ids, wanted_voltages)
+    return (losses[1] - losses[-1]) / (2 * step)
+
+
+def test_sensitivity_adjoint_reproduces_the_forward_sensitivity():
+    params = _adjoint_lf_parameters()
+    n = _ieee14_with_warm_cache(params)
+    analysis = pp.sensitivity.create_ac_analysis()
+    analysis.add_factor_matrix(['L1-2-1'], ['B2-G', 'B3-G', 'B6-G'], [], ContingencyContextType.NONE,
+                               SensitivityFunctionType.BRANCH_ACTIVE_POWER_1,
+                               SensitivityVariableType.INJECTION_ACTIVE_POWER, 'm')
+
+    # a unit cotangent on the single monitored flow makes theta_bar = S^T . e, i.e. the forward S column
+    gradient = analysis.run_adjoint(n, [1.0], params).get_gradient('m')
+    forward = analysis.run(n, params).get_sensitivity_matrix('m')['L1-2-1']
+
+    assert list(gradient.index) == ['B2-G', 'B3-G', 'B6-G']
+    pd.testing.assert_series_equal(forward, gradient, check_names=False, atol=1e-10, rtol=1e-10)
+    assert gradient.abs().max() > 0.1
+
+
+def test_sensitivity_adjoint_gradient_of_a_voltage_loss_matches_a_finite_difference():
+    # end to end, the way a caller actually uses this: a least-squares voltage objective
+    #     L = 0.5 * sum_i (V_i - V_i*)^2       (V_i* = wanted_voltages, a constant of the objective)
+    # gives the cotangents dL/dV_i = V_i - V_i*, read off the load flow that warmed the cache, and
+    # run_adjoint turns them into dL/dtarget_v for every generator in one transpose solve. The gradient is
+    # then checked against a central difference of L itself -- re-solving the load flow on either side of
+    # each lever -- so this test pins the cotangent convention and the sign of the result, which the unit
+    # cotangent used by the other tests cannot: that one only reproduces a column of S, and a sign error
+    # shared by the forward and reverse paths would cancel.
+    params = _adjoint_lf_parameters()
+    monitored = ['VL4_0', 'VL5_0', 'VL7_0']
+    levers = ['B2-G', 'B3-G', 'B6-G']
+    # V*: the voltage wanted at each monitored bus, a constant of the objective -- NOT the generators'
+    # target_v, which is the lever being differentiated here
+    wanted_voltages = pd.Series({'VL4_0': 138.0, 'VL5_0': 136.0, 'VL7_0': 15.0})  # kV
+
+    n = _ieee14_with_warm_cache(params)
+    analysis = pp.sensitivity.create_ac_analysis()
+    analysis.add_factor_matrix(monitored, levers, [], ContingencyContextType.NONE,
+                               SensitivityFunctionType.BUS_VOLTAGE,
+                               SensitivityVariableType.BUS_TARGET_VOLTAGE, 'm')
+
+    cotangents = _monitored_voltages(n, monitored) - wanted_voltages
+    gradient = analysis.run_adjoint(n, {'m': cotangents}, params).get_gradient('m')
+
+    # mixed signs, so a sign error cannot hide in a cancellation
+    assert (cotangents > 0).any() and (cotangents < 0).any()
+    for lever in levers:
+        finite_difference = _loss_central_difference(lever, monitored, wanted_voltages, params)
+        assert finite_difference == pytest.approx(gradient[lever], rel=1e-3)
+    # every lever moves the loss, so none of the three comparisons passes on 0 == 0
+    assert gradient.abs().min() > 1e-2
+
+
+def test_sensitivity_adjoint_bus_voltage_to_shunt_susceptance():
+    # the shunt-lever wrapper, on a BUS_VOLTAGE function: exercises the bus id convention too, since a
+    # BUS_VOLTAGE function id is resolved to its bus-view bus before reaching OpenLoadFlow
+    params = _adjoint_lf_parameters()
+    n = _ieee14_with_warm_cache(params)
+    analysis = pp.sensitivity.create_ac_analysis()
+    analysis.add_shunt_susceptance_factor_matrix(['VL10_0'], ['B9-SH'], SensitivityFunctionType.BUS_VOLTAGE, 'm')
+
+    gradient = analysis.run_adjoint(n, [1.0], params).get_gradient('m')
+    forward = analysis.run(n, params).get_sensitivity_matrix('m')['VL10_0']
+
+    pd.testing.assert_series_equal(forward, gradient, check_names=False, atol=1e-10, rtol=1e-10)
+    assert gradient['B9-SH'] > 0.1
+
+
+def test_sensitivity_adjoint_flat_and_per_matrix_cotangents_agree():
+    # two factor matrices: the flat vector is their columns concatenated in declaration order, which is the
+    # offset layout the dict form is flattened into
+    params = _adjoint_lf_parameters()
+    n = _ieee14_with_warm_cache(params)
+    analysis = pp.sensitivity.create_ac_analysis()
+    analysis.add_factor_matrix(['L1-2-1', 'L1-5-1'], ['B2-G'], [], ContingencyContextType.NONE,
+                               SensitivityFunctionType.BRANCH_ACTIVE_POWER_1,
+                               SensitivityVariableType.INJECTION_ACTIVE_POWER, 'first')
+    analysis.add_factor_matrix(['L2-3-1'], ['B3-G'], [], ContingencyContextType.NONE,
+                               SensitivityFunctionType.BRANCH_ACTIVE_POWER_1,
+                               SensitivityVariableType.INJECTION_ACTIVE_POWER, 'second')
+
+    flat = analysis.run_adjoint(n, [0.75, -1.5, 0.4], params)
+    per_matrix = analysis.run_adjoint(n, {'first': [0.75, -1.5], 'second': [0.4]}, params)
+    for matrix_id in ('first', 'second'):
+        pd.testing.assert_series_equal(flat.get_gradient(matrix_id), per_matrix.get_gradient(matrix_id))
+
+    # an omitted matrix reads as zeros, not as "missing"
+    omitted = analysis.run_adjoint(n, {'first': [0.75, -1.5]}, params)
+    zero_filled = analysis.run_adjoint(n, {'first': [0.75, -1.5], 'second': [0.0]}, params)
+    pd.testing.assert_series_equal(omitted.get_gradient('first'), zero_filled.get_gradient('first'))
+
+    with pytest.raises(ValueError, match='must have length 3'):
+        analysis.run_adjoint(n, [1.0, 0.0], params)
+    with pytest.raises(ValueError, match="'first' must have length 2"):
+        analysis.run_adjoint(n, {'first': [1.0]}, params)
+
+
+def test_sensitivity_adjoint_repeated_cotangents_must_agree():
+    # one monitored function declared by two matrices, each pairing it with its own lever family: y_bar is a
+    # property of the function, so the repeated slots must state one value, and 0.0 reads as "not stated here"
+    params = _adjoint_lf_parameters()
+    n = _ieee14_with_warm_cache(params)
+    analysis = pp.sensitivity.create_ac_analysis()
+    analysis.add_factor_matrix(['L1-2-1'], ['B2-G'], [], ContingencyContextType.NONE,
+                               SensitivityFunctionType.BRANCH_ACTIVE_POWER_1,
+                               SensitivityVariableType.INJECTION_ACTIVE_POWER, 'gens')
+    analysis.add_factor_matrix(['L1-2-1'], ['B9-SH'], [], ContingencyContextType.NONE,
+                               SensitivityFunctionType.BRANCH_ACTIVE_POWER_1,
+                               SensitivityVariableType.SHUNT_COMPENSATOR_SUSCEPTANCE, 'shunts')
+
+    stated_once = analysis.run_adjoint(n, {'gens': [1.0]}, params).get_gradient('gens')
+    stated_twice = analysis.run_adjoint(n, {'gens': [1.0], 'shunts': [1.0]}, params).get_gradient('gens')
+    # agreeing slots are used once, never summed: the same value, not twice it
+    pd.testing.assert_series_equal(stated_once, stated_twice)
+
+    with pytest.raises(PyPowsyblError, match='Conflicting cotangents'):
+        analysis.run_adjoint(n, {'gens': [1.0], 'shunts': [2.0]}, params)
+
+
+def test_sensitivity_adjoint_series_cotangents_align_on_index():
+    params = _adjoint_lf_parameters()
+    n = _ieee14_with_warm_cache(params)
+    analysis = pp.sensitivity.create_ac_analysis()
+    analysis.add_factor_matrix(['L1-2-1', 'L1-5-1'], ['B2-G'], [], ContingencyContextType.NONE,
+                               SensitivityFunctionType.BRANCH_ACTIVE_POWER_1,
+                               SensitivityVariableType.INJECTION_ACTIVE_POWER, 'm')
+
+    ordered = analysis.run_adjoint(n, {'m': [0.75, -1.5]}, params).get_gradient('m')
+    # the same cotangents as a Series in the OPPOSITE order: aligned on the index, not taken positionally
+    shuffled = pd.Series({'L1-5-1': -1.5, 'L1-2-1': 0.75})
+    aligned = analysis.run_adjoint(n, {'m': shuffled}, params).get_gradient('m')
+    pd.testing.assert_series_equal(ordered, aligned)
+
+    with pytest.raises(ValueError, match='missing 1 of its 2 declared functions'):
+        analysis.run_adjoint(n, {'m': pd.Series({'L1-2-1': 0.75})}, params)
+    with pytest.raises(ValueError, match='per factor matrix'):
+        analysis.run_adjoint(n, pd.Series([0.75, -1.5]), params)
+
+
+def test_sensitivity_adjoint_lever_outside_the_component_answers_zero():
+    # A lever whose element is not in the solved network moves nothing, so its gradient is 0 — the same
+    # answer the forward path writes for it. Every declared lever is answered, in declaration order, so a
+    # caller never has to tell an absent row from a zero one.
+    params = _adjoint_lf_parameters()
+    n = pp.network.create_ieee14()
+    n.update_lines(id='L4-5-1', connected1=False, connected2=False)
+    pp.loadflow.run_ac(n, params)
+
+    analysis = pp.sensitivity.create_ac_analysis()
+    analysis.add_branch_admittance_factor_matrix(['L1-2-1'], ['L2-3-1', 'L4-5-1'],
+                                                 SensitivityFunctionType.BRANCH_ACTIVE_POWER_1, 'm')
+    gradient = analysis.run_adjoint(n, [1.0], params).get_gradient('m')
+
+    assert list(gradient.index) == ['L2-3-1', 'L4-5-1']
+    assert gradient.notna().all()
+    assert abs(gradient['L2-3-1']) > 1e-6
+    assert gradient['L4-5-1'] == 0.0
+
+
+def test_sensitivity_adjoint_auto_detected_variable_types():
+    # AUTO_DETECT levers: the type is inferred from the network element, not declared. Every other adjoint
+    # test states the type explicitly, so without this the inference branch is untested in reverse mode.
+    params = _adjoint_lf_parameters()
+    n = _ieee14_with_warm_cache(params)
+    analysis = pp.sensitivity.create_ac_analysis()
+    analysis.add_branch_flow_factor_matrix(['L1-2-1'], ['B2-G', 'B9-SH'], 'm')  # generator + shunt, undeclared
+
+    gradient = analysis.run_adjoint(n, [1.0], params).get_gradient('m')
+    forward = analysis.run(n, params).get_sensitivity_matrix('m')['L1-2-1']
+
+    assert list(gradient.index) == ['B2-G', 'B9-SH']
+    pd.testing.assert_series_equal(forward, gradient, check_names=False, atol=1e-10, rtol=1e-10)
+    assert gradient.abs().max() > 0.1
+
+
+def test_sensitivity_adjoint_zone_and_power_transfer_levers():
+    # A zone id names a variable SET, not a network element, and a (zone, zone) pair is a power transfer
+    # occupying two rows that get folded into one. Both paths are shared with the forward matrix and neither
+    # was reached in reverse mode.
+    n = pp.network.load(str(DATA_DIR.joinpath('simple-eu.uct')))
+    params = _adjoint_lf_parameters()
+    pp.loadflow.run_ac(n, params)
+
+    zone_fr = pp.sensitivity.create_country_zone(n, 'FR')
+    zone_be = pp.sensitivity.create_country_zone(n, 'BE')
+    branch = 'BBE2AA1  FFR3AA1  1'
+    analysis = pp.sensitivity.create_ac_analysis()
+    analysis.set_zones([zone_fr, zone_be])
+    analysis.add_branch_flow_factor_matrix([branch], ['FR', ('FR', 'BE')], 'm')
+
+    gradient = analysis.run_adjoint(n, [1.0], params).get_gradient('m')
+    forward = analysis.run(n, params).get_sensitivity_matrix('m')[branch]
+
+    # the transfer pair is one row, labelled 'FR -> BE', not two
+    assert list(gradient.index) == ['FR', 'FR -> BE']
+    pd.testing.assert_series_equal(forward, gradient, check_names=False, atol=1e-10, rtol=1e-10)
+    assert gradient.abs().max() > 1e-6
+
+
+def test_sensitivity_adjoint_svc_pilot_lever():
+    # the RST lever wrapper: the variable ids are SVC zone names, which exist only in the extension
+    n = pp.network.create_ieee14()
+    n.update_generators(id='B8-G', min_q=-6, max_q=200)
+    zones = pd.DataFrame.from_records(index='name',
+                                      data=[{'name': 'z1', 'target_v': 12.7, 'bus_ids': 'B10'}])
+    units = pd.DataFrame.from_records(index='unit_id',
+                                      data=[{'unit_id': 'B6-G', 'zone_name': 'z1', 'participate': True},
+                                            {'unit_id': 'B8-G', 'zone_name': 'z1', 'participate': True}])
+    n.create_extensions('secondaryVoltageControl', [zones, units])
+    params = pp.loadflow.Parameters(use_reactive_limits=False,
+                                    provider_parameters={'networkCacheEnabled': 'true',
+                                                         'secondaryVoltageControl': 'true',
+                                                         'maxPlausibleTargetVoltage': '1.6'})
+    pp.loadflow.run_ac(n, params)
+
+    analysis = pp.sensitivity.create_ac_analysis()
+    analysis.add_svc_pilot_factor_matrix(['B10'], ['z1'], SensitivityFunctionType.BUS_VOLTAGE, 'm')
+    gradient = analysis.run_adjoint(n, [1.0], params).get_gradient('m')
+
+    # the closed loop makes the pilot bus track its own target
+    assert gradient['z1'] == pytest.approx(1.0, abs=1e-3)
+
+
+def test_sensitivity_adjoint_error_paths():
+    params = _adjoint_lf_parameters()
+
+    # no cached load flow: runAdjoint has no factorized Jacobian to reuse and must say so
+    cold = pp.network.create_ieee14()
+    analysis = pp.sensitivity.create_ac_analysis()
+    analysis.add_factor_matrix(['L1-2-1'], ['B2-G'], [], ContingencyContextType.NONE,
+                               SensitivityFunctionType.BRANCH_ACTIVE_POWER_1,
+                               SensitivityVariableType.INJECTION_ACTIVE_POWER, 'm')
+    with pytest.raises(PyPowsyblError, match='networkCacheEnabled'):
+        analysis.run_adjoint(cold, [1.0], params)
+
+    # an unknown factor matrix id is named rather than returning an empty vector
+    n = _ieee14_with_warm_cache(params)
+    result = analysis.run_adjoint(n, [1.0], params)
+    with pytest.raises(PyPowsyblError, match="'not_declared' not found"):
+        result.get_gradient('not_declared')
+
+
+def test_sensitivity_adjoint_gradient_survives_its_result():
+    # get_gradient hands back a matrix allocated on the Java side and released through the C++ deleter.
+    # A premature release would corrupt the values that are already in the caller's hands, so read one
+    # gradient, drop every reference to the result that produced it, and require it to be unchanged.
+    import gc
+    params = _adjoint_lf_parameters()
+    n = _ieee14_with_warm_cache(params)
+    analysis = pp.sensitivity.create_ac_analysis()
+    analysis.add_factor_matrix(['L1-2-1'], ['B2-G', 'B3-G', 'B6-G'], [], ContingencyContextType.NONE,
+                               SensitivityFunctionType.BRANCH_ACTIVE_POWER_1,
+                               SensitivityVariableType.INJECTION_ACTIVE_POWER, 'm')
+
+    result = analysis.run_adjoint(n, [1.0], params)
+    kept = result.get_gradient('m')
+    expected = list(kept)
+    del result
+    gc.collect()
+    assert list(kept) == expected
+
+    # and repeated reads of a fresh result agree with it, so the release is not corrupting the next one
+    for _ in range(5):
+        again = analysis.run_adjoint(n, [1.0], params).get_gradient('m')
+        gc.collect()
+        pd.testing.assert_series_equal(kept, again)
+
+
+def test_sensitivity_adjoint_refuses_declared_contingencies():
+    # reverse mode is base case only: a declared contingency cannot change the answer, so returning the
+    # base-case gradient would be indistinguishable from the post-contingency one the caller asked for
+    params = _adjoint_lf_parameters()
+    n = _ieee14_with_warm_cache(params)
+    analysis = pp.sensitivity.create_ac_analysis()
+    analysis.add_factor_matrix(['L1-2-1'], ['B2-G'], [], ContingencyContextType.NONE,
+                               SensitivityFunctionType.BRANCH_ACTIVE_POWER_1,
+                               SensitivityVariableType.INJECTION_ACTIVE_POWER, 'm')
+    analysis.add_single_element_contingency('L2-3-1', 'lostLine')
+
+    with pytest.raises(PyPowsyblError, match='lostLine'):
+        analysis.run_adjoint(n, [1.0], params)
+
+    # the forward run still serves post-contingency sensitivities from the same declaration
+    assert analysis.run(n, params).get_sensitivity_matrix('m', 'lostLine') is not None

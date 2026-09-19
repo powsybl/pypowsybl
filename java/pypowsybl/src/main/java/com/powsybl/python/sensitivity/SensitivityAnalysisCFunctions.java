@@ -31,6 +31,7 @@ import org.graalvm.nativeimage.c.function.CEntryPoint;
 import org.graalvm.nativeimage.c.struct.SizeOf;
 import org.graalvm.nativeimage.c.type.CCharPointer;
 import org.graalvm.nativeimage.c.type.CCharPointerPointer;
+import org.graalvm.nativeimage.c.type.CDoublePointer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -193,6 +194,38 @@ public final class SensitivityAnalysisCFunctions {
                 String contingencyId = CTypeUtil.toString(contingencyIdPtr);
                 String matrixId = CTypeUtil.toString(matrixIdPtr);
                 return resultContext.createReferenceMatrix(matrixId, contingencyId);
+            }
+        });
+    }
+
+    @CEntryPoint(name = "runSensitivityAnalysisAdjoint")
+    public static ObjectHandle runSensitivityAnalysisAdjoint(IsolateThread thread, ObjectHandle sensitivityAnalysisContextHandle,
+                                                             ObjectHandle networkHandle, CDoublePointer cotangentPtr, int cotangentCount,
+                                                             SensitivityAnalysisParametersPointer sensitivityAnalysisParametersPtr,
+                                                             CCharPointer providerName, ExceptionHandlerPointer exceptionHandlerPtr) {
+        return doCatch(exceptionHandlerPtr, new PointerProvider<>() {
+            @Override
+            public ObjectHandle get() {
+                SensitivityAnalysisContext analysisContext = ObjectHandles.getGlobal().get(sensitivityAnalysisContextHandle);
+                Network network = ObjectHandles.getGlobal().get(networkHandle);
+                SensitivityAnalysisProvider provider = SensitivityAnalysisCUtils.getSensitivityAnalysisProvider(CTypeUtil.toString(providerName));
+                SensitivityAnalysisParameters sensitivityAnalysisParameters = SensitivityAnalysisCUtils.createSensitivityAnalysisParameters(sensitivityAnalysisParametersPtr, provider);
+                double[] cotangents = CTypeUtil.toDoubleList(cotangentPtr, cotangentCount).stream().mapToDouble(Double::doubleValue).toArray();
+                SensitivityAnalysisAdjointResultContext resultContext = analysisContext.runAdjoint(network, cotangents, sensitivityAnalysisParameters, provider.getName());
+                return ObjectHandles.getGlobal().create(resultContext);
+            }
+        });
+    }
+
+    @CEntryPoint(name = "getGradient")
+    public static PyPowsyblApiHeader.MatrixPointer getGradient(IsolateThread thread, ObjectHandle sensitivityAnalysisAdjointResultContextHandle,
+                                                               CCharPointer matrixIdPtr, ExceptionHandlerPointer exceptionHandlerPtr) {
+        return doCatch(exceptionHandlerPtr, new PointerProvider<>() {
+            @Override
+            public PyPowsyblApiHeader.MatrixPointer get() {
+                SensitivityAnalysisAdjointResultContext resultContext = ObjectHandles.getGlobal().get(sensitivityAnalysisAdjointResultContextHandle);
+                String matrixId = CTypeUtil.toString(matrixIdPtr);
+                return resultContext.createGradient(matrixId);
             }
         });
     }
