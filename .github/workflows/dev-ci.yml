@@ -118,7 +118,9 @@ jobs:
 
       - name: Run tests
         working-directory: ./tests # Run in subdir to use installed lib, not sources
-        run: ${{ env.PYTHON }} -m pytest
+        run: |
+          export GRAALVM_OPTIONS="-Xmx1G"
+          ${{ env.PYTHON }} -m pytest
 
       - name: Type checking
         run: mypy -p pypowsybl
