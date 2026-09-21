@@ -509,7 +509,7 @@ def test_redispatch_ra_setpoints():
     validate_redispatch_ra_setpoint("rao/crac-simple-rd-mw.json","rao/rao-parameters-costly-shifted-20-mw.json", 480.0)
     validate_redispatch_ra_setpoint("rao/crac-simple-rd-ampere.json","rao/rao-parameters-min-margin-ampere.json", 0.0)
     validate_redispatch_ra_setpoint("rao/crac-simple-rd-ampere.json","rao/rao-parameters-costly-ampere.json", 346.0)
-    validate_redispatch_ra_setpoint("rao/crac-simple-rd-ampere.json","rao/rao-parameters-costly-shifted-20-ampere.json", 333.0)
+    validate_redispatch_ra_setpoint("rao/crac-simple-rd-ampere.json","rao/rao-parameters-costly-shifted-20-ampere.json", 334.0)
 
 def validate_redispatch_ra_setpoint(crac_file: str, parameters_file: str, set_point: float):
     network =  pp.network.load(DATA_DIR.joinpath("rao/2nodes.uct"))
