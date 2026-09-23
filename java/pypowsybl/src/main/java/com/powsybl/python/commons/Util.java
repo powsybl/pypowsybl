@@ -269,6 +269,7 @@ public final class Util {
             case DC_GROUND -> PyPowsyblApiHeader.ElementType.DC_GROUND;
             case DC_SWITCH -> PyPowsyblApiHeader.ElementType.DC_SWITCH;
             case DC_BUS -> PyPowsyblApiHeader.ElementType.DC_BUS;
+            case DROOP_CURVE_SEGMENT -> PyPowsyblApiHeader.ElementType.DROOP_CURVE_SEGMENT;
         };
     }
 
@@ -323,6 +324,7 @@ public final class Util {
             case DC_GROUND -> DataframeElementType.DC_GROUND;
             case DC_SWITCH -> DataframeElementType.DC_SWITCH;
             case DC_BUS -> DataframeElementType.DC_BUS;
+            case DROOP_CURVE_SEGMENT -> DataframeElementType.DROOP_CURVE_SEGMENT;
         };
     }
 
