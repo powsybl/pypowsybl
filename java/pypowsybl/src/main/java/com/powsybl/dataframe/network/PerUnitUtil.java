@@ -320,6 +320,9 @@ public final class PerUnitUtil {
         return perUnitV(context, v, terminal.getDcNode().getNominalV());
     }
 
+    /**
+     * Compute the pu value for the droop curve slope k.
+     */
     public static double perUnitK(NetworkDataframeContext context, double k, DcTerminal terminal) {
         if (!context.isPerUnit()) {
             return k;
