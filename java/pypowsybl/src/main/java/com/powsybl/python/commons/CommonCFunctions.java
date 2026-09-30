@@ -181,8 +181,8 @@ public final class CommonCFunctions {
      * @param map native string-map array to free
      * @param exceptionHandlerPtr native exception handler used to report Java failures
      */
-    @CEntryPoint(name = "freeStringMapArray")
-    public static void freeStringMapArray(IsolateThread thread, StringMapArray map, ExceptionHandlerPointer exceptionHandlerPtr) {
+    @CEntryPoint(name = "freeStringArrayMap")
+    public static void freeStringArrayMap(IsolateThread thread, StringArrayMap map, ExceptionHandlerPointer exceptionHandlerPtr) {
         doCatch(exceptionHandlerPtr, new Runnable() {
             @Override
             public void run() {

@@ -23,11 +23,11 @@ typedef struct string_map_struct {
     char** values;
 } string_map;
 
-typedef struct string_map_array_struct {
+typedef struct string_array_map_struct {
     int length;
     char** keys;
     array* values;
-} string_map_array;
+} string_array_map;
 
 typedef struct network_metadata_struct {
     char* id;

@@ -213,16 +213,16 @@ std::map<std::string, std::string> convertMapStructToStdMap(string_map* map) {
     return stdStringMap;
 }
 
-std::unordered_map<std::string, std::vector<std::string>> convertStringMapArrayStructToUnorderedMap(string_map_array* map) {
-    std::unordered_map<std::string, std::vector<std::string>> stdStringMapArray;
-    stdStringMapArray.reserve(map->length);
+std::unordered_map<std::string, std::vector<std::string>> convertStringArrayMapStructToUnorderedMap(string_array_map* map) {
+    std::unordered_map<std::string, std::vector<std::string>> stdStringArrayMap;
+    stdStringArrayMap.reserve(map->length);
     for (int i = 0; i < map->length; i++) {
         char** keyPtr = (char**) map->keys + i;
         array* valuePtr = map->values + i;
-        stdStringMapArray.emplace(std::string(*keyPtr ? *keyPtr : ""), toVector<std::string>(valuePtr));
+        stdStringArrayMap.emplace(std::string(*keyPtr ? *keyPtr : ""), toVector<std::string>(valuePtr));
     }
-    PowsyblCaller::get()->callJava<>(::freeStringMapArray, map);
-    return stdStringMapArray;
+    PowsyblCaller::get()->callJava<>(::freeStringArrayMap, map);
+    return stdStringArrayMap;
 }
 
 char* copyStringToCharPtr(const std::string& str) {
@@ -1370,8 +1370,8 @@ std::vector<std::string> getOutageGroup(const JavaHandle& network, const std::st
 
 std::unordered_map<std::string, std::vector<std::string>> getOutageGroups(const JavaHandle& network, const std::vector<std::string>& elementIds) {
     ToCharPtrPtr elementIdsPtr(elementIds);
-    auto outageGroupsPtr = PowsyblCaller::get()->callJava<string_map_array*>(::getOutageGroups, network, elementIdsPtr.get(), elementIds.size());
-    return convertStringMapArrayStructToUnorderedMap(outageGroupsPtr);
+    auto outageGroupsPtr = PowsyblCaller::get()->callJava<string_array_map*>(::getOutageGroups, network, elementIdsPtr.get(), elementIds.size());
+    return convertStringArrayMapStructToUnorderedMap(outageGroupsPtr);
 }
 
 void addMonitoredElements(const JavaHandle& securityAnalysisContext, contingency_context_type contingencyContextType, const std::vector<std::string>& branchIds,

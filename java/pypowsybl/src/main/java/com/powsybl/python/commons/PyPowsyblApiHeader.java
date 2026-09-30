@@ -7,14 +7,22 @@
  */
 package com.powsybl.python.commons;
 
-import org.graalvm.nativeimage.UnmanagedMemory;
 import org.graalvm.nativeimage.ObjectHandle;
+import org.graalvm.nativeimage.UnmanagedMemory;
 import org.graalvm.nativeimage.c.CContext;
 import org.graalvm.nativeimage.c.constant.CEnum;
 import org.graalvm.nativeimage.c.constant.CEnumLookup;
 import org.graalvm.nativeimage.c.constant.CEnumValue;
-import org.graalvm.nativeimage.c.struct.*;
-import org.graalvm.nativeimage.c.type.*;
+import org.graalvm.nativeimage.c.struct.CField;
+import org.graalvm.nativeimage.c.struct.CFieldAddress;
+import org.graalvm.nativeimage.c.struct.CPointerTo;
+import org.graalvm.nativeimage.c.struct.CStruct;
+import org.graalvm.nativeimage.c.struct.SizeOf;
+import org.graalvm.nativeimage.c.type.CCharPointer;
+import org.graalvm.nativeimage.c.type.CCharPointerPointer;
+import org.graalvm.nativeimage.c.type.CDoublePointer;
+import org.graalvm.nativeimage.c.type.CIntPointer;
+import org.graalvm.nativeimage.c.type.VoidPointer;
 import org.graalvm.word.PointerBase;
 
 /**
@@ -93,8 +101,8 @@ public final class PyPowsyblApiHeader {
         void setValues(CCharPointerPointer values);
     }
 
-    @CStruct("string_map_array")
-    public interface StringMapArray extends PointerBase {
+    @CStruct("string_array_map")
+    public interface StringArrayMap extends PointerBase {
         @CField("length")
         int getLength();
 

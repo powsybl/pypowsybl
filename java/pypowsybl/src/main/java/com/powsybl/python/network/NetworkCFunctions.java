@@ -633,12 +633,12 @@ public final class NetworkCFunctions {
      * @return native string-map array keyed by initiating equipment identifier
      */
     @CEntryPoint(name = "getOutageGroups")
-    public static StringMapArray getOutageGroups(IsolateThread thread, ObjectHandle networkHandle,
+    public static StringArrayMap getOutageGroups(IsolateThread thread, ObjectHandle networkHandle,
                                                  CCharPointerPointer elementIdsPtr, int elementIdsCount,
                                                  ExceptionHandlerPointer exceptionHandlerPtr) {
         return doCatch(exceptionHandlerPtr, new PointerProvider<>() {
             @Override
-            public StringMapArray get() {
+            public StringArrayMap get() {
                 Network network = ObjectHandles.getGlobal().get(networkHandle);
                 List<String> elementIds = toStringList(elementIdsPtr, elementIdsCount);
                 return CTypeUtil.fromStringListMap(NetworkUtil.getOutageGroups(network, elementIds));
