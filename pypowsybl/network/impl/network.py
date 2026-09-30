@@ -4919,45 +4919,6 @@ class Network:  # pylint: disable=too-many-public-methods
         """
         return BusBreakerTopology(self._handle, voltage_level_id)
 
-    def get_outage_group(self, equipment_id: str) -> List[str]:
-        """
-        Get the outage group associated to one equipment.
-
-        Args:
-            equipment_id: id of the equipment used as the initiating contingency
-
-        Returns:
-            The disconnected equipment ids in the outage group.
-            The returned list follows the connectivity-result semantics used for
-            outage-group computation.
-
-        Notes:
-            The result mirrors PowSyBl security-analysis connectivity results.
-            Bus and busbar contingencies are special N-K contingencies that
-            trigger the equipment connected to the targeted busbar section, so
-            the busbar section itself is typically not listed. Line,
-            two-winding transformer and tie line contingencies are branch
-            contingencies, so the initiating branch can appear in the returned
-            group. See `PowSyBl security analysis contingency semantics
-            <https://powsybl.readthedocs.io/projects/powsybl-core/en/latest/simulation/security/index.html#contingencies>`_.
-
-        Examples:
-            .. code-block:: python
-
-                import pypowsybl as pp
-
-                net = pp.network.create_four_substations_node_breaker_network()
-                net.get_outage_group('LINE_S3S4')
-
-            will return:
-
-            .. code-block:: python
-
-                ['LD6', 'LINE_S3S4', 'SVC']
-
-        """
-        return _pp.get_outage_groups(self._handle, [equipment_id])[equipment_id]
-
     def get_outage_groups(self, *, element_ids: Sequence[str]) -> Dict[str, List[str]]:
         """
         Get outage groups for the provided initiating elements.
@@ -4972,9 +4933,13 @@ class Network:  # pylint: disable=too-many-public-methods
             requested element ids, but its key iteration order is arbitrary.
 
         Notes:
-            Each returned list follows the same PowSyBl security-analysis
-            contingency semantics as :meth:`get_outage_group`. See
-            `PowSyBl security analysis contingency semantics
+            The result mirrors PowSyBl security-analysis connectivity results.
+            Bus and busbar contingencies are special N-K contingencies that
+            trigger the equipment connected to the targeted busbar section, so
+            the busbar section itself is typically not listed. Line,
+            two-winding transformer and tie line contingencies are branch
+            contingencies, so the initiating branch can appear in the returned
+            group. See `PowSyBl security analysis contingency semantics
             <https://powsybl.readthedocs.io/projects/powsybl-core/en/latest/simulation/security/index.html#contingencies>`_.
 
         Examples:

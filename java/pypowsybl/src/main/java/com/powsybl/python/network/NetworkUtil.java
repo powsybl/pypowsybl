@@ -7,12 +7,43 @@
  */
 package com.powsybl.python.network;
 
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Optional;
+import java.util.Set;
+import java.util.function.Consumer;
+import java.util.function.Predicate;
+import java.util.function.Supplier;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
+
+import com.powsybl.commons.PowsyblException;
 import com.powsybl.commons.report.ReportNode;
 import com.powsybl.contingency.Contingency;
 import com.powsybl.contingency.ContingencyElementFactory;
-import com.powsybl.commons.PowsyblException;
 import com.powsybl.dataframe.network.extensions.ConnectablePositionFeederData;
-import com.powsybl.iidm.network.*;
+import com.powsybl.iidm.network.Branch;
+import com.powsybl.iidm.network.Bus;
+import com.powsybl.iidm.network.ComponentConstants;
+import com.powsybl.iidm.network.Connectable;
+import com.powsybl.iidm.network.Country;
+import com.powsybl.iidm.network.DcSwitch;
+import com.powsybl.iidm.network.Identifiable;
+import com.powsybl.iidm.network.Injection;
+import com.powsybl.iidm.network.LoadingLimits;
+import com.powsybl.iidm.network.Network;
+import com.powsybl.iidm.network.OperationalLimitsGroup;
+import com.powsybl.iidm.network.Substation;
+import com.powsybl.iidm.network.Switch;
+import com.powsybl.iidm.network.Terminal;
+import com.powsybl.iidm.network.TieLine;
+import com.powsybl.iidm.network.TopologyKind;
+import com.powsybl.iidm.network.VoltageLevel;
 import com.powsybl.iidm.network.extensions.ConnectablePosition;
 import com.powsybl.iidm.network.util.SwitchPredicates;
 import com.powsybl.iidm.network.util.SwitchesFlow;
@@ -20,8 +51,6 @@ import com.powsybl.loadflow.LoadFlowParameters;
 import com.powsybl.math.matrix.SparseMatrixFactory;
 import com.powsybl.openloadflow.OpenLoadFlowParameters;
 import com.powsybl.openloadflow.graph.EvenShiloachGraphDecrementalConnectivityFactory;
-import com.powsybl.openloadflow.network.LfBranch;
-import com.powsybl.openloadflow.network.LfBus;
 import com.powsybl.openloadflow.network.LfNetwork;
 import com.powsybl.openloadflow.network.LfNetworkParameters;
 import com.powsybl.openloadflow.network.LfTopoConfig;
@@ -30,15 +59,10 @@ import com.powsybl.openloadflow.network.impl.Networks;
 import com.powsybl.openloadflow.network.impl.PropagatedContingency;
 import com.powsybl.openloadflow.network.impl.PropagatedContingencyCreationParameters;
 import com.powsybl.python.commons.PyPowsyblApiHeader;
-
-import java.util.*;
-import java.util.function.Consumer;
-import java.util.function.Predicate;
-import java.util.function.Supplier;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
-
-import static com.powsybl.python.network.TemporaryLimitData.Side.*;
+import static com.powsybl.python.network.TemporaryLimitData.Side.NONE;
+import static com.powsybl.python.network.TemporaryLimitData.Side.ONE;
+import static com.powsybl.python.network.TemporaryLimitData.Side.THREE;
+import static com.powsybl.python.network.TemporaryLimitData.Side.TWO;
 
 /**
  * @author Geoffroy Jamgotchian {@literal <geoffroy.jamgotchian at rte-france.com>}
@@ -215,17 +239,6 @@ public final class NetworkUtil {
         }).toList();
     }
 
-    /**
-     * Computes the propagated outage group created by tripping a single equipment.
-     *
-     * @param network network containing the equipment
-     * @param equipmentId identifier of the initiating equipment
-     * @return sorted identifiers of disconnected equipments caused by the outage, following
-     * the connectivity-result semantics used for outage-group computation
-     */
-    static List<String> getOutageGroup(Network network, String equipmentId) {
-        return computeOutageGroupsByEquipmentId(network, List.of(equipmentId)).get(equipmentId);
-    }
 
     /**
      * Computes propagated outage groups for the requested initiating equipments.
