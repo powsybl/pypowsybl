@@ -323,7 +323,7 @@ public final class NetworkUtil {
     private static LfNetworkParameters createOutageGroupLfNetworkParameters(Network network, LoadFlowParameters loadFlowParameters,
                                                                             boolean breakers) {
         return OpenLoadFlowParameters.createAcParameters(network, loadFlowParameters,
-            OpenLoadFlowParameters.get(loadFlowParameters), new SparseMatrixFactory(), new EvenShiloachGraphDecrementalConnectivityFactory<LfBus, LfBranch>(), breakers, false)
+            OpenLoadFlowParameters.get(loadFlowParameters), new SparseMatrixFactory(), new EvenShiloachGraphDecrementalConnectivityFactory<>(), breakers, false)
             .getNetworkParameters();
     }
 
