@@ -102,7 +102,7 @@ public class NetworkUtilTest {
 
         assertThat(outageGroups.values()).allSatisfy(outageGroup -> assertThat(outageGroup).isSorted());
         assertThat(outageGroups).containsOnlyKeys(elementIds);
-        elementIds.forEach(elementId -> assertThat(outageGroups.get(elementId)).isEqualTo(expectedOutageGroups.getOrDefault(elementId, List.of())));
+        elementIds.forEach(elementId -> assertThat(outageGroups).containsEntry(elementId, expectedOutageGroups.getOrDefault(elementId, List.of())));
     }
 
     private static Optional<Contingency> createContingency(Identifiable<?> identifiable) {
