@@ -4956,7 +4956,7 @@ class Network:  # pylint: disable=too-many-public-methods
                 ['LD6', 'LINE_S3S4', 'SVC']
 
         """
-        return _pp.get_outage_group(self._handle, equipment_id)
+        return _pp.get_outage_groups(self._handle, [equipment_id])[equipment_id]
 
     def get_outage_groups(self, *, element_ids: Sequence[str]) -> Dict[str, List[str]]:
         """
