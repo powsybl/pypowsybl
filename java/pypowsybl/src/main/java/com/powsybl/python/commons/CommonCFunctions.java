@@ -167,10 +167,8 @@ public final class CommonCFunctions {
         doCatch(exceptionHandlerPtr, new Runnable() {
             @Override
             public void run() {
-                for (int i = 0; i < map.getLength(); i++) {
-                    UnmanagedMemory.free(map.getKeys().read(i));
-                    UnmanagedMemory.free(map.getValues().read(i));
-                }
+                Util.freeCharPtrPtr(map.getKeys(), map.getLength());
+                Util.freeCharPtrPtr(map.getValues(), map.getLength());
                 UnmanagedMemory.free(map);
             }
         });
