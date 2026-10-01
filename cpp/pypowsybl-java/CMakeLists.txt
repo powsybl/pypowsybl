@@ -87,6 +87,29 @@ if("${CMAKE_BUILD_TYPE}" STREQUAL "Debug")
     set(NATIVE_IMAGE_BUILD_OPTIONS "-H:GenerateDebugInfo=1" "-Ob")
 endif()
 
+# Profile-guided optimization (PGO), requires Oracle GraalVM (not Community Edition).
+# This is a two-pass build:
+#   1. PYPOWSYBL_PGO_INSTRUMENT=ON builds an instrumented library that writes a profile (default.iprof in
+#      the working directory) when the native image shutdown hooks run. native-image disables these hooks
+#      in shared libraries by default, ProfilingEnableProfileDumpHooks turns them back on, and pypowsybl
+#      runs them from closePypowsybl when PYPOWSYBL_RUN_SHUTDOWN_HOOKS is set (tearing down the isolate
+#      does not run them).
+#   2. PYPOWSYBL_PGO_PROFILES=<profile.iprof>[,<other.iprof>] builds the optimized library using
+#      the collected profile(s).
+# See tools/pgo/build_pgo.sh for a driver that runs both passes with the training workload.
+option(PYPOWSYBL_PGO_INSTRUMENT "Build an instrumented native image to collect PGO profiles" OFF)
+set(PYPOWSYBL_PGO_PROFILES "" CACHE STRING "Comma-separated list of .iprof files to build a PGO optimized native image")
+if(PYPOWSYBL_PGO_INSTRUMENT AND NOT "${PYPOWSYBL_PGO_PROFILES}" STREQUAL "")
+    message(FATAL_ERROR "PYPOWSYBL_PGO_INSTRUMENT and PYPOWSYBL_PGO_PROFILES are mutually exclusive")
+endif()
+if(PYPOWSYBL_PGO_INSTRUMENT)
+    message(STATUS "Building PGO instrumented native image")
+    list(APPEND NATIVE_IMAGE_BUILD_OPTIONS "--pgo-instrument" "-H:+UnlockExperimentalVMOptions" "-H:+ProfilingEnableProfileDumpHooks" "-H:-UnlockExperimentalVMOptions")
+elseif(NOT "${PYPOWSYBL_PGO_PROFILES}" STREQUAL "")
+    message(STATUS "Building PGO optimized native image with profiles: ${PYPOWSYBL_PGO_PROFILES}")
+    list(APPEND NATIVE_IMAGE_BUILD_OPTIONS "--pgo=${PYPOWSYBL_PGO_PROFILES}")
+endif()
+
 # as of GraalVM 23.0.0 G1 GC is only supported on Linux ADM64
 if(${CMAKE_SYSTEM_NAME} STREQUAL "Linux" AND ${OS_BITS} STREQUAL "64")
     set(NATIVE_IMAGE_GC "G1")

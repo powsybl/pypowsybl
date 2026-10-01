@@ -127,6 +127,9 @@ python setup.py build --debug develop --user
 
 Please refer to pip and setuptools documentations for more information.
 
+To build a faster, profile-guided optimized (PGO) native image, which requires Oracle GraalVM, see
+[tools/pgo/README.md](tools/pgo/README.md).
+
 To run unit tests:
 
 ```bash
