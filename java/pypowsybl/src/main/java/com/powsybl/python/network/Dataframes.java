@@ -374,6 +374,7 @@ public final class Dataframes {
                 .stringsIndex("id", SwitchFlowContext::id)
                 .doubles("p", SwitchFlowContext::p)
                 .doubles("q", SwitchFlowContext::q)
+                .optionalStrings("first_parallel_switch_id", SwitchFlowContext::firstParallelSwitchId)
                 .build();
     }
 

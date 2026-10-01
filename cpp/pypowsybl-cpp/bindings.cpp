@@ -1047,8 +1047,18 @@ PYBIND11_MODULE(_pypowsybl, m) {
             })
             .def_property_readonly("data", [](const series& s) -> py::object {
                 switch(s.type) {
-                    case 0:
-                        return py::cast(pypowsybl::toVector<std::string>((array *) & s.data));
+                    case 0: {
+                        if (s.mask == nullptr) {
+                            return py::cast(pypowsybl::toVector<std::string>((array *) & s.data));
+                        }
+                        // optional string series: masked (null) values are exposed as None
+                        py::list values(s.data.length);
+                        for (int i = 0; i < s.data.length; i++) {
+                            char* value = *((char**) s.data.ptr + i);
+                            values[i] = (s.mask[i] || value == nullptr) ? py::object(py::none()) : py::object(py::str(value));
+                        }
+                        return values;
+                    }
                     case 1:
                         return seriesAsNumpyArray<double>(s);
                     case 2:
@@ -1060,7 +1070,8 @@ PYBIND11_MODULE(_pypowsybl, m) {
                 }
             })
             .def_property_readonly("mask", [](const series& s) {
-                if (s.mask != nullptr) {
+                // optional string series already carry None in their data, no mask needed on python side
+                if (s.mask != nullptr && s.type != 0) {
                     return py::array(py::dtype::of<int>(), s.data.length, s.mask, py::cast(s.mask));
                 } else {
                     return py::array();

@@ -117,6 +117,7 @@ All network elements are accessible as dataframes, using the following getters.
    Network.get_static_var_compensators
    Network.get_substations
    Network.get_switches
+   Network.get_switch_flows
    Network.get_terminals
    Network.get_voltage_levels
    Network.get_vsc_converter_stations
