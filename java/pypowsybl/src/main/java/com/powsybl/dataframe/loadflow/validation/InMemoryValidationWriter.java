@@ -7,8 +7,8 @@
  */
 package com.powsybl.dataframe.loadflow.validation;
 
-import com.powsybl.iidm.network.StaticVarCompensator;
 import com.powsybl.iidm.network.TwoSides;
+import com.powsybl.iidm.network.regulation.RegulationMode;
 import com.powsybl.iidm.network.util.TwtData;
 import com.powsybl.loadflow.validation.io.ValidationWriter;
 
@@ -63,8 +63,8 @@ public class InMemoryValidationWriter implements ValidationWriter {
     }
 
     @Override
-    public void write(String id, double p, double q, double v, double targetP, double targetQ, double targetV, double expectedP, boolean connected, boolean voltageRegulatorOn, double minP, double maxP, double minQ, double maxQ, boolean mainComponent, boolean validated) throws IOException {
-        generatorData.add(new GeneratorValidationData(id, p, q, v, targetP, targetQ, targetV, expectedP, connected, voltageRegulatorOn, minP, maxP, minQ, maxQ, mainComponent, validated));
+    public void write(String id, double p, double q, double v, double targetP, double targetQ, double targetV, double expectedP, boolean connected, String regulationMode, boolean regulating, double minP, double maxP, double minQ, double maxQ, boolean mainComponent, boolean validated) throws IOException {
+        generatorData.add(new GeneratorValidationData(id, p, q, v, targetP, targetQ, targetV, expectedP, connected, regulationMode, regulating, minP, maxP, minQ, maxQ, mainComponent, validated));
     }
 
     @Override
@@ -73,7 +73,7 @@ public class InMemoryValidationWriter implements ValidationWriter {
     }
 
     @Override
-    public void write(String svcId, double p, double q, double vControlled, double vController, double nominalVcontroller, double reactivePowerSetpoint, double voltageSetpoint, boolean connected, StaticVarCompensator.RegulationMode regulationMode, boolean regulating, double bMin, double bMax, boolean mainComponent, boolean validated) throws IOException {
+    public void write(String svcId, double p, double q, double vControlled, double vController, double nominalVcontroller, double reactivePowerSetpoint, double voltageSetpoint, boolean connected, RegulationMode regulationMode, boolean regulating, double bMin, double bMax, boolean mainComponent, boolean validated) throws IOException {
         svcData.add(new SvcValidationData(svcId, p, q, vControlled, vController, nominalVcontroller, reactivePowerSetpoint, voltageSetpoint, connected, regulationMode, regulating, bMin, bMax, mainComponent, validated));
 
     }
