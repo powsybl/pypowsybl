@@ -232,6 +232,10 @@ jobs:
           WHEEL_FILE=$(ls ${{ matrix.config.wheel-dir }}/*.whl | head -n 1)
           ${{ env.PYTHON }} -m pip install "${WHEEL_FILE}[pandapower, opf]" --user
 
+      - name: Run GraalVM options test
+        working-directory: ./tests
+        run: ${{ env.PYTHON }} graalvm_options_test.py
+
       - name: Run tests
         working-directory: ./tests # Run in subdir to use installed lib, not sources
         run: ${{ env.PYTHON }} -m pytest
