@@ -15,6 +15,7 @@ import org.graalvm.nativeimage.IsolateThread;
 import org.graalvm.nativeimage.ObjectHandle;
 import org.graalvm.nativeimage.ObjectHandles;
 import org.graalvm.nativeimage.UnmanagedMemory;
+import org.graalvm.nativeimage.VMRuntime;
 import org.graalvm.nativeimage.c.CContext;
 import org.graalvm.nativeimage.c.function.CEntryPoint;
 import org.graalvm.nativeimage.c.type.CCharPointer;
@@ -157,9 +158,21 @@ public final class CommonCFunctions {
         });
     }
 
+    /**
+     * Name of the environment variable that makes {@link #closePypowsybl} run the native image shutdown hooks.
+     * A shared library never runs them by itself, not even when its isolate is torn down. They are needed to make
+     * a PGO instrumented build write its profile (see tools/pgo/README.md).
+     */
+    public static final String RUN_SHUTDOWN_HOOKS_ENV = "PYPOWSYBL_RUN_SHUTDOWN_HOOKS";
+
     @CEntryPoint(name = "closePypowsybl")
     public static void closePypowsybl(IsolateThread thread, ExceptionHandlerPointer exceptionHandlerPtr) {
-        doCatch(exceptionHandlerPtr, CommonObjects::close);
+        doCatch(exceptionHandlerPtr, () -> {
+            CommonObjects.close();
+            if (System.getenv(RUN_SHUTDOWN_HOOKS_ENV) != null) {
+                VMRuntime.shutdown();
+            }
+        });
     }
 
     @CEntryPoint(name = "freeStringMap")
