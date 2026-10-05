@@ -23,6 +23,7 @@ from .impl.dc_sensitivity_analysis import DcSensitivityAnalysis
 from .impl.dc_sensitivity_analysis_result import DcSensitivityAnalysisResult
 from .impl.ac_sensitivity_analysis import AcSensitivityAnalysis
 from .impl.ac_sensitivity_analysis_result import AcSensitivityAnalysisResult
+from .impl.ac_sensitivity_analysis_adjoint_result import AcSensitivityAnalysisAdjointResult
 from .impl.sensitivity_analysis_result import SensitivityAnalysisResult
 from .impl.zone import Zone
 from .impl.parameters import Parameters

@@ -33,6 +33,38 @@
         <google.ortools.version>9.10.4067</google.ortools.version>
     </properties>
 
+    <dependencyManagement>
+        <dependencies>
+            <!--
+                Temporary override: align the WHOLE of powsybl-core (iidm-api, iidm-impl,
+                sensitivity-analysis-api, ...) to 7.3.0, the version the powsybl-open-loadflow
+                2.4.0-SNAPSHOT 'adjoint-vjp' build below is compiled against, so OLF's runtime classes
+                match its compile target (aligning only sensitivity-analysis-api caused an
+                AbstractMethodError on the networkCacheEnabled path). Carries SensitivityFactor.resolveBusId.
+                Remove this once powsybl-dependencies ships a matching powsybl-core.
+            -->
+            <dependency>
+                <groupId>com.powsybl</groupId>
+                <artifactId>powsybl-core</artifactId>
+                <version>7.3.0</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
+            <!--
+                Temporary override: the reverse-mode adjoint/VJP sensitivity (runAdjoint) — and the
+                BUS_VOLTAGE x SHUNT_COMPENSATOR_SUSCEPTANCE / SVC-pilot sensitivities it builds on — are in
+                the powsybl-open-loadflow 2.4.0-SNAPSHOT 'adjoint-vjp' branch (a superset of svc_sensi).
+                Built locally from that branch (mvn install into the project tmp m2).
+                Remove this once powsybl-dependencies ships an open-loadflow including the feature.
+            -->
+            <dependency>
+                <groupId>com.powsybl</groupId>
+                <artifactId>powsybl-open-loadflow</artifactId>
+                <version>2.4.0-SNAPSHOT</version>
+            </dependency>
+        </dependencies>
+    </dependencyManagement>
+
     <build>
         <plugins>
             <plugin>
