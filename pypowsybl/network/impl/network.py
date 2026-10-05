@@ -4919,6 +4919,52 @@ class Network:  # pylint: disable=too-many-public-methods
         """
         return BusBreakerTopology(self._handle, voltage_level_id)
 
+    def get_outage_groups(self, *, element_ids: Sequence[str]) -> Dict[str, List[str]]:
+        """
+        Get outage groups for the provided initiating elements.
+
+        Args:
+            element_ids: ids of the elements used as initiating contingencies
+
+        Returns:
+            A mapping from each requested element id to disconnected equipment ids.
+            Each list follows the connectivity-result semantics used for
+            outage-group computation. The returned dictionary contains all
+            requested element ids, but its key iteration order is arbitrary.
+
+        Notes:
+            The result mirrors PowSyBl security-analysis connectivity results.
+            Bus and busbar contingencies are special N-K contingencies that
+            trigger the equipment connected to the targeted busbar section, so
+            the busbar section itself is typically not listed. Line,
+            two-winding transformer and tie line contingencies are branch
+            contingencies, so the initiating branch can appear in the returned
+            group. See `PowSyBl security analysis contingency semantics
+            <https://powsybl.readthedocs.io/projects/powsybl-core/en/latest/simulation/security/index.html#contingencies>`_.
+
+        Examples:
+            .. code-block:: python
+
+                import pypowsybl as pp
+
+                net = pp.network.create_four_substations_node_breaker_network()
+                outage_groups = net.get_outage_groups(element_ids=['S1VL1_BBS', 'LINE_S3S4'])
+
+                outage_groups
+
+            will return:
+
+            .. code-block:: python
+
+                {
+                    'S1VL1_BBS': ['LD1', 'TWT'],
+                    'LINE_S3S4': ['LD6', 'LINE_S3S4', 'SVC'],
+                }
+        """
+        if isinstance(element_ids, str):
+            element_ids = [element_ids]
+        return _pp.get_outage_groups(self._handle, list(element_ids))
+
     def merge(self, networks: Union[Network, Sequence[Network]]) -> None:
         """
         Merges networks into this one.

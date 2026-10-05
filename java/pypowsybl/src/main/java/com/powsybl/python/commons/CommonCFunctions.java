@@ -173,4 +173,28 @@ public final class CommonCFunctions {
             }
         });
     }
+
+    /**
+     * Releases native memory allocated for a string-map array returned through the C bridge.
+     *
+     * @param thread current isolate thread
+     * @param map native string-map array to free
+     * @param exceptionHandlerPtr native exception handler used to report Java failures
+     */
+    @CEntryPoint(name = "freeStringArrayMap")
+    public static void freeStringArrayMap(IsolateThread thread, StringArrayMap map, ExceptionHandlerPointer exceptionHandlerPtr) {
+        doCatch(exceptionHandlerPtr, new Runnable() {
+            @Override
+            public void run() {
+                Util.freeCharPtrPtr(map.getKeys(), map.getLength());
+                ArrayPointer<CCharPointerPointer> values = map.getValues();
+                for (int i = 0; i < map.getLength(); i++) {
+                    ArrayPointer<CCharPointerPointer> valuePtr = values.addressOf(i);
+                    Util.freeCharPtrPtr(valuePtr.getPtr(), valuePtr.getLength());
+                }
+                UnmanagedMemory.free(values);
+                UnmanagedMemory.free(map);
+            }
+        });
+    }
 }
