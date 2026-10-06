@@ -392,6 +392,18 @@ def test_parameters_to_json():
     assert json == json2
 
 
+def test_parameters_from_json_any_key_order():
+    p = pp.loadflow.Parameters(voltage_init_mode=pp.loadflow.VoltageInitMode.DC_VALUES, dc=True,
+                               provider_parameters={"slackDistributionFailureBehavior": "LEAVE_ON_SLACK_BUS"})
+    content = json.loads(p.to_json())
+    content['version'] = content.pop('version')
+    p2 = pp.loadflow.Parameters.from_json(json.dumps(content))
+    assert p2.voltage_init_mode == pp.loadflow.VoltageInitMode.DC_VALUES
+    assert p2.dc
+    assert p2.provider_parameters["slackDistributionFailureBehavior"] == "LEAVE_ON_SLACK_BUS"
+    assert p2.to_json() == p.to_json()
+
+
 def test_parameters_pickle():
     p = pp.loadflow.Parameters(voltage_init_mode=pp.loadflow.VoltageInitMode.DC_VALUES, dc_power_factor=0.33333)
     with tempfile.TemporaryDirectory() as tmp_dir_name:
