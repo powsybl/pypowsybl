@@ -16,6 +16,7 @@ relying as much as possible on practical examples.
    security
    sensitivity
    logging
+   configuration
    flowdecomposition
    dynamic
    shortcircuit
