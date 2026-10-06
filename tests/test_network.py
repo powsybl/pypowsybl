@@ -974,6 +974,30 @@ def test_reactive_capability_curve_points_data_frame():
     assert 946.25 == pytest.approx(points.loc['GH1']['max_q'][1])
 
 
+def test_droop_curve_segments_data_frame():
+    n = pp.network.create_dc_detailed_vsc_symmetrical_monopole_network()
+    n.create_droop_curve_segments(id=['VscFr', 'VscFr'], min_v=[-500.0, -100.0], max_v=[-100.0, 300.0], k=[-10.0, -2.0])
+    segments = n.get_droop_curve_segments()
+    assert 2 == len(segments.loc['VscFr'])
+    assert -500.0 == pytest.approx(segments.loc['VscFr']['min_v'][0])
+    assert -100.0 == pytest.approx(segments.loc['VscFr']['max_v'][0])
+    assert -10.0 == pytest.approx(segments.loc['VscFr']['k'][0])
+    assert -100.0 == pytest.approx(segments.loc['VscFr']['min_v'][1])
+    assert 300.0 == pytest.approx(segments.loc['VscFr']['max_v'][1])
+    assert -2.0 == pytest.approx(segments.loc['VscFr']['k'][1])
+
+    # VscFr's DC node is rated at 250 kV, network default sn is 100 MVA:
+    # v_pu = v / nominal_v, k_pu = k * sn / nominal_v
+    n.per_unit = True
+    segments_pu = n.get_droop_curve_segments()
+    assert -2.0 == pytest.approx(segments_pu.loc['VscFr']['min_v'][0])
+    assert -0.4 == pytest.approx(segments_pu.loc['VscFr']['max_v'][0])
+    assert -4.0 == pytest.approx(segments_pu.loc['VscFr']['k'][0])
+    assert -0.4 == pytest.approx(segments_pu.loc['VscFr']['min_v'][1])
+    assert 1.2 == pytest.approx(segments_pu.loc['VscFr']['max_v'][1])
+    assert -0.8 == pytest.approx(segments_pu.loc['VscFr']['k'][1])
+
+
 def test_exception():
     n = pp.network.create_ieee14()
     with pytest.raises(PyPowsyblError) as e:
