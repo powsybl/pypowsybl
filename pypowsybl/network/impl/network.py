@@ -2501,6 +2501,8 @@ class Network:  # pylint: disable=too-many-public-methods
 
             - **p**: active power on switch side 1 (in MW)
             - **q**: reactive power on switch side 1 (in MVar)
+            - **first_parallel_switch_id**: the id of one other closed switch connecting the same two nodes
+              (node-breaker topology) or buses (bus-breaker topology) as this switch, or ``None`` if there is none
 
         Side convention:
             The exposed ``p`` and ``q`` values correspond to the switch flow oriented from side 1 to side 2 in the
@@ -2534,6 +2536,12 @@ class Network:  # pylint: disable=too-many-public-methods
             for meshed switch-only topologies, the reported switch flows are a spanning-tree allocation of the cut
             flow, not a physical current-sharing result across parallel zero-impedance paths.
 
+            The ``first_parallel_switch_id`` column flags exactly this situation: when it is not ``None``, the ``p``
+            and ``q`` values of that switch should not be interpreted as physical measurements, and the column tells
+            you one of the switches it shares its endpoints with. If three or more switches are in parallel, only one
+            of them is reported there; the others can be found by looking up the switches of the voltage level with
+            the same endpoints.
+
         Examples:
             .. code-block:: python
 
@@ -2543,12 +2551,12 @@ class Network:  # pylint: disable=too-many-public-methods
 
             will output something like:
 
-            ============= ======== ============
-            \                    p            q
-            ============= ======== ============
+            ============= ======== ============ ========================
+            \                    p            q first_parallel_switch_id
+            ============= ======== ============ ========================
             id
-            S1VL2_COUPLER    250.0  -299.532312
-            ============= ======== ============
+            S1VL2_COUPLER    250.0  -299.532312                     None
+            ============= ======== ============ ========================
         """
         if isinstance(switch_ids, str):
             switch_ids = [switch_ids]

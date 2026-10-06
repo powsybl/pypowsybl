@@ -195,7 +195,8 @@ public final class NetworkUtil {
             SwitchesFlow switchesFlow = switchesFlowByVoltageLevel.computeIfAbsent(sw.getVoltageLevel(), SwitchesFlow::new);
             return new SwitchFlowContext(switchId,
                     switchesFlow.getP1(switchId),
-                    switchesFlow.getQ1(switchId));
+                    switchesFlow.getQ1(switchId),
+                    switchesFlow.getFirstParallelSwitchId(switchId));
         }).toList();
     }
 

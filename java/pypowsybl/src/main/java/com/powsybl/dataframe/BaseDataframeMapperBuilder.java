@@ -150,6 +150,11 @@ public class BaseDataframeMapperBuilder<T, U, C, B extends BaseDataframeMapperBu
         return (B) this;
     }
 
+    public B optionalStrings(String name, Function<U, Optional<String>> value) {
+        series.add(new OptionalStringSeriesMapper<>(name, value));
+        return (B) this;
+    }
+
     public B booleans(String name, Predicate<U> value, BooleanSeriesMapper.BooleanUpdater<U> updater) {
         return booleans(name, value, updater, true);
     }

@@ -2022,7 +2022,8 @@ def test_switch_flows():
 
     switch_flows = network.get_switch_flows('S1VL2_COUPLER')
     flow = switch_flows.loc['S1VL2_COUPLER']
-    assert list(switch_flows.columns) == ['p', 'q']
+    assert list(switch_flows.columns) == ['p', 'q', 'first_parallel_switch_id']
+    assert flow['first_parallel_switch_id'] is None
 
 
     topology_network = pp.network.create_four_substations_node_breaker_network()
@@ -2071,6 +2072,28 @@ def test_switch_flows():
 
     assert flow['p'] == pytest.approx(-side1_flow[0], abs=maxActivePowerMismatch)
     assert flow['q'] == pytest.approx(-side1_flow[1], abs=maxActivePowerMismatch)
+
+
+def test_switch_flows_parallel_switches_node_breaker():
+    reference_network = pp.network.create_four_substations_node_breaker_network()
+    pp.loadflow.run_ac(reference_network)
+    reference = reference_network.get_switch_flows('S1VL2_COUPLER').loc['S1VL2_COUPLER']
+
+    # Add a second closed breaker between the same nodes as S1VL2_COUPLER (22 and 23)
+    network = pp.network.create_four_substations_node_breaker_network()
+    network.create_switches(id='S1VL2_COUPLER_PAR', kind='BREAKER', voltage_level_id='S1VL2',
+                            node1=22, node2=23, open=False, retained=True)
+    pp.loadflow.run_ac(network)
+    flows = network.get_switch_flows(['S1VL2_COUPLER', 'S1VL2_COUPLER_PAR', 'S1VL2_SHUNT_BREAKER'])
+
+    assert list(flows.columns) == ['p', 'q', 'first_parallel_switch_id']
+    assert flows.at['S1VL2_COUPLER', 'first_parallel_switch_id'] == 'S1VL2_COUPLER_PAR'
+    assert flows.at['S1VL2_COUPLER_PAR', 'first_parallel_switch_id'] == 'S1VL2_COUPLER'
+    assert flows.at['S1VL2_SHUNT_BREAKER', 'first_parallel_switch_id'] is None
+    # The cut flow is allocated to one of the parallel switches, the sum will match.
+    assert flows.at['S1VL2_COUPLER', 'p'] + flows.at['S1VL2_COUPLER_PAR', 'p'] == pytest.approx(reference['p'], abs=1e-6)
+    assert flows.at['S1VL2_COUPLER', 'q'] + flows.at['S1VL2_COUPLER_PAR', 'q'] == pytest.approx(reference['q'], abs=1e-6)
+
 
 
 def test_bus_breaker_view_buses():

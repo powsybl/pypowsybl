@@ -19,7 +19,9 @@ import org.graalvm.nativeimage.c.type.CCharPointerPointer;
 import org.graalvm.nativeimage.c.type.CDoublePointer;
 import org.graalvm.nativeimage.c.type.CIntPointer;
 import org.graalvm.word.PointerBase;
+import org.graalvm.word.WordFactory;
 
+import java.util.Optional;
 import java.util.OptionalDouble;
 import java.util.OptionalInt;
 
@@ -135,6 +137,24 @@ public class CDataframeHandler implements DataframeHandler {
                     maskPtr.addressOf(index).write(1);
                 } else {
                     dataPtr.addressOf(index).write(value.getAsDouble());
+                }
+            }
+        };
+    }
+
+    @Override
+    public OptionalStringSeriesWriter newOptionalStringSeries(String name, int size) {
+        CCharPointerPointer dataPtr = UnmanagedMemory.calloc(size * SizeOf.get(CCharPointerPointer.class));
+        CIntPointer maskPtr = UnmanagedMemory.calloc(size * SizeOf.get(CIntPointer.class));
+        addOptionalSeries(name, size, dataPtr, maskPtr, STRING_SERIES_TYPE);
+        return new OptionalStringSeriesWriter() {
+            @Override
+            public void set(int index, Optional<String> value) {
+                if (value.isEmpty()) {
+                    dataPtr.addressOf(index).write(WordFactory.nullPointer());
+                    maskPtr.addressOf(index).write(1);
+                } else {
+                    dataPtr.addressOf(index).write(CTypeUtil.toCharPtr(value.get()));
                 }
             }
         };
