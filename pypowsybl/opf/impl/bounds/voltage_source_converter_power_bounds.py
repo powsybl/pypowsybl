@@ -5,6 +5,7 @@
 # SPDX-License-Identifier: MPL-2.0
 #
 import logging
+from typing import cast
 
 from pypowsybl.opf.impl.model.model import Model
 from pypowsybl.opf.impl.model.model_parameters import ModelParameters
@@ -15,8 +16,7 @@ from pypowsybl.opf.impl.util import TRACE_LEVEL
 
 logger = logging.getLogger(__name__)
 
-#TODO implement max P, Q in converter core modelization
-MAX_CONVERTER_P = 100.0
+# MAX_CONVERTER_Q is still a placeholder: no declared reactive limit exists in the network model to read.
 MAX_CONVERTER_Q = 100.0
 
 
@@ -30,9 +30,9 @@ class VoltageSourceConverterPowerBounds(VariableBounds):
                 continue
 
             logger.log(TRACE_LEVEL,
-                       f"Add active power bounds [{-MAX_CONVERTER_P}, {MAX_CONVERTER_P}] to converter '{row.Index}' (num={converter_num})")
+                       f"Add active power bounds [{row.min_p}, {row.max_p}] to converter '{row.Index}' (num={converter_num})")
 
-            model.set_variable_bounds(variable_context.conv_p_vars[converter_index], -MAX_CONVERTER_P, MAX_CONVERTER_P)
+            model.set_variable_bounds(variable_context.conv_p_vars[converter_index], cast(float, row.min_p), cast(float, row.max_p))
 
             logger.log(TRACE_LEVEL,
                        f"Add reactive power bounds [{-MAX_CONVERTER_Q}, {MAX_CONVERTER_Q}] to converter '{row.Index}' (num={converter_num})")

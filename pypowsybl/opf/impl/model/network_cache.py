@@ -40,8 +40,16 @@ class NetworkCache:
         self._dc_buses = self._build_dc_buses(network)
         self._dc_nodes = self._build_dc_nodes(network, self.dc_buses)
         self._dc_lines = self._build_dc_lines(network)
+        self._dc_switches = self._build_dc_switches(network)
         self._voltage_source_converters = self._build_voltage_source_converters(network)
         self._dc_grounds = self._build_dc_grounds(network)
+
+    def __enter__(self) -> 'NetworkCache':
+        return self
+
+    def __exit__(self, exc_type: object, exc_value: object, traceback: object) -> None:
+        self._network.per_unit = False
+
     @staticmethod
     def _filter_injections(injections: DataFrame, buses: DataFrame) -> DataFrame:
         if len(injections) == 0:
@@ -170,6 +178,7 @@ class NetworkCache:
     def _build_buses(network: Network, voltage_levels: DataFrame) -> DataFrame:
         buses = network.get_buses(attributes=['voltage_level_id', 'connected_component', 'synchronous_component'])
         buses = buses[buses['connected_component'] == 0]
+        buses = buses.astype({'voltage_level_id': object})
         return pd.merge(buses, voltage_levels, left_on='voltage_level_id', right_index=True, how='left', validate='m:1')
 
     @staticmethod
@@ -224,24 +233,28 @@ class NetworkCache:
 
     @staticmethod
     def _build_dc_nodes(network: Network, dc_buses: DataFrame) -> DataFrame:
-        # FIXME : when dc_nodes is empty, its type is float64 and not object
-        dc_nodes = network.get_dc_nodes(attributes=['dc_bus_id', 'nominal_v']).astype(object)
+        dc_nodes = network.get_dc_nodes(attributes=['dc_bus_id', 'nominal_v'])
+        dc_nodes = dc_nodes.astype({'dc_bus_id': object})
         return pd.merge(dc_nodes, dc_buses, left_on='dc_bus_id', right_index=True, how='left')
 
     @staticmethod
     def _build_dc_lines(network: Network) -> DataFrame:
-        return network.get_dc_lines(attributes=['dc_node1_id', 'dc_node2_id', 'r'])
+        return network.get_dc_lines(attributes=['dc_node1_id', 'dc_node2_id', 'connected1', 'connected2', 'r'])
+
+    @staticmethod
+    def _build_dc_switches(network: Network) -> DataFrame:
+        return network.get_dc_switches(attributes=['dc_node1_id', 'dc_node2_id', 'open', 'r'])
 
     @staticmethod
     def _build_voltage_source_converters(network: Network) -> DataFrame:
         return network.get_voltage_source_converters(attributes=['voltage_level_id', 'bus1_id', 'bus2_id', 'dc_node1_id', 'dc_node2_id',
                                      'dc_connected1', 'dc_connected2', 'pcc_terminal_id', 'voltage_regulator_on',
                                      'control_mode', 'target_v_dc', 'target_v_ac', 'target_p', 'target_q', 'idle_loss',
-                                     'switching_loss', 'resistive_loss'])
+                                     'switching_loss', 'resistive_loss', 'min_p', 'max_p'])
 
     @staticmethod
     def _build_dc_grounds(network: Network) -> DataFrame:
-        return network.get_dc_grounds(attributes=['dc_node_id', 'r'])
+        return network.get_dc_grounds(attributes=['dc_node_id', 'connected', 'r'])
 
     @property
     def network(self) -> Network:
@@ -330,6 +343,10 @@ class NetworkCache:
     @property
     def dc_nodes(self) -> DataFrame:
         return self._dc_nodes
+
+    @property
+    def dc_switches(self) -> DataFrame:
+        return self._dc_switches
 
     @property
     def voltage_source_converters(self) -> DataFrame:
@@ -545,10 +562,11 @@ class NetworkCache:
 
     def update_dc_lines(self,
                         dc_line_ids: list[str],
-                        dc_line_i1: list[float],
-                        dc_line_i2: list[float]) -> None:
+                        dc_line_i: list[float]) -> None:
+        # i2 is the mirror of i1: oriented dc_node2 -> dc_node1.
+        dc_line_i2 = [-i for i in dc_line_i]
         self._network.update_dc_lines(id=dc_line_ids,
-                                      i1=dc_line_i1,
+                                      i1=dc_line_i,
                                       i2=dc_line_i2)
         self._dc_lines = self._build_dc_lines(self._network)
 

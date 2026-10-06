@@ -1106,7 +1106,8 @@ public final class NetworkDataframes {
                 .strings("dc_node_id", dg -> dg.getDcTerminal().getDcNode().getId())
                 .booleans("connected", dg -> dg.getDcTerminal().isConnected(),
                         (dg, dcConnected) -> dg.getDcTerminal().setConnected(dcConnected))
-                .doubles("r", (dg, context) -> dg.getR(), (dg, r, context) -> dg.setR(r))
+                .doubles("r", (dg, context) -> perUnitR(context, dg),
+                        (dg, r, context) -> dg.setR(unPerUnitRX(context, dg, r)))
                 .booleans("fictitious", Identifiable::isFictitious, Identifiable::setFictitious, false)
                 .addProperties()
                 .build();
@@ -1124,7 +1125,8 @@ public final class NetworkDataframes {
                 .strings("dc_node2_id", ds -> ds.getDcNode2().getId())
                 .enums("kind", DcSwitchKind.class, DcSwitch::getKind)
                 .booleans("open", DcSwitch::isOpen, DcSwitch::setOpen)
-                .doubles("r", (ds, context) -> ds.getR(), (ds, r, context) -> ds.setR(r))
+                .doubles("r", (ds, context) -> perUnitR(context, ds),
+                        (ds, r, context) -> ds.setR(unPerUnitRX(context, ds, r)))
                 .booleans("fictitious", Identifiable::isFictitious, Identifiable::setFictitious, false)
                 .addProperties()
                 .build();
