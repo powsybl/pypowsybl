@@ -292,3 +292,29 @@ def test_generator_connection_level_properties():
 
     n.remove_extensions(extension_name, [element_id])
     assert n.get_extensions(extension_name).empty
+
+def test_dynamic_security_analysis_creation():
+    dsa = dyn.DynamicSecurityAnalysis()
+    dsa.add_single_element_contingency(element_id='L4-5-1', contingency_id='contingency1')
+    dsa.add_multiple_elements_contingency(elements_ids=['L1-2-1', 'L2-3-1'], contingency_id='contingency2')
+    dsa.add_monitored_elements(branch_ids=['L1-5-1'])
+    dsa.add_precontingency_monitored_elements(branch_ids=['L2-4-1'])
+    dsa.add_postcontingency_monitored_elements(contingency_ids='contingency1', branch_ids=['L1-5-1'])
+
+def test_dynamic_security_analysis_monitored_elements_validation():
+    dsa = dyn.DynamicSecurityAnalysis()
+    with pytest.raises(ValueError):
+        dsa.add_monitored_elements(contingency_ids=['contingency1'])
+
+def test_dynamic_security_analysis_parameters():
+    params = dyn.DynamicSecurityAnalysisParameters(start_time=0, stop_time=150,
+                                                   contingencies_start_time=30,
+                                                   debug_dir='/tmp/dsa-debug',
+                                                   provider_parameters={'a': 'b'})
+    assert params.start_time == 0
+    assert params.stop_time == 150
+    assert params.contingencies_start_time == 30
+    assert params.debug_dir == '/tmp/dsa-debug'
+    c_params = params._to_c_parameters()
+    assert c_params.contingencies_start_time == 30
+    assert c_params.debug_dir == '/tmp/dsa-debug'
