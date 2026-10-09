@@ -427,8 +427,8 @@ def test_vsc_data_frame():
                                    'S2VL1', 'S2VL1_0', True, 'HVDC1']])
     pd.testing.assert_frame_equal(expected, stations, check_dtype=False, atol=1e-2)
 
-    stations2 = pd.DataFrame(data=[[300.0, 400.0, 'VSC2'], [1.0, 2.0, 'VSC1']],
-                             columns=['target_v', 'target_q', 'regulated_element_id'], index=['VSC1', 'VSC2'])
+    stations2 = pd.DataFrame(data=[[400.0, 'VSC2', 300.0], [2.0, 'VSC1', 1.0]],
+                             columns=['target_q', 'regulated_element_id', 'target_v'], index=['VSC1', 'VSC2'])
     n.update_vsc_converter_stations(stations2)
     stations3 = pd.DataFrame(data=[[-350, 400]],
                              columns=['min_q', 'max_q'], index=['VSC2'])
@@ -2682,7 +2682,7 @@ def test_ratio_tap_changer_regulated_side():
     assert not tap_changer.regulating
     assert tap_changer.regulated_side == ''
 
-    with pytest.raises(PyPowsyblError, match='a regulation terminal has to be set'):
+    with pytest.raises(PyPowsyblError, match='the terminal is not set'):
         n.update_ratio_tap_changers(id='T4-1-0', target_v=100, regulating=True)
 
     with pytest.raises(PyPowsyblError, match='must be ONE or TWO'):

@@ -627,30 +627,6 @@ def test_reference_priorities():
     assert network.get_extensions('referencePriorities').empty
 
 
-def test_voltage_per_reactive_power_control():
-    network = pn.create_four_substations_node_breaker_network()
-    assert network.get_extensions('voltagePerReactivePowerControl').empty
-
-    network.create_extensions('voltagePerReactivePowerControl', id="SVC", slope=0.5)
-    e = network.get_extensions('voltagePerReactivePowerControl')
-    expected = pd.DataFrame(
-        index=pd.Series(name='id', data=['SVC']),
-        columns=['slope'],
-        data=[[0.5]])
-    pd.testing.assert_frame_equal(expected, e, check_dtype=False)
-
-    network.update_extensions('voltagePerReactivePowerControl', id="SVC", slope=0.8)
-    e = network.get_extensions('voltagePerReactivePowerControl')
-    expected = pd.DataFrame(
-        index=pd.Series(name='id', data=['SVC']),
-        columns=['slope'],
-        data=[[0.8]])
-    pd.testing.assert_frame_equal(expected, e, check_dtype=False)
-
-    network.remove_extensions('voltagePerReactivePowerControl', ids="SVC")
-    assert network.get_extensions('voltagePerReactivePowerControl').empty
-
-
 def test_batteries_active_power_control():
     network = pn.load(str(TEST_DIR.joinpath('battery.xiidm')))
     assert network.get_extensions('activePowerControl').empty
@@ -695,30 +671,6 @@ def test_generators_and_batteries_active_power_control():
     with pytest.raises(pypowsybl.PyPowsyblError,
                        match="Network element 'LOAD' is not a generator or a battery"):
         network.create_extensions('activePowerControl', id='LOAD', droop=1.2)
-
-
-def test_batteries_voltage_regulation():
-    network = pn.load(str(TEST_DIR.joinpath('battery.xiidm')))
-    assert network.get_extensions('voltageRegulation').empty
-
-    network.create_extensions('voltageRegulation', id='BAT', voltage_regulator_on=True, target_v=400.0)
-    e = network.get_extensions('voltageRegulation')
-    expected = pd.DataFrame(
-        index=pd.Series(name='id', data=['BAT']),
-        columns=['voltage_regulator_on', 'target_v', 'regulated_element_id'],
-        data=[[True, 400.0, 'BAT']])
-    pd.testing.assert_frame_equal(expected, e, check_dtype=False)
-
-    network.update_extensions('voltageRegulation', id=['BAT'], voltage_regulator_on=False, target_v=399.0)
-    e = network.get_extensions('voltageRegulation')
-    expected = pd.DataFrame(
-        index=pd.Series(name='id', data=['BAT']),
-        columns=['voltage_regulator_on', 'target_v', 'regulated_element_id'],
-        data=[[False, 399.0, 'BAT']])
-    pd.testing.assert_frame_equal(expected, e, check_dtype=False)
-
-    network.remove_extensions('voltageRegulation', ['BAT'])
-    assert network.get_extensions('voltageRegulation').empty
 
 
 def test_get_extensions_information():
@@ -772,10 +724,6 @@ def test_get_extensions_information():
     assert extensions_information.loc['twoWindingsTransformerPhaseAngleClock']['attributes'] == 'index : id (str), phase_angle_clock (int)'
     assert extensions_information.loc['threeWindingsTransformerPhaseAngleClock']['detail'] == 'Provides phase angle clock information for three windings transformers'
     assert extensions_information.loc['threeWindingsTransformerPhaseAngleClock']['attributes'] == 'index : id (str), phase_angle_clock_leg2 (int), phase_angle_clock_leg3 (int)'
-    assert extensions_information.loc['voltagePerReactivePowerControl']['detail'] == 'Models the voltage control static var compensators'
-    assert extensions_information.loc['voltagePerReactivePowerControl']['attributes'] == 'index : id (str), slope (float)'
-    assert extensions_information.loc['voltageRegulation']['detail'] == 'it allows to specify the voltage regulation mode for batteries'
-    assert extensions_information.loc['voltageRegulation']['attributes'] == 'index : id (str), voltage_regulator_on (bool), target_v (float), regulated_element_id (str)'
     assert extensions_information.loc['synchronousGeneratorProperties']['attributes'] == 'index : id (str), numberOfWindings (str), governor (str), voltageRegulator (str), pss (str), auxiliaries (bool), internalTransformer (bool), rpcl (str), uva (str), aggregated (bool), qlim (bool)'
     assert extensions_information.loc['synchronizedGeneratorProperties']['attributes'] == 'index : id (str), type (str), rpcl2 (bool)'
     assert extensions_information.loc['generatorConnectionLevel']['attributes'] == 'index : id (str), level (str)'
