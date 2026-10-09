@@ -13,7 +13,8 @@ public class GeneratorValidationData {
     double targetV;
     double expectedP;
     boolean connected;
-    boolean voltageRegulatorOn;
+    String regulationMode;
+    boolean regulating;
     double minP;
     double maxP;
     double minQ;
@@ -21,7 +22,7 @@ public class GeneratorValidationData {
     boolean mainComponent;
     boolean validated;
 
-    public GeneratorValidationData(String id, double p, double q, double v, double targetP, double targetQ, double targetV, double expectedP, boolean connected, boolean voltageRegulatorOn, double minP, double maxP, double minQ, double maxQ, boolean mainComponent, boolean validated) {
+    public GeneratorValidationData(String id, double p, double q, double v, double targetP, double targetQ, double targetV, double expectedP, boolean connected, String regulationMode, boolean regulating, double minP, double maxP, double minQ, double maxQ, boolean mainComponent, boolean validated) {
         this.id = id;
         this.p = p;
         this.q = q;
@@ -31,7 +32,8 @@ public class GeneratorValidationData {
         this.targetV = targetV;
         this.expectedP = expectedP;
         this.connected = connected;
-        this.voltageRegulatorOn = voltageRegulatorOn;
+        this.regulationMode = regulationMode;
+        this.regulating = regulating;
         this.minP = minP;
         this.maxP = maxP;
         this.minQ = minQ;
@@ -76,8 +78,8 @@ public class GeneratorValidationData {
         return connected;
     }
 
-    boolean isVoltageRegulatorOn() {
-        return voltageRegulatorOn;
+    boolean isRegulating() {
+        return regulating;
     }
 
     double getMinP() {

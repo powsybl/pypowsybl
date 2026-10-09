@@ -15,6 +15,7 @@ import com.powsybl.entsoe.util.EntsoeArea;
 import com.powsybl.entsoe.util.EntsoeGeographicalCode;
 import com.powsybl.iidm.network.*;
 import com.powsybl.iidm.network.extensions.*;
+import com.powsybl.iidm.network.regulation.RegulationMode;
 import com.powsybl.iidm.network.test.*;
 import com.powsybl.python.network.Networks;
 import org.junit.jupiter.api.Disabled;
@@ -297,7 +298,7 @@ class NetworkElementAddersTest {
     @Test
     void svc() {
         var network = SvcTestCaseFactory.create();
-        var mode = StaticVarCompensator.RegulationMode.VOLTAGE;
+        var mode = RegulationMode.VOLTAGE;
         var dataframe = new DefaultUpdatingDataframe(1);
         addDoubleColumn(dataframe, "b_min", 0.0003);
         addDoubleColumn(dataframe, "b_max", 0.0009);
