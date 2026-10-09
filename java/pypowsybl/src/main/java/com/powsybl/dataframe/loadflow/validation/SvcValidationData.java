@@ -1,6 +1,6 @@
 package com.powsybl.dataframe.loadflow.validation;
 
-import com.powsybl.iidm.network.StaticVarCompensator;
+import com.powsybl.iidm.network.regulation.RegulationMode;
 
 /**
  * @author Yichen TANG {@literal <yichen.tang at rte-france.com>}
@@ -15,14 +15,14 @@ class SvcValidationData {
     double reactivePowerSetpoint;
     double voltageSetpoint;
     boolean connected;
-    StaticVarCompensator.RegulationMode regulationMode;
+    RegulationMode regulationMode;
     boolean regulating;
     double bMin;
     double bMax;
     boolean mainComponent;
     boolean validated;
 
-    SvcValidationData(String svcId, double p, double q, double vControlled, double vController, double nominalVcontroller, double reactivePowerSetpoint, double voltageSetpoint, boolean connected, StaticVarCompensator.RegulationMode regulationMode,
+    SvcValidationData(String svcId, double p, double q, double vControlled, double vController, double nominalVcontroller, double reactivePowerSetpoint, double voltageSetpoint, boolean connected, RegulationMode regulationMode,
                       boolean regulating, double bMin, double bMax, boolean mainComponent, boolean validated) {
         this.svcId = svcId;
         this.p = p;
@@ -77,7 +77,7 @@ class SvcValidationData {
         return connected;
     }
 
-    StaticVarCompensator.RegulationMode getRegulationMode() {
+    RegulationMode getRegulationMode() {
         return regulationMode;
     }
 

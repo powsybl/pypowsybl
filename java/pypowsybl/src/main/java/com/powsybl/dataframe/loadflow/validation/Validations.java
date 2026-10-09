@@ -100,7 +100,7 @@ public final class Validations {
                 .doubles("target_v", GeneratorValidationData::getTargetV)
                 .doubles("expected_p", GeneratorValidationData::getExpectedP)
                 .booleans("connected", GeneratorValidationData::isConnected)
-                .booleans("voltage_regulator_on", GeneratorValidationData::isVoltageRegulatorOn)
+                .booleans("voltage_regulator_on", GeneratorValidationData::isRegulating)
                 .doubles("min_p", GeneratorValidationData::getMinP)
                 .doubles("max_p", GeneratorValidationData::getMaxP)
                 .doubles("min_q", GeneratorValidationData::getMinQ)
