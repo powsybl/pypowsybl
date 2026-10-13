@@ -5,6 +5,9 @@ on:
 
 permissions: { }
 
+env:
+  PGO_BUILD: 'true'
+
 jobs:
   build:
     name: Build ${{ matrix.config.name }} wheel
@@ -91,7 +94,7 @@ jobs:
         env:
           MACOSX_DEPLOYMENT_TARGET: ${{ matrix.config.macosx_deployment_target }}
         run: |
-          ${{ env.PYTHON }} setup.py bdist_wheel ${{ matrix.config.bdist_wheel_args }}
+          BDIST_WHEEL_ARGS="${{ matrix.config.bdist_wheel_args }}" .github/workflows/scripts/build_wheel.sh
           if [ "${{ matrix.config.name }}" == "linux" ]; then
             auditwheel repair dist/*.whl
           fi
