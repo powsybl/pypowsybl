@@ -102,7 +102,7 @@ def _create_c_dataframe(df: DataFrame, series_metadata: List[_pp.SeriesMetadata]
         series = df[series_name]
         series_type = metadata_by_name[series_name].type
         if metadata_by_name[series_name].is_deprecated:
-            warnings.deprecated(f'Column {series_name} is deprecated', category=DeprecationWarning)
+            warnings.warn(f'Column "{series_name}" is deprecated', category=DeprecationWarning, stacklevel=2)
         columns_types.append(series_type)
         if series.values.size and isinstance(series.values[0], np.bool_):
             # to avoid DeprecationWarning: In future, it will be an error for 'np.bool_' scalars to be interpreted as an index

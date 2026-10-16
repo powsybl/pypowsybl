@@ -52,6 +52,10 @@ public class SeriesMetadata {
         return new SeriesMetadata(false, name, false, SeriesDataType.STRING, false);
     }
 
+    public static SeriesMetadata deprecatedStrings(String name) {
+        return new SeriesMetadata(false, name, false, SeriesDataType.STRING, false, true);
+    }
+
     public static SeriesMetadata ints(String name) {
         return new SeriesMetadata(false, name, false, SeriesDataType.INT, false);
     }
