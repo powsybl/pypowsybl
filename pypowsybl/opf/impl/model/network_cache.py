@@ -18,6 +18,7 @@ from pypowsybl.opf.impl.model.bounds import Bounds
 class NetworkCache:
     def __init__(self, network: Network) -> None:
         self._network = network
+        self._old_per_unit = self._network.per_unit
         self._network.per_unit = True
         self._voltage_levels = self._build_voltage_levels(network)
         self._buses = self._build_buses(network, self._voltage_levels)
@@ -48,7 +49,9 @@ class NetworkCache:
         return self
 
     def __exit__(self, exc_type: object, exc_value: object, traceback: object) -> None:
-        self._network.per_unit = False
+        # TODO go all the way with context: move construction to __enter__ and check that the object is
+        # active in all update* methods.
+        self._network.per_unit = self._old_per_unit
 
     @staticmethod
     def _filter_injections(injections: DataFrame, buses: DataFrame) -> DataFrame:
