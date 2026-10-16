@@ -1071,12 +1071,13 @@ PYBIND11_MODULE(_pypowsybl, m) {
     bindArray<pypowsybl::SeriesArray>(m, "SeriesArray");
 
     py::class_<pypowsybl::SeriesMetadata>(m, "SeriesMetadata", "Metadata about one series")
-            .def(py::init<const std::string&, int, bool, bool, bool>())
+            .def(py::init<const std::string&, int, bool, bool, bool, bool>())
             .def_property_readonly("name", &pypowsybl::SeriesMetadata::name, "Name of this series.")
             .def_property_readonly("type", &pypowsybl::SeriesMetadata::type)
             .def_property_readonly("is_index", &pypowsybl::SeriesMetadata::isIndex)
             .def_property_readonly("is_modifiable", &pypowsybl::SeriesMetadata::isModifiable)
-            .def_property_readonly("is_default", &pypowsybl::SeriesMetadata::isDefault);
+            .def_property_readonly("is_default", &pypowsybl::SeriesMetadata::isDefault)
+            .def_property_readonly("is_deprecated", &pypowsybl::SeriesMetadata::isDeprecated);
 
     m.def("get_network_elements_dataframe_metadata", &pypowsybl::getNetworkDataframeMetadata, "Get dataframe metadata for a given network element type",
           py::arg("element_type"));

@@ -623,13 +623,13 @@ class Network:  # pylint: disable=too-many-public-methods
                                            None if nad_profile is None else nad_profile._create_nad_three_wt_styles_c_dataframe()) # pylint: disable=protected-access
 
     def _create_nad_positions_c_dataframe(self, df: DataFrame) -> _pp.Dataframe:
-        nad_positions_metadata=[_pp.SeriesMetadata('id',0,True,False,False),
-                  _pp.SeriesMetadata('x',1,False,False,False),
-                  _pp.SeriesMetadata('y',1,False,False,False),
-                  _pp.SeriesMetadata('legend_shift_x',1,False,False,False),
-                  _pp.SeriesMetadata('legend_shift_y',1,False,False,False),
-                  _pp.SeriesMetadata('legend_connection_shift_x',1,False,False,False),
-                  _pp.SeriesMetadata('legend_connection_shift_y',1,False,False,False)]
+        nad_positions_metadata=[_pp.SeriesMetadata('id',0,True,False,False, False),
+                  _pp.SeriesMetadata('x',1,False,False,False, False),
+                  _pp.SeriesMetadata('y',1,False,False,False, False),
+                  _pp.SeriesMetadata('legend_shift_x',1,False,False,False, False),
+                  _pp.SeriesMetadata('legend_shift_y',1,False,False,False, False),
+                  _pp.SeriesMetadata('legend_connection_shift_x',1,False,False,False, False),
+                  _pp.SeriesMetadata('legend_connection_shift_y',1,False,False,False, False)]
         return _create_c_dataframe(df, nad_positions_metadata)
 
     def get_network_area_diagram(self, voltage_level_ids: Optional[Union[str, List[str]]] = None, depth: int = 0,
@@ -740,13 +740,24 @@ class Network:  # pylint: disable=too-many-public-methods
         if all_attributes and len(attributes) > 0:
             raise RuntimeError('parameters "all_attributes" and "attributes" are mutually exclusive')
 
+        metadata = _pp.get_network_elements_dataframe_metadata(element_type)
         if kwargs:
-            metadata = _pp.get_network_elements_dataframe_metadata(element_type)
             df = _adapt_df_or_kwargs(metadata, None, **kwargs)
             elements_array = _create_c_dataframe(df, metadata)
-
         else:
             elements_array = None
+
+        match filter_attributes:
+            case _pp.FilterAttributesType.DEFAULT_ATTRIBUTES:
+                filtered_metadata = [s for s in metadata if s.is_default]
+            case _pp.FilterAttributesType.SELECTION_ATTRIBUTES:
+                filtered_metadata = [s for s in metadata if s.name in attributes]
+            case _:
+                filtered_metadata = metadata
+        for s in filtered_metadata:
+            if s.is_deprecated:
+                warnings.warn(f'Column "{s.name}" of {element_type.name} is deprecated', DeprecationWarning, stacklevel=2)
+
         series_array = _pp.create_network_elements_series_array(self._handle, element_type, filter_attributes,
                                                                 attributes, elements_array, self._per_unit,
                                                                 self._nominal_apparent_power)
@@ -1782,7 +1793,7 @@ class Network:  # pylint: disable=too-many-public-methods
         .. deprecated:: 1.15.0
             Use :meth:`get_boundary_lines` instead.
         """
-        warnings.warn("get_dangling_lines is deprecated, use get_boundary_lines instead.", DeprecationWarning)
+        warnings.warn("get_dangling_lines is deprecated, use get_boundary_lines instead.", DeprecationWarning, stacklevel=1)
         return self.get_boundary_lines(all_attributes, attributes, **kwargs)
 
     def get_boundary_lines_generation(self, all_attributes: bool = False, attributes: Optional[List[str]] = None,
@@ -6537,19 +6548,6 @@ class Network:  # pylint: disable=too-many-public-methods
                 network.create_tie_lines(id='tie_line_1', boundary_line1_id='BL-1', boundary_line2_id='BL-2')
 
         """
-        if df is not None:
-            if "dangling_line1_id" in df.columns:
-                warnings.warn("dangling_line1_id is deprecated, use boundary_line1_id instead", DeprecationWarning)
-                df = df.rename(columns={'dangling_line1_id': 'boundary_line1_id'})
-            if "dangling_line2_id" in df.columns:
-                warnings.warn("dangling_line2_id is deprecated, use boundary_line2_id instead", DeprecationWarning)
-                df = df.rename(columns={'dangling_line2_id': 'boundary_line2_id'})
-        if kwargs.get('dangling_line1_id') is not None:
-            warnings.warn("dangling_line1_id is deprecated, use boundary_line1_id instead", DeprecationWarning)
-            kwargs['boundary_line1_id'] = kwargs.pop('dangling_line1_id')
-        if kwargs.get('dangling_line2_id') is not None:
-            warnings.warn("dangling_line2_id is deprecated, use boundary_line2_id instead", DeprecationWarning)
-            kwargs['boundary_line2_id'] = kwargs.pop('dangling_line2_id')
         return self._create_elements(ElementType.TIE_LINE, [df], **kwargs)
 
     def create_areas(self, df: Optional[DataFrame] = None, **kwargs: ArrayLike) -> None:

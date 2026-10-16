@@ -1426,7 +1426,7 @@ std::vector<SeriesMetadata> convertDataframeMetadata(dataframe_metadata* datafra
     std::vector<SeriesMetadata> res;
     for (int i = 0; i < dataframeMetadata->attributes_count; i++) {
         const series_metadata& series = dataframeMetadata->attributes_metadata[i];
-        res.push_back(SeriesMetadata(series.name, series.type, series.is_index, series.is_modifiable, series.is_default));
+        res.push_back(SeriesMetadata(series.name, series.type, series.is_index, series.is_modifiable, series.is_default, series.is_deprecated));
     }
     return res;
 }

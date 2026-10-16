@@ -15,63 +15,63 @@ class NadProfile:
     """
     This class represents parameters to customize a network area diagram (e.g., labels on branches)."""
 
-    _nad_branch_labels_metadata=[_pp.SeriesMetadata('id',0,True,False,False),
-                  _pp.SeriesMetadata('side1Internal',0,False,False,False),
-                  _pp.SeriesMetadata('side1External',0,False,False,False),
-                  _pp.SeriesMetadata('middle1',0,False,False,False),
-                  _pp.SeriesMetadata('middle2',0,False,False,False),
-                  _pp.SeriesMetadata('side2Internal',0,False,False,False),
-                  _pp.SeriesMetadata('side2External',0,False,False,False),
-                  _pp.SeriesMetadata('arrow1',0,False,False,False),
-                  _pp.SeriesMetadata('arrowMiddle',0,False,False,False),
-                  _pp.SeriesMetadata('arrow2',0,False,False,False)]
+    _nad_branch_labels_metadata=[_pp.SeriesMetadata('id',0,True,False,False, False),
+                  _pp.SeriesMetadata('side1Internal',0,False,False,False, False),
+                  _pp.SeriesMetadata('side1External',0,False,False,False, False),
+                  _pp.SeriesMetadata('middle1',0,False,False,False, False),
+                  _pp.SeriesMetadata('middle2',0,False,False,False, False),
+                  _pp.SeriesMetadata('side2Internal',0,False,False,False, False),
+                  _pp.SeriesMetadata('side2External',0,False,False,False, False),
+                  _pp.SeriesMetadata('arrow1',0,False,False,False, False),
+                  _pp.SeriesMetadata('arrowMiddle',0,False,False,False, False),
+                  _pp.SeriesMetadata('arrow2',0,False,False,False, False)]
 
-    _nad_three_wt_metadata=[_pp.SeriesMetadata('id',0,True,False,False),
-                  _pp.SeriesMetadata('side1Internal',0,False,False,False),
-                  _pp.SeriesMetadata('side1External',0,False,False,False),
-                  _pp.SeriesMetadata('side2Internal',0,False,False,False),
-                  _pp.SeriesMetadata('side2External',0,False,False,False),
-                  _pp.SeriesMetadata('side3Internal',0,False,False,False),
-                  _pp.SeriesMetadata('side3External',0,False,False,False),
-                  _pp.SeriesMetadata('arrow1',0,False,False,False),
-                  _pp.SeriesMetadata('arrow2',0,False,False,False),
-                  _pp.SeriesMetadata('arrow3',0,False,False,False)]
+    _nad_three_wt_metadata=[_pp.SeriesMetadata('id',0,True,False,False, False),
+                  _pp.SeriesMetadata('side1Internal',0,False,False,False, False),
+                  _pp.SeriesMetadata('side1External',0,False,False,False, False),
+                  _pp.SeriesMetadata('side2Internal',0,False,False,False, False),
+                  _pp.SeriesMetadata('side2External',0,False,False,False, False),
+                  _pp.SeriesMetadata('side3Internal',0,False,False,False, False),
+                  _pp.SeriesMetadata('side3External',0,False,False,False, False),
+                  _pp.SeriesMetadata('arrow1',0,False,False,False, False),
+                  _pp.SeriesMetadata('arrow2',0,False,False,False, False),
+                  _pp.SeriesMetadata('arrow3',0,False,False,False, False)]
 
-    _nad_injections_metadata=[_pp.SeriesMetadata('id',0,True,False,False),
-                  _pp.SeriesMetadata('labelInternal',0,False,False,False),
-                  _pp.SeriesMetadata('labelExternal',0,False,False,False),
-                  _pp.SeriesMetadata('arrow',0,False,False,False)]
+    _nad_injections_metadata=[_pp.SeriesMetadata('id',0,True,False,False, False),
+                  _pp.SeriesMetadata('labelInternal',0,False,False,False, False),
+                  _pp.SeriesMetadata('labelExternal',0,False,False,False, False),
+                  _pp.SeriesMetadata('arrow',0,False,False,False, False)]
 
-    _nad_descriptions_metadata=[_pp.SeriesMetadata('id',0,True,False,False),
-                  _pp.SeriesMetadata('type',0,False,False,False),
-                  _pp.SeriesMetadata('description',0,False,False,False)]
+    _nad_descriptions_metadata=[_pp.SeriesMetadata('id',0,True,False,False, False),
+                  _pp.SeriesMetadata('type',0,False,False,False, False),
+                  _pp.SeriesMetadata('description',0,False,False,False, False)]
 
-    _nad_bus_descriptions_metadata=[_pp.SeriesMetadata('id',0,True,False,False),
-                  _pp.SeriesMetadata('description',0,False,False,False)]
+    _nad_bus_descriptions_metadata=[_pp.SeriesMetadata('id',0,True,False,False, False),
+                  _pp.SeriesMetadata('description',0,False,False,False, False)]
 
-    _nad_bus_node_styles_metadata=[_pp.SeriesMetadata('id',0,True,False,False),
-                  _pp.SeriesMetadata('fill',0,False,False,False),
-                  _pp.SeriesMetadata('edge',0,False,False,False),
-                  _pp.SeriesMetadata('edge-width',0,False,False,False)]
+    _nad_bus_node_styles_metadata=[_pp.SeriesMetadata('id',0,True,False,False, False),
+                  _pp.SeriesMetadata('fill',0,False,False,False, False),
+                  _pp.SeriesMetadata('edge',0,False,False,False, False),
+                  _pp.SeriesMetadata('edge-width',0,False,False,False, False)]
 
-    _nad_edge_styles_metadata=[_pp.SeriesMetadata('id',0,True,False,False),
-                  _pp.SeriesMetadata('edge1',0,False,False,False),
-                  _pp.SeriesMetadata('width1',0,False,False,False),
-                  _pp.SeriesMetadata('dash1',0,False,False,False),
-                  _pp.SeriesMetadata('edge2',0,False,False,False),
-                  _pp.SeriesMetadata('width2',0,False,False,False),
-                  _pp.SeriesMetadata('dash2',0,False,False,False)]
+    _nad_edge_styles_metadata=[_pp.SeriesMetadata('id',0,True,False,False, False),
+                  _pp.SeriesMetadata('edge1',0,False,False,False, False),
+                  _pp.SeriesMetadata('width1',0,False,False,False, False),
+                  _pp.SeriesMetadata('dash1',0,False,False,False, False),
+                  _pp.SeriesMetadata('edge2',0,False,False,False, False),
+                  _pp.SeriesMetadata('width2',0,False,False,False, False),
+                  _pp.SeriesMetadata('dash2',0,False,False,False, False)]
 
-    _nad_three_wt_styles_metadata=[_pp.SeriesMetadata('id',0,True,False,False),
-                  _pp.SeriesMetadata('edge1',0,False,False,False),
-                  _pp.SeriesMetadata('width1',0,False,False,False),
-                  _pp.SeriesMetadata('dash1',0,False,False,False),
-                  _pp.SeriesMetadata('edge2',0,False,False,False),
-                  _pp.SeriesMetadata('width2',0,False,False,False),
-                  _pp.SeriesMetadata('dash2',0,False,False,False),
-                  _pp.SeriesMetadata('edge3',0,False,False,False),
-                  _pp.SeriesMetadata('width3',0,False,False,False),
-                  _pp.SeriesMetadata('dash3',0,False,False,False)]
+    _nad_three_wt_styles_metadata=[_pp.SeriesMetadata('id',0,True,False,False, False),
+                  _pp.SeriesMetadata('edge1',0,False,False,False, False),
+                  _pp.SeriesMetadata('width1',0,False,False,False, False),
+                  _pp.SeriesMetadata('dash1',0,False,False,False, False),
+                  _pp.SeriesMetadata('edge2',0,False,False,False, False),
+                  _pp.SeriesMetadata('width2',0,False,False,False, False),
+                  _pp.SeriesMetadata('dash2',0,False,False,False, False),
+                  _pp.SeriesMetadata('edge3',0,False,False,False, False),
+                  _pp.SeriesMetadata('width3',0,False,False,False, False),
+                  _pp.SeriesMetadata('dash3',0,False,False,False, False)]
 
 
     def __init__(self, branch_labels: Optional[DataFrame] = None, three_wt_labels: Optional[DataFrame] = None,

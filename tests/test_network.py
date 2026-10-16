@@ -3352,5 +3352,21 @@ def test_create_dc_detailed_network():
     n2 = pp.network.create_dc_detailed_dc_switch_2_nodes()
     assert 'Simple2NodesDcSwitch' == n2.id
 
+def test_column_deprecation_mechanism():
+    n = pp.network.create_eurostag_tutorial_example1_with_tie_lines_and_areas()
+    with pytest.warns(DeprecationWarning, match=re.escape('Column "dangling_line1_id" of TIE_LINE is deprecated')):
+        n.get_tie_lines()
+    with pytest.warns(DeprecationWarning, match=re.escape('Column "dangling_line1_id" of TIE_LINE is deprecated')):
+        n.get_tie_lines(all_attributes=True)
+    # no warning if no deprecated column is called
+    n.get_tie_lines(attributes=["name", "boundary_line1_id", "pairing_key"])
+
+    n.remove_elements("NHV1_NHV2_1")
+    with pytest.warns(DeprecationWarning, match=re.escape('Column "dangling_line1_id" is deprecated')):
+        n.create_tie_lines(id="NHV1_NHV2_1", dangling_line1_id="NHV1_XNODE1", dangling_line2_id="XNODE1_NHV2")
+    # no warning when calling with the up to date column name
+    n.remove_elements("NHV1_NHV2_1")
+    n.create_tie_lines(id="NHV1_NHV2_1", boundary_line1_id="NHV1_XNODE1", boundary_line2_id="XNODE1_NHV2")
+
 if __name__ == '__main__':
     unittest.main()
