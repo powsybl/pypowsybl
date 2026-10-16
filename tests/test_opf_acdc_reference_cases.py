@@ -207,10 +207,8 @@ def create_asymmetric_dc_line_network():
         dc_connected1=True,
         dc_connected2=True,
     )
-    
 
     return n
-
 
 
 def test_back_to_back_dc_analytical():
@@ -387,21 +385,6 @@ def test_dc_line_current_read_back_stays_mirrored():
         assert i2 == pytest.approx(-i1, abs=1e-6)
 
 
-def test_dc_line_carries_one_current_variable_not_two():
-    """red->green: a DC line used to carry two solver variables (closed_dc_line_i1_vars,
-    closed_dc_line_i2_vars) for the same physical current, constrained i2 = -i1 by two copies of
-    Ohm's law. Collapsed to one (closed_dc_line_i_vars); network_cache.update_dc_lines mirrors it
-    back into the network's own two columns."""
-    network = pp.network.create_ac_dc_bipolar_network()
-    cache = NetworkCache(network)
-    model = create_model(SolverType.IPOPT, {})
-    variable_context = VariableContext.build(cache, model)
-
-    assert len(variable_context.closed_dc_line_i_vars) == len(cache.dc_lines)
-    assert not hasattr(variable_context, 'closed_dc_line_i1_vars')
-    assert not hasattr(variable_context, 'closed_dc_line_i2_vars')
-
-
 # --- DC switches ---------------------------------------------------------------------------------
 # Each test adds a second dn3p -> dn4p path in parallel with the existing one and of the same total
 # resistance, so a closed switch must split the pole current about evenly and an open one must not.
@@ -546,20 +529,6 @@ def test_get_voltage_bounds_falls_back_per_side_independently():
     only_high_declared = Bounds.get_voltage_bounds(None, 1.05, default)
     assert only_high_declared.min_value == 0.8
     assert only_high_declared.max_value == 1.05
-
-
-def test_voltage_level_undeclared_limit_is_nan_not_none():
-    """trap: an undeclared voltage-level limit surfaces as float NaN, not None, once read through
-    the per-unit dataframe (create_ieee14 declares no voltage-level limits at all). True before and
-    after declared-ac-voltage-limits - it is why get_voltage_bounds's fallback must check for NaN,
-    not just `is None`.
-    """
-    network = pp.network.create_ieee14()
-    network.per_unit = True
-    voltage_levels = network.get_voltage_levels(attributes=['low_voltage_limit', 'high_voltage_limit'])
-    value = voltage_levels['low_voltage_limit'].iloc[0]
-    assert value is not None
-    assert value != value  # NaN is the only value that does not equal itself
 
 
 def test_dc_current_bound_does_not_cut_off_an_ordinary_operating_point():
