@@ -46,7 +46,7 @@ jobs:
       - name: Setup GraalVM
         uses: graalvm/setup-graalvm@60c26726de13f8b90771df4bc1641a52a3159994 # v1.5.2
         with:
-          java-version: '21'
+          java-version: '25'
           distribution: 'graalvm'
           github-token: ${{ github.token }}
 
@@ -355,7 +355,7 @@ jobs:
 
       - name: Install wheel
         run: |
-          WHEEL_FILE=$(ls /dist/*.whl | head -n 1)
+          WHEEL_FILE=$(ls dist/*.whl | head -n 1)
           python -m pip install "${WHEEL_FILE}[pandapower, opf]" --user
         working-directory: ./pypowsybl
 
@@ -485,7 +485,7 @@ jobs:
 
       - name: Install wheel
         run: |
-          WHEEL_FILE=$(ls /dist/*.whl | head -n 1)
+          WHEEL_FILE=$(ls dist/*.whl | head -n 1)
           python -m pip install "${WHEEL_FILE}[pandapower, opf]" --user
         working-directory: ./pypowsybl
 

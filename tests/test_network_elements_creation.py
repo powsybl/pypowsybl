@@ -315,6 +315,105 @@ NGEN_NHV1  2  2  1  1  0.5
     assert step1.rho == 0.5
 
 
+def test_ratio_tap_changers_creation_reactive_power_mode():
+    n = pn.create_eurostag_tutorial_example1_network()
+    rtc_df = dataframe_from_string("""
+id         target_deadband  regulation_mode  regulation_value  oltc  low_tap  tap  regulating  regulated_side
+NGEN_NHV1                2   REACTIVE_POWER                50  True        0    1        True             ONE
+""")
+
+    steps_df = dataframe_from_string("""
+id         b  g  r  x  rho
+NGEN_NHV1  2  2  1  1  0.5
+NGEN_NHV1  2  2  1  1  0.5
+""")
+
+    n.create_ratio_tap_changers(rtc_df, steps_df)
+
+    rtc = n.get_ratio_tap_changers(all_attributes=True).loc['NGEN_NHV1']
+    assert rtc.regulation_mode == 'REACTIVE_POWER'
+    assert rtc.regulation_value == 50
+    assert rtc.regulated_side == 'ONE'
+    assert rtc.regulating
+
+
+def test_overload_management_systems_creation():
+    n = pn.create_four_substations_node_breaker_network()
+    assert n.get_overload_management_systems().empty
+
+    oms_df = pd.DataFrame.from_records(index='id', data=[
+        {'id': 'OMS1', 'name': 'OMS 1', 'substation_id': 'S2',
+         'monitored_element_id': 'LINE_S2S3', 'monitored_element_side': 'ONE', 'enabled': True}])
+    trippings_df = pd.DataFrame.from_records(index='id', data=[
+        {'id': 'OMS1', 'tripping_key': 'trip_branch', 'name': 'branch tripping',
+         'tripping_type': 'BRANCH_TRIPPING', 'current_limit': 1000.0, 'open_action': True,
+         'element_to_operate_id': 'LINE_S2S3', 'side_to_operate': 'TWO'},
+        {'id': 'OMS1', 'tripping_key': 'trip_switch', 'name': 'switch tripping',
+         'tripping_type': 'SWITCH_TRIPPING', 'current_limit': 1200.0, 'open_action': True,
+         'element_to_operate_id': 'S2VL1_LINES2S3_BREAKER', 'side_to_operate': ''}])
+    n.create_overload_management_systems(oms_df, trippings_df)
+
+    oms = n.get_overload_management_systems().loc['OMS1']
+    assert oms['name'] == 'OMS 1'
+    assert oms.substation_id == 'S2'
+    assert oms.monitored_element_id == 'LINE_S2S3'
+    assert oms.monitored_element_side == 'ONE'
+    assert oms.enabled
+    assert oms.tripping_count == 2
+
+    trippings = n.get_overload_management_systems_trippings()
+    assert trippings.index.names == ['id', 'tripping_key']
+    assert len(trippings) == 2
+    branch_tripping = trippings.loc[('OMS1', 'trip_branch')]
+    assert branch_tripping['name'] == 'branch tripping'
+    assert branch_tripping.tripping_type == 'BRANCH_TRIPPING'
+    assert branch_tripping.current_limit == 1000.0
+    assert branch_tripping.open_action
+    assert branch_tripping.element_to_operate_id == 'LINE_S2S3'
+    assert branch_tripping.side_to_operate == 'TWO'
+    switch_tripping = trippings.loc[('OMS1', 'trip_switch')]
+    assert switch_tripping.tripping_type == 'SWITCH_TRIPPING'
+    assert switch_tripping.element_to_operate_id == 'S2VL1_LINES2S3_BREAKER'
+    assert switch_tripping.side_to_operate == ''
+
+
+def test_overload_management_systems_update():
+    n = pn.create_four_substations_node_breaker_network()
+    oms_df = pd.DataFrame.from_records(index='id', data=[
+        {'id': 'OMS1', 'substation_id': 'S2', 'monitored_element_id': 'LINE_S2S3', 'monitored_element_side': 'ONE'}])
+    trippings_df = pd.DataFrame.from_records(index='id', data=[
+        {'id': 'OMS1', 'tripping_key': 'trip_branch', 'tripping_type': 'BRANCH_TRIPPING', 'current_limit': 1000.0,
+         'open_action': True, 'element_to_operate_id': 'LINE_S2S3', 'side_to_operate': 'TWO'},
+        {'id': 'OMS1', 'tripping_key': 'trip_switch', 'tripping_type': 'SWITCH_TRIPPING', 'current_limit': 1200.0,
+         'open_action': True, 'element_to_operate_id': 'S2VL1_LINES2S3_BREAKER', 'side_to_operate': ''}])
+    n.create_overload_management_systems(oms_df, trippings_df)
+
+    n.update_overload_management_systems(id='OMS1', name='new name', enabled=False)
+    oms = n.get_overload_management_systems().loc['OMS1']
+    assert oms['name'] == 'new name'
+    assert not oms.enabled
+
+    n.update_overload_management_systems_trippings(id='OMS1', tripping_key='trip_branch', name='new branch name',
+                                                   current_limit=1100.0, open_action=False, side_to_operate='ONE')
+    n.update_overload_management_systems_trippings(pd.DataFrame(
+        index=pd.MultiIndex.from_tuples([('OMS1', 'trip_switch')], names=['id', 'tripping_key']),
+        data={'current_limit': [1300.0], 'element_to_operate_id': ['S2VL1_BBS_LINES2S3_DISCONNECTOR']}))
+    trippings = n.get_overload_management_systems_trippings()
+    branch_tripping = trippings.loc[('OMS1', 'trip_branch')]
+    assert branch_tripping['name'] == 'new branch name'
+    assert branch_tripping.current_limit == 1100.0
+    assert not branch_tripping.open_action
+    assert branch_tripping.side_to_operate == 'ONE'
+    switch_tripping = trippings.loc[('OMS1', 'trip_switch')]
+    assert switch_tripping.current_limit == 1300.0
+    assert switch_tripping.element_to_operate_id == 'S2VL1_BBS_LINES2S3_DISCONNECTOR'
+
+    with pytest.raises(PyPowsyblError, match="Tripping 'unknown' does not exist"):
+        n.update_overload_management_systems_trippings(id='OMS1', tripping_key='unknown', current_limit=1.0)
+    with pytest.raises(PyPowsyblError, match="Cannot set a side to operate on switch tripping"):
+        n.update_overload_management_systems_trippings(id='OMS1', tripping_key='trip_switch', side_to_operate='ONE')
+
+
 def test_phase_tap_changers_creation():
     n = pn.create_four_substations_node_breaker_network()
     n.create_2_windings_transformers(dataframe_from_string("""

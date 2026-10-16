@@ -26,7 +26,7 @@
 
     <properties>
         <commons-collections4.version>4.4</commons-collections4.version>
-        <graalvm.version>23.1.2</graalvm.version>
+        <graalvm.version>25.0.4</graalvm.version>
         <janino.version>3.1.0</janino.version>
         <mapdb.version>3.0.8</mapdb.version>
         <maven-dependency-plugin.version>3.6.0</maven-dependency-plugin.version>

@@ -999,6 +999,21 @@ def test_ratio_tap_changers():
     pd.testing.assert_frame_equal(expected, n.get_ratio_tap_changers(), check_dtype=False, atol=1e-2)
 
 
+def test_ratio_tap_changer_reactive_power_regulation():
+    n = pp.network.create_eurostag_tutorial_example1_network()
+    rtc = n.get_ratio_tap_changers(all_attributes=True).loc['NHV2_NLOAD']
+    assert rtc.regulation_mode == 'VOLTAGE'
+    assert rtc.regulation_value == pytest.approx(158.0, abs=1e-2)
+
+    update = pd.DataFrame(index=['NHV2_NLOAD'],
+                          columns=['regulating', 'regulation_mode', 'regulation_value'],
+                          data=[[False, 'REACTIVE_POWER', 100.0]])
+    n.update_ratio_tap_changers(update)
+    rtc = n.get_ratio_tap_changers(all_attributes=True).loc['NHV2_NLOAD']
+    assert rtc.regulation_mode == 'REACTIVE_POWER'
+    assert rtc.regulation_value == pytest.approx(100.0, abs=1e-2)
+
+
 def test_ratio_tap_changers_3_windings():
     n = pp.network.create_micro_grid_be_network()
     expected = pd.DataFrame(index=pd.Series(name='id', data=['b94318f6-6d24-4f56-96b9-df2531ad6543',

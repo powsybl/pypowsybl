@@ -7,15 +7,15 @@
  */
 package com.powsybl.dataframe.network.extensions;
 
-import com.powsybl.commons.PowsyblException;
 import com.powsybl.dataframe.SeriesMetadata;
 import com.powsybl.dataframe.network.adders.AbstractSimpleAdder;
+import com.powsybl.dataframe.network.adders.NetworkUtils;
 import com.powsybl.dataframe.network.adders.SeriesUtils;
 import com.powsybl.dataframe.update.DoubleSeries;
 import com.powsybl.dataframe.update.IntSeries;
 import com.powsybl.dataframe.update.StringSeries;
 import com.powsybl.dataframe.update.UpdatingDataframe;
-import com.powsybl.iidm.network.Generator;
+import com.powsybl.iidm.network.Injection;
 import com.powsybl.iidm.network.Network;
 import com.powsybl.iidm.network.extensions.ActivePowerControlAdder;
 
@@ -60,12 +60,8 @@ public class ActivePowerControlDataframeAdder extends AbstractSimpleAdder {
         }
 
         void create(Network network, int row) {
-            String generatorId = this.id.get(row);
-            Generator g = network.getGenerator(generatorId);
-            if (g == null) {
-                throw new PowsyblException("Invalid generator id : could not find " + generatorId);
-            }
-            var adder = g.newExtension(ActivePowerControlAdder.class);
+            Injection<?> injection = NetworkUtils.getGenOrBatteryOrThrow(network, this.id.get(row));
+            var adder = injection.newExtension(ActivePowerControlAdder.class);
             SeriesUtils.applyIfPresent(droop, row, adder::withDroop);
             SeriesUtils.applyBooleanIfPresent(participate, row, adder::withParticipate);
             SeriesUtils.applyIfPresent(participationFactor, row, adder::withParticipationFactor);

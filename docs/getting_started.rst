@@ -27,19 +27,18 @@ instructions on `github <https://github.com/powsybl/pypowsybl>`_.
 Basic usage
 -----------
 
-The main data type you will manipulate is the :class:`Network <pypowsybl.network.Network>`,
-defined in :mod:`pypowsybl.network` module.
+The main data type that you will manipulate is the :class:`Network <pypowsybl.network.Network>`,
+defined in the :mod:`pypowsybl.network` module.
 
 In order to create one, you can use one of the provided creation methods, for example
-you can create the well known IEEE 9-bus test case:
+you can create the well-known IEEE 9-bus test case:
 
 .. testcode::
 
     import pypowsybl.network as pn
     network = pn.create_ieee9()
 
-You can then start inspecting the content of the network,
-for example in order to get lines data:
+You can then start inspecting the contents of the network, for example in order to get line data:
 
 .. doctest::
     :options: +NORMALIZE_WHITESPACE
@@ -54,10 +53,10 @@ for example in order to get lines data:
     L5-4-0       1.00   8.50  0.0  0.000880  0.0  0.000880 NaN NaN NaN NaN NaN NaN               VL5               VL1   VL5_0   VL1_1        True        True
     L6-4-0       1.70   9.20  0.0  0.000790  0.0  0.000790 NaN NaN NaN NaN NaN NaN               VL6               VL1   VL6_0   VL1_1        True        True
 
-Each row of the obtained dataframe represents a line of the network.
+Each row of the resulting dataframe represents one line of the network.
 
 You may have noticed that the flows are :code:`NaN`. In order to compute them,
-you can run a loadflow using the :mod:`pypowsybl.loadflow` module:
+you can run a load flow using the :mod:`pypowsybl.loadflow` module:
 
 .. testcode::
 
@@ -80,14 +79,13 @@ Flow values are now available in the lines dataframe:
     L6-4-0 -30.54  30.70 -16.54   1.03
 
 You can also generate a single line diagram of one of the substations
-or voltage level, if you want to visualize the result:
+or voltage levels, if you want to visualize the result:
 
 .. code-block::
 
     >>> network.get_single_line_diagram('S1')
 
-This will produce the following SVG image, which will just display if you run
-inside a notebook:
+This will generate the following SVG image, which will be displayed automatically when running in a notebook:
 
 .. image:: _static/images/getting-started-sld.svg
    :class: forced-white-background
@@ -96,7 +94,10 @@ inside a notebook:
 Going further
 -------------
 
-For more advanced use cases and topical guides, please check out the :doc:`/user_guide/index`.
+For more advanced use cases and topic guides, please check out the :doc:`/user_guide/index`.
 
 For a comprehensive list of features and detailed description of methods,
 please check out the :doc:`/reference/index`.
+
+Some introductory notebooks are available on the organization Github page under the repository
+`pypowsybl-notebooks <https://github.com/powsybl/pypowsybl-notebooks>`_.

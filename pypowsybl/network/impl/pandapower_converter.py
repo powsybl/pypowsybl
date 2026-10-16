@@ -8,7 +8,7 @@ import math
 import typing
 from enum import Enum
 from importlib import util
-from typing import Dict
+from typing import Dict, Union
 
 import numpy as np
 import pandas as pd
@@ -171,9 +171,9 @@ def create_transformers(n: Network, n_pdp: pandapowerNet) -> None:
         rk = trafo_and_bus['vkr_percent'] / 100 * c
         zk = trafo_and_bus['vk_percent'] / 100 * c
         xk = np.sqrt(zk ** 2 - rk ** 2)
-        ym = trafo_and_bus['i0_percent'] / 100
+        ym = trafo_and_bus['i0_percent'] / 100 / c
         gm = trafo_and_bus['pfe_kw'] / (trafo_and_bus['sn_mva'] * 1000) / c
-        bm = -1 * np.sign(ym) * np.sqrt(ym ** 2 - gm ** 2)
+        bm = -1 * np.sign(ym) * np.sqrt(np.clip(ym ** 2 - gm ** 2, 0, None))
 
         zb_tr = (rated_u2 ** 2) / n_pdp.sn_mva
         r = rk * zb_tr / trafo_and_bus['parallel']
@@ -279,9 +279,13 @@ def _create_generators(n: Network, gen: DataFrame, bus: DataFrame, slack_weight_
             n.create_minmax_reactive_limits(id=gen_id, min_q=min_q, max_q=max_q)
 
 
+def get_scaling(df: DataFrame) -> Union[pd.Series, float]:
+    return df['scaling'].fillna(1.0) if 'scaling' in df.columns else 1.0
+
+
 def create_generator_target_p(gen_and_bus: DataFrame, generator_type: PandaPowerGeneratorType) -> pd.Series:
     return pd.Series([MIN_TARGET_P_TO_NOT_BE_DISCADED_FROM_ACTIVE_POWER_CONTROL] * len(
-        gen_and_bus)) if generator_type == PandaPowerGeneratorType.EXT_GRID else gen_and_bus['p_mw'] # keep a small value of target_p to avoid be discarded to slack distribution
+        gen_and_bus)) if generator_type == PandaPowerGeneratorType.EXT_GRID else gen_and_bus['p_mw'] * get_scaling(gen_and_bus) # keep a small value of target_p to avoid be discarded to slack distribution
 
 
 def create_generator_max_p(gen_and_bus: DataFrame, generator_type: PandaPowerGeneratorType) -> pd.Series:
@@ -297,8 +301,8 @@ def create_generator_min_p(gen_and_bus: DataFrame, generator_type: PandaPowerGen
 
 
 def create_generator_target_q(gen_and_bus: DataFrame, generator_type: PandaPowerGeneratorType) -> pd.Series:
-    return gen_and_bus[
-        'q_mvar'] if generator_type == PandaPowerGeneratorType.STATIC_GENERATOR and 'q_mvar' in gen_and_bus.columns else pd.Series(
+    return gen_and_bus['q_mvar'] * get_scaling(
+        gen_and_bus) if generator_type == PandaPowerGeneratorType.STATIC_GENERATOR and 'q_mvar' in gen_and_bus.columns else pd.Series(
         [0.0] * len(gen_and_bus))
 
 
@@ -328,8 +332,9 @@ def create_loads(n: Network, n_pdp: pandapowerNet) -> None:
         vl_id = build_voltage_level_id(n_pdp.bus.loc[n_pdp.load['bus'], 'vn_kv'], all_vn_kv=n_pdp.bus['vn_kv'])
         connectable_bus_id = build_bus_id(n_pdp.load['bus'].astype(str)).tolist()
         bus_id = np.where(n_pdp.load['in_service'], connectable_bus_id, "")
-        p0 = n_pdp.load['p_mw']
-        q0 = n_pdp.load['q_mvar']
+        scaling = get_scaling(n_pdp.load)
+        p0 = n_pdp.load['p_mw'] * scaling
+        q0 = n_pdp.load['q_mvar'] * scaling
         n.create_loads(id=load_id, name=name,
                        voltage_level_id=vl_id, connectable_bus_id=connectable_bus_id, bus_id=bus_id,
                        p0=p0, q0=q0)
