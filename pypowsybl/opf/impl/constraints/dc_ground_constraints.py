@@ -17,6 +17,10 @@ class DcGroundConstraints(Constraints):
     def add(self, parameters: ModelParameters, network_cache: NetworkCache, variable_context: VariableContext,
             model: Model) -> None:
         for row in network_cache.dc_grounds.itertuples(index=False):
+            if not row.connected:
+                continue
+
             dc_node_num = network_cache.dc_nodes.index.get_loc(row.dc_node_id)
             v_var = variable_context.v_dc_vars[dc_node_num]
+            # TODO: row.r is ignored, so a resistive or high-impedance ground acts as a solid one.
             model.add_linear_constraint(v_var, poi.Eq, 0.0)
