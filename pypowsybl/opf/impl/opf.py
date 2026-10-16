@@ -105,8 +105,10 @@ class OptimalPowerFlow:
                 cost_function: CostFunction = RedispatchingCostFunction(1.0, 1.0, 1.0)
             elif parameters.mode == OptimalPowerFlowMode.LOADFLOW:
                 cost_function = MinimizeAgainstReferenceCostFunction()
-            else:
+            elif parameters.mode == OptimalPowerFlowMode.ACDC:
                 cost_function = MinimizeDcLossesFunction()
+            else:
+                raise ValueError(f"Expected a valid OPF mode and got {parameters.mode}")
             model_parameters = ModelParameters(parameters.reactive_bounds_reduction,
                                                parameters.twt_split_shunt_admittance,
                                                Bounds(parameters.default_voltage_bounds[0], parameters.default_voltage_bounds[1]),
