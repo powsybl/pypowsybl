@@ -31,6 +31,5 @@ class DcSwitchConstraints(Constraints):
             i_var = variable_context.closed_dc_switch_i_vars[dc_switch_index]
 
             # i is oriented dc_node1 -> dc_node2; DcCurrentBalanceConstraints matches it.
-            # Not the (v1 - v2)/r - i = 0 form used by DcLineConstraints: a DC switch normally has
-            # r = 0, which that form divides by. This one degrades to v1 == v2.
+            # Same form as DcLineConstraints: a DC switch normally has r = 0, where it degrades to v1 == v2.
             model.add_linear_constraint(v1_var - v2_var - dc_switch_row.r * i_var, poi.Eq, 0.0)

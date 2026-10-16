@@ -11,7 +11,6 @@ import pyoptinterface as poi
 from pyoptinterface import ExprBuilder
 
 from pypowsybl.opf.impl.model.cost_function import CostFunction
-from pypowsybl.opf.impl.model.model import Model
 from pypowsybl.opf.impl.model.network_cache import NetworkCache
 from pypowsybl.opf.impl.model.variable_context import VariableContext
 from pypowsybl.opf.impl.util import ConverterStationRow
@@ -26,7 +25,7 @@ class RedispatchingCostFunction(CostFunction):
         self._target_p_l2_weight = target_p_l2_weight
         self._target_v_l2_weight = target_v_l2_weight
 
-    def create(self, network_cache: NetworkCache, variable_context: VariableContext, model: Model) -> ExprBuilder:
+    def create(self, network_cache: NetworkCache, variable_context: VariableContext) -> ExprBuilder:
         cost = poi.ExprBuilder()
         for gen_num, gen_row in enumerate(network_cache.generators.itertuples(index=False)):
             if gen_row.bus_id:

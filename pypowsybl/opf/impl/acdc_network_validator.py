@@ -120,6 +120,7 @@ def check_dc_components_have_a_power_balancing_v_dc_converter(
     components_with_a_converter: set = set()
     components_with_a_v_dc_converter: set = set()
     for converter in voltage_source_converters.itertuples():
+        # TODO: dc_connected1/2 is ignored, so a DC-disconnected V_DC converter still counts here and in the model.
         component = node_to_component.get(converter.dc_node1_id)
         if component is None:
             continue

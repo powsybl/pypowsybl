@@ -31,6 +31,5 @@ class DcLineConstraints(Constraints):
             i_var = variable_context.closed_dc_line_i_vars[dc_line_index]
 
             # i is oriented from dc_node1 to dc_node2.
-            i_eq = (v1_var - v2_var) / r - i_var
-
-            model.add_linear_constraint(i_eq, poi.Eq, 0.0)
+            # Multiplied by r rather than divided: r = 0 is a valid DC line and degrades to v1 == v2.
+            model.add_linear_constraint(v1_var - v2_var - r * i_var, poi.Eq, 0.0)

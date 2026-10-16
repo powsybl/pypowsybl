@@ -385,6 +385,19 @@ def test_dc_line_current_read_back_stays_mirrored():
         assert i2 == pytest.approx(-i1, abs=1e-6)
 
 
+def test_zero_resistance_dc_line_shorts_its_two_dc_nodes():
+    """powsybl-core accepts r = 0 on a DC line; Ohm's law must not divide by it."""
+    n = pp.network.create_ac_dc_bipolar_network()
+    n.update_dc_lines(id='dl3Gp', r=0.0)
+
+    assert run_acdc(n)
+
+    dc_line = n.get_dc_lines().loc['dl3Gp']
+    voltages = n.get_dc_nodes()['v']
+    assert voltages[dc_line['dc_node1_id']] == pytest.approx(voltages[dc_line['dc_node2_id']], abs=1e-6)
+    assert dc_line['i1'] != pytest.approx(0.0, abs=1.0)
+
+
 # --- DC switches ---------------------------------------------------------------------------------
 # Each test adds a second dn3p -> dn4p path in parallel with the existing one and of the same total
 # resistance, so a closed switch must split the pole current about evenly and an open one must not.

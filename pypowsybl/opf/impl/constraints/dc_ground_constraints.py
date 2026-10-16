@@ -22,4 +22,5 @@ class DcGroundConstraints(Constraints):
 
             dc_node_num = network_cache.dc_nodes.index.get_loc(row.dc_node_id)
             v_var = variable_context.v_dc_vars[dc_node_num]
+            # TODO: row.r is ignored, so a resistive or high-impedance ground acts as a solid one.
             model.add_linear_constraint(v_var, poi.Eq, 0.0)

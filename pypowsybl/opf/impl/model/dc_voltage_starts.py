@@ -40,6 +40,7 @@ def dc_voltage_differences(network_cache: NetworkCache) -> list[VoltageDifferenc
 def propagate_dc_voltages(differences: list[VoltageDifference],
                           known: dict[str, float]) -> dict[str, float]:
     """Extend the known voltages to every node the differences reach."""
+    # TODO: rescans every edge until stable, once per anchor; use a BFS over an adjacency list for large DC grids.
     voltages = dict(known)
     changed = True
     while changed:

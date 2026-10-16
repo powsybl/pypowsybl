@@ -75,3 +75,20 @@ def test_run_ac_leaves_per_unit_false_after_a_normal_run():
     network = pp.network.create_ieee14()
     assert pp.opf.run_ac(network)
     assert network.per_unit is False
+
+
+def test_network_cache_restores_per_unit_when_its_construction_raises(monkeypatch):
+    """red->green: NetworkCache switched the network to per-unit in __init__, so an exception while
+    building the cache - before __enter__/__exit__ ever ran - left it stuck in per-unit mode."""
+    from pypowsybl.opf.impl.model.network_cache import NetworkCache
+
+    def raising_build(network):
+        raise RuntimeError("stubbed build failure")
+
+    monkeypatch.setattr(NetworkCache, '_build_dc_grounds', staticmethod(raising_build))
+
+    network = pp.network.create_ieee14()
+    with pytest.raises(RuntimeError, match="stubbed build failure"):
+        pp.opf.run_ac(network)
+
+    assert network.per_unit is False

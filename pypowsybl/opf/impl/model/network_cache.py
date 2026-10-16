@@ -18,39 +18,46 @@ from pypowsybl.opf.impl.model.bounds import Bounds
 class NetworkCache:
     def __init__(self, network: Network) -> None:
         self._network = network
-        self._old_per_unit = self._network.per_unit
-        self._network.per_unit = True
-        self._voltage_levels = self._build_voltage_levels(network)
-        self._buses = self._build_buses(network, self._voltage_levels)
-        self._generators = self._build_generators(network, self.buses)
-        self._loads = self._build_loads(network, self.buses)
-        self._shunts = self._build_shunt_compensators(network, self.buses)
-        self._static_var_compensators = self._build_static_var_compensators(network, self.buses)
-        self._vsc_converter_stations = self._build_vsc_converter_stations(network, self.buses)
-        self._lcc_converter_stations = self._build_lcc_converter_stations(network, self.buses)
-        self._hvdc_lines = self._build_hvdc_lines(network, self._vsc_converter_stations, self._lcc_converter_stations, self.buses)
-        self._lines = self._build_lines(network, self.buses)
-        self._transformers_2w = self._build_2w_transformers(network, self.buses)
-        self._transformers_3w = self._build_3w_transformers(network, self.buses)
-        self._branches = self._build_branches(network, self.buses)
-        self._boundary_lines = self._build_boundary_lines(network, self.buses)
-        self._batteries = self._build_batteries(network, self.buses)
-        self._current_limits1, self._current_limits2 = self._build_current_limits(network)
-        self._slack_terminal = self._build_stack_terminal(network, self.buses)
-        self._reactive_capability_curve_points = self._build_reactive_capability_curve_points(network, self._generators, self._vsc_converter_stations)
-        self._dc_buses = self._build_dc_buses(network)
-        self._dc_nodes = self._build_dc_nodes(network, self.dc_buses)
-        self._dc_lines = self._build_dc_lines(network)
-        self._dc_switches = self._build_dc_switches(network)
-        self._voltage_source_converters = self._build_voltage_source_converters(network)
-        self._dc_grounds = self._build_dc_grounds(network)
+        self._old_per_unit = None
+        old_per_unit = network.per_unit
+        network.per_unit = True
+        try:
+            self._voltage_levels = self._build_voltage_levels(network)
+            self._buses = self._build_buses(network, self._voltage_levels)
+            self._generators = self._build_generators(network, self.buses)
+            self._loads = self._build_loads(network, self.buses)
+            self._shunts = self._build_shunt_compensators(network, self.buses)
+            self._static_var_compensators = self._build_static_var_compensators(network, self.buses)
+            self._vsc_converter_stations = self._build_vsc_converter_stations(network, self.buses)
+            self._lcc_converter_stations = self._build_lcc_converter_stations(network, self.buses)
+            self._hvdc_lines = self._build_hvdc_lines(network, self._vsc_converter_stations, self._lcc_converter_stations, self.buses)
+            self._lines = self._build_lines(network, self.buses)
+            self._transformers_2w = self._build_2w_transformers(network, self.buses)
+            self._transformers_3w = self._build_3w_transformers(network, self.buses)
+            self._branches = self._build_branches(network, self.buses)
+            self._boundary_lines = self._build_boundary_lines(network, self.buses)
+            self._batteries = self._build_batteries(network, self.buses)
+            self._current_limits1, self._current_limits2 = self._build_current_limits(network)
+            self._slack_terminal = self._build_stack_terminal(network, self.buses)
+            self._reactive_capability_curve_points = self._build_reactive_capability_curve_points(network, self._generators, self._vsc_converter_stations)
+            self._dc_buses = self._build_dc_buses(network)
+            self._dc_nodes = self._build_dc_nodes(network, self.dc_buses)
+            self._dc_lines = self._build_dc_lines(network)
+            self._dc_switches = self._build_dc_switches(network)
+            self._voltage_source_converters = self._build_voltage_source_converters(network)
+            self._dc_grounds = self._build_dc_grounds(network)
+        finally:
+            network.per_unit = old_per_unit
 
     def __enter__(self) -> 'NetworkCache':
+        self._old_per_unit = self._network.per_unit
+        self._network.per_unit = True
         return self
 
     def __exit__(self, exc_type: object, exc_value: object, traceback: object) -> None:
         # TODO go all the way with context: move construction to __enter__ and check that the object is
         # active in all update* methods.
+        assert self._old_per_unit is not None
         self._network.per_unit = self._old_per_unit
 
     @staticmethod
