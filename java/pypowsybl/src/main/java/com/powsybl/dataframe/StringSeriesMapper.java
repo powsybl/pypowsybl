@@ -41,7 +41,12 @@ public class StringSeriesMapper<T, C> implements SeriesMapper<T, C> {
     }
 
     public StringSeriesMapper(String name, boolean index, Function<T, String> value, BiConsumer<T, String> updater, boolean defaultAttribute) {
-        this.metadata = new SeriesMetadata(index, name, updater != null, SeriesDataType.STRING, defaultAttribute);
+        this(name, index, value, updater, defaultAttribute, false);
+    }
+
+    public StringSeriesMapper(String name, boolean index, Function<T, String> value, BiConsumer<T, String> updater,
+                              boolean defaultAttribute, boolean deprecated) {
+        this.metadata = new SeriesMetadata(index, name, updater != null, SeriesDataType.STRING, defaultAttribute, deprecated);
         this.updater = updater;
         this.value = value;
     }
