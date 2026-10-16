@@ -18,6 +18,7 @@ from pypowsybl.opf.impl.constraints.branch_flow_constraints import BranchFlowCon
 from pypowsybl.opf.impl.constraints.dc_current_balance_constraints import DcCurrentBalanceConstraints
 from pypowsybl.opf.impl.constraints.dc_ground_constraints import DcGroundConstraints
 from pypowsybl.opf.impl.constraints.dc_line_constraints import DcLineConstraints
+from pypowsybl.opf.impl.constraints.dc_switch_constraints import DcSwitchConstraints
 from pypowsybl.opf.impl.constraints.power_balance_constraints import PowerBalanceConstraints
 from pypowsybl.opf.impl.constraints.voltage_source_converter_constraints import VoltageSourceConverterConstraints
 from pypowsybl.opf.impl.costs.minimize_dc_losses import MinimizeDcLossesFunction
@@ -696,7 +697,7 @@ def _solve_with_minimize_dc_losses(network):
     with NetworkCache(network) as cache:
         variable_bounds = [BusVoltageBounds(), SlackBusAngleBounds(), GeneratorPowerBounds(),
                             VoltageSourceConverterPowerBounds(), DcNodeVoltageBounds(), DcLineCurrentBounds()]
-        constraints = [BranchFlowConstraints(), PowerBalanceConstraints(), DcLineConstraints(),
+        constraints = [BranchFlowConstraints(), PowerBalanceConstraints(), DcLineConstraints(), DcSwitchConstraints(),
                        VoltageSourceConverterConstraints(), DcCurrentBalanceConstraints(), DcGroundConstraints()]
         model_parameters = ModelParameters(0.1, False, Bounds(0.8, 1.2), SolverType.IPOPT, {})
         opf_model = OpfModel.build(cache, model_parameters, variable_bounds, constraints, MinimizeDcLossesFunction())
@@ -713,21 +714,44 @@ def test_loss_objective_is_resistance_weighted_and_includes_converter_losses():
                                               switching_loss=[0.1, 0.1], resistive_loss=[0.2, 0.2])
 
     cache, opf_model = _solve_with_minimize_dc_losses(network)
-    vc = opf_model.variable_context
 
+    line_loss, switch_loss, converter_loss = _physical_dc_losses(cache, opf_model)
+    objective = opf_model.model.get_model_attribute(poi.ModelAttribute.ObjectiveValue)
+    assert objective == pytest.approx(line_loss + switch_loss + converter_loss, rel=1e-6)
+
+
+def test_loss_objective_includes_resistive_closed_dc_switch_losses():
+    """red->green: the objective used to sum line and converter losses only, so a resistive closed
+    DC switch dissipated without being counted."""
+    network = create_bipolar_network_with_parallel_switch_path(switch_open=False, switch_r_ohm=0.05)
+
+    cache, opf_model = _solve_with_minimize_dc_losses(network)
+
+    line_loss, switch_loss, converter_loss = _physical_dc_losses(cache, opf_model)
+    objective = opf_model.model.get_model_attribute(poi.ModelAttribute.ObjectiveValue)
+    assert switch_loss > 0.0
+    assert objective == pytest.approx(line_loss + switch_loss + converter_loss, rel=1e-9)
+
+
+def _physical_dc_losses(cache, opf_model):
+    """Line, switch and converter losses at the solution, computed element by element in per unit."""
+    vc = opf_model.variable_context
+    value = opf_model.model.get_value
     line_loss = sum(
-        row.r * opf_model.model.get_value(vc.closed_dc_line_i_vars[vc.dc_line_num_2_index[num]]) ** 2
+        row.r * value(vc.closed_dc_line_i_vars[vc.dc_line_num_2_index[num]]) ** 2
         for num, row in enumerate(cache.dc_lines.itertuples())
+    )
+    switch_loss = sum(
+        row.r * value(vc.closed_dc_switch_i_vars[vc.dc_switch_num_2_index[num]]) ** 2
+        for num, row in enumerate(cache.dc_switches.itertuples()) if not row.open
     )
     converter_loss = sum(
         row.idle_loss
-        + row.switching_loss * abs(opf_model.model.get_value(vc.conv_i_vars[num]))
-        + row.resistive_loss * opf_model.model.get_value(vc.conv_i_vars[num]) ** 2
+        + row.switching_loss * abs(value(vc.conv_i_vars[num]))
+        + row.resistive_loss * value(vc.conv_i_vars[num]) ** 2
         for num, row in enumerate(cache.voltage_source_converters.itertuples())
     )
-
-    objective = opf_model.model.get_model_attribute(poi.ModelAttribute.ObjectiveValue)
-    assert objective == pytest.approx(line_loss + converter_loss, rel=1e-6)
+    return line_loss, switch_loss, converter_loss
 
 
 # --- declared converter power limits -----------------------------------------------------------------

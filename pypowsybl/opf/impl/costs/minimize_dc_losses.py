@@ -17,22 +17,9 @@ class MinimizeDcLossesFunction(CostFunction):
         super().__init__('Minimal Dc Losses')
 
     def create(self, network_cache: NetworkCache, variable_context: VariableContext) -> ExprBuilder:
+        # By Tellegen's theorem, the AC power drawn by all converters equals what the DC system dissipates at any
+        # feasible point: converter losses plus r*i^2 in every DC line and switch (grounds sit at 0 V).
         cost = poi.ExprBuilder()
-        for dc_line_num, dc_line_row in enumerate(network_cache.dc_lines.itertuples()):
-            dc_line_index = variable_context.dc_line_num_2_index[dc_line_num]
-            if dc_line_index == -1:
-                continue
-            i_var = variable_context.closed_dc_line_i_vars[dc_line_index]
-            cost += dc_line_row.r * i_var**2
-
-        for conv_num, conv_row in enumerate(network_cache.voltage_source_converters.itertuples()):
-            conv_index = variable_context.conv_num_2_index[conv_num]
-            if conv_index == -1:
-                continue
-            p_var = variable_context.conv_p_vars[conv_index]
-            i_var = variable_context.conv_i_vars[conv_index]
-            v1_var = variable_context.v_dc_vars[network_cache.dc_nodes.index.get_loc(conv_row.dc_node1_id)]
-            v2_var = variable_context.v_dc_vars[network_cache.dc_nodes.index.get_loc(conv_row.dc_node2_id)]
-            # Converter losses read from the power balance constraint (P_loss = P_AC + P_DC), which keeps the cost quadratic.
-            cost += p_var + i_var * (v1_var - v2_var)
+        for conv_p_var in variable_context.conv_p_vars:
+            cost += conv_p_var
         return cost

@@ -6,6 +6,7 @@
 # SPDX-License-Identifier: MPL-2.0
 #
 import math
+from typing import Optional
 
 import pandas as pd
 from pandas import DataFrame
@@ -18,7 +19,7 @@ from pypowsybl.opf.impl.model.bounds import Bounds
 class NetworkCache:
     def __init__(self, network: Network) -> None:
         self._network = network
-        self._old_per_unit = None
+        self._old_per_unit: Optional[bool] = None  # None outside the with block
         old_per_unit = network.per_unit
         network.per_unit = True
         try:
@@ -50,6 +51,8 @@ class NetworkCache:
             network.per_unit = old_per_unit
 
     def __enter__(self) -> 'NetworkCache':
+        if self._old_per_unit is not None:
+            raise RuntimeError("NetworkCache is not reentrant")
         self._old_per_unit = self._network.per_unit
         self._network.per_unit = True
         return self
@@ -57,8 +60,10 @@ class NetworkCache:
     def __exit__(self, exc_type: object, exc_value: object, traceback: object) -> None:
         # TODO go all the way with context: move construction to __enter__ and check that the object is
         # active in all update* methods.
-        assert self._old_per_unit is not None
+        if self._old_per_unit is None:
+            raise RuntimeError("NetworkCache exited without being entered")
         self._network.per_unit = self._old_per_unit
+        self._old_per_unit = None
 
     @staticmethod
     def _filter_injections(injections: DataFrame, buses: DataFrame) -> DataFrame:
