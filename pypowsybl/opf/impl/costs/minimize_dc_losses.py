@@ -5,7 +5,7 @@
 # SPDX-License-Identifier: MPL-2.0
 #
 import pyoptinterface as poi
-from pyoptinterface import ExprBuilder, nl
+from pyoptinterface import ExprBuilder
 
 from pypowsybl.opf.impl.model.cost_function import CostFunction
 from pypowsybl.opf.impl.model.model import Model
@@ -30,12 +30,10 @@ class MinimizeDcLossesFunction(CostFunction):
             conv_index = variable_context.conv_num_2_index[conv_num]
             if conv_index == -1:
                 continue
+            p_var = variable_context.conv_p_vars[conv_index]
             i_var = variable_context.conv_i_vars[conv_index]
-            # switching_loss*|i| is not a polynomial; needs its own variable tied by an nl constraint.
-            conv_loss_var = model.add_m_variables(1, name=f'conv_loss_{conv_num}')[0]
-            with nl.graph():
-                i_dc_var = nl.abs(i_var)
-                p_loss = conv_row.idle_loss + conv_row.switching_loss * i_dc_var + conv_row.resistive_loss * nl.pow(i_dc_var, 2)
-                model.add_nl_constraint(conv_loss_var - p_loss, poi.Eq, 0.0)
-            cost += conv_loss_var
+            v1_var = variable_context.v_dc_vars[network_cache.dc_nodes.index.get_loc(conv_row.dc_node1_id)]
+            v2_var = variable_context.v_dc_vars[network_cache.dc_nodes.index.get_loc(conv_row.dc_node2_id)]
+            # Converter losses read from the power balance constraint (P_loss = P_AC + P_DC), which keeps the cost quadratic.
+            cost += p_var + i_var * (v1_var - v2_var)
         return cost
