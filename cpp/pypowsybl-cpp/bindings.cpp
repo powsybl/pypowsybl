@@ -1070,6 +1070,7 @@ PYBIND11_MODULE(_pypowsybl, m) {
 
     py::class_<pypowsybl::SeriesMetadata>(m, "SeriesMetadata", "Metadata about one series")
             .def(py::init<const std::string&, int, bool, bool, bool, bool>())
+            .def(py::init<const std::string&, int, bool, bool, bool>())
             .def_property_readonly("name", &pypowsybl::SeriesMetadata::name, "Name of this series.")
             .def_property_readonly("type", &pypowsybl::SeriesMetadata::type)
             .def_property_readonly("is_index", &pypowsybl::SeriesMetadata::isIndex)

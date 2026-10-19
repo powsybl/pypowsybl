@@ -292,6 +292,10 @@ public:
         isDeprecated_(isDeprecated) {
     }
 
+    SeriesMetadata(const std::string& name, int type, bool isIndex, bool isModifiable, bool isDefault):
+        SeriesMetadata(name, type, isIndex, isModifiable, isDefault, false) {
+    }
+
     const std::string& name() const { return name_; }
     int type() const { return type_; }
     bool isIndex() const { return isIndex_; }

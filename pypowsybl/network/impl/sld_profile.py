@@ -15,21 +15,21 @@ class SldProfile:
     """
     This class represents parameters to customize a single line diagram (labels, styles and arrows)."""
 
-    _sld_labels_metadata=[_pp.SeriesMetadata('id',0,True,False,False, False),
-                  _pp.SeriesMetadata('label',0,False,False,False, False),
-                  _pp.SeriesMetadata('additional_label',0,False,False,False, False)]
+    _sld_labels_metadata=[_pp.SeriesMetadata('id',0,True,False,False),
+                          _pp.SeriesMetadata('label',0,False,False,False),
+                          _pp.SeriesMetadata('additional_label',0,False,False,False)]
 
-    _sld_feeders_info_metadata=[_pp.SeriesMetadata('id',0,True,False,False, False),
-                  _pp.SeriesMetadata('type',0,False,False,False, False),
-                  _pp.SeriesMetadata('side',0,False,False,False, False),
-                  _pp.SeriesMetadata('direction',0,False,False,False, False),
-                  _pp.SeriesMetadata('label',0,False,False,False, False)]
+    _sld_feeders_info_metadata=[_pp.SeriesMetadata('id',0,True,False,False),
+                  _pp.SeriesMetadata('type',0,False,False,False),
+                  _pp.SeriesMetadata('side',0,False,False,False),
+                  _pp.SeriesMetadata('direction',0,False,False,False),
+                  _pp.SeriesMetadata('label',0,False,False,False)]
 
-    _sld_style_metadata=[_pp.SeriesMetadata('id',0,True,False,False, False),
-                  _pp.SeriesMetadata('color',0,False,False,False, False),
-                  _pp.SeriesMetadata('bus_width',0,False,False,False, False),
-                  _pp.SeriesMetadata('width',0,False,False,False, False),
-                  _pp.SeriesMetadata('dash',0,False,False,False, False)]
+    _sld_style_metadata=[_pp.SeriesMetadata('id',0,True,False,False),
+                  _pp.SeriesMetadata('color',0,False,False,False),
+                  _pp.SeriesMetadata('bus_width',0,False,False,False),
+                  _pp.SeriesMetadata('width',0,False,False,False),
+                  _pp.SeriesMetadata('dash',0,False,False,False)]
 
     def __init__(self, labels: Optional[DataFrame] = None, feeders_info: Optional[DataFrame] = None, styles: Optional[DataFrame] = None):
         self._labels = labels
