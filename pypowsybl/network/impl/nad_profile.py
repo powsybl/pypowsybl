@@ -73,6 +73,7 @@ class NadProfile:
                   _pp.SeriesMetadata('width3',0,False,False,False),
                   _pp.SeriesMetadata('dash3',0,False,False,False)]
 
+
     def __init__(self, branch_labels: Optional[DataFrame] = None, three_wt_labels: Optional[DataFrame] = None,
                  injections_labels: Optional[DataFrame] = None, bus_descriptions: Optional[DataFrame] = None,
                  vl_descriptions: Optional[DataFrame] = None, bus_node_styles: Optional[DataFrame] = None,

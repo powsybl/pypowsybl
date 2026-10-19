@@ -628,8 +628,8 @@ class Network:  # pylint: disable=too-many-public-methods
                   _pp.SeriesMetadata('y',1,False,False,False),
                   _pp.SeriesMetadata('legend_shift_x',1,False,False,False),
                   _pp.SeriesMetadata('legend_shift_y',1,False,False,False),
-                  _pp.SeriesMetadata('legend_connection_shift_x',1,False,False, False),
-                  _pp.SeriesMetadata('legend_connection_shift_y',1,False,False, False)]
+                  _pp.SeriesMetadata('legend_connection_shift_x',1,False,False,False),
+                  _pp.SeriesMetadata('legend_connection_shift_y',1,False,False,False)]
         return _create_c_dataframe(df, nad_positions_metadata)
 
     def get_network_area_diagram(self, voltage_level_ids: Optional[Union[str, List[str]]] = None, depth: int = 0,
@@ -1793,7 +1793,7 @@ class Network:  # pylint: disable=too-many-public-methods
         .. deprecated:: 1.15.0
             Use :meth:`get_boundary_lines` instead.
         """
-        warnings.warn("get_dangling_lines is deprecated, use get_boundary_lines instead.", DeprecationWarning, stacklevel=1)
+        warnings.warn("get_dangling_lines is deprecated, use get_boundary_lines instead.", DeprecationWarning)
         return self.get_boundary_lines(all_attributes, attributes, **kwargs)
 
     def get_boundary_lines_generation(self, all_attributes: bool = False, attributes: Optional[List[str]] = None,
