@@ -623,13 +623,13 @@ class Network:  # pylint: disable=too-many-public-methods
                                            None if nad_profile is None else nad_profile._create_nad_three_wt_styles_c_dataframe()) # pylint: disable=protected-access
 
     def _create_nad_positions_c_dataframe(self, df: DataFrame) -> _pp.Dataframe:
-        nad_positions_metadata=[_pp.SeriesMetadata('id',0,True,False,False, False),
-                  _pp.SeriesMetadata('x',1,False,False,False, False),
-                  _pp.SeriesMetadata('y',1,False,False,False, False),
-                  _pp.SeriesMetadata('legend_shift_x',1,False,False,False, False),
-                  _pp.SeriesMetadata('legend_shift_y',1,False,False,False, False),
-                  _pp.SeriesMetadata('legend_connection_shift_x',1,False,False,False, False),
-                  _pp.SeriesMetadata('legend_connection_shift_y',1,False,False,False, False)]
+        nad_positions_metadata=[_pp.SeriesMetadata('id',0,True,False,False),
+                  _pp.SeriesMetadata('x',1,False,False,False),
+                  _pp.SeriesMetadata('y',1,False,False,False),
+                  _pp.SeriesMetadata('legend_shift_x',1,False,False,False),
+                  _pp.SeriesMetadata('legend_shift_y',1,False,False,False),
+                  _pp.SeriesMetadata('legend_connection_shift_x',1,False,False, False),
+                  _pp.SeriesMetadata('legend_connection_shift_y',1,False,False, False)]
         return _create_c_dataframe(df, nad_positions_metadata)
 
     def get_network_area_diagram(self, voltage_level_ids: Optional[Union[str, List[str]]] = None, depth: int = 0,
