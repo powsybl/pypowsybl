@@ -1,3 +1,4 @@
+import typing
 from logging import Logger
 from typing import ClassVar, Dict, Iterator, List, Sequence, Optional, Union, Any
 from numpy import ndarray
@@ -593,7 +594,10 @@ class SeriesArray:
     def __getitem__(self) -> Series: ...
 
 class SeriesMetadata:
+    @typing.overload
     def __init__(self, arg0: str, arg1: int, arg2: bool, arg3: bool, arg4: bool, arg5: bool) -> None: ...
+    @typing.overload
+    def __init__(self, arg0: str, arg1: int, arg2: bool, arg3: bool, arg4: bool) -> None: ...
     @property
     def is_index(self) -> bool: ...
     @property
