@@ -330,6 +330,7 @@ typedef struct series_metadata_struct {
     unsigned char  is_index;
     unsigned char  is_modifiable;
     unsigned char  is_default;
+    unsigned char  is_deprecated;
 } series_metadata;
 
 /**

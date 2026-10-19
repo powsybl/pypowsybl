@@ -1028,21 +1028,6 @@ public final class NetworkCFunctions {
         UnmanagedMemory.free(metadata.getAttributesMetadata());
     }
 
-    private static void createSeriesMetadata(List<SeriesMetadata> metadata, DataframeMetadataPointer cMetadata) {
-        SeriesMetadataPointer seriesMetadataPtr = UnmanagedMemory.calloc(metadata.size() * SizeOf.get(SeriesMetadataPointer.class));
-        for (int i = 0; i < metadata.size(); i++) {
-            SeriesMetadata colMetadata = metadata.get(i);
-            SeriesMetadataPointer metadataPtr = seriesMetadataPtr.addressOf(i);
-            metadataPtr.setName(CTypeUtil.toCharPtr(colMetadata.getName()));
-            metadataPtr.setType(convert(colMetadata.getType()));
-            metadataPtr.setIndex(colMetadata.isIndex());
-            metadataPtr.setModifiable(colMetadata.isModifiable());
-            metadataPtr.setDefault(colMetadata.isDefaultAttribute());
-        }
-        cMetadata.setAttributesCount(metadata.size());
-        cMetadata.setAttributesMetadata(seriesMetadataPtr);
-    }
-
     @CEntryPoint(name = "updateNetworkElementsExtensionsWithSeries")
     public static void updateNetworkElementsExtensionsWithSeries(IsolateThread thread, ObjectHandle networkHandle, CCharPointer namePtr,
                                                                  CCharPointer tableNamePtr, DataframePointer dataframe,
@@ -2133,7 +2118,7 @@ public final class NetworkCFunctions {
                 DataframeMetadataPointer dataframeMetadataArray = UnmanagedMemory.calloc(metadata.size() * SizeOf.get(DataframeMetadataPointer.class));
                 int i = 0;
                 for (List<SeriesMetadata> dataframeMetadata : metadata) {
-                    createSeriesMetadata(dataframeMetadata, dataframeMetadataArray.addressOf(i));
+                    CTypeUtil.createSeriesMetadata(dataframeMetadata, dataframeMetadataArray.addressOf(i));
                     i++;
                 }
                 DataframesMetadataPointer res = UnmanagedMemory.calloc(SizeOf.get(DataframesMetadataPointer.class));

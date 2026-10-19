@@ -913,6 +913,12 @@ public final class PyPowsyblApiHeader {
         @CField("is_default")
         void setDefault(boolean attDefault);
 
+        @CField("is_deprecated")
+        boolean isDeprecated();
+
+        @CField("is_deprecated")
+        void setDeprecated(boolean deprecated);
+
         SeriesMetadataPointer addressOf(int index);
     }
 

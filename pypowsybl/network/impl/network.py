@@ -740,13 +740,25 @@ class Network:  # pylint: disable=too-many-public-methods
         if all_attributes and len(attributes) > 0:
             raise RuntimeError('parameters "all_attributes" and "attributes" are mutually exclusive')
 
+        metadata = _pp.get_network_elements_dataframe_metadata(element_type)
         if kwargs:
-            metadata = _pp.get_network_elements_dataframe_metadata(element_type)
             df = _adapt_df_or_kwargs(metadata, None, **kwargs)
             elements_array = _create_c_dataframe(df, metadata)
-
         else:
             elements_array = None
+
+        match filter_attributes:
+            case _pp.FilterAttributesType.DEFAULT_ATTRIBUTES:
+                filtered_metadata = [s for s in metadata if s.is_default]
+            case _pp.FilterAttributesType.SELECTION_ATTRIBUTES:
+                filtered_metadata = [s for s in metadata if s.name in attributes]
+            case _:
+                filtered_metadata = metadata
+        for s in filtered_metadata:
+            if s.is_deprecated:
+                warnings.warn(f'Column "{s.name}" of {element_type.name} is deprecated, please refer to the '
+                              f'documentation to replace it.', DeprecationWarning, stacklevel=2)
+
         series_array = _pp.create_network_elements_series_array(self._handle, element_type, filter_attributes,
                                                                 attributes, elements_array, self._per_unit,
                                                                 self._nominal_apparent_power)
@@ -6537,19 +6549,6 @@ class Network:  # pylint: disable=too-many-public-methods
                 network.create_tie_lines(id='tie_line_1', boundary_line1_id='BL-1', boundary_line2_id='BL-2')
 
         """
-        if df is not None:
-            if "dangling_line1_id" in df.columns:
-                warnings.warn("dangling_line1_id is deprecated, use boundary_line1_id instead", DeprecationWarning)
-                df = df.rename(columns={'dangling_line1_id': 'boundary_line1_id'})
-            if "dangling_line2_id" in df.columns:
-                warnings.warn("dangling_line2_id is deprecated, use boundary_line2_id instead", DeprecationWarning)
-                df = df.rename(columns={'dangling_line2_id': 'boundary_line2_id'})
-        if kwargs.get('dangling_line1_id') is not None:
-            warnings.warn("dangling_line1_id is deprecated, use boundary_line1_id instead", DeprecationWarning)
-            kwargs['boundary_line1_id'] = kwargs.pop('dangling_line1_id')
-        if kwargs.get('dangling_line2_id') is not None:
-            warnings.warn("dangling_line2_id is deprecated, use boundary_line2_id instead", DeprecationWarning)
-            kwargs['boundary_line2_id'] = kwargs.pop('dangling_line2_id')
         return self._create_elements(ElementType.TIE_LINE, [df], **kwargs)
 
     def create_areas(self, df: Optional[DataFrame] = None, **kwargs: ArrayLike) -> None:

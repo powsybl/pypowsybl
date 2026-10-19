@@ -1060,12 +1060,12 @@ def test_tie_line_deprecated_dangling_line():
         columns=['id', 'dangling_line1_id', 'dangling_line2_id'],
         data=[('TIE_LINE_TEST', 'BL_TEST', 'BL_TEST2')],
         index='id')
-    with pytest.warns(DeprecationWarning, match=re.escape("dangling_line1_id is deprecated")):
-        with pytest.warns(DeprecationWarning, match=re.escape("dangling_line2_id is deprecated")):
+    with pytest.warns(DeprecationWarning, match=re.escape('"dangling_line1_id" is deprecated')):
+        with pytest.warns(DeprecationWarning, match=re.escape('"dangling_line2_id" is deprecated')):
             network.create_tie_lines(df)
     network.remove_elements('TIE_LINE_TEST')
-    with pytest.warns(DeprecationWarning, match=re.escape("dangling_line1_id is deprecated")):
-        with pytest.warns(DeprecationWarning, match=re.escape("dangling_line2_id is deprecated")):
+    with pytest.warns(DeprecationWarning, match=re.escape('"dangling_line1_id" is deprecated')):
+        with pytest.warns(DeprecationWarning, match=re.escape('"dangling_line2_id" is deprecated')):
             network.create_tie_lines(id='TIE_LINE_TEST', dangling_line1_id='BL_TEST', dangling_line2_id='BL_TEST2')
 
 
