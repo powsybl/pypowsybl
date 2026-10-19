@@ -756,7 +756,8 @@ class Network:  # pylint: disable=too-many-public-methods
                 filtered_metadata = metadata
         for s in filtered_metadata:
             if s.is_deprecated:
-                warnings.warn(f'Column "{s.name}" of {element_type.name} is deprecated', DeprecationWarning, stacklevel=2)
+                warnings.warn(f'Column "{s.name}" of {element_type.name} is deprecated, please refer to the '
+                              f'documentation to replace it.', DeprecationWarning, stacklevel=2)
 
         series_array = _pp.create_network_elements_series_array(self._handle, element_type, filter_attributes,
                                                                 attributes, elements_array, self._per_unit,
