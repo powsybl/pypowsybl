@@ -6,7 +6,7 @@ on:
 permissions: { }
 
 env:
-  PGO_BUILD: 'true'
+  PGO_BUILD: 'false'
 
 jobs:
   build:

@@ -42,9 +42,7 @@ Options:
 The Full CI, Dev CI and fork workflows build the native libraries through
 `.github/workflows/scripts/build_wheel.sh`, which runs `build_pgo.sh` whenever the native libraries
 are actually rebuilt (the CI caches them, keyed on the Java, C++ and `tools/pgo` sources). A PGO build
-roughly doubles the native image build time. Set the `PGO_BUILD` environment variable to `'false'`
-at workflow level, or for one matrix entry, to fall back to a plain build. The snapshot workflow,
-which only checks compatibility with upstream snapshots, uses a plain build.
+roughly doubles the native image build time. This is why no PGO build is performed for snapshot builds, dev ci and fork ci. Dev/Fork CI set `PGO_BUILD` to false explicitely to avoid this.
 
 ## Running the steps by hand
 
