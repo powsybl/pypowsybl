@@ -80,6 +80,10 @@ class PyPowsyblBuild(build_ext):
                 for filename in glob.glob(os.path.join(bin_dir, '*.*')):
                     shutil.copy(filename, extdir)
 
+        if os.environ.get('PYPOWSYBL_EXTRA_JARS'):
+            extra_jars = os.environ['PYPOWSYBL_EXTRA_JARS'].strip(os.pathsep)
+            cmake_args += ['-DEXTRA_JARS=' + os.pathsep + extra_jars]
+
         cpp_source_dir=os.path.abspath('cpp')
         subprocess.check_call(['cmake', cpp_source_dir] + cmake_args, cwd=self.build_temp, env=env)
         subprocess.check_call(['cmake', '--build', '.'] + build_args, cwd=self.build_temp)
