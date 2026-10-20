@@ -46,11 +46,16 @@ public class GeneratorDataframeAdder extends AbstractSimpleAdder {
             SeriesMetadata.doubles("max_p"),
             SeriesMetadata.doubles("min_p"),
             SeriesMetadata.doubles("target_p"),
-            SeriesMetadata.doubles("target_q"),
+            SeriesMetadata.deprecatedDoubles("target_q"),
             SeriesMetadata.doubles("rated_s"),
-            SeriesMetadata.doubles("target_v"),
-            SeriesMetadata.doubles("equivalent_local_target_v"),
-            SeriesMetadata.booleans("voltage_regulator_on"),
+            SeriesMetadata.deprecatedDoubles("target_v"),
+            SeriesMetadata.deprecatedDoubles("equivalent_local_target_v"),
+            SeriesMetadata.deprecatedBooleans("voltage_regulator_on"),
+            SeriesMetadata.doubles("local_target_v"),
+            SeriesMetadata.doubles("local_target_q"),
+            SeriesMetadata.booleans("regulating"),
+            SeriesMetadata.strings("regulation_mode"),
+            SeriesMetadata.doubles("regulating_value"),
             SeriesMetadata.strings("regulating_element_id")
     );
 
@@ -70,6 +75,11 @@ public class GeneratorDataframeAdder extends AbstractSimpleAdder {
         private final DoubleSeries equivalentLocalTargetV;
         private final DoubleSeries ratedS;
         private final IntSeries voltageRegulatorOn;
+        private final DoubleSeries localTargetV;
+        private final DoubleSeries localTargetQ;
+        private final IntSeries regulating;
+        private final StringSeries regulationMode;
+        private final DoubleSeries regulatingValue;
         private final StringSeries energySource;
         private final StringSeries busOrBusbarSections;
         private final StringSeries regulatingElements;
@@ -86,6 +96,11 @@ public class GeneratorDataframeAdder extends AbstractSimpleAdder {
             this.equivalentLocalTargetV = dataframe.getDoubles("equivalent_local_target_v");
             this.ratedS = dataframe.getDoubles("rated_s");
             this.voltageRegulatorOn = dataframe.getInts("voltage_regulator_on");
+            this.localTargetV = dataframe.getDoubles("local_target_v");
+            this.localTargetQ = dataframe.getDoubles("local_target_q");
+            this.regulating = dataframe.getInts("regulating");
+            this.regulationMode = dataframe.getStrings("regulation_mode");
+            this.regulatingValue = dataframe.getDoubles("regulating_value");
             this.energySource = dataframe.getStrings("energy_source");
             this.busOrBusbarSections = dataframe.getStrings("bus_or_busbar_section_id");
             this.regulatingElements = dataframe.getStrings("regulating_element_id");
