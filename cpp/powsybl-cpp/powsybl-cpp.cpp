@@ -93,8 +93,7 @@ void init(std::function <void(GraalVmGuard* guard, exception_handler* exc)> preJ
     int argc = argv.size();
     int c;
     if (argc > 1) {
-        graal_create_isolate_params_t params;
-        params.version = 4;
+        graal_create_isolate_params_t params = {};
         // theses fields are not part of the public API, so on are named reserved
         // this might fail in a coming release of GraalVM
         params._reserved_1 = argc; // argc
@@ -1445,7 +1444,7 @@ std::vector<SeriesMetadata> convertDataframeMetadata(dataframe_metadata* datafra
     std::vector<SeriesMetadata> res;
     for (int i = 0; i < dataframeMetadata->attributes_count; i++) {
         const series_metadata& series = dataframeMetadata->attributes_metadata[i];
-        res.push_back(SeriesMetadata(series.name, series.type, series.is_index, series.is_modifiable, series.is_default));
+        res.push_back(SeriesMetadata(series.name, series.type, series.is_index, series.is_modifiable, series.is_default, series.is_deprecated));
     }
     return res;
 }

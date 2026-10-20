@@ -740,13 +740,25 @@ class Network:  # pylint: disable=too-many-public-methods
         if all_attributes and len(attributes) > 0:
             raise RuntimeError('parameters "all_attributes" and "attributes" are mutually exclusive')
 
+        metadata = _pp.get_network_elements_dataframe_metadata(element_type)
         if kwargs:
-            metadata = _pp.get_network_elements_dataframe_metadata(element_type)
             df = _adapt_df_or_kwargs(metadata, None, **kwargs)
             elements_array = _create_c_dataframe(df, metadata)
-
         else:
             elements_array = None
+
+        match filter_attributes:
+            case _pp.FilterAttributesType.DEFAULT_ATTRIBUTES:
+                filtered_metadata = [s for s in metadata if s.is_default]
+            case _pp.FilterAttributesType.SELECTION_ATTRIBUTES:
+                filtered_metadata = [s for s in metadata if s.name in attributes]
+            case _:
+                filtered_metadata = metadata
+        for s in filtered_metadata:
+            if s.is_deprecated:
+                warnings.warn(f'Column "{s.name}" of {element_type.name} is deprecated, please refer to the '
+                              f'documentation to replace it.', DeprecationWarning, stacklevel=2)
+
         series_array = _pp.create_network_elements_series_array(self._handle, element_type, filter_attributes,
                                                                 attributes, elements_array, self._per_unit,
                                                                 self._nominal_apparent_power)
@@ -2310,6 +2322,77 @@ class Network:  # pylint: disable=too-many-public-methods
             This dataframe is indexed on the substation ID.
         """
         return self.get_elements(ElementType.SUBSTATION, all_attributes, attributes, **kwargs)
+
+    def get_overload_management_systems(self, all_attributes: bool = False, attributes: Optional[List[str]] = None,
+                                        **kwargs: ArrayLike) -> DataFrame:
+        r"""
+        Get a dataframe of overload management systems.
+
+        Args:
+            all_attributes: flag for including all attributes in the dataframe, default is false
+            attributes: attributes to include in the dataframe. The 2 parameters are mutually exclusive.
+                        If no parameter is specified, the dataframe will include the default attributes.
+            kwargs: the data to be selected, as named arguments.
+
+        Returns:
+            A dataframe of overload management systems.
+
+        Notes:
+            The resulting dataframe, depending on the parameters, will include the following columns:
+
+              - **name**: the name of the overload management system
+              - **substation_id**: the id of the substation the overload management system belongs to
+              - **enabled**: ``True`` if the overload management system is enabled
+              - **monitored_element_id**: the id of the element whose current is monitored
+              - **monitored_element_side**: the side of the monitored element (``ONE``, ``TWO`` or ``THREE``)
+              - **tripping_count**: the number of trippings defined on the overload management system
+
+            This dataframe is indexed on the overload management system ID.
+        """
+        return self.get_elements(ElementType.OVERLOAD_MANAGEMENT_SYSTEM, all_attributes, attributes, **kwargs)
+
+    def get_overload_management_systems_trippings(self, all_attributes: bool = False,
+                                                  attributes: Optional[List[str]] = None,
+                                                  **kwargs: ArrayLike) -> DataFrame:
+        r"""
+        Get a dataframe of overload management systems trippings.
+
+        Args:
+            all_attributes: flag for including all attributes in the dataframe, default is false
+            attributes: attributes to include in the dataframe. The 2 parameters are mutually exclusive.
+                        If no parameter is specified, the dataframe will include the default attributes.
+            kwargs: the data to be selected, as named arguments.
+
+        Returns:
+            A dataframe of overload management systems trippings.
+
+        Notes:
+            The resulting dataframe, depending on the parameters, will include the following columns:
+
+              - **name**: the name of the tripping, or its key if no name is defined
+              - **tripping_type**: ``BRANCH_TRIPPING``, ``SWITCH_TRIPPING`` or ``THREE_WINDINGS_TRANSFORMER_TRIPPING``
+              - **current_limit**: the current threshold, in A, above which the tripping is activated
+              - **open_action**: ``True`` if the operated element is opened, ``False`` if it is closed
+              - **element_to_operate_id**: the id of the branch, switch or three windings transformer to operate
+              - **side_to_operate**: the side of the element to operate, empty for switch trippings
+
+            This dataframe is indexed by the id of the overload management system and the tripping key.
+
+        Examples:
+            .. code-block:: python
+
+                net.get_overload_management_systems_trippings()
+
+            will output something like:
+
+            ==== ============ =============== =============== ============= =========== ===================== ===============
+            \                            name   tripping_type current_limit open_action element_to_operate_id side_to_operate
+            ==== ============ =============== =============== ============= =========== ===================== ===============
+            id   tripping_key
+            OMS1 trip_branch  branch tripping BRANCH_TRIPPING        1000.0        True             LINE_S2S3             TWO
+            ==== ============ =============== =============== ============= =========== ===================== ===============
+        """
+        return self.get_elements(ElementType.OVERLOAD_MANAGEMENT_SYSTEM_TRIPPING, all_attributes, attributes, **kwargs)
 
     def get_hvdc_lines(self, all_attributes: bool = False, attributes: Optional[List[str]] = None,
                        **kwargs: ArrayLike) -> DataFrame:
@@ -4308,6 +4391,71 @@ class Network:  # pylint: disable=too-many-public-methods
         """
         return self._update_elements(ElementType.SUBSTATION, df, **kwargs)
 
+    def update_overload_management_systems(self, df: Optional[DataFrame] = None, **kwargs: ArrayLike) -> None:
+        """
+        Update overload management systems with data provided as a :class:`~pandas.DataFrame` or as named arguments.
+
+        Args:
+            df: the data to be updated, as a dataframe.
+            kwargs: the data to be updated, as named arguments.
+                    Arguments can be single values or any type of sequence.
+                    In the case of sequences, all arguments must have the same length.
+
+        Notes:
+            Attributes that can be updated are :
+
+            - `name`
+            - `enabled`
+
+        See Also:
+            :meth:`get_overload_management_systems`
+
+        Examples:
+            Some examples using keyword arguments:
+
+            .. code-block:: python
+
+                network.update_overload_management_systems(id='OMS1', enabled=False)
+                network.update_overload_management_systems(id=['OMS1', 'OMS2'], enabled=[False, True])
+        """
+        return self._update_elements(ElementType.OVERLOAD_MANAGEMENT_SYSTEM, df, **kwargs)
+
+    def update_overload_management_systems_trippings(self, df: Optional[DataFrame] = None,
+                                                     **kwargs: ArrayLike) -> None:
+        """
+        Update overload management systems trippings with data provided as a :class:`~pandas.DataFrame`
+        or as named arguments.
+
+        Trippings are identified by the overload management system id (``id``) and the tripping key (``tripping_key``).
+
+        Args:
+            df: the data to be updated, as a dataframe.
+            kwargs: the data to be updated, as named arguments.
+                    Arguments can be single values or any type of sequence.
+                    In the case of sequences, all arguments must have the same length.
+
+        Notes:
+            Attributes that can be updated are :
+
+            - `name`
+            - `current_limit`
+            - `open_action`
+            - `element_to_operate_id`
+            - `side_to_operate`: only for branch and three windings transformer trippings
+
+        See Also:
+            :meth:`get_overload_management_systems_trippings`
+
+        Examples:
+            Some examples using keyword arguments:
+
+            .. code-block:: python
+
+                network.update_overload_management_systems_trippings(id='OMS1', tripping_key='trip1',
+                                                                     current_limit=1100.0)
+        """
+        return self._update_elements(ElementType.OVERLOAD_MANAGEMENT_SYSTEM_TRIPPING, df, **kwargs)
+
     def update_terminals(self, df: Optional[DataFrame] = None, **kwargs: ArrayLike) -> None:
         """
         Update terminals with data provided as a :class:`~pandas.DataFrame` or as named arguments.
@@ -5881,6 +6029,56 @@ class Network:  # pylint: disable=too-many-public-methods
 
         return self._create_elements(ElementType.RATIO_TAP_CHANGER, [rtc_df, steps_df])
 
+    def create_overload_management_systems(self, oms_df: DataFrame, trippings_df: DataFrame) -> None:
+        """
+        Create overload management systems.
+
+        Overload management systems data must be provided in 2 separate dataframes:
+        one for the overload management systems attributes, and another one for their trippings attributes.
+        The latter one will generally have multiple lines for one overload management system ID, linked through
+        the ``id`` column of the trippings dataframe.
+
+        Args:
+            oms_df: dataframe of overload management systems data
+            trippings_df: dataframe of trippings data
+
+        Notes:
+
+            Valid attributes for the overload management systems dataframe are:
+
+            - **id**: the identifier of the new overload management system
+            - **name**: an optional human readable name
+            - **substation_id**: the substation the overload management system is attached to
+            - **monitored_element_id**: the id of the element whose current is monitored
+            - **monitored_element_side**: the monitored side (``ONE``, ``TWO`` or ``THREE``)
+            - **enabled**: ``True`` (default) if the overload management system is enabled
+
+            Valid attributes for the trippings dataframe are:
+
+            - **id**: the id of the overload management system the tripping belongs to
+            - **tripping_key**: the unique key of the tripping within the overload management system
+            - **name**: an optional human readable name for the tripping
+            - **tripping_type**: ``BRANCH_TRIPPING``, ``SWITCH_TRIPPING`` or ``THREE_WINDINGS_TRANSFORMER_TRIPPING``
+            - **current_limit**: the current threshold, in A, above which the tripping is activated
+            - **open_action**: ``True`` if the operated element is opened, ``False`` if it is closed
+            - **element_to_operate_id**: the id of the branch, switch or three windings transformer to operate
+            - **side_to_operate**: for branch (``ONE``/``TWO``) and three windings transformer
+              (``ONE``/``TWO``/``THREE``) trippings, the side of the element to operate
+
+        Examples:
+            .. code-block:: python
+
+                oms_df = pd.DataFrame.from_records(index='id', data=[
+                    {'id': 'OMS1', 'substation_id': 'S1', 'monitored_element_id': 'LINE_S2S3',
+                     'monitored_element_side': 'ONE', 'enabled': True}])
+                trippings_df = pd.DataFrame.from_records(index='id', data=[
+                    {'id': 'OMS1', 'tripping_key': 'trip1', 'tripping_type': 'BRANCH_TRIPPING',
+                     'current_limit': 1000.0, 'open_action': True,
+                     'element_to_operate_id': 'LINE_S2S3', 'side_to_operate': 'TWO'}])
+                network.create_overload_management_systems(oms_df, trippings_df)
+        """
+        return self._create_elements(ElementType.OVERLOAD_MANAGEMENT_SYSTEM, [oms_df, trippings_df])
+
     def create_phase_tap_changers(self, ptc_df: DataFrame, steps_df: DataFrame) -> None:
         """
         Create phase tap changers on transformers.
@@ -6397,19 +6595,6 @@ class Network:  # pylint: disable=too-many-public-methods
                 network.create_tie_lines(id='tie_line_1', boundary_line1_id='BL-1', boundary_line2_id='BL-2')
 
         """
-        if df is not None:
-            if "dangling_line1_id" in df.columns:
-                warnings.warn("dangling_line1_id is deprecated, use boundary_line1_id instead", DeprecationWarning)
-                df = df.rename(columns={'dangling_line1_id': 'boundary_line1_id'})
-            if "dangling_line2_id" in df.columns:
-                warnings.warn("dangling_line2_id is deprecated, use boundary_line2_id instead", DeprecationWarning)
-                df = df.rename(columns={'dangling_line2_id': 'boundary_line2_id'})
-        if kwargs.get('dangling_line1_id') is not None:
-            warnings.warn("dangling_line1_id is deprecated, use boundary_line1_id instead", DeprecationWarning)
-            kwargs['boundary_line1_id'] = kwargs.pop('dangling_line1_id')
-        if kwargs.get('dangling_line2_id') is not None:
-            warnings.warn("dangling_line2_id is deprecated, use boundary_line2_id instead", DeprecationWarning)
-            kwargs['boundary_line2_id'] = kwargs.pop('dangling_line2_id')
         return self._create_elements(ElementType.TIE_LINE, [df], **kwargs)
 
     def create_areas(self, df: Optional[DataFrame] = None, **kwargs: ArrayLike) -> None:

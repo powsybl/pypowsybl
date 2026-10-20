@@ -218,6 +218,7 @@ public final class CTypeUtil {
             metadataPtr.setIndex(colMetadata.isIndex());
             metadataPtr.setModifiable(colMetadata.isModifiable());
             metadataPtr.setDefault(colMetadata.isDefaultAttribute());
+            metadataPtr.setDeprecated(colMetadata.isDeprecated());
         }
         cMetadata.setAttributesCount(metadata.size());
         cMetadata.setAttributesMetadata(seriesMetadataPtr);
