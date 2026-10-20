@@ -1362,12 +1362,6 @@ std::vector<std::string> getVariantsIds(const JavaHandle& network) {
     return formats.get();
 }
 
-std::vector<std::string> getOutageGroup(const JavaHandle& network, const std::string& equipmentId) {
-    auto outageGroupArrayPtr = PowsyblCaller::get()->callJava<array*>(::getOutageGroup, network, (char*) equipmentId.c_str());
-    ToStringVector outageGroup(outageGroupArrayPtr);
-    return outageGroup.get();
-}
-
 std::unordered_map<std::string, std::vector<std::string>> getOutageGroups(const JavaHandle& network, const std::vector<std::string>& elementIds) {
     ToCharPtrPtr elementIdsPtr(elementIds);
     auto outageGroupsPtr = PowsyblCaller::get()->callJava<string_array_map*>(::getOutageGroups, network, elementIdsPtr.get(), elementIds.size());

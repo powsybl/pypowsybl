@@ -239,7 +239,6 @@ public final class NetworkUtil {
         }).toList();
     }
 
-
     /**
      * Computes propagated outage groups for the requested initiating equipments.
      *

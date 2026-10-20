@@ -2073,15 +2073,6 @@ def test_switch_flows():
     assert flow['q'] == pytest.approx(-side1_flow[1], abs=maxActivePowerMismatch)
 
 
-def test_outage_group_types():
-    network = pp.network.create_four_substations_node_breaker_network()
-
-    outage_group = network.get_outage_group('S4VL1_BBS')
-
-    assert isinstance(outage_group, list)
-    assert all(isinstance(equipment_id, str) for equipment_id in outage_group)
-
-
 def test_outage_groups_types():
     network = pp.network.create_four_substations_node_breaker_network()
     element_ids = ('S4VL1_BBS', 'LD6')
