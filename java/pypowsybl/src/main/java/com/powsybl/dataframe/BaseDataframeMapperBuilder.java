@@ -118,6 +118,19 @@ public class BaseDataframeMapperBuilder<T, U, C, B extends BaseDataframeMapperBu
         return doubles(name, value, null, defaultAttribute);
     }
 
+    public B deprecatedDoubles(String name, ToDoubleBiFunction<U, C> value, DoubleSeriesMapper.DoubleUpdater<U, C> updater) {
+        return deprecatedDoubles(name, value, updater, true);
+    }
+
+    public B deprecatedDoubles(String name, ToDoubleBiFunction<U, C> value, boolean defaultAttribute) {
+        return deprecatedDoubles(name, value, null, defaultAttribute);
+    }
+
+    public B deprecatedDoubles(String name, ToDoubleBiFunction<U, C> value, DoubleSeriesMapper.DoubleUpdater<U, C> updater, boolean defaultAttribute) {
+        series.add(new DoubleSeriesMapper<>(name, value, updater, defaultAttribute, true));
+        return (B) this;
+    }
+
     public B ints(String name, ToIntFunction<U> value, IntSeriesMapper.IntUpdater<U> updater) {
         return ints(name, value, updater, true);
     }
@@ -165,6 +178,15 @@ public class BaseDataframeMapperBuilder<T, U, C, B extends BaseDataframeMapperBu
 
     public B booleans(String name, Predicate<U> value, boolean defaultAttribute) {
         return booleans(name, value, null, defaultAttribute);
+    }
+
+    public B deprecatedBooleans(String name, Predicate<U> value, BooleanSeriesMapper.BooleanUpdater<U> updater) {
+        return deprecatedBooleans(name, value, updater, true);
+    }
+
+    public B deprecatedBooleans(String name, Predicate<U> value, BooleanSeriesMapper.BooleanUpdater<U> updater, boolean defaultAttribute) {
+        series.add(new BooleanSeriesMapper<>(name, value, updater, defaultAttribute, true));
+        return (B) this;
     }
 
     public B strings(String name, Function<U, String> value, BiConsumer<U, String> updater) {

@@ -9,6 +9,7 @@ package com.powsybl.dataframe.network;
 
 import com.powsybl.commons.PowsyblException;
 import com.powsybl.iidm.network.*;
+import com.powsybl.iidm.network.regulation.RegulationMode;
 import org.apache.commons.math3.complex.Complex;
 
 import static java.lang.Math.*;
@@ -355,5 +356,23 @@ public final class PerUnitUtil {
 
     private static Complex computeY(double r, double x) {
         return Complex.valueOf(r, x).reciprocal();
+    }
+
+    public static double perUnitWithMode(NetworkDataframeContext context, double value, RegulationMode regulationMode,
+                                           Terminal terminal) {
+        return switch (regulationMode) {
+            case VOLTAGE, VOLTAGE_PER_REACTIVE_POWER -> perUnitV(context, value, terminal);
+            case REACTIVE_POWER -> perUnitPQ(context, value);
+            case null -> value;
+        };
+    }
+
+    public static double unPerUnitWithMode(NetworkDataframeContext context, double value, RegulationMode regulationMode,
+                                           Terminal terminal) {
+        return switch (regulationMode) {
+            case VOLTAGE, VOLTAGE_PER_REACTIVE_POWER -> unPerUnitV(context, value, terminal);
+            case REACTIVE_POWER -> unPerUnitPQ(context, value);
+            case null -> value;
+        };
     }
 }

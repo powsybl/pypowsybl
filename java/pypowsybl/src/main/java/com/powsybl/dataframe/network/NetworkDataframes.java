@@ -16,6 +16,7 @@ import com.powsybl.dataframe.network.extensions.ExtensionDataframeKey;
 import com.powsybl.dataframe.update.UpdatingDataframe;
 import com.powsybl.iidm.network.*;
 import com.powsybl.iidm.network.regulation.RegulationMode;
+import com.powsybl.iidm.network.regulation.VoltageRegulationHolder;
 import com.powsybl.python.commons.PyPowsyblApiHeader;
 import com.powsybl.python.network.NetworkUtil;
 import com.powsybl.python.network.SideEnum;
@@ -335,11 +336,17 @@ public final class NetworkDataframes {
                 .doubles(MAX_Q_AT_P, getPerUnitMaxQ(getOppositeP()), false)
                 .doubles("rated_s", (g, context) -> g.getRatedS(), (g, ratedS, context) -> g.setRatedS(ratedS))
                 .strings("reactive_limits_kind", NetworkDataframes::getReactiveLimitsKind)
-                .doubles("target_v", (g, context) -> perUnitTargetV(context, g.getTargetV(), g.getRegulatingTerminal(), g.getTerminal()),
+                .deprecatedDoubles("target_v", (g, context) -> perUnitTargetV(context, g.getTargetV(), g.getRegulatingTerminal(), g.getTerminal()),
                     (g, v, context) -> g.setTargetV(unPerUnitTargetV(context, v, g.getRegulatingTerminal(), g.getTerminal())))
-                .doubles("equivalent_local_target_v", (g, context) -> perUnitV(context, g.getEquivalentLocalTargetV(), g.getTerminal()), false)
-                .doubles("target_q", (g, context) -> perUnitPQ(context, g.getTargetQ()), (g, q, context) -> g.setTargetQ(unPerUnitPQ(context, q)))
-                .booleans("voltage_regulator_on", Generator::isVoltageRegulatorOn, Generator::setVoltageRegulatorOn)
+                .deprecatedDoubles("equivalent_local_target_v", (g, context) -> perUnitV(context, g.getEquivalentLocalTargetV(), g.getTerminal()), false)
+                .deprecatedDoubles("target_q", (g, context) -> perUnitPQ(context, g.getTargetQ()), (g, q, context) -> g.setTargetQ(unPerUnitPQ(context, q)))
+                .deprecatedBooleans("voltage_regulator_on", Generator::isVoltageRegulatorOn, Generator::setVoltageRegulatorOn)
+                .doubles("local_target_v", (g, context) -> perUnitV(context, g.getLocalTargetV(), g.getTerminal()),
+                        (g, v, context) -> g.setLocalTargetV(unPerUnitV(context, v, g.getTerminal())))
+                .doubles("local_target_q", (g, context) -> perUnitPQ(context, g.getLocalTargetQ()), (g, q, context) -> g.setLocalTargetQ(unPerUnitPQ(context, q)))
+                .booleans("regulating", NetworkDataframes::isRegulating, NetworkDataframes::setRegulating)
+                .enums("regulation_mode", RegulationMode.class, NetworkDataframes::getRegulationMode, NetworkDataframes::setRegulationMode)
+                .doubles("regulation_value", NetworkDataframes::getRegulationValue, NetworkDataframes::setRegulationValue)
                 .strings("regulated_element_id", generator -> NetworkUtil.getRegulatedElementId(generator::getRegulatingTerminal),
                         (generator, elementId) -> NetworkUtil.setRegulatingTerminal(generator::setRegulatingTerminal, generator.getNetwork(), elementId))
                 .strings(REGULATED_BUS_ID, generator -> getBusId(generator.getRegulatingTerminal()), false)
@@ -356,6 +363,44 @@ public final class NetworkDataframes {
                 .booleans("fictitious", Identifiable::isFictitious, Identifiable::setFictitious, false)
                 .addProperties()
                 .build();
+    }
+
+    private static boolean isRegulating(VoltageRegulationHolder<?> holder) {
+        return holder.getVoltageRegulation() != null && holder.getVoltageRegulation().isRegulating();
+    }
+
+    private static void setRegulating(VoltageRegulationHolder<?> holder, boolean regulating) {
+        if (holder.getVoltageRegulation() != null) {
+            holder.getVoltageRegulation().setRegulating(regulating);
+        } else {
+            holder.newVoltageRegulation().withRegulating(regulating).build();
+        }
+    }
+
+    private static RegulationMode getRegulationMode(VoltageRegulationHolder<?> holder) {
+        return holder.getVoltageRegulation() != null ? holder.getVoltageRegulation().getMode() : null;
+    }
+
+    private static void setRegulationMode(VoltageRegulationHolder<?> holder, RegulationMode mode) {
+        if (holder.getVoltageRegulation() != null) {
+            holder.getVoltageRegulation().setMode(mode);
+        } else {
+            holder.newVoltageRegulation().withMode(mode).withRegulating(false).build();
+        }
+    }
+
+    private static double getRegulationValue(VoltageRegulationHolder<?> holder, NetworkDataframeContext context) {
+        return holder.getVoltageRegulation() != null ? perUnitWithMode(context, holder.getVoltageRegulation().getTargetValue(),
+                holder.getVoltageRegulation().getMode(), holder.getRegulatingTerminal()) : Double.NaN;
+    }
+
+    private static void setRegulationValue(VoltageRegulationHolder<?> holder, double value, NetworkDataframeContext context) {
+        if (holder.getVoltageRegulation() != null) {
+            double perUnitedValue = unPerUnitWithMode(context, value, holder.getVoltageRegulation().getMode(), holder.getRegulatingTerminal());
+            holder.getVoltageRegulation().setTargetValue(perUnitedValue);
+        } else {
+            holder.newVoltageRegulation().withTargetValue(value).withRegulating(false).build();
+        }
     }
 
     private static NetworkDataframeMapper subNetworks() {
