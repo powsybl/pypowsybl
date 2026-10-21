@@ -550,6 +550,16 @@ def test_generators_data_frame():
     pd.testing.assert_frame_equal(expected, generators, check_dtype=False, atol=1e-2)
 
 
+def test_generator_deprecated_regulation():
+    n = pp.network.create_eurostag_tutorial_example1_network()
+    with pytest.warns(DeprecationWarning) as record:
+        n.get_generators(all_attributes=True)
+    deprecated_columns = ['target_v', 'equivalent_local_target_v', 'target_q', 'voltage_regulator_on']
+    assert len(record) == 4
+    for i in range(len(record)):
+        assert deprecated_columns[i] in record[i].message.args[0]
+
+
 def test_generator_maxq_minq_reactive_limits():
     n = pp.network.create_four_substations_node_breaker_network()
     gen1_id = 'GH1'
@@ -670,26 +680,42 @@ def test_update_generators_data_frame():
     n = pp.network.create_eurostag_tutorial_example1_network()
     generators = n.get_generators()
     assert 607 == generators['target_p']['GEN']
-    assert generators['voltage_regulator_on']['GEN']
+    assert generators['regulating']['GEN']
+    assert 'VOLTAGE' == generators['regulation_mode']['GEN']
     assert 'GEN' == generators['regulated_element_id']['GEN']
-    generators2 = pd.DataFrame(data=[[608.0, 302.0, 25.0, False]],
-                               columns=['target_p', 'target_q', 'target_v', 'voltage_regulator_on'], index=['GEN'])
+    assert np.isnan(generators['regulation_value']['GEN'])
+    generators2 = pd.DataFrame(data=[[608.0, 302.0, 25.0, False, 'REACTIVE_POWER']],
+                               columns=['target_p', 'local_target_q', 'local_target_v', 'regulating', 'regulation_mode'], index=['GEN'])
     n.update_generators(generators2)
     generators = n.get_generators()
     assert 608 == generators['target_p']['GEN']
-    assert 302.0 == generators['target_q']['GEN']
-    assert 25.0 == generators['target_v']['GEN']
-    assert not generators['voltage_regulator_on']['GEN']
+    assert 302.0 == generators['local_target_q']['GEN']
+    assert 25.0 == generators['local_target_v']['GEN']
+    assert not generators['regulating']['GEN']
+    assert 'REACTIVE_POWER' == generators['regulation_mode']['GEN']
+    assert np.isnan(generators['regulation_value']['GEN'])
+
+
+def test_deprecated_update_generators():
+    n = pp.network.create_eurostag_tutorial_example1_network()
+    with pytest.warns(DeprecationWarning) as record:
+        n.update_generators(id='GEN', target_p=608.0, target_q=302.0, target_v=25.0, voltage_regulator_on=False)
+    deprecated_columns = ['target_q', 'target_v', 'voltage_regulator_on']
+    assert len(record) == 3
+    for i in range(len(record)):
+        assert deprecated_columns[i] in record[i].message.args[0]
 
 
 def test_regulated_terminal_node_breaker():
     n = pp.network.create_four_substations_node_breaker_network()
     gens = n.get_generators()
     assert 'GH1' == gens['regulated_element_id']['GH1']
+    assert np.isnan(gens['regulation_value']['GH1'])
 
-    n.update_generators(id='GH1', regulated_element_id='S1VL1_BBS')
+    n.update_generators(id='GH1', regulated_element_id='S1VL1_BBS', regulation_value=100)
     updated_gens = n.get_generators()
     assert 'S1VL1_BBS' == updated_gens['regulated_element_id']['GH1']
+    assert 100 == updated_gens['regulation_value']['GH1']
 
     with pytest.raises(PyPowsyblError):
         n.update_generators(id='GH1', regulated_element_id='LINE_S2S3')

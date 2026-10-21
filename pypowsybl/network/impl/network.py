@@ -1000,14 +1000,20 @@ class Network:  # pylint: disable=too-many-public-methods
               - **min_q_at_p** (optional): the minimum reactive value for the generator at current p (MVar)
               - **rated_s**: The rated nominal power (MVA)
               - **reactive_limits_kind**: type of the reactive limit of the generator (can be MIN_MAX, CURVE or NONE)
-              - **target_v**: the target voltage magnitude value for the generator (in kV)
-              - **equivalent_local_target_v** (optional): a local target voltage value expected to be consistent with the remote target voltage (in kV)
-                        (to be used by simulators that deactivate the remote voltage algorithms, or by dynamic simulators that use this voltage as a starting value)
-              - **target_q**: the target reactive value for the generator (in MVAr)
-              - **voltage_regulator_on**: ``True`` if the generator regulates voltage
-              - **regulated_element_id**: the ID of the network element where voltage is regulated
-              - **regulated_bus_id**: the ID of the bus from bus view where voltage is regulated
-              - **regulated_bus_breaker_bus_id**: the ID of the bus from bus/breaker view where voltage is regulated
+              - **target_v**: deprecated, see **local_target_v**/**regulation_value**
+              - **equivalent_local_target_v** : deprecated, see **local_target_v**
+              - **target_q**: deprecated, see **local_target_q**/**regulation_value**
+              - **voltage_regulator_on**: deprecated, see **regulating**
+              - **local_target_q**: the target reactive value for the generator, used if **regulating** is False (in MVar)
+              - **local_target_v**: the target voltage value for the generator, used if **regulation_mode** is VOLTAGE,
+                    **regulating** True and **regulated_element_id** is the generator itself (in kV)
+              - **regulation_mode**: the optional regulation mode of the generator (VOLTAGE or REACTIVE_POWER).
+                    Must be defined to set **regulating** to True.
+              - **regulation_value**: the optional regulation value of the generator (MW or MVar).
+                    Used for distant regulation when **regulated_element_id** is different from the generator itself, otherwise the local target is used.
+              - **regulated_element_id**: the ID of the network element where the regulation is applied
+              - **regulated_bus_id**: the ID of the bus from bus view where the regulation is applied
+              - **regulated_bus_breaker_bus_id**: the ID of the bus from bus/breaker view where the regulation is applied
               - **p**: the actual active production of the generator (``NaN`` if no loadflow has been computed)
               - **q**: the actual reactive production of the generator (``NaN`` if no loadflow has been computed)
               - **i**: the current on the generator, ``NaN`` if no loadflow has been computed (in A)
@@ -3606,11 +3612,15 @@ class Network:  # pylint: disable=too-many-public-methods
             - `max_p`
             - `min_p`
             - `rated_s`
-            - `target_v`
-            - `target_q`
-            - `voltage_regulator_on`
+            - `target_v` (deprecated)
+            - `target_q` (deprecated)
+            - `voltage_regulator_on` (deprecated)
+            - `local_target_v`
+            - `local_target_q`
+            - `regulation_mode`
+            - `regulation_value`
+            - `regulating`
             - `regulated_element_id`: you may define any injection or busbar section as the regulated location.
-               Only supported in node breaker voltage levels.
             - `p`
             - `q`
             - `connected`
@@ -3625,7 +3635,7 @@ class Network:  # pylint: disable=too-many-public-methods
             .. code-block:: python
 
                 network.update_generators(id='G-1', connected=True, target_p=500)
-                network.update_generators(id=['G-1', 'G-2'], target_v=[403, 401])
+                network.update_generators(id=['G-1', 'G-2'], local_target_v=[403, 401])
         """
         return self._update_elements(ElementType.GENERATOR, df, **kwargs)
 
@@ -5165,11 +5175,19 @@ class Network:  # pylint: disable=too-many-public-methods
             - **max_p**: maximum active power in MW
             - **min_p**: minimum active power in MW
             - **target_p**: target active power in MW
-            - **target_q**: target reactive power in MVar, when the generator does not regulate voltage
+            - **target_q**: deprecated, use **local_target_q**/**regulation_value**
             - **rated_s**: nominal power in MVA
-            - **target_v**: target voltage in kV, when the generator regulates voltage
-            - **equivalent_local_target_v**: local target voltage in kV, equivalent to the potential remote **target_v** (that must be set to use this)
-            - **voltage_regulator_on**: true if the generator regulates voltage
+            - **target_v**: deprecated, use **local_target_v**/**regulation_value**
+            - **equivalent_local_target_v**: deprecated, use **local_target_v**
+            - **voltage_regulator_on**: deprecated, use **regulating** and **regulation_mode**
+            - **regulating**: define if the generator is regulating (either voltage or reactive power depending on **regulation_mode**)
+            - **regulation_mode**: define if the generator is regulating VOLTAGE or REACTIVE_POWER
+            - **regulating_element_id**: the ID of the network element where the regulation is applied.
+                Must be an injection or busbar section ID, defaults to the ID of the generator itself.
+            - **regulation_value**: define the value of the regulation if it is not local (either in kV or MVar depending on **regulation_mode**)
+            - **local_target_v**: define the local target voltage in kV (used if **regulation_mode** is VOLTAGE, **regulating** is True
+                and no **regulating_element_id** is defined)
+            - **local_target_q**: define the local target reactive power in MVar (used if **regulating** is False)
 
         Examples:
             Using keyword arguments:
@@ -5182,8 +5200,9 @@ class Network:  # pylint: disable=too-many-public-methods
                                           target_p=100,
                                           min_p=0,
                                           max_p=200,
-                                          target_v=400,
-                                          voltage_regulator_on=True)
+                                          local_target_v=400,
+                                          regulating=True,
+                                          regulation_mode='VOLTAGE')
         """
         self._create_elements(ElementType.GENERATOR, [df], **kwargs)
 

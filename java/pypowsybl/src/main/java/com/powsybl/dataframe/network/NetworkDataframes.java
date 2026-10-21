@@ -11,8 +11,8 @@ import com.powsybl.commons.PowsyblException;
 import com.powsybl.dataframe.BooleanSeriesMapper;
 import com.powsybl.dataframe.DataframeElementType;
 import com.powsybl.dataframe.DoubleSeriesMapper;
-import com.powsybl.dataframe.network.extensions.NetworkExtensions;
 import com.powsybl.dataframe.network.extensions.ExtensionDataframeKey;
+import com.powsybl.dataframe.network.extensions.NetworkExtensions;
 import com.powsybl.dataframe.update.UpdatingDataframe;
 import com.powsybl.iidm.network.*;
 import com.powsybl.iidm.network.regulation.RegulationMode;
@@ -28,7 +28,7 @@ import java.util.function.*;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
-import static com.powsybl.dataframe.MappingUtils.*;
+import static com.powsybl.dataframe.MappingUtils.ifExistsInt;
 import static com.powsybl.dataframe.network.PerUnitUtil.*;
 
 /**
@@ -335,13 +335,20 @@ public final class NetworkDataframes {
                 .doubles(MAX_Q_AT_P, getPerUnitMaxQ(getOppositeP()), false)
                 .doubles("rated_s", (g, context) -> g.getRatedS(), (g, ratedS, context) -> g.setRatedS(ratedS))
                 .strings("reactive_limits_kind", NetworkDataframes::getReactiveLimitsKind)
-                .doubles("target_v", (g, context) -> perUnitTargetV(context, g.getTargetV(), g.getRegulatingTerminal(), g.getTerminal()),
+                .deprecatedDoubles("target_v", (g, context) -> perUnitTargetV(context, g.getTargetV(), g.getRegulatingTerminal(), g.getTerminal()),
                     (g, v, context) -> g.setTargetV(unPerUnitTargetV(context, v, g.getRegulatingTerminal(), g.getTerminal())))
-                .doubles("equivalent_local_target_v", (g, context) -> perUnitV(context, g.getEquivalentLocalTargetV(), g.getTerminal()), false)
-                .doubles("target_q", (g, context) -> perUnitPQ(context, g.getTargetQ()), (g, q, context) -> g.setTargetQ(unPerUnitPQ(context, q)))
-                .booleans("voltage_regulator_on", Generator::isVoltageRegulatorOn, Generator::setVoltageRegulatorOn)
+                .deprecatedDoubles("equivalent_local_target_v", (g, context) -> perUnitV(context, g.getEquivalentLocalTargetV(), g.getTerminal()), false)
+                .deprecatedDoubles("target_q", (g, context) -> perUnitPQ(context, g.getTargetQ()), (g, q, context) -> g.setTargetQ(unPerUnitPQ(context, q)))
+                .deprecatedBooleans("voltage_regulator_on", Generator::isVoltageRegulatorOn, Generator::setVoltageRegulatorOn)
+                .doubles("local_target_v", (g, context) -> perUnitV(context, g.getLocalTargetV(), g.getTerminal()),
+                        (g, v, context) -> g.setLocalTargetV(unPerUnitV(context, v, g.getTerminal())))
+                .doubles("local_target_q", (g, context) -> perUnitPQ(context, g.getLocalTargetQ()), (g, q, context) -> g.setLocalTargetQ(unPerUnitPQ(context, q)))
+                .booleans("regulating", RegulationUtil::isRegulating, RegulationUtil::setRegulating)
+                .enums("regulation_mode", RegulationMode.class, RegulationUtil::getRegulationMode, RegulationUtil::setRegulationMode)
+                .doubles("regulation_value", RegulationUtil::getRegulationValue, RegulationUtil::setRegulationValue)
                 .strings("regulated_element_id", generator -> NetworkUtil.getRegulatedElementId(generator::getRegulatingTerminal),
-                        (generator, elementId) -> NetworkUtil.setRegulatingTerminal(generator::setRegulatingTerminal, generator.getNetwork(), elementId))
+                        (generator, elementId) -> NetworkUtil.setRegulatingTerminal(t -> RegulationUtil.setRegulatingTerminal(generator, t),
+                                generator.getNetwork(), elementId))
                 .strings(REGULATED_BUS_ID, generator -> getBusId(generator.getRegulatingTerminal()), false)
                 .strings(REGULATED_BUS_BREAKER_BUS_ID, generator -> getBusBreakerViewBusId(generator.getRegulatingTerminal()), false)
                 .doubles("p", getPerUnitP(), setPerUnitP())
