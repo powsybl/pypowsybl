@@ -80,17 +80,34 @@ def test_substation_exceptions():
     assert exc.match('Data of column "voltage_regulator_on" has the wrong type, expected bool')
 
 
+def test_deprecated_generators_creation():
+    n = pn.create_eurostag_tutorial_example1_network()
+    with pytest.warns(DeprecationWarning) as record:
+        n.create_generators(pd.DataFrame.from_records(
+            data=[('GEN3', 'GEN THREE', 4999, -9999.99, 'VLHV1', True, 100, 150, 300, 'NHV1')],
+            columns=['id', 'name', 'max_p', 'min_p', 'voltage_level_id',
+                     'voltage_regulator_on', 'target_p', 'target_q', 'target_v', 'bus_id'],
+            index='id'))
+    deprecated_columns = ['voltage_regulator_on', 'target_q', 'target_v']
+    assert len(record) == 3
+    for i, column in enumerate(deprecated_columns):
+        assert f'Column "{column}" is deprecated' in record[i].message.args[0]
+
+
 def test_generators_creation():
     n = pn.create_eurostag_tutorial_example1_network()
     n.create_generators(pd.DataFrame.from_records(
-        data=[('GEN3', 'GEN THREE', 4999, -9999.99, 'VLHV1', True, 100, 150, 300, 'NHV1')],
-        columns=['id', 'name', 'max_p', 'min_p', 'voltage_level_id',
-                 'voltage_regulator_on', 'target_p', 'target_q', 'target_v', 'bus_id'],
+        data=[('GEN3', 'GEN THREE', 4999, -9999.99, 'VLHV1', 'VOLTAGE', True, 100, 150, 300, 'NHV1')],
+        columns=['id', 'name', 'max_p', 'min_p', 'voltage_level_id', 'regulation_mode',
+                 'regulating', 'target_p', 'local_target_q', 'local_target_v', 'bus_id'],
         index='id'))
     gen3 = n.get_generators().loc['GEN3']
     assert gen3['name'] == 'GEN THREE'
     assert gen3.target_p == 100.0
-    assert gen3.target_q == 150.0
+    assert gen3.local_target_q == 150.0
+    assert gen3.local_target_v == 300.0
+    assert gen3.regulating
+    assert gen3.regulation_mode == "VOLTAGE"
     assert gen3.voltage_level_id == 'VLHV1'
     assert gen3.bus_id == 'VLHV1_0'
 
@@ -98,16 +115,18 @@ def test_generators_creation():
 def test_generators_kwargs():
     n = pn.create_eurostag_tutorial_example1_network()
     n.create_generators(id='GEN3', max_p=200, min_p=50, voltage_level_id='VLHV1', bus_id='NHV1',
-                        voltage_regulator_on=True, target_p=100, target_q=0, target_v=400,
-                        equivalent_local_target_v=400)
+                        regulating=True, regulation_mode="REACTIVE_POWER", regulating_element_id="LOAD",
+                        regulation_value=100, target_p=100, local_target_q=0, local_target_v=400)
     gen3 = n.get_generators(all_attributes=True).loc['GEN3']
     assert gen3.max_p == 200.0
     assert gen3.min_p == 50.0
     assert gen3.target_p == 100.0
-    assert gen3.target_q == 0
-    assert gen3.target_v == 400
-    assert gen3.equivalent_local_target_v == 400
-    assert gen3.voltage_regulator_on
+    assert gen3.local_target_q == 0
+    assert gen3.local_target_v == 400
+    assert gen3.regulating
+    assert gen3.regulation_mode == "REACTIVE_POWER"
+    assert gen3.regulated_element_id == "LOAD"
+    assert gen3.regulation_value == 100.0
     assert gen3.voltage_level_id == 'VLHV1'
     assert gen3.bus_id == 'VLHV1_0'
 
@@ -713,7 +732,7 @@ def test_create_node_breaker_network_and_run_loadflow():
 
     generators = pd.DataFrame.from_records(index='id', data=[
         {'voltage_level_id': 'VL1', 'id': 'GEN', 'node': 3, 'target_p': 100, 'min_p': 0, 'max_p': 200,
-         'target_v': 400, 'voltage_regulator_on': True, 'regulating_element_id': 'LOAD'}
+         'regulation_value': 400, 'regulating': True, 'regulation_mode': 'VOLTAGE', 'regulating_element_id': 'LOAD'}
     ])
     n.create_generators(generators)
 
