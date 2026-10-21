@@ -16,6 +16,7 @@ import com.powsybl.entsoe.util.EntsoeGeographicalCode;
 import com.powsybl.iidm.network.*;
 import com.powsybl.iidm.network.extensions.*;
 import com.powsybl.iidm.network.regulation.RegulationMode;
+import com.powsybl.iidm.network.regulation.VoltageRegulation;
 import com.powsybl.iidm.network.test.*;
 import com.powsybl.python.network.Networks;
 import org.junit.jupiter.api.Disabled;
@@ -216,7 +217,7 @@ class NetworkElementAddersTest {
     }
 
     @Test
-    void generator() {
+    void deprecatedGenerator() {
         var network = EurostagTutorialExample1Factory.create();
         var dataframe = new DefaultUpdatingDataframe(1);
         addDoubleColumn(dataframe, "max_p", 3.0d);
@@ -233,6 +234,50 @@ class NetworkElementAddersTest {
         addIntColumn(dataframe, "condenser", 1);
         NetworkElementAdders.addElements(DataframeElementType.GENERATOR, network, singletonList(dataframe));
         assertEquals(2, network.getGeneratorCount());
+        Generator generator = network.getGenerator("test");
+        VoltageRegulation regulation = generator.getVoltageRegulation();
+        assertNotNull(regulation);
+        assertTrue(regulation.isRegulating());
+        assertEquals(RegulationMode.VOLTAGE, regulation.getMode());
+        assertTrue(Double.isNaN(regulation.getTargetValue()));
+        assertNull(regulation.getTerminal());
+        assertEquals(6.0d, generator.getLocalTargetV());
+        assertEquals(7.0d, generator.getLocalTargetQ());
+    }
+
+    @Test
+    void generator() {
+        var network = EurostagTutorialExample1Factory.create();
+        var dataframe = new DefaultUpdatingDataframe(1);
+        addDoubleColumn(dataframe, "max_p", 3.0d);
+        addDoubleColumn(dataframe, "min_p", 1.0d);
+        addDoubleColumn(dataframe, "target_p", 4.0d);
+        addDoubleColumn(dataframe, "local_target_v", 6.0d);
+        addDoubleColumn(dataframe, "local_target_q", 7.0d);
+        addDoubleColumn(dataframe, "rated_s", 5.0d);
+        addStringColumn(dataframe, "id", "test");
+        addStringColumn(dataframe, "voltage_level_id", "VLGEN");
+        addStringColumn(dataframe, "connectable_bus_id", "NGEN");
+        addStringColumn(dataframe, "bus_id", "NGEN");
+        addIntColumn(dataframe, "regulating", 1);
+        addStringColumn(dataframe, "regulation_mode", "VOLTAGE");
+        addStringColumn(dataframe, "regulating_element_id", "LOAD");
+        addIntColumn(dataframe, "condenser", 1);
+
+        assertThrows(ValidationException.class, () -> NetworkElementAdders.addElements(DataframeElementType.GENERATOR, network, singletonList(dataframe)));
+
+        addDoubleColumn(dataframe, "regulation_value", 8.0d);
+        NetworkElementAdders.addElements(DataframeElementType.GENERATOR, network, singletonList(dataframe));
+        assertEquals(2, network.getGeneratorCount());
+        Generator generator = network.getGenerator("test");
+        VoltageRegulation regulation = generator.getVoltageRegulation();
+        assertNotNull(regulation);
+        assertTrue(regulation.isRegulating());
+        assertEquals(RegulationMode.VOLTAGE, regulation.getMode());
+        assertEquals(8.0d, regulation.getTargetValue());
+        assertEquals(network.getLoad("LOAD").getTerminal(), regulation.getTerminal());
+        assertEquals(6.0d, generator.getLocalTargetV());
+        assertEquals(7.0d, generator.getLocalTargetQ());
     }
 
     @Disabled
