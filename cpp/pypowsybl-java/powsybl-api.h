@@ -196,7 +196,9 @@ typedef enum {
     VOLTAGE_SOURCE_CONVERTER,
     DC_GROUND,
     DC_SWITCH,
-    DC_BUS
+    DC_BUS,
+    OVERLOAD_MANAGEMENT_SYSTEM,
+    OVERLOAD_MANAGEMENT_SYSTEM_TRIPPING
 } element_type;
 
 typedef enum {
@@ -328,6 +330,7 @@ typedef struct series_metadata_struct {
     unsigned char  is_index;
     unsigned char  is_modifiable;
     unsigned char  is_default;
+    unsigned char  is_deprecated;
 } series_metadata;
 
 /**

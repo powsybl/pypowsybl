@@ -416,7 +416,9 @@ PYBIND11_MODULE(_pypowsybl, m) {
             .value("VOLTAGE_SOURCE_CONVERTER", element_type::VOLTAGE_SOURCE_CONVERTER)
             .value("DC_GROUND", element_type::DC_GROUND)
             .value("DC_SWITCH", element_type::DC_SWITCH)
-            .value("DC_BUS", element_type::DC_BUS);
+            .value("DC_BUS", element_type::DC_BUS)
+            .value("OVERLOAD_MANAGEMENT_SYSTEM", element_type::OVERLOAD_MANAGEMENT_SYSTEM)
+            .value("OVERLOAD_MANAGEMENT_SYSTEM_TRIPPING", element_type::OVERLOAD_MANAGEMENT_SYSTEM_TRIPPING);
 
     py::enum_<filter_attributes_type>(m, "FilterAttributesType")
             .value("ALL_ATTRIBUTES", filter_attributes_type::ALL_ATTRIBUTES)
@@ -1069,12 +1071,14 @@ PYBIND11_MODULE(_pypowsybl, m) {
     bindArray<pypowsybl::SeriesArray>(m, "SeriesArray");
 
     py::class_<pypowsybl::SeriesMetadata>(m, "SeriesMetadata", "Metadata about one series")
+            .def(py::init<const std::string&, int, bool, bool, bool, bool>())
             .def(py::init<const std::string&, int, bool, bool, bool>())
             .def_property_readonly("name", &pypowsybl::SeriesMetadata::name, "Name of this series.")
             .def_property_readonly("type", &pypowsybl::SeriesMetadata::type)
             .def_property_readonly("is_index", &pypowsybl::SeriesMetadata::isIndex)
             .def_property_readonly("is_modifiable", &pypowsybl::SeriesMetadata::isModifiable)
-            .def_property_readonly("is_default", &pypowsybl::SeriesMetadata::isDefault);
+            .def_property_readonly("is_default", &pypowsybl::SeriesMetadata::isDefault)
+            .def_property_readonly("is_deprecated", &pypowsybl::SeriesMetadata::isDeprecated);
 
     m.def("get_network_elements_dataframe_metadata", &pypowsybl::getNetworkDataframeMetadata, "Get dataframe metadata for a given network element type",
           py::arg("element_type"));

@@ -660,7 +660,9 @@ public final class PyPowsyblApiHeader {
         VOLTAGE_SOURCE_CONVERTER,
         DC_GROUND,
         DC_SWITCH,
-        DC_BUS;
+        DC_BUS,
+        OVERLOAD_MANAGEMENT_SYSTEM,
+        OVERLOAD_MANAGEMENT_SYSTEM_TRIPPING;
 
         @CEnumValue
         public native int getCValue();
@@ -910,6 +912,12 @@ public final class PyPowsyblApiHeader {
 
         @CField("is_default")
         void setDefault(boolean attDefault);
+
+        @CField("is_deprecated")
+        boolean isDeprecated();
+
+        @CField("is_deprecated")
+        void setDeprecated(boolean deprecated);
 
         SeriesMetadataPointer addressOf(int index);
     }
