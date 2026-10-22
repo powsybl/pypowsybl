@@ -127,6 +127,17 @@ python setup.py build --debug develop --user
 
 Please refer to pip and setuptools documentations for more information.
 
+### Building with extra Java plug-ins
+
+A native image cannot load Java code at run time and the layered graalvm feature is still alpha, so a powsybl plug-in (for example an additional importer or exporter shipped as a jar) can only be added to pypowsybl when the native library is built. Set `PYPOWSYBL_EXTRA_JARS` to the
+plug-in's jars, separated by the platform path separator (`:` on Linux and macOS, `;` on Windows), before building:
+
+```bash
+export PYPOWSYBL_EXTRA_JARS=/path/plugin.jar:/path/dependency.jar
+pip install .
+```
+
+
 To run unit tests:
 
 ```bash
