@@ -1138,6 +1138,7 @@ SeriesArray* getCracHvdcRangeActions(const JavaHandle& cracHandle);
 SeriesArray* getCracInjectionRangeActions(const JavaHandle& cracHandle);
 SeriesArray* getNetworkElementIdsAndKeys(const JavaHandle& cracHandle);
 SeriesArray* getCracCounterTradeRangeActions(const JavaHandle& cracHandle);
+SeriesArray* getCracCounterTradeConnectedAreas(const JavaHandle& cracHandle);
 SeriesArray* getCracRangeActionRanges(const JavaHandle& cracHandle);
 SeriesArray* getCracNetworkActions(const JavaHandle& cracHandle);
 SeriesArray* getCracTerminalConnectionActions(const JavaHandle& cracHandle);
