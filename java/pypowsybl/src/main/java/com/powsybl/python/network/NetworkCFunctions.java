@@ -1955,7 +1955,7 @@ public final class NetworkCFunctions {
                 threeWtsStyles = Collections.emptyMap();
             }
 
-            nadParameters.setStyleProviderFactory(network -> new CustomStyleProvider(busStyles, edgesStyles, threeWtsStyles));
+            nadParameters.setStyleProviderFactory(network -> new CustomStyleProvider(busStyles, edgesStyles, threeWtsStyles, null));
         }
     }
 

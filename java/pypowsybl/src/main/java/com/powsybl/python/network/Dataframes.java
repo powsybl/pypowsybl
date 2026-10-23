@@ -14,7 +14,7 @@ import com.powsybl.dataframe.DataframeMapper;
 import com.powsybl.dataframe.DataframeMapperBuilder;
 import com.powsybl.dataframe.impl.DefaultDataframeHandler;
 import com.powsybl.dataframe.impl.Series;
-import com.powsybl.flow_decomposition.FlowDecompositionResults;
+import com.powsybl.flowdecomposition.FlowDecompositionResults;
 import com.powsybl.iidm.network.*;
 import com.powsybl.iidm.network.extensions.ConnectablePosition;
 import com.powsybl.python.commons.PyPowsyblApiHeader.ArrayPointer;
@@ -283,7 +283,7 @@ public final class Dataframes {
                 .strings("limit_name", p -> Objects.toString(p.getLimitName(), ""))
                 .doubles("limit", LimitViolation::getLimit)
                 .ints("acceptable_duration", LimitViolation::getAcceptableDuration)
-                .doubles("limit_reduction", LimitViolation::getLimitReduction)
+                .doubles("limit_reduction", LimitViolation::getLimitScaling)
                 .doubles("value", LimitViolation::getValue)
                 .strings("side", p -> Objects.toString(p.getSide(), ""))
                 .build();
@@ -563,7 +563,7 @@ public final class Dataframes {
                 .strings("limit_name", p -> Objects.toString(p.getLimitName(), ""))
                 .doubles("limit", LimitViolation::getLimit)
                 .ints("acceptable_duration", LimitViolation::getAcceptableDuration)
-                .doubles("limit_reduction", LimitViolation::getLimitReduction)
+                .doubles("limit_reduction", LimitViolation::getLimitScaling)
                 .doubles("value", LimitViolation::getValue)
                 .strings("side", p -> Objects.toString(p.getSide(), ""))
                 .build();

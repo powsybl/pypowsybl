@@ -7,10 +7,10 @@
  */
 package com.powsybl.python.flow_decomposition;
 
-import com.powsybl.flow_decomposition.FlowDecompositionComputer;
-import com.powsybl.flow_decomposition.FlowDecompositionParameters;
-import com.powsybl.flow_decomposition.FlowDecompositionResults;
-import com.powsybl.flow_decomposition.XnecProvider;
+import com.powsybl.flowdecomposition.FlowDecompositionComputer;
+import com.powsybl.flowdecomposition.FlowDecompositionParameters;
+import com.powsybl.flowdecomposition.FlowDecompositionResults;
+import com.powsybl.flowdecomposition.XnecProvider;
 import com.powsybl.iidm.network.Network;
 import com.powsybl.loadflow.LoadFlowParameters;
 import com.powsybl.loadflow.LoadFlowProvider;
