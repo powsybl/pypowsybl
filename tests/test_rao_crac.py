@@ -197,13 +197,20 @@ class TestRaoCrac:
 
     def test_counter_trade_range_actions(self):
         df = self.crac.get_counter_trade_range_actions()
-        assert ['name', 'operator', 'exporting_area', 'importing_area', 'group_id', 'speed', 'activation_cost',
+        assert ['name', 'operator', 'area_id', 'group_id', 'speed', 'activation_cost',
                 'variation_cost_up', 'variation_cost_down', 'initial_set_point'] == list(df.columns)
         action = df.loc['counterTradeRange1Id']
         assert 'counterTradeRange1Name' == action['name']
+        assert 'FR' == action['area_id']
         assert 30 == action['speed']
         assert math.isclose(10000.0, action['activation_cost'])
         assert 0.0 == action['initial_set_point']
+
+    def test_counter_trade_connected_areas(self):
+        df = self.crac.get_counter_trade_connected_areas()
+        assert ['area_id', 'min', 'max', 'range_type'] == list(df.columns)
+        action = df.loc['counterTradeRange1Id']
+        assert 'DE' == action['area_id']
 
     def test_ranges(self):
         df = self.crac.get_ranges()
