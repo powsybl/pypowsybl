@@ -15,9 +15,10 @@ from pypowsybl.opf.impl.util import TRACE_LEVEL
 
 logger = logging.getLogger(__name__)
 
-#TODO add current limits in DC line core modelization
-MIN_DC_CURRENT = -2.0
-MAX_DC_CURRENT = 2.0
+# TODO add current limits in DC line core modelization.
+# I_base = S_base / V_base = 100 MVA / 500 kV = 0.2 kA. Until limits are implemented, 20 pu allows for 4 kA.
+MIN_DC_CURRENT = -20.0
+MAX_DC_CURRENT = 20.0
 class DcLineCurrentBounds(VariableBounds):
     def add(self, parameters: ModelParameters, network_cache: NetworkCache,
             variable_context: VariableContext, model: Model) -> None:
@@ -29,5 +30,4 @@ class DcLineCurrentBounds(VariableBounds):
 
             logger.log(TRACE_LEVEL, f"Add current bounds: [{MIN_DC_CURRENT}, {MAX_DC_CURRENT}] to dc line '{row.Index}' (num={dc_line_num})'")
 
-            model.set_variable_bounds(variable_context.closed_dc_line_i1_vars[dc_line_index], MIN_DC_CURRENT, MAX_DC_CURRENT)
-            model.set_variable_bounds(variable_context.closed_dc_line_i2_vars[dc_line_index], MIN_DC_CURRENT, MAX_DC_CURRENT)
+            model.set_variable_bounds(variable_context.closed_dc_line_i_vars[dc_line_index], MIN_DC_CURRENT, MAX_DC_CURRENT)

@@ -5,7 +5,7 @@
 # SPDX-License-Identifier: MPL-2.0
 #
 import pyoptinterface as poi
-from pyoptinterface import ExprBuilder, nl
+from pyoptinterface import ExprBuilder
 
 from pypowsybl.opf.impl.model.cost_function import CostFunction
 from pypowsybl.opf.impl.model.network_cache import NetworkCache
@@ -17,7 +17,9 @@ class MinimizeDcLossesFunction(CostFunction):
         super().__init__('Minimal Dc Losses')
 
     def create(self, network_cache: NetworkCache, variable_context: VariableContext) -> ExprBuilder:
+        # By Tellegen's theorem, the AC power drawn by all converters equals what the DC system dissipates at any
+        # feasible point: converter losses plus r*i^2 in every DC line and switch (grounds sit at 0 V).
         cost = poi.ExprBuilder()
-        for dc_line_num, dc_line_row in enumerate(network_cache.dc_lines.itertuples()):
-            cost+= variable_context.closed_dc_line_i1_vars[dc_line_num]**2 + variable_context.closed_dc_line_i2_vars[dc_line_num]**2
+        for conv_p_var in variable_context.conv_p_vars:
+            cost += conv_p_var
         return cost
