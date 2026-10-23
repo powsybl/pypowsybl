@@ -29,6 +29,8 @@ import java.util.stream.Collectors;
 import static com.powsybl.python.commons.Util.SPECIFIC_PARAMETERS_MAPPER;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
  * @author Sylvain Leclerc {@literal <sylvain.leclerc at rte-france.com>}
@@ -192,6 +194,36 @@ class DataframeMapperBuilderTest {
         assertThat(series)
             .extracting(com.powsybl.dataframe.impl.Series::getName)
             .containsExactly("id", "str", "int", "double", "color");
+    }
+
+    @Test
+    void testOptionalStrings() {
+        DataframeMapper<Container, Void> mapper = new DataframeMapperBuilder<Container, Element, Void>()
+            .itemsProvider(Container::getElements)
+            .stringsIndex("id", Element::getId)
+            .optionalStrings("opt", e -> Optional.ofNullable(e.getStrValue()))
+            .build();
+
+        Container container = new Container(
+            new Element("el1", "val1", 1.0, 1, Color.RED),
+            new Element("el2", null, 2.0, 2, Color.BLUE)
+        );
+
+        List<com.powsybl.dataframe.impl.Series> series = new ArrayList<>();
+        mapper.createDataframe(container, new DefaultDataframeHandler(series::add), new DataframeFilter());
+
+        assertThat(series)
+            .extracting(com.powsybl.dataframe.impl.Series::getName)
+            .containsExactly("id", "opt");
+        String[] ids = series.get(0).getStrings();
+        String[] values = series.get(1).getStrings();
+        Map<String, String> valueById = new HashMap<>();
+        for (int i = 0; i < ids.length; i++) {
+            valueById.put(ids[i], values[i]);
+        }
+        assertEquals("val1", valueById.get("el1"));
+        assertNull(valueById.get("el2"));
+        assertTrue(valueById.containsKey("el2"));
     }
 
     UpdatingDataframe createDataframe(int size) {

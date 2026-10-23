@@ -75,6 +75,13 @@ public class DefaultDataframeHandler implements DataframeHandler {
     }
 
     @Override
+    public OptionalStringSeriesWriter newOptionalStringSeries(String name, int size) {
+        String[] values = new String[size];
+        seriesConsumer.accept(new Series(name, values));
+        return (i, s) -> values[i] = s.orElse(null);
+    }
+
+    @Override
     public BooleanSeriesWriter newBooleanSeries(String name, int size) {
         boolean[] values = new boolean[size];
         seriesConsumer.accept(new Series(name, values));
