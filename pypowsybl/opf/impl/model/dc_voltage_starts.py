@@ -62,7 +62,8 @@ def compute_dc_node_voltage_starts(network_cache: NetworkCache) -> dict[str, flo
 
     for node1_id, node2_id, value in differences:
         # A zero difference cannot anchor: it would place both terminals at the same voltage.
-        if value == 0.0 or node1_id in starts or node2_id in starts:
+        # SonarQube forbids comparison to zero, which would be better appropriate in this case.
+        if math.isclose(value, 0.0, abs_tol=1e-9) or node1_id in starts or node2_id in starts:
             continue
         starts[node1_id] = value / 2.0
         starts[node2_id] = -value / 2.0
