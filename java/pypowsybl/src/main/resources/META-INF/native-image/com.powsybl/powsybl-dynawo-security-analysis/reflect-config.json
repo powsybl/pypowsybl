@@ -1,0 +1,27 @@
+[
+  {
+    "name":"com.powsybl.dynawo.security.DynawoSecurityAnalysisProvider",
+    "queryAllDeclaredConstructors" : true,
+    "queryAllPublicConstructors" : true,
+    "queryAllDeclaredMethods" : true,
+    "queryAllPublicMethods" : true,
+    "allDeclaredClasses" : true,
+    "allDeclaredFields" : true,
+    "allPublicClasses" : true,
+    "allPublicMethods" : true,
+    "allPublicConstructors" : true,
+    "methods":[{"name":"<init>","parameterTypes":[] }]
+  },
+  {
+    "name":"com.powsybl.security.dynamic.DynamicSecurityAnalysisParameters",
+    "queryAllDeclaredConstructors" : true,
+    "queryAllPublicConstructors" : true,
+    "queryAllDeclaredMethods" : true,
+    "queryAllPublicMethods" : true,
+    "allDeclaredClasses" : true,
+    "allDeclaredFields" : true,
+    "allPublicClasses" : true,
+    "allPublicMethods" : true,
+    "allPublicConstructors" : true
+  }
+]

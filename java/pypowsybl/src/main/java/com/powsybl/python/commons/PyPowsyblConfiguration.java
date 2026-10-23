@@ -68,4 +68,8 @@ public final class PyPowsyblConfiguration {
     public static String getDefaultDynamicSimulationProvider() {
         return DEFAULT_DYNAMIC_SIMULATION_PROVIDER;
     }
+
+    public static String getDefaultDynamicSecurityAnalysisProvider() {
+        return DEFAULT_DYNAMIC_SIMULATION_PROVIDER;
+    }
 }

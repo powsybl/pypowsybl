@@ -45,13 +45,18 @@ public final class DynamicSimulationParametersCUtils {
     }
 
     public static DynamicSimulationParameters createDynamicSimulationParameters(DynamicSimulationParametersPointer parametersPointer) {
+        return createDynamicSimulationParameters(parametersPointer.getStartTime(), parametersPointer.getStopTime(),
+                getSpecificParameters(parametersPointer));
+    }
+
+    public static DynamicSimulationParameters createDynamicSimulationParameters(double startTime, double stopTime,
+                                                                                Map<String, String> providerParameters) {
         DynamicSimulationParameters parameters = createDynamicSimulationParameters()
-                .setStartTime(parametersPointer.getStartTime())
-                .setStopTime(parametersPointer.getStopTime());
+                .setStartTime(startTime)
+                .setStopTime(stopTime);
         DynawoSimulationParameters specificParameters = createSpecificDynamicSimulationParameters(parameters);
-        Map<String, String> specificParametersMap = getSpecificParameters(parametersPointer);
-        if (!specificParametersMap.isEmpty()) {
-            specificParameters.update(specificParametersMap);
+        if (!providerParameters.isEmpty()) {
+            specificParameters.update(providerParameters);
         }
         return parameters;
     }
