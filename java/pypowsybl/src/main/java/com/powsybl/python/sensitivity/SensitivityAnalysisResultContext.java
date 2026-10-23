@@ -42,6 +42,10 @@ public class SensitivityAnalysisResultContext {
         this.referencesByContingencyId = referencesByContingencyId;
     }
 
+    double[] getBaseCaseValues() {
+        return baseCaseValues;
+    }
+
     private double[] getValues(String contingencyId) {
         return contingencyId.isEmpty() ? baseCaseValues : valuesByContingencyId.get(contingencyId);
     }
