@@ -15,7 +15,6 @@ import com.powsybl.openrao.data.crac.api.cnec.VoltageCnec;
 import com.powsybl.openrao.data.crac.api.networkaction.NetworkAction;
 import com.powsybl.openrao.data.crac.api.networkaction.SwitchPair;
 import com.powsybl.openrao.data.crac.api.range.RangeType;
-import com.powsybl.openrao.data.crac.api.range.StandardRange;
 import com.powsybl.openrao.data.crac.api.rangeaction.*;
 import com.powsybl.openrao.data.crac.api.threshold.Threshold;
 import com.powsybl.openrao.data.crac.api.usagerule.OnConstraint;
