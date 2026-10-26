@@ -15,6 +15,7 @@ import com.powsybl.dataframe.network.extensions.NetworkExtensions;
 import com.powsybl.dataframe.network.extensions.ExtensionDataframeKey;
 import com.powsybl.dataframe.update.UpdatingDataframe;
 import com.powsybl.iidm.network.*;
+import com.powsybl.iidm.network.regulation.RegulationMode;
 import com.powsybl.python.commons.PyPowsyblApiHeader;
 import com.powsybl.python.network.NetworkUtil;
 import com.powsybl.python.network.SideEnum;
@@ -38,6 +39,7 @@ import static com.powsybl.dataframe.network.PerUnitUtil.*;
  * @author Yichen TANG {@literal <yichen.tang at rte-france.com>}
  * @author Sylvain Leclerc {@literal <sylvain.leclerc at rte-france.com>}
  */
+@SuppressWarnings("java:S5738") // removing "deprecated" warnings before voltage refactoring integration
 public final class NetworkDataframes {
 
     private static final Map<DataframeElementType, NetworkDataframeMapper> MAPPERS = createMappers();
@@ -52,6 +54,7 @@ public final class NetworkDataframes {
     private static final String REGULATED_BUS_ID = "regulated_bus_id";
     private static final String REGULATED_BUS_BREAKER_BUS_ID = "regulated_bus_breaker_bus_id";
     private static final String REGULATING = "regulating";
+    private static final String REGULATION_MODE = "regulation_mode";
 
     private NetworkDataframes() {
     }
@@ -829,7 +832,7 @@ public final class NetworkDataframes {
                 .doubles(MIN_Q_AT_P, getPerUnitMinQ(getOppositeP()), false)
                 .doubles(MAX_Q_AT_P, getPerUnitMaxQ(getOppositeP()), false)
                 .strings("reactive_limits_kind", NetworkDataframes::getReactiveLimitsKind)
-                .doubles("target_v", (vsc, context) -> perUnitTargetV(context, vsc.getVoltageSetpoint(), vsc.getRegulatingTerminal(), vsc.getTerminal()),
+                .doubles("target_v", (vsc, context) -> perUnitTargetV(context, vsc.getRegulatingTargetV(), vsc.getRegulatingTerminal(), vsc.getTerminal()),
                     (vsc, targetV, context) -> vsc.setVoltageSetpoint(unPerUnitTargetV(context, targetV, vsc.getRegulatingTerminal(), vsc.getTerminal())))
                 .doubles("target_q", (vsc, context) -> perUnitPQ(context, vsc.getReactivePowerSetpoint()),
                     (vsc, targetQ, context) -> vsc.setReactivePowerSetpoint(unPerUnitPQ(context, targetQ)))
@@ -858,12 +861,12 @@ public final class NetworkDataframes {
                 .strings("name", svc -> svc.getOptionalName().orElse(""), Identifiable::setName)
                 .doubles("b_min", (svc, context) -> svc.getBmin(), (svc, bMin, context) -> svc.setBmin(bMin))
                 .doubles("b_max", (svc, context) -> svc.getBmax(), (svc, bMax, context) -> svc.setBmax(bMax))
-                .doubles("target_v", (svc, context) -> perUnitTargetV(context, svc.getVoltageSetpoint(), svc.getRegulatingTerminal(), svc.getTerminal()),
+                .doubles("target_v", (svc, context) -> perUnitTargetV(context, svc.getRegulatingTargetV(), svc.getRegulatingTerminal(), svc.getTerminal()),
                     (svc, targetV, context) -> svc.setVoltageSetpoint(unPerUnitTargetV(context, targetV, svc.getRegulatingTerminal(), svc.getTerminal())))
                 .doubles("target_q", (svc, context) -> perUnitPQ(context, svc.getReactivePowerSetpoint()),
                     (svc, targetQ, context) -> svc.setReactivePowerSetpoint(unPerUnitPQ(context, targetQ)))
-                .enums("regulation_mode", StaticVarCompensator.RegulationMode.class,
-                        StaticVarCompensator::getRegulationMode, StaticVarCompensator::setRegulationMode)
+                .enums(REGULATION_MODE, RegulationMode.class,
+                        svc -> svc.getVoltageRegulation().getMode(), (svc, mode) -> svc.getVoltageRegulation().setMode(mode))
                 .booleans(REGULATING, StaticVarCompensator::isRegulating, StaticVarCompensator::setRegulating)
                 .strings("regulated_element_id", svc -> NetworkUtil.getRegulatedElementId(svc::getRegulatingTerminal),
                         (svc, elementId) -> NetworkUtil.setRegulatingTerminal(svc::setRegulatingTerminal, svc.getNetwork(), elementId))
@@ -1460,22 +1463,24 @@ public final class NetworkDataframes {
 
         @Override
         public String getRtcRegulatedSide() {
-            return NetworkDataframes.getTapChangerRegulatedSide(twt, TwoWindingsTransformer::getRatioTapChanger);
+            return getTerminalSideStr(twt, twt.getRatioTapChanger().getRegulatingTerminal());
         }
 
         @Override
         public void setRtcRegulatedSide(String regulatedSide) {
-            NetworkDataframes.setTapChangerRegulatedSide(twt, regulatedSide, TwoWindingsTransformer::getRatioTapChanger);
+            RatioTapChanger rtc = this.getRtc();
+            rtc.getVoltageRegulation().setTerminal(getBranchTerminal(twt, regulatedSide),
+                    rtc.getRegulatingTargetV());
         }
 
         @Override
         public String getPtcRegulatedSide() {
-            return NetworkDataframes.getTapChangerRegulatedSide(twt, TwoWindingsTransformer::getPhaseTapChanger);
+            return getTerminalSideStr(twt, twt.getPhaseTapChanger().getRegulationTerminal());
         }
 
         @Override
         public void setPtcRegulatedSide(String regulatedSide) {
-            NetworkDataframes.setTapChangerRegulatedSide(twt, regulatedSide, TwoWindingsTransformer::getPhaseTapChanger);
+            twt.getPhaseTapChanger().setRegulationTerminal(getBranchTerminal(twt, regulatedSide));
         }
     }
 
@@ -1502,22 +1507,24 @@ public final class NetworkDataframes {
 
         @Override
         public String getRtcRegulatedSide() {
-            return NetworkDataframes.getTapChangerRegulatedSide(twt, side, ThreeWindingsTransformer.Leg::getRatioTapChanger);
+            return getTerminalSideStr(twt, this.getRtc().getRegulatingTerminal());
         }
 
         @Override
         public void setRtcRegulatedSide(String regulatedSide) {
-            NetworkDataframes.setTapChangerRegulatedSide(twt, side, regulatedSide, ThreeWindingsTransformer.Leg::getRatioTapChanger);
+            RatioTapChanger rtc = this.getRtc();
+            rtc.getVoltageRegulation().setTerminal(twt.getTerminal(ThreeSides.valueOf(regulatedSide)),
+                    rtc.getRegulatingTargetV());
         }
 
         @Override
         public String getPtcRegulatedSide() {
-            return NetworkDataframes.getTapChangerRegulatedSide(twt, side, ThreeWindingsTransformer.Leg::getPhaseTapChanger);
+            return getTerminalSideStr(twt, this.getPtc().getRegulationTerminal());
         }
 
         @Override
         public void setPtcRegulatedSide(String regulatedSide) {
-            NetworkDataframes.setTapChangerRegulatedSide(twt, side, regulatedSide, ThreeWindingsTransformer.Leg::getPhaseTapChanger);
+            this.getPtc().setRegulationTerminal(twt.getTerminal(ThreeSides.valueOf(regulatedSide)));
         }
     }
 
@@ -1596,8 +1603,8 @@ public final class NetworkDataframes {
                 .ints("step_count", row -> row.getRtc().getStepCount())
                 .booleans("oltc", row -> row.getRtc().hasLoadTapChangingCapabilities(), (row, v) -> row.getRtc().setLoadTapChangingCapabilities(v))
                 .booleans(REGULATING, row -> row.getRtc().isRegulating(), (row, v) -> row.getRtc().setRegulating(v))
-                .enums("regulation_mode", RatioTapChanger.RegulationMode.class,
-                    row -> row.getRtc().getRegulationMode(), (row, v) -> row.getRtc().setRegulationMode(v), false)
+                .enums(REGULATION_MODE, RegulationMode.class,
+                    row -> row.getRtc().getVoltageRegulation().getMode(), (row, v) -> row.getRtc().getVoltageRegulation().setMode(v), false)
                 .doubles("regulation_value", (row, context) -> row.getRtc().getRegulationValue(),
                     (row, v, context) -> row.getRtc().setRegulationValue(v), false)
                 .doubles("target_v", (row, context) -> getTransformerTargetV(row.getRtc(), context),
@@ -1632,27 +1639,6 @@ public final class NetworkDataframes {
         } else {
             return rtc.getTargetV();
         }
-    }
-
-    private static <T extends TapChanger<?, ?, ?, ?>> String getTapChangerRegulatedSide(TwoWindingsTransformer transformer, Function<TwoWindingsTransformer, T> tapChangerGetter) {
-        return getTerminalSideStr(transformer, tapChangerGetter.apply(transformer).getRegulationTerminal());
-    }
-
-    private static <T extends TapChanger<?, ?, ?, ?>> void setTapChangerRegulatedSide(TwoWindingsTransformer transformer, String side, Function<TwoWindingsTransformer, T> tapChangerGetter) {
-        tapChangerGetter.apply(transformer).setRegulationTerminal(getBranchTerminal(transformer, side));
-    }
-
-    private static <T extends TapChanger<?, ?, ?, ?>> String getTapChangerRegulatedSide(ThreeWindingsTransformer transformer, ThreeSides side, Function<ThreeWindingsTransformer.Leg, T> tapChangerGetter) {
-        var rtc = tapChangerGetter.apply(transformer.getLeg(side));
-        return getTerminalSideStr(transformer, rtc.getRegulationTerminal());
-    }
-
-    private static <T extends TapChanger<?, ?, ?, ?>> void setTapChangerRegulatedSide(ThreeWindingsTransformer transformer, ThreeSides side, String regulatedSide, Function<ThreeWindingsTransformer.Leg, T> tapChangerGetter) {
-        var rtc = tapChangerGetter.apply(transformer.getLeg(side));
-        if (regulatedSide.isEmpty()) {
-            rtc.setRegulationTerminal(null);
-        }
-        rtc.setRegulationTerminal(transformer.getTerminal(ThreeSides.valueOf(regulatedSide)));
     }
 
     private static double computeRho(TwoWindingsTransformer twt) {
@@ -1740,7 +1726,7 @@ public final class NetworkDataframes {
                 .ints("step_count", t -> t.getPtc().getStepCount())
                 .booleans("oltc", t -> t.getPtc().hasLoadTapChangingCapabilities(), (t, v) -> t.getPtc().setLoadTapChangingCapabilities(v))
                 .booleans(REGULATING, t -> t.getPtc().isRegulating(), (t, v) -> t.getPtc().setRegulating(v))
-                .enums("regulation_mode", PhaseTapChanger.RegulationMode.class, t -> t.getPtc().getRegulationMode(), (t, v) -> t.getPtc().setRegulationMode(v))
+                .enums(REGULATION_MODE, PhaseTapChanger.RegulationMode.class, t -> t.getPtc().getRegulationMode(), (t, v) -> t.getPtc().setRegulationMode(v))
                 .doubles("regulation_value", (t, context) -> t.getPtc().getRegulationValue(),
                     (t, v, context) -> t.getPtc().setRegulationValue(v))
                 .doubles("target_deadband", (t, context) -> t.getPtc().getTargetDeadband(),
