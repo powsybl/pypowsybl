@@ -39,6 +39,7 @@ import static com.powsybl.dataframe.network.PerUnitUtil.*;
  * @author Yichen TANG {@literal <yichen.tang at rte-france.com>}
  * @author Sylvain Leclerc {@literal <sylvain.leclerc at rte-france.com>}
  */
+@SuppressWarnings("java:S5738") // before voltage refactoring integration
 public final class NetworkDataframes {
 
     private static final Map<DataframeElementType, NetworkDataframeMapper> MAPPERS = createMappers();
@@ -53,6 +54,7 @@ public final class NetworkDataframes {
     private static final String REGULATED_BUS_ID = "regulated_bus_id";
     private static final String REGULATED_BUS_BREAKER_BUS_ID = "regulated_bus_breaker_bus_id";
     private static final String REGULATING = "regulating";
+    private static final String REGULATION_MODE = "regulation_mode";
 
     private NetworkDataframes() {
     }
@@ -863,7 +865,7 @@ public final class NetworkDataframes {
                     (svc, targetV, context) -> svc.setVoltageSetpoint(unPerUnitTargetV(context, targetV, svc.getRegulatingTerminal(), svc.getTerminal())))
                 .doubles("target_q", (svc, context) -> perUnitPQ(context, svc.getReactivePowerSetpoint()),
                     (svc, targetQ, context) -> svc.setReactivePowerSetpoint(unPerUnitPQ(context, targetQ)))
-                .enums("regulation_mode", RegulationMode.class,
+                .enums(REGULATION_MODE, RegulationMode.class,
                         svc -> svc.getVoltageRegulation().getMode(), (svc, mode) -> svc.getVoltageRegulation().setMode(mode))
                 .booleans(REGULATING, StaticVarCompensator::isRegulating, StaticVarCompensator::setRegulating)
                 .strings("regulated_element_id", svc -> NetworkUtil.getRegulatedElementId(svc::getRegulatingTerminal),
@@ -1601,7 +1603,7 @@ public final class NetworkDataframes {
                 .ints("step_count", row -> row.getRtc().getStepCount())
                 .booleans("oltc", row -> row.getRtc().hasLoadTapChangingCapabilities(), (row, v) -> row.getRtc().setLoadTapChangingCapabilities(v))
                 .booleans(REGULATING, row -> row.getRtc().isRegulating(), (row, v) -> row.getRtc().setRegulating(v))
-                .enums("regulation_mode", RegulationMode.class,
+                .enums(REGULATION_MODE, RegulationMode.class,
                     row -> row.getRtc().getVoltageRegulation().getMode(), (row, v) -> row.getRtc().getVoltageRegulation().setMode(v), false)
                 .doubles("regulation_value", (row, context) -> row.getRtc().getRegulationValue(),
                     (row, v, context) -> row.getRtc().setRegulationValue(v), false)
@@ -1724,7 +1726,7 @@ public final class NetworkDataframes {
                 .ints("step_count", t -> t.getPtc().getStepCount())
                 .booleans("oltc", t -> t.getPtc().hasLoadTapChangingCapabilities(), (t, v) -> t.getPtc().setLoadTapChangingCapabilities(v))
                 .booleans(REGULATING, t -> t.getPtc().isRegulating(), (t, v) -> t.getPtc().setRegulating(v))
-                .enums("regulation_mode", PhaseTapChanger.RegulationMode.class, t -> t.getPtc().getRegulationMode(), (t, v) -> t.getPtc().setRegulationMode(v))
+                .enums(REGULATION_MODE, PhaseTapChanger.RegulationMode.class, t -> t.getPtc().getRegulationMode(), (t, v) -> t.getPtc().setRegulationMode(v))
                 .doubles("regulation_value", (t, context) -> t.getPtc().getRegulationValue(),
                     (t, v, context) -> t.getPtc().setRegulationValue(v))
                 .doubles("target_deadband", (t, context) -> t.getPtc().getTargetDeadband(),
