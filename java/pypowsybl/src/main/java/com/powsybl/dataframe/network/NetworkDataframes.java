@@ -345,7 +345,7 @@ public final class NetworkDataframes {
                 .doubles("local_target_v", (g, context) -> perUnitV(context, g.getLocalTargetV(), g.getTerminal()),
                         (g, v, context) -> g.setLocalTargetV(unPerUnitV(context, v, g.getTerminal())))
                 .doubles("local_target_q", (g, context) -> perUnitPQ(context, g.getLocalTargetQ()), (g, q, context) -> g.setLocalTargetQ(unPerUnitPQ(context, q)))
-                .booleans("regulating", RegulationUtil::isRegulating, RegulationUtil::setRegulating)
+                .booleans("regulating", Generator::isRegulating, RegulationUtil::setRegulating)
                 .enums("regulation_mode", RegulationMode.class, RegulationUtil::getRegulationMode, RegulationUtil::setRegulationMode)
                 .doubles("regulation_value", RegulationUtil::getRegulationValue, RegulationUtil::setRegulationValue)
                 .strings("regulated_element_id", generator -> NetworkUtil.getRegulatedElementId(generator::getRegulatingTerminal),

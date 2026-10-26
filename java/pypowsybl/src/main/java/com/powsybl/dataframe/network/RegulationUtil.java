@@ -23,10 +23,6 @@ public final class RegulationUtil {
     private RegulationUtil() {
     }
 
-    static boolean isRegulating(VoltageRegulationHolder<?> holder) {
-        return holder.isRegulating();
-    }
-
     static void setRegulating(VoltageRegulationHolder<?> holder, boolean regulating) {
         if (holder.getVoltageRegulation() != null) {
             holder.getVoltageRegulation().setRegulating(regulating);
@@ -86,7 +82,7 @@ public final class RegulationUtil {
         double regulationValue = regulation.getTargetValue();
         if (Double.isNaN(regulationValue) && regulation.getMode() == RegulationMode.REACTIVE_POWER) {
             valueToKeep = holder.getLocalTargetQ();
-        } else if (!Double.isNaN(regulationValue)){
+        } else if (!Double.isNaN(regulationValue)) {
             valueToKeep = regulationValue;
         }
         return valueToKeep;
