@@ -9,6 +9,7 @@ package com.powsybl.dataframe.network;
 
 import com.powsybl.iidm.network.Terminal;
 import com.powsybl.iidm.network.regulation.RegulationMode;
+import com.powsybl.iidm.network.regulation.VoltageRegulation;
 import com.powsybl.iidm.network.regulation.VoltageRegulationHolder;
 
 import static com.powsybl.dataframe.network.PerUnitUtil.perUnitWithMode;
@@ -23,7 +24,7 @@ public final class RegulationUtil {
     }
 
     static boolean isRegulating(VoltageRegulationHolder<?> holder) {
-        return holder.getVoltageRegulation() != null && holder.getVoltageRegulation().isRegulating();
+        return holder.isRegulating();
     }
 
     static void setRegulating(VoltageRegulationHolder<?> holder, boolean regulating) {
@@ -63,11 +64,31 @@ public final class RegulationUtil {
     }
 
     static void setRegulatingTerminal(VoltageRegulationHolder<?> holder, Terminal terminal) {
+        boolean local = terminal.equals(holder.getTerminal());
+
         if (holder.getVoltageRegulation() != null) {
-            double valueToKeep = Double.isNaN(holder.getVoltageRegulation().getTargetValue()) ? holder.getLocalTargetV() : holder.getVoltageRegulation().getTargetValue();
-            holder.getVoltageRegulation().setTerminal(terminal, valueToKeep);
+            VoltageRegulation regulation = holder.getVoltageRegulation();
+            if (local) {
+                regulation.setTerminal(null, Double.NaN);
+            } else {
+                holder.getVoltageRegulation().setTerminal(terminal, chooseValueToKeep(holder));
+            }
         } else {
-            holder.newVoltageRegulation().withTerminal(terminal).withRegulating(false).build();
+            if (!local) {
+                holder.newVoltageRegulation().withTerminal(terminal).withRegulating(false).build();
+            }
         }
+    }
+
+    private static double chooseValueToKeep(VoltageRegulationHolder<?> holder) {
+        double valueToKeep = holder.getLocalTargetV();
+        VoltageRegulation regulation = holder.getVoltageRegulation();
+        double regulationValue = regulation.getTargetValue();
+        if (Double.isNaN(regulationValue) && regulation.getMode() == RegulationMode.REACTIVE_POWER) {
+            valueToKeep = holder.getLocalTargetQ();
+        } else if (!Double.isNaN(regulationValue)){
+            valueToKeep = regulationValue;
+        }
+        return valueToKeep;
     }
 }
