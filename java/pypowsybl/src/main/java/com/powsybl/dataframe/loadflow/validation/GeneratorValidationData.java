@@ -22,6 +22,7 @@ public class GeneratorValidationData {
     boolean mainComponent;
     boolean validated;
 
+    @SuppressWarnings("java:S107")
     public GeneratorValidationData(String id, double p, double q, double v, double targetP, double targetQ, double targetV, double expectedP, boolean connected, String regulationMode, boolean regulating, double minP, double maxP, double minQ, double maxQ, boolean mainComponent, boolean validated) {
         this.id = id;
         this.p = p;

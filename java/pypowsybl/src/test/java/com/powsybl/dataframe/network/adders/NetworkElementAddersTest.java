@@ -313,7 +313,7 @@ class NetworkElementAddersTest {
         addIntColumn(dataframe, "section_count", 4);
         NetworkElementAdders.addElements(DataframeElementType.STATIC_VAR_COMPENSATOR, network, singletonList(dataframe));
         assertEquals(2, network.getStaticVarCompensatorCount());
-        assertEquals(mode, network.getStaticVarCompensator("SVC").getRegulationMode());
+        assertEquals(mode, network.getStaticVarCompensator("SVC").getVoltageRegulation().getMode());
     }
 
     @Test

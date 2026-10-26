@@ -39,7 +39,7 @@ import static com.powsybl.dataframe.network.PerUnitUtil.*;
  * @author Yichen TANG {@literal <yichen.tang at rte-france.com>}
  * @author Sylvain Leclerc {@literal <sylvain.leclerc at rte-france.com>}
  */
-@SuppressWarnings("java:S5738") // before voltage refactoring integration
+@SuppressWarnings("java:S5738") // removing "deprecated" warnings before voltage refactoring integration
 public final class NetworkDataframes {
 
     private static final Map<DataframeElementType, NetworkDataframeMapper> MAPPERS = createMappers();
