@@ -90,6 +90,22 @@ Simulation
     Simulation
     Simulation.run
 
+DynamicSecurityAnalysis
+-----------------------
+.. autosummary::
+    :toctree: api/
+
+    DynamicSecurityAnalysisParameters
+    DynamicSecurityAnalysis
+    DynamicSecurityAnalysis.run
+    DynamicSecurityAnalysis.add_single_element_contingency
+    DynamicSecurityAnalysis.add_multiple_elements_contingency
+    DynamicSecurityAnalysis.add_single_element_contingencies
+    DynamicSecurityAnalysis.add_contingencies_from_json_file
+    DynamicSecurityAnalysis.add_monitored_elements
+    DynamicSecurityAnalysis.add_precontingency_monitored_elements
+    DynamicSecurityAnalysis.add_postcontingency_monitored_elements
+
 Results
 -------
 .. autosummary::
