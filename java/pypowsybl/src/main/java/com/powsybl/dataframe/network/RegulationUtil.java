@@ -12,8 +12,7 @@ import com.powsybl.iidm.network.regulation.RegulationMode;
 import com.powsybl.iidm.network.regulation.VoltageRegulation;
 import com.powsybl.iidm.network.regulation.VoltageRegulationHolder;
 
-import static com.powsybl.dataframe.network.PerUnitUtil.perUnitWithMode;
-import static com.powsybl.dataframe.network.PerUnitUtil.unPerUnitWithMode;
+import static com.powsybl.dataframe.network.PerUnitUtil.*;
 
 /**
  * @author Hugo Kulesza {@literal <hugo.kulesza at rte-france.com>}
@@ -86,5 +85,30 @@ public final class RegulationUtil {
             valueToKeep = regulationValue;
         }
         return valueToKeep;
+    }
+
+    static double getTargetDeadband(VoltageRegulationHolder<?> holder, NetworkDataframeContext context) {
+        return holder.getVoltageRegulation() != null ?
+                perUnitV(context, holder.getVoltageRegulation().getTargetDeadband(), holder.getRegulatingTerminal()) : Double.NaN;
+    }
+
+    static void setTargetDeadband(VoltageRegulationHolder<?> holder, double deadband, NetworkDataframeContext context) {
+        double unPerUnitDeadband = unPerUnitV(context, deadband, holder.getRegulatingTerminal());
+        if (holder.getVoltageRegulation() != null) {
+            holder.getVoltageRegulation().setTargetDeadband(unPerUnitDeadband);
+        } else {
+            holder.newVoltageRegulation().withTargetDeadband(unPerUnitDeadband).withRegulating(false).build();
+        }
+    }
+
+    static double getSlope(VoltageRegulationHolder<?> holder, NetworkDataframeContext context) {
+        return holder.getVoltageRegulation() != null ?
+                perUnitV(context, holder.getVoltageRegulation().getSlope(), holder.getRegulatingTerminal()) : Double.NaN;
+    }
+
+    static void setSlope(VoltageRegulationHolder<?> holder, double slope, NetworkDataframeContext context) {
+        if (holder.getVoltageRegulation() != null) {
+            holder.getVoltageRegulation().setSlope(unPerUnitV(context, slope, holder.getRegulatingTerminal()));
+        }
     }
 }
