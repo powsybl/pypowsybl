@@ -452,9 +452,9 @@ public final class NetworkDataframes {
                 .strings("reactive_limits_kind", NetworkDataframes::getReactiveLimitsKind)
                 .doubles("target_p", (b, context) -> perUnitPQ(context, b.getTargetP()), (b, targetP, context) -> b.setTargetP(unPerUnitPQ(context, targetP)))
                 .deprecatedDoubles("target_q", (b, context) -> perUnitPQ(context, b.getTargetQ()), (b, targetQ, context) -> b.setTargetQ(unPerUnitPQ(context, targetQ)))
-                .doubles(LOCAL_TARGET_Q, (b, context) -> perUnitPQ(context, b.getLocalTargetQ()), (b, q, context) -> b.setLocalTargetQ(unPerUnitPQ(context, q)))
                 .doubles(LOCAL_TARGET_V, (b, context) -> perUnitV(context, b.getLocalTargetV(), b.getTerminal()),
                         (b, v, context) -> b.setLocalTargetV(unPerUnitV(context, v, b.getTerminal())))
+                .doubles(LOCAL_TARGET_Q, (b, context) -> perUnitPQ(context, b.getLocalTargetQ()), (b, q, context) -> b.setLocalTargetQ(unPerUnitPQ(context, q)))
                 .booleans(REGULATING, Battery::isRegulating, RegulationUtil::setRegulating)
                 .enums(REGULATION_MODE, RegulationMode.class, RegulationUtil::getRegulationMode, RegulationUtil::setRegulationMode)
                 .doubles(REGULATION_VALUE, RegulationUtil::getRegulationValue, RegulationUtil::setRegulationValue)
@@ -863,10 +863,10 @@ public final class NetworkDataframes {
                 .deprecatedDoubles("target_q", (vsc, context) -> perUnitPQ(context, vsc.getReactivePowerSetpoint()),
                     (vsc, targetQ, context) -> vsc.setReactivePowerSetpoint(unPerUnitPQ(context, targetQ)))
                 .deprecatedBooleans("voltage_regulator_on", VscConverterStation::isVoltageRegulatorOn, VscConverterStation::setVoltageRegulatorOn)
-                .doubles(LOCAL_TARGET_Q, (vsc, context) -> perUnitPQ(context, vsc.getLocalTargetQ()),
-                        (vsc, q, context) -> vsc.setLocalTargetQ(unPerUnitPQ(context, q)))
                 .doubles(LOCAL_TARGET_V, (vsc, context) -> perUnitV(context, vsc.getLocalTargetV(), vsc.getTerminal()),
                         (vsc, v, context) -> vsc.setLocalTargetV(unPerUnitV(context, v, vsc.getTerminal())))
+                .doubles(LOCAL_TARGET_Q, (vsc, context) -> perUnitPQ(context, vsc.getLocalTargetQ()),
+                        (vsc, q, context) -> vsc.setLocalTargetQ(unPerUnitPQ(context, q)))
                 .booleans(REGULATING, VscConverterStation::isRegulating, RegulationUtil::setRegulating)
                 .enums(REGULATION_MODE, RegulationMode.class, RegulationUtil::getRegulationMode, RegulationUtil::setRegulationMode)
                 .doubles(REGULATION_VALUE, RegulationUtil::getRegulationValue, RegulationUtil::setRegulationValue)
@@ -898,10 +898,10 @@ public final class NetworkDataframes {
                     (svc, targetV, context) -> svc.setVoltageSetpoint(unPerUnitTargetV(context, targetV, svc.getRegulatingTerminal(), svc.getTerminal())))
                 .deprecatedDoubles("target_q", (svc, context) -> perUnitPQ(context, svc.getReactivePowerSetpoint()),
                     (svc, targetQ, context) -> svc.setReactivePowerSetpoint(unPerUnitPQ(context, targetQ)))
-                .doubles(LOCAL_TARGET_Q, (svc, context) -> perUnitPQ(context, svc.getLocalTargetQ()),
-                        (svc, q, context) -> svc.setLocalTargetQ(unPerUnitPQ(context, q)))
                 .doubles(LOCAL_TARGET_V, (b, context) -> perUnitV(context, b.getLocalTargetV(), b.getTerminal()),
                         (svc, v, context) -> svc.setLocalTargetV(unPerUnitV(context, v, svc.getTerminal())))
+                .doubles(LOCAL_TARGET_Q, (svc, context) -> perUnitPQ(context, svc.getLocalTargetQ()),
+                        (svc, q, context) -> svc.setLocalTargetQ(unPerUnitPQ(context, q)))
                 .booleans(REGULATING, StaticVarCompensator::isRegulating, RegulationUtil::setRegulating)
                 .enums(REGULATION_MODE, RegulationMode.class, RegulationUtil::getRegulationMode, RegulationUtil::setRegulationMode)
                 .doubles(REGULATION_VALUE, RegulationUtil::getRegulationValue, RegulationUtil::setRegulationValue)
@@ -1110,10 +1110,10 @@ public final class NetworkDataframes {
                         (conv, targetP, context) -> conv.setTargetP(unPerUnitPQ(context, targetP)))
                 .deprecatedDoubles("target_q", (conv, context) -> perUnitPQ(context, conv.getReactivePowerSetpoint()),
                         (conv, targetQ, context) -> conv.setReactivePowerSetpoint(unPerUnitPQ(context, targetQ)))
-                .doubles(LOCAL_TARGET_Q, (vsc, context) -> perUnitPQ(context, vsc.getLocalTargetQ()),
-                        (vsc, q, context) -> vsc.setLocalTargetQ(unPerUnitPQ(context, q)))
                 .doubles("local_target_v_ac", (vsc, context) -> perUnitV(context, vsc.getLocalTargetV(), vsc.getTerminal()),
                         (vsc, v, context) -> vsc.setLocalTargetV(unPerUnitV(context, v, vsc.getTerminal())))
+                .doubles(LOCAL_TARGET_Q, (vsc, context) -> perUnitPQ(context, vsc.getLocalTargetQ()),
+                        (vsc, q, context) -> vsc.setLocalTargetQ(unPerUnitPQ(context, q)))
                 .booleans(REGULATING, VoltageSourceConverter::isRegulating, RegulationUtil::setRegulating)
                 .enums(REGULATION_MODE, RegulationMode.class, RegulationUtil::getRegulationMode, RegulationUtil::setRegulationMode)
                 .doubles(REGULATION_VALUE, RegulationUtil::getRegulationValue, RegulationUtil::setRegulationValue)
@@ -1666,7 +1666,7 @@ public final class NetworkDataframes {
                 .enums(REGULATION_MODE, RegulationMode.class,
                     row -> row.getRtc().getVoltageRegulation().getMode(), (row, v) -> RegulationUtil.setRegulationMode(row.getRtc(), v))
                 .doubles(REGULATION_VALUE, (row, context) -> RegulationUtil.getRegulationValue(row.getRtc(), context),
-                    (row, v, context) -> RegulationUtil.setRegulationValue(row.getRtc(), v, context), false)
+                    (row, v, context) -> RegulationUtil.setRegulationValue(row.getRtc(), v, context))
                 .deprecatedDoubles("target_v", (row, context) -> getTransformerTargetV(row.getRtc(), context),
                         (row, targetV, context) -> setTransformerTargetV(row.getRtc(), targetV, context))
                 .doubles("target_deadband", (row, context) -> RegulationUtil.getTargetDeadband(row.getRtc(), context),
