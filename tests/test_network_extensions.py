@@ -571,6 +571,30 @@ def test_geo_data():
     pd.testing.assert_frame_equal(n.get_extensions('linePosition'), line_expected)
 
 
+def test_create_geo_data():
+    n = pn.create_eurostag_tutorial_example1_network()
+    n.create_extensions('substationPosition', pd.DataFrame.from_records(index='id', data=[
+        {'id': 'P1', 'latitude': 63.40, 'longitude': 10.39},
+        {'id': 'P2', 'latitude': 63.41, 'longitude': 10.40}]))
+    # coordinates given out of order
+    n.create_extensions('linePosition', pd.DataFrame.from_records(index=['id', 'num'], data=[
+        {'id': 'NHV1_NHV2_1', 'num': 2, 'latitude': 63.41, 'longitude': 10.40},
+        {'id': 'NHV1_NHV2_1', 'num': 0, 'latitude': 63.40, 'longitude': 10.39},
+        {'id': 'NHV1_NHV2_1', 'num': 1, 'latitude': 63.405, 'longitude': 10.395}]))
+
+    substation_expected = pd.DataFrame.from_records(index='id', data=[
+        {'id': 'P1', 'latitude': 63.40, 'longitude': 10.39},
+        {'id': 'P2', 'latitude': 63.41, 'longitude': 10.40}])
+    pd.testing.assert_frame_equal(n.get_extensions('substationPosition'), substation_expected)
+    line_expected = pd.DataFrame.from_records(data=[
+        {'id': 'NHV1_NHV2_1', 'num': 0, 'latitude': 63.40, 'longitude': 10.39},
+        {'id': 'NHV1_NHV2_1', 'num': 1, 'latitude': 63.405, 'longitude': 10.395},
+        {'id': 'NHV1_NHV2_1', 'num': 2, 'latitude': 63.41, 'longitude': 10.40}])
+    line_expected = line_expected.astype({'id': str, 'num': np.int32, 'latitude': np.float64, 'longitude': np.float64})
+    line_expected = line_expected.set_index(['id', 'num'])
+    pd.testing.assert_frame_equal(n.get_extensions('linePosition'), line_expected)
+
+
 def test_cgmes_metadata_extension():
     n = pn.create_eurostag_tutorial_example1_network()
     extension_name = 'cgmesMetadataModels'
