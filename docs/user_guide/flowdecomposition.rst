@@ -92,10 +92,10 @@ As we cannot set a PST on an interconnection, we set an equivalent null load cal
 
     >>> network = pp.network.load(str(DATA_DIR.joinpath('NETWORK_PST_FLOW_WITH_COUNTRIES.uct')))
     >>> network.get_generators()
-                       name energy_source  target_p   min_p   max_p   min_q   max_q  rated_s reactive_limits_kind  target_v  target_q  voltage_regulator_on regulated_element_id   p   q   i voltage_level_id     bus_id  connected
+                       name energy_source  target_p   min_p   max_p   min_q   max_q  rated_s reactive_limits_kind  target_v  target_q  voltage_regulator_on local_target_v local_target_q regulating regulation_mode regulation_value regulated_element_id   p   q   i voltage_level_id     bus_id  connected
     id
-    FGEN  11_generator              OTHER     100.0 -1000.0  1000.0 -1000.0  1000.0      NaN              MIN_MAX     400.0       0.0                  True   FGEN  11_generator NaN NaN NaN          FGEN  1  FGEN  1_0       True
-    BLOAD 12_generator              OTHER     100.0 -1000.0  1000.0 -1000.0  1000.0      NaN              MIN_MAX     400.0       0.0                  True   BLOAD 12_generator NaN NaN NaN          BLOAD 1  BLOAD 1_1       True
+    FGEN  11_generator              OTHER     100.0 -1000.0  1000.0 -1000.0  1000.0      NaN              MIN_MAX     400.0       0.0                  True          400.0            0.0       True         VOLTAGE              NaN   FGEN  11_generator NaN NaN NaN          FGEN  1  FGEN  1_0       True
+    BLOAD 12_generator              OTHER     100.0 -1000.0  1000.0 -1000.0  1000.0      NaN              MIN_MAX     400.0       0.0                  True          400.0            0.0       True         VOLTAGE              NaN   BLOAD 12_generator NaN NaN NaN          BLOAD 1  BLOAD 1_1       True
     >>> network.get_loads()
                       name       type     p0   q0   p   q   i voltage_level_id     bus_id  connected
     id                                                                                          
