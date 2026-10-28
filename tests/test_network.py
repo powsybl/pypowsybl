@@ -409,6 +409,15 @@ def test_batteries_data_frame():
     pd.testing.assert_frame_equal(expected, batteries, check_dtype=False, atol=1e-2)
 
 
+
+def test_deprecated_batteries():
+    n = pp.network.load(str(TEST_DIR.joinpath('battery.xiidm')))
+    with pytest.warns(DeprecationWarning, match='"target_q" of BATTERY is deprecated'):
+        n.get_batteries(all_attributes=True)
+    with pytest.warns(DeprecationWarning, match='"target_q" is deprecated'):
+        n.update_batteries(id='BAT2', target_q=2)
+
+
 def test_vsc_data_frame():
     n = pp.network.create_four_substations_node_breaker_network()
     stations = n.get_vsc_converter_stations(all_attributes=True)
@@ -451,6 +460,21 @@ def test_vsc_data_frame():
         columns=['bus_breaker_bus_id', 'node'],
         data=[['S1VL2_5', 5], ['S2VL1_4', 4]])
     pd.testing.assert_frame_equal(expected, stations, check_dtype=False, atol=1e-2)
+
+
+def test_deprecated_vsc():
+    deprecated_columns = ['target_v', 'target_q', 'voltage_regulator_on']
+    n = pp.network.create_four_substations_node_breaker_network()
+    with pytest.warns(DeprecationWarning) as record:
+        n.get_vsc_converter_stations(all_attributes=True)
+    assert len(record) == 3
+    for i in range(len(record)):
+        assert deprecated_columns[i] in record[i].message.args[0]
+    with pytest.warns(DeprecationWarning) as record_update:
+        n.update_vsc_converter_stations(id='VSC1', target_v=1, target_q=2, voltage_regulator_on=False)
+    assert len(record_update) == 3
+    for i in range(len(record_update)):
+        assert deprecated_columns[i] in record_update[i].message.args[0]
 
 
 def test_lcc_data_frame():
@@ -525,6 +549,21 @@ def test_svc_data_frame():
         data=[['S4VL1_4', 4]])
     pd.testing.assert_frame_equal(expected, svcs,
                                   check_dtype=False, atol=1e-2)
+
+
+def test_deprecated_svc():
+    deprecated_columns = ['target_v', 'target_q']
+    n = pp.network.create_four_substations_node_breaker_network()
+    with pytest.warns(DeprecationWarning) as record:
+        n.get_static_var_compensators(all_attributes=True)
+    assert len(record) == 2
+    for i in range(len(record)):
+        assert deprecated_columns[i] in record[i].message.args[0]
+    with pytest.warns(DeprecationWarning) as record_update:
+        n.update_static_var_compensators(id='SVC', target_v=1, target_q=2)
+    assert len(record_update) == 2
+    for i in range(len(record_update)):
+        assert deprecated_columns[i] in record_update[i].message.args[0]
 
 
 def test_generators_data_frame():
@@ -1084,6 +1123,14 @@ def test_ratio_tap_changers_3_windings():
     assert len(steps) == 91
     assert steps.loc['e482b89a-fa84-4ea9-8e70-a83d44790957', 3]['side'] == ''
     assert steps.loc['84ed55f4-61f5-4d9d-8755-bba7b877a246', 3]['side'] == 'TWO'
+
+
+def test_deprecated_ratio_tap_changer():
+    n = pp.network.create_eurostag_tutorial_example1_network()
+    with pytest.warns(DeprecationWarning, match='"target_v" of RATIO_TAP_CHANGER is deprecated'):
+        n.get_ratio_tap_changers(all_attributes=True)
+    with pytest.warns(DeprecationWarning, match='"target_v" is deprecated'):
+        n.update_ratio_tap_changers(id='NHV2_NLOAD', target_v=2)
 
 
 def test_phase_tap_changers():
@@ -1659,6 +1706,22 @@ def test_shunt():
         columns=['bus_breaker_bus_id', 'node'],
         data=[['S1VL2_19', 19]])
     pd.testing.assert_frame_equal(expected, shunts, check_dtype=False, atol=1e-2)
+
+
+
+def test_deprecated_shunt_compensator():
+    deprecated_columns = ['voltage_regulation_on', 'target_v']
+    n = pp.network.create_four_substations_node_breaker_network()
+    with pytest.warns(DeprecationWarning) as record:
+        n.get_shunt_compensators(all_attributes=True)
+    assert len(record) == 2
+    for i in range(len(record)):
+        assert deprecated_columns[i] in record[i].message.args[0]
+    with pytest.warns(DeprecationWarning) as record_update:
+        n.update_shunt_compensators(id='SHUNT', voltage_regulation_on=False, target_v=1)
+    assert len(record_update) == 2
+    for i in range(len(record_update)):
+        assert deprecated_columns[i] in record_update[i].message.args[0]
 
 
 def test_3_windings_transformers():
@@ -3013,6 +3076,21 @@ def test_voltage_source_converters_update_min_max_p():
     df = n.get_voltage_source_converters(all_attributes=True)
     assert np.isneginf(df['min_p']['VscFr'])
     assert np.isposinf(df['max_p']['VscFr'])
+
+
+def test_deprecated_voltage_source_converters():
+    deprecated_columns = ['voltage_regulator_on', 'target_v_ac', 'target_q']
+    n = pp.network.create_dc_detailed_vsc_symmetrical_monopole_network()
+    with pytest.warns(DeprecationWarning) as record:
+        n.get_voltage_source_converters(all_attributes=True)
+    assert len(record) == 3
+    for i in range(len(record)):
+        assert deprecated_columns[i] in record[i].message.args[0]
+    with pytest.warns(DeprecationWarning) as record_update:
+        n.update_voltage_source_converters(id='VscFr', voltage_regulator_on=True, target_v_ac=1, target_q=2)
+    assert len(record_update) == 3
+    for i in range(len(record_update)):
+        assert deprecated_columns[i] in record_update[i].message.args[0]
 
 
 def test_dc_grounds():

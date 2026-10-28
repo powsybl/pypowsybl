@@ -1099,7 +1099,7 @@ public final class NetworkDataframes {
                         (conv, dcConnected2) -> conv.getDcTerminal2().setConnected(dcConnected2))
                 .strings("pcc_terminal_id", conv -> NetworkUtil.getRegulatedElementId(conv::getPccTerminal),
                         (conv, elementId) -> NetworkUtil.setPccTerminal(conv::setPccTerminal, conv.getNetwork(), elementId))
-                .booleans("voltage_regulator_on", VoltageSourceConverter::isVoltageRegulatorOn, VoltageSourceConverter::setVoltageRegulatorOn)
+                .deprecatedBooleans("voltage_regulator_on", VoltageSourceConverter::isVoltageRegulatorOn, VoltageSourceConverter::setVoltageRegulatorOn)
                 .enums("control_mode", AcDcConverter.ControlMode.class, VoltageSourceConverter::getControlMode, VoltageSourceConverter::setControlMode)
                 .doubles("target_v_dc", (conv, context) -> perUnitV(context, conv.getTargetVdc(), conv.getDcTerminal1()),
                         //we supposed that NominalV is the same for both DC nodes connected to the converter
@@ -1675,7 +1675,7 @@ public final class NetworkDataframes {
                         (row, elementId) ->
                                 NetworkUtil.setRegulatingTerminal(t -> RegulationUtil.setRegulatingTerminal(row.getRtc(), t), row.getNetwork(), elementId))
                 .strings("regulating_bus_id", row -> getBusId(row.getRtc().getRegulatingTerminal()))
-                .deprecatedStrings("regulated_side", TapChangerRow::getRtcRegulatedSide, TapChangerRow::setRtcRegulatedSide, false)
+                .strings("regulated_side", TapChangerRow::getRtcRegulatedSide, TapChangerRow::setRtcRegulatedSide, false)
                 .build();
     }
 
