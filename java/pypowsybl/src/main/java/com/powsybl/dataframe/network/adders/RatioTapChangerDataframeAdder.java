@@ -23,7 +23,6 @@ import static com.powsybl.dataframe.network.adders.SeriesUtils.applyIfPresent;
  * @author Etienne Lesot {@literal <etienne.lesot at rte-france.com>}
  * @author Sylvain Leclerc {@literal <sylvain.leclerc@rte-france.com>}
  */
-@SuppressWarnings("java:S5738") // removing "deprecated" warnings before voltage refactoring integration
 public class RatioTapChangerDataframeAdder implements NetworkElementAdder {
 
     private static final List<SeriesMetadata> METADATA = List.of(
@@ -31,11 +30,12 @@ public class RatioTapChangerDataframeAdder implements NetworkElementAdder {
             SeriesMetadata.ints("tap"),
             SeriesMetadata.ints("low_tap"),
             SeriesMetadata.booleans("oltc"),
-            SeriesMetadata.doubles("target_v"),
+            SeriesMetadata.deprecatedDoubles("target_v"),
             SeriesMetadata.doubles("target_deadband"),
             SeriesMetadata.booleans("regulating"),
             SeriesMetadata.strings("regulation_mode"),
             SeriesMetadata.doubles("regulation_value"),
+            SeriesMetadata.strings("regulating_element_id"),
             SeriesMetadata.strings("regulated_side"),
             SeriesMetadata.strings("side")
     );
@@ -54,16 +54,12 @@ public class RatioTapChangerDataframeAdder implements NetworkElementAdder {
         return List.of(METADATA, STEPS_METADATA);
     }
 
-    private static class RatioTapChangerSeries {
+    private static class RatioTapChangerSeries extends VoltageRegulationHolderSeries {
         private final StringSeries ids;
         private final IntSeries taps;
         private final IntSeries lowTaps;
         private final IntSeries onLoad;
         private final DoubleSeries targetV;
-        private final DoubleSeries targetDeadband;
-        private final IntSeries regulating;
-        private final StringSeries regulationMode;
-        private final DoubleSeries regulationValue;
         private final StringSeries regulatedSide;
         private final StringSeries sides;
 
@@ -75,15 +71,12 @@ public class RatioTapChangerDataframeAdder implements NetworkElementAdder {
         private final DoubleSeries rho;
 
         RatioTapChangerSeries(UpdatingDataframe tapChangersDf, UpdatingDataframe stepsDf) {
+            super(tapChangersDf);
             this.ids = tapChangersDf.getStrings("id");
             this.taps = tapChangersDf.getInts("tap");
             this.lowTaps = tapChangersDf.getInts("low_tap");
             this.onLoad = tapChangersDf.getInts("oltc");
             this.targetV = tapChangersDf.getDoubles("target_v");
-            this.targetDeadband = tapChangersDf.getDoubles("target_deadband");
-            this.regulating = tapChangersDf.getInts("regulating");
-            this.regulationMode = tapChangersDf.getStrings("regulation_mode");
-            this.regulationValue = tapChangersDf.getDoubles("regulation_value");
             this.regulatedSide = tapChangersDf.getStrings("regulated_side");
             this.sides = tapChangersDf.getStrings("side");
 
@@ -118,14 +111,17 @@ public class RatioTapChangerDataframeAdder implements NetworkElementAdder {
                     setRegulatedSide(twoWindingsTransformer, adder, regulatedSide.get(row));
                 }
             }
-            applyIfPresent(targetDeadband, row, adder::setTargetDeadband);
-            applyIfPresent(targetV, row, adder::setTargetV);
-            applyIfPresent(regulationValue, row, adder::setRegulationValue);
-            applyIfPresent(regulationMode, row, value -> adder.setRegulationMode(RegulationMode.valueOf(value)));
             applyBooleanIfPresent(onLoad, row, adder::setLoadTapChangingCapabilities);
             applyIfPresent(lowTaps, row, adder::setLowTapPosition);
             applyIfPresent(taps, row, adder::setTapPosition);
+
+            setVoltageRegulationAttributes(adder, network, row);
+            // For compatibility with former regulation
+            applyIfPresent(targetDeadband, row, adder::setTargetDeadband);
             applyBooleanIfPresent(regulating, row, adder::setRegulating);
+            applyIfPresent(regulationValue, row, adder::setRegulationValue);
+            applyIfPresent(regulationMode, row, RegulationMode.class, adder::setRegulationMode);
+            applyIfPresent(targetV, row, adder::setTargetV);
 
             TIntArrayList steps = stepsIndexes.get(transformerId);
             if (steps != null) {
@@ -155,6 +151,11 @@ public class RatioTapChangerDataframeAdder implements NetworkElementAdder {
                 ThreeSides regulatedSide = ThreeSides.valueOf(regulatedSideStr);
                 adder.setRegulationTerminal(transformer.getTerminal(regulatedSide));
             }
+        }
+
+        @Override
+        protected boolean newColumnsUsed() {
+            return regulatingElements != null;
         }
     }
 

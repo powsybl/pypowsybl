@@ -43,7 +43,12 @@ public class ShuntDataframeAdder implements NetworkElementAdder {
             SeriesMetadata.strings("name"),
             SeriesMetadata.ints("section_count"),
             SeriesMetadata.doubles("target_deadband"),
-            SeriesMetadata.doubles("target_v"),
+            SeriesMetadata.deprecatedDoubles("target_v"),
+            SeriesMetadata.doubles("local_target_v"),
+            SeriesMetadata.booleans("regulating"),
+            SeriesMetadata.strings("regulation_mode"),
+            SeriesMetadata.doubles("regulation_value"),
+            SeriesMetadata.strings("regulating_element_id"),
             SeriesMetadata.strings("model_type")
     );
 
@@ -101,10 +106,9 @@ public class ShuntDataframeAdder implements NetworkElementAdder {
         }
     }
 
-    private static class ShuntCompensatorSeries extends InjectionSeries {
+    private static class ShuntCompensatorSeries extends VoltageRegulationHolderSeries {
         private final StringSeries voltageLevels;
         private final IntSeries sectionCount;
-        private final DoubleSeries targetDeadband;
         private final DoubleSeries targetV;
         private final StringSeries modelTypes;
         private final StringSeries busOrBusbarSections;
@@ -123,7 +127,6 @@ public class ShuntDataframeAdder implements NetworkElementAdder {
             this.voltageLevels = shuntsDf.getStrings("voltage_level_id");
             this.busOrBusbarSections = shuntsDf.getStrings("bus_or_busbar_section_id");
             this.sectionCount = shuntsDf.getInts("section_count");
-            this.targetDeadband = shuntsDf.getDoubles("target_deadband");
             this.targetV = shuntsDf.getDoubles("target_v");
             this.modelTypes = shuntsDf.getStrings("model_type");
             if (this.modelTypes == null) {
@@ -158,6 +161,10 @@ public class ShuntDataframeAdder implements NetworkElementAdder {
                 ShuntCompensatorAdder adder = vl.get().newShuntCompensator();
                 setInjectionAttributes(adder, row);
                 applyIfPresent(sectionCount, row, adder::setSectionCount);
+
+                setVoltageRegulationAttributes(adder, network, row);
+
+                // For compatibility with former regulation
                 applyIfPresent(targetDeadband, row, adder::setTargetDeadband);
                 applyIfPresent(targetV, row, adder::setTargetV);
 

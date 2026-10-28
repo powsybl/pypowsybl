@@ -10,14 +10,12 @@ package com.powsybl.dataframe.network.adders;
 import com.powsybl.commons.report.ReportNode;
 import com.powsybl.dataframe.SeriesMetadata;
 import com.powsybl.dataframe.update.DoubleSeries;
-import com.powsybl.dataframe.update.IntSeries;
 import com.powsybl.dataframe.update.StringSeries;
 import com.powsybl.dataframe.update.UpdatingDataframe;
 import com.powsybl.iidm.network.Network;
 import com.powsybl.iidm.network.StaticVarCompensatorAdder;
 import com.powsybl.iidm.network.VoltageLevel;
 import com.powsybl.iidm.network.regulation.RegulationMode;
-import com.powsybl.python.network.NetworkUtil;
 
 import java.util.Collections;
 import java.util.List;
@@ -32,7 +30,6 @@ import static com.powsybl.dataframe.network.adders.SeriesUtils.applyIfPresent;
  * @author Etienne Lesot {@literal <etienne.lesot at rte-france.com>}
  * @author Sylvain Leclerc {@literal <sylvain.leclerc@rte-france.com>}
  */
-@SuppressWarnings("java:S5738") // removing "deprecated" warnings before voltage refactoring integration
 public class SvcDataframeAdder extends AbstractSimpleAdder {
 
     private static final List<SeriesMetadata> METADATA = List.of(
@@ -45,9 +42,13 @@ public class SvcDataframeAdder extends AbstractSimpleAdder {
             SeriesMetadata.doubles("b_max"),
             SeriesMetadata.doubles("b_min"),
             SeriesMetadata.strings("regulation_mode"),
+            SeriesMetadata.doubles("regulation_value"),
+            SeriesMetadata.doubles("slope"),
             SeriesMetadata.booleans("regulating"),
-            SeriesMetadata.doubles("target_v"),
-            SeriesMetadata.doubles("target_q"),
+            SeriesMetadata.deprecatedDoubles("target_v"),
+            SeriesMetadata.deprecatedDoubles("target_q"),
+            SeriesMetadata.doubles("local_target_v"),
+            SeriesMetadata.doubles("local_target_q"),
             SeriesMetadata.strings("regulating_element_id")
     );
 
@@ -56,17 +57,14 @@ public class SvcDataframeAdder extends AbstractSimpleAdder {
         return Collections.singletonList(METADATA);
     }
 
-    private static class StaticVarCompensatorSeries extends InjectionSeries {
+    private static class StaticVarCompensatorSeries extends VoltageRegulationHolderSeries {
 
         private final StringSeries voltageLevels;
         private final DoubleSeries bMin;
         private final DoubleSeries bMax;
-        private final StringSeries regulationModes;
-        private final IntSeries regulating;
         private final DoubleSeries targetV;
         private final DoubleSeries targetQ;
         private final StringSeries busOrBusbarSections;
-        private final StringSeries regulatingElements;
 
         StaticVarCompensatorSeries(UpdatingDataframe dataframe) {
             super(dataframe);
@@ -75,10 +73,7 @@ public class SvcDataframeAdder extends AbstractSimpleAdder {
             this.bMax = dataframe.getDoubles("b_max");
             this.targetQ = dataframe.getDoubles("target_q");
             this.targetV = dataframe.getDoubles("target_v");
-            this.regulationModes = dataframe.getStrings("regulation_mode");
-            this.regulating = dataframe.getInts("regulating");
             this.busOrBusbarSections = dataframe.getStrings("bus_or_busbar_section_id");
-            this.regulatingElements = dataframe.getStrings("regulating_element_id");
         }
 
         Optional<StaticVarCompensatorAdder> createAdder(Network network, int row, boolean throwException) {
@@ -88,15 +83,23 @@ public class SvcDataframeAdder extends AbstractSimpleAdder {
                 setInjectionAttributes(adder, row);
                 applyIfPresent(bMin, row, adder::setBmin);
                 applyIfPresent(bMax, row, adder::setBmax);
+
+                setVoltageRegulationAttributes(adder, network, row);
+
+                // For compatibility with former regulation
                 applyIfPresent(targetQ, row, adder::setReactivePowerSetpoint);
                 applyIfPresent(targetV, row, adder::setVoltageSetpoint);
-                applyIfPresent(regulationModes, row, RegulationMode.class, adder::setRegulationMode);
                 applyBooleanIfPresent(regulating, row, adder::setRegulating);
-                applyIfPresent(regulatingElements, row, elementId -> NetworkUtil
-                        .setRegulatingTerminal(adder::setRegulatingTerminal, network, elementId));
+                applyIfPresent(regulationMode, row, RegulationMode.class, adder::setRegulationMode);
+
                 return Optional.of(adder);
             }
             return Optional.empty();
+        }
+
+        @Override
+        protected boolean newColumnsUsed() {
+            return slope != null || regulationValue != null;
         }
     }
 

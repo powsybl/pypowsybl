@@ -17,8 +17,6 @@ import com.powsybl.iidm.network.EnergySource;
 import com.powsybl.iidm.network.GeneratorAdder;
 import com.powsybl.iidm.network.Network;
 import com.powsybl.iidm.network.VoltageLevel;
-import com.powsybl.iidm.network.regulation.RegulationMode;
-import com.powsybl.iidm.network.regulation.VoltageRegulationAdder;
 import com.powsybl.python.network.NetworkUtil;
 
 import java.util.Collections;
@@ -66,7 +64,7 @@ public class GeneratorDataframeAdder extends AbstractSimpleAdder {
         return Collections.singletonList(METADATA);
     }
 
-    private static class GeneratorSeries extends InjectionSeries {
+    private static class GeneratorSeries extends VoltageRegulationHolderSeries {
 
         private final StringSeries voltageLevels;
         private final DoubleSeries maxP;
@@ -77,14 +75,8 @@ public class GeneratorDataframeAdder extends AbstractSimpleAdder {
         private final DoubleSeries equivalentLocalTargetV;
         private final DoubleSeries ratedS;
         private final IntSeries voltageRegulatorOn;
-        private final DoubleSeries localTargetV;
-        private final DoubleSeries localTargetQ;
-        private final IntSeries regulating;
-        private final StringSeries regulationMode;
-        private final DoubleSeries regulatingValue;
         private final StringSeries energySource;
         private final StringSeries busOrBusbarSections;
-        private final StringSeries regulatingElements;
         private final IntSeries condenser;
 
         GeneratorSeries(UpdatingDataframe dataframe) {
@@ -98,14 +90,8 @@ public class GeneratorDataframeAdder extends AbstractSimpleAdder {
             this.equivalentLocalTargetV = dataframe.getDoubles("equivalent_local_target_v");
             this.ratedS = dataframe.getDoubles("rated_s");
             this.voltageRegulatorOn = dataframe.getInts("voltage_regulator_on");
-            this.localTargetV = dataframe.getDoubles("local_target_v");
-            this.localTargetQ = dataframe.getDoubles("local_target_q");
-            this.regulating = dataframe.getInts("regulating");
-            this.regulationMode = dataframe.getStrings("regulation_mode");
-            this.regulatingValue = dataframe.getDoubles("regulation_value");
             this.energySource = dataframe.getStrings("energy_source");
             this.busOrBusbarSections = dataframe.getStrings("bus_or_busbar_section_id");
-            this.regulatingElements = dataframe.getStrings("regulating_element_id");
             this.condenser = dataframe.getInts("condenser");
         }
 
@@ -118,22 +104,8 @@ public class GeneratorDataframeAdder extends AbstractSimpleAdder {
                 applyIfPresent(minP, row, adder::setMinP);
                 applyIfPresent(targetP, row, adder::setTargetP);
                 applyIfPresent(ratedS, row, adder::setRatedS);
-                applyIfPresent(localTargetV, row, adder::setLocalTargetV);
-                applyIfPresent(localTargetQ, row, adder::setLocalTargetQ);
-                if (regulating != null) {
-                    VoltageRegulationAdder<GeneratorAdder> regulationAdder = adder.newVoltageRegulation();
-                    applyBooleanIfPresent(regulating, row, regulationAdder::withRegulating);
-                    applyIfPresent(regulationMode, row, RegulationMode.class, regulationAdder::withMode);
-                    applyIfPresent(regulatingValue, row, regulationAdder::withTargetValue);
-                    if (regulatingElements != null) {
-                        String id = ids.get(row);
-                        String elementId = regulatingElements.get(row);
-                        if (!elementId.equals(id)) {
-                            NetworkUtil.setRegulatingTerminal(regulationAdder::withTerminal, network, elementId);
-                        }
-                    }
-                    regulationAdder.add();
-                }
+
+                setVoltageRegulationAttributes(adder, network, row);
 
                 // For compatibility with former regulation
                 applyIfPresent(targetQ, row, adder::setTargetQ);
@@ -152,6 +124,11 @@ public class GeneratorDataframeAdder extends AbstractSimpleAdder {
                 return Optional.of(adder);
             }
             return Optional.empty();
+        }
+
+        @Override
+        protected boolean newColumnsUsed() {
+            return regulating != null || regulationMode != null || regulationValue != null;
         }
     }
 
