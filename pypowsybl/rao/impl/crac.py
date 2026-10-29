@@ -9,14 +9,18 @@ from os import PathLike
 from typing import (
     Optional,
     Union,
-    Any
+    Any,
+    Dict,
+    Literal
 )
 
+import pandas as pd
 from pandas import DataFrame
 
 from pypowsybl import _pypowsybl
+from pypowsybl._pypowsybl import PyPowsyblError
 from pypowsybl.network import Network
-from pypowsybl.utils import create_data_frame_from_series_array
+from pypowsybl.utils import create_data_frame_from_series_array, _create_c_dataframe
 from pypowsybl.utils import path_to_str
 
 
@@ -25,8 +29,10 @@ class Crac:
     RAO Crac
     """
 
-    def __init__(self, handle: _pypowsybl.JavaHandle):
+    def __init__(self, handle: _pypowsybl.JavaHandle, network: Optional[Network] = None):
         self._handle = handle
+        # network the CRAC was created with, needed to add some CRAC objects (contingencies, flow CNECs, PSTs)
+        self._network = network
 
     @classmethod
     def from_file_source(cls, network: Network, crac_file: Union[str, PathLike], creation_parameters_file: Optional[Union[str, PathLike]] = None) -> Any :
@@ -42,7 +48,7 @@ class Crac:
             parameters_source = io.BytesIO(b"{\"crac-factory\": \"CracImplFactory\"}")
         if crac_file_name is None:
             crac_file_name = 'crac.json'
-        return cls(_pypowsybl.load_crac_source_with_parameters(network._handle, crac_source.getbuffer(), crac_file_name, parameters_source.getbuffer()))
+        return cls(_pypowsybl.load_crac_source_with_parameters(network._handle, crac_source.getbuffer(), crac_file_name, parameters_source.getbuffer()), network)
 
     def get_instants(self) -> DataFrame:
         """
@@ -657,3 +663,452 @@ class Crac:
         """
         series = _pypowsybl.get_on_flow_constraint_in_country_usage_rules(self._handle)
         return create_data_frame_from_series_array(series)
+
+    def _get_network_handle(self) -> _pypowsybl.JavaHandle:
+        if self._network is None:
+            raise PyPowsyblError('This operation requires the network the CRAC was created with')
+        return self._network._handle  # pylint: disable=protected-access
+
+    def add_instant(self, _id: str, instant_kind: Literal["preventive", "outage", "auto", "curative"]) -> None:
+        """
+        Add an instant to the CRAC. Instants are ordered by their order of creation.
+
+        Args:
+            _id: the id of the instant
+            instant_kind: the kind of instant (preventive, outage, auto or curative)
+        """
+        _pypowsybl.add_crac_instant(self._handle, _id, instant_kind)
+
+    def add_remedial_action_usage_limits(
+        self,
+        instant_id: str,
+        max_remedial_actions: Optional[int] = None,
+        max_tsos: Optional[int] = None,
+        max_topological_actions_per_tso: Optional[Dict[str, int]] = None,
+        max_psts_per_tso: Optional[Dict[str, int]] = None,
+        max_remedial_actions_per_tso: Optional[Dict[str, int]] = None,
+        max_elementary_actions_per_tso: Optional[Dict[str, int]] = None
+    ) -> None:
+        """
+        Add remedial action usage limits for a given instant.
+
+        Args:
+            instant_id: the id of the instant the limits apply to
+            max_remedial_actions: the maximum number of remedial actions
+            max_tsos: the maximum number of TSOs that can activate remedial actions
+            max_topological_actions_per_tso: the maximum number of topological actions per TSO
+            max_psts_per_tso: the maximum number of PST range actions per TSO
+            max_remedial_actions_per_tso: the maximum number of remedial actions per TSO
+            max_elementary_actions_per_tso: the maximum number of elementary actions per TSO
+        """
+        attributes = _attributes_c_df('instant', instant_id,
+                                      ints={'max_remedial_actions': max_remedial_actions, 'max_tsos': max_tsos})
+        per_tso_rows = [(limit_type, tso, value)
+                        for limit_type, limits in (('max_topological_actions_per_tso', max_topological_actions_per_tso),
+                                                   ('max_psts_per_tso', max_psts_per_tso),
+                                                   ('max_remedial_actions_per_tso', max_remedial_actions_per_tso),
+                                                   ('max_elementary_actions_per_tso', max_elementary_actions_per_tso))
+                        if limits is not None
+                        for tso, value in limits.items()]
+        per_tso_limits = _sub_c_df(pd.DataFrame(per_tso_rows, columns=['limit_type', 'tso', 'value']),
+                                   {'limit_type': _STRING, 'tso': _STRING, 'value': _INT})
+        _pypowsybl.add_crac_ra_usage_limits(self._handle, attributes, per_tso_limits)
+
+    def add_contingency(self, _id: str, *network_elements_ids: str) -> None:
+        """
+        Add a contingency to the CRAC. The type of each contingency element is deduced from the network.
+
+        Args:
+            _id: the id of the contingency
+            network_elements_ids: the ids of the network elements lost in the contingency
+        """
+        _pypowsybl.add_crac_contingency(self._handle, self._get_network_handle(), _id, list(network_elements_ids))
+
+    def add_flow_cnec(
+        self,
+        _id: str,
+        network_element_id: str,
+        instant_id: str,
+        thresholds: pd.DataFrame, # columns: unit (Literal["megawatt", "ampere", "percent_imax"]), lower_bound (float | None), upper_bound (float | None), side (Literal["one", "two"]])
+        name: Optional[str] = None,
+        operator: Optional[str] = None,
+        border: Optional[str] = None,
+        contingency_id: Optional[str] = None,
+        optimized: bool = True,
+        monitored: bool = False,
+        reliability_margin: Optional[float | int] = None,
+    ) -> None:
+        """
+        Add a flow CNEC to the CRAC. Nominal voltages and maximum currents of the branch are read from the network.
+
+        Args:
+            _id: the id of the CNEC
+            network_element_id: the id of the monitored branch
+            instant_id: the id of the instant of the CNEC
+            thresholds: the thresholds, with columns unit (megawatt, ampere or percent_i_max), lower_bound, upper_bound
+                and side (one or two)
+            name: the name of the CNEC
+            operator: the operator of the CNEC
+            border: the border of the CNEC
+            contingency_id: the id of the contingency of the CNEC (mandatory for non preventive CNECs)
+            optimized: whether the CNEC is optimized
+            monitored: whether the CNEC is monitored
+            reliability_margin: the reliability margin of the CNEC
+        """
+        attributes = _cnec_attributes(_id, instant_id, name, operator, border, contingency_id, optimized, monitored,
+                                      reliability_margin, network_element_id=network_element_id)
+        c_thresholds = _sub_c_df(thresholds, {'unit': _STRING, 'lower_bound': _DOUBLE, 'upper_bound': _DOUBLE, 'side': _STRING})
+        _pypowsybl.add_crac_flow_cnec(self._handle, self._get_network_handle(), attributes, c_thresholds)
+
+    def add_angle_cnec(
+        self,
+        _id: str,
+        exporting_network_element_id: str,
+        importing_network_element_id: str,
+        instant_id: str,
+        thresholds: pd.DataFrame, # columns: unit (Literal["degree"]), lower_bound (float | None), upper_bound (float | None)
+        name: Optional[str] = None,
+        operator: Optional[str] = None,
+        border: Optional[str] = None,
+        contingency_id: Optional[str] = None,
+        optimized: bool = False,
+        monitored: bool = True,
+        reliability_margin: Optional[float | int] = None
+    ) -> None:
+        """
+        Add an angle CNEC to the CRAC.
+
+        Args:
+            _id: the id of the CNEC
+            exporting_network_element_id: the id of the exporting network element
+            importing_network_element_id: the id of the importing network element
+            instant_id: the id of the instant of the CNEC
+            thresholds: the thresholds, with columns unit (degree), lower_bound and upper_bound
+            name: the name of the CNEC
+            operator: the operator of the CNEC
+            border: the border of the CNEC
+            contingency_id: the id of the contingency of the CNEC (mandatory for non preventive CNECs)
+            optimized: whether the CNEC is optimized (not supported by OpenRAO for angle CNECs)
+            monitored: whether the CNEC is monitored
+            reliability_margin: the reliability margin of the CNEC
+        """
+        attributes = _cnec_attributes(_id, instant_id, name, operator, border, contingency_id, optimized, monitored,
+                                      reliability_margin,
+                                      exporting_network_element_id=exporting_network_element_id,
+                                      importing_network_element_id=importing_network_element_id)
+        c_thresholds = _sub_c_df(thresholds, {'unit': _STRING, 'lower_bound': _DOUBLE, 'upper_bound': _DOUBLE})
+        _pypowsybl.add_crac_angle_cnec(self._handle, attributes, c_thresholds)
+
+    def add_voltage_cnec(
+        self,
+        _id: str,
+        network_element_id: str,
+        instant_id: str,
+        thresholds: pd.DataFrame, # columns: unit (Literal["kilovolt"]), lower_bound (float | None), upper_bound (float | None)
+        name: Optional[str] = None,
+        operator: Optional[str] = None,
+        border: Optional[str] = None,
+        contingency_id: Optional[str] = None,
+        optimized: bool = True,
+        monitored: bool = False,
+        reliability_margin: Optional[float | int] = None
+    ) -> None:
+        """
+        Add a voltage CNEC to the CRAC.
+
+        Args:
+            _id: the id of the CNEC
+            network_element_id: the id of the monitored network element
+            instant_id: the id of the instant of the CNEC
+            thresholds: the thresholds, with columns unit (kilovolt), lower_bound and upper_bound
+            name: the name of the CNEC
+            operator: the operator of the CNEC
+            border: the border of the CNEC
+            contingency_id: the id of the contingency of the CNEC (mandatory for non preventive CNECs)
+            optimized: whether the CNEC is optimized (not supported by OpenRAO for voltage CNECs)
+            monitored: whether the CNEC is monitored
+            reliability_margin: the reliability margin of the CNEC
+        """
+        attributes = _cnec_attributes(_id, instant_id, name, operator, border, contingency_id, optimized, monitored,
+                                      reliability_margin, network_element_id=network_element_id)
+        c_thresholds = _sub_c_df(thresholds, {'unit': _STRING, 'lower_bound': _DOUBLE, 'upper_bound': _DOUBLE})
+        _pypowsybl.add_crac_voltage_cnec(self._handle, attributes, c_thresholds)
+
+    def add_network_action(
+        self,
+        _id: str,
+        name: Optional[str] = None,
+        operator: Optional[str] = None,
+        speed: Optional[int] = None,
+        activation_cost: Optional[float | int] = None,
+        terminal_connection_action: Optional[pd.DataFrame] = None, # columns: terminal_id (str), action_type (Literal["open", "close"])
+        phase_tap_changer_tap_position_actions: Optional[pd.DataFrame] = None, # columns: phase_tap_changer_id (str), tap_position (int)
+        generator_actions: Optional[pd.DataFrame] = None, # columns: generator_id (str), active_power_value (float)
+        load_actions: Optional[pd.DataFrame] = None, # columns: load_id (str), active_power_value (float)
+        dangling_line_actions: Optional[pd.DataFrame] = None, # columns: dangling_line_id (str), active_power_value (float)
+        shunt_compensator_position_actions: Optional[pd.DataFrame] = None, # columns: shunt_compensator_id (str), section_count (int)
+        switch_actions: Optional[pd.DataFrame] = None, # columns: switch_id (str), action_type (Literal["open", "close"])
+        switch_pairs: Optional[pd.DataFrame] = None, # columns: switch_to_open_id (str), switch_to_close_id (str),
+        on_instant_usage_rules: Optional[pd.DataFrame] = None, # columns: instant (str)
+        on_contingency_state_usage_rules: Optional[pd.DataFrame] = None, # columns: instant (str), contingency_id (str)
+        on_constraint_usage_rules: Optional[pd.DataFrame] = None, # columns: instant (str), cnec_id (str)
+        on_flow_constraint_in_country_usage_rules: Optional[pd.DataFrame] = None, # columns: instant (str), country (str), contingency_id (str | None)
+    ) -> None:
+        """
+        Add a network action to the CRAC, made of one or several elementary actions.
+
+        Each elementary action type and each usage rule type is described by a dataframe, one row per elementary
+        action or usage rule.
+        """
+        attributes = _remedial_action_attributes(_id, name, operator, speed, activation_cost)
+        _pypowsybl.add_crac_network_action(
+            self._handle, attributes,
+            _sub_c_df(terminal_connection_action, {'terminal_id': _STRING, 'action_type': _STRING}),
+            _sub_c_df(phase_tap_changer_tap_position_actions, {'phase_tap_changer_id': _STRING, 'tap_position': _INT}),
+            _sub_c_df(generator_actions, {'generator_id': _STRING, 'active_power_value': _DOUBLE}),
+            _sub_c_df(load_actions, {'load_id': _STRING, 'active_power_value': _DOUBLE}),
+            _sub_c_df(dangling_line_actions, {'dangling_line_id': _STRING, 'active_power_value': _DOUBLE}),
+            _sub_c_df(shunt_compensator_position_actions, {'shunt_compensator_id': _STRING, 'section_count': _INT}),
+            _sub_c_df(switch_actions, {'switch_id': _STRING, 'action_type': _STRING}),
+            _sub_c_df(switch_pairs, {'switch_to_open_id': _STRING, 'switch_to_close_id': _STRING}),
+            _usage_rules_c_df(on_instant_usage_rules, on_contingency_state_usage_rules, on_constraint_usage_rules,
+                              on_flow_constraint_in_country_usage_rules))
+
+    def add_pst_range_action(
+        self,
+        _id: str,
+        network_element_id: str,
+        name: Optional[str] = None,
+        operator: Optional[str] = None,
+        speed: Optional[int] = None,
+        activation_cost: Optional[float | int] = None,
+        upward_variation_cost: Optional[float | int] = None,
+        downward_variation_cost: Optional[float | int] = None,
+        group_id: Optional[str] = None,
+        ranges: Optional[pd.DataFrame] = None, # columns: lower_bound (int | None), upper_bound (int | None), range_type (Literal["absolute", "relative_to_previous_instant", "relative_to_initial_network", "relative_to_previous_time_step"])
+        on_instant_usage_rules: Optional[pd.DataFrame] = None, # columns: instant (str)
+        on_contingency_state_usage_rules: Optional[pd.DataFrame] = None, # columns: instant (str), contingency_id (str)
+        on_constraint_usage_rules: Optional[pd.DataFrame] = None, # columns: instant (str), cnec_id (str)
+        on_flow_constraint_in_country_usage_rules: Optional[pd.DataFrame] = None, # columns: instant (str), country (str), contingency_id (str | None)
+    ) -> None:
+        """
+        Add a PST range action to the CRAC. The initial tap and the tap to angle conversion map are read from the network.
+        """
+        attributes = _standard_range_action_attributes(_id, name, operator, speed, activation_cost, upward_variation_cost,
+                                                       downward_variation_cost, group_id,
+                                                       network_element_id=network_element_id)
+        _pypowsybl.add_crac_pst_range_action(
+            self._handle, self._get_network_handle(), attributes,
+            # tap bounds are sent as floats so that they can be undefined (NaN)
+            _sub_c_df(ranges, _RANGES_COLUMNS),
+            _usage_rules_c_df(on_instant_usage_rules, on_contingency_state_usage_rules, on_constraint_usage_rules,
+                              on_flow_constraint_in_country_usage_rules))
+
+    def add_hvdc_range_action(
+        self,
+        _id: str,
+        network_element_id: str,
+        ranges: pd.DataFrame, # columns: lower_bound (float | None), upper_bound (float | None), range_type (Literal["absolute", "relative_to_previous_instant", "relative_to_initial_network", "relative_to_previous_time_step"])
+        name: Optional[str] = None,
+        operator: Optional[str] = None,
+        speed: Optional[int] = None,
+        activation_cost: Optional[float | int] = None,
+        upward_variation_cost: Optional[float | int] = None,
+        downward_variation_cost: Optional[float | int] = None,
+        group_id: Optional[str] = None,
+        on_instant_usage_rules: Optional[pd.DataFrame] = None, # columns: instant (str)
+        on_contingency_state_usage_rules: Optional[pd.DataFrame] = None, # columns: instant (str), contingency_id (str)
+        on_constraint_usage_rules: Optional[pd.DataFrame] = None, # columns: instant (str), cnec_id (str)
+        on_flow_constraint_in_country_usage_rules: Optional[pd.DataFrame] = None, # columns: instant (str), country (str), contingency_id (str | None)
+    ) -> None:
+        """
+        Add an HVDC range action to the CRAC.
+        """
+        attributes = _standard_range_action_attributes(_id, name, operator, speed, activation_cost, upward_variation_cost,
+                                                       downward_variation_cost, group_id,
+                                                       network_element_id=network_element_id)
+        _pypowsybl.add_crac_hvdc_range_action(
+            self._handle, attributes, _sub_c_df(ranges, _RANGES_COLUMNS),
+            _usage_rules_c_df(on_instant_usage_rules, on_contingency_state_usage_rules, on_constraint_usage_rules,
+                              on_flow_constraint_in_country_usage_rules))
+
+    def add_injection_range_action(
+        self,
+        _id: str,
+        ranges: pd.DataFrame, # columns: lower_bound (float | None), upper_bound (float | None), range_type (Literal["absolute", "relative_to_previous_instant", "relative_to_initial_network", "relative_to_previous_time_step"])
+        network_elements_and_keys: Dict[str, float | int],
+        name: Optional[str] = None,
+        operator: Optional[str] = None,
+        speed: Optional[int] = None,
+        activation_cost: Optional[float | int] = None,
+        upward_variation_cost: Optional[float | int] = None,
+        downward_variation_cost: Optional[float | int] = None,
+        group_id: Optional[str] = None,
+        on_instant_usage_rules: Optional[pd.DataFrame] = None, # columns: instant (str)
+        on_contingency_state_usage_rules: Optional[pd.DataFrame] = None, # columns: instant (str), contingency_id (str)
+        on_constraint_usage_rules: Optional[pd.DataFrame] = None, # columns: instant (str), cnec_id (str)
+        on_flow_constraint_in_country_usage_rules: Optional[pd.DataFrame] = None, # columns: instant (str), country (str), contingency_id (str | None)
+    ) -> None:
+        """
+        Add an injection range action to the CRAC, acting on several injections with distribution keys.
+        """
+        attributes = _standard_range_action_attributes(_id, name, operator, speed, activation_cost, upward_variation_cost,
+                                                       downward_variation_cost, group_id)
+        elements_and_keys = pd.DataFrame(list(network_elements_and_keys.items()), columns=['network_element_id', 'key'])
+        _pypowsybl.add_crac_injection_range_action(
+            self._handle, attributes,
+            _sub_c_df(elements_and_keys, {'network_element_id': _STRING, 'key': _DOUBLE}),
+            _sub_c_df(ranges, _RANGES_COLUMNS),
+            _usage_rules_c_df(on_instant_usage_rules, on_contingency_state_usage_rules, on_constraint_usage_rules,
+                              on_flow_constraint_in_country_usage_rules))
+
+    def add_counter_trade_range_action(
+        self,
+        _id: str,
+        ranges: pd.DataFrame, # columns: lower_bound (float | None), upper_bound (float | None), range_type (Literal["absolute", "relative_to_previous_instant", "relative_to_initial_network", "relative_to_previous_time_step"])
+        exporting_country: str,
+        importing_country: str,
+        name: Optional[str] = None,
+        operator: Optional[str] = None,
+        speed: Optional[int] = None,
+        activation_cost: Optional[float | int] = None,
+        upward_variation_cost: Optional[float | int] = None,
+        downward_variation_cost: Optional[float | int] = None,
+        group_id: Optional[str] = None,
+        on_instant_usage_rules: Optional[pd.DataFrame] = None, # columns: instant (str)
+        on_contingency_state_usage_rules: Optional[pd.DataFrame] = None, # columns: instant (str), contingency_id (str)
+        on_constraint_usage_rules: Optional[pd.DataFrame] = None, # columns: instant (str), cnec_id (str)
+        on_flow_constraint_in_country_usage_rules: Optional[pd.DataFrame] = None, # columns: instant (str), country (str), contingency_id (str | None)
+    ) -> None:
+        """
+        Add a counter trade range action to the CRAC, between two countries.
+        """
+        attributes = _standard_range_action_attributes(_id, name, operator, speed, activation_cost, upward_variation_cost,
+                                                       downward_variation_cost, group_id,
+                                                       exporting_country=exporting_country,
+                                                       importing_country=importing_country)
+        _pypowsybl.add_crac_counter_trade_range_action(
+            self._handle, attributes, _sub_c_df(ranges, _RANGES_COLUMNS),
+            _usage_rules_c_df(on_instant_usage_rules, on_contingency_state_usage_rules, on_constraint_usage_rules,
+                              on_flow_constraint_in_country_usage_rules))
+
+
+# series types of the C dataframes
+_STRING = 0
+_DOUBLE = 1
+_INT = 2
+_BOOL = 3
+
+_RANGES_COLUMNS = {'lower_bound': _DOUBLE, 'upper_bound': _DOUBLE, 'range_type': _STRING}
+
+_USAGE_RULES_COLUMNS = {'usage_rule_type': _STRING, 'instant': _STRING, 'contingency_id': _STRING,
+                        'cnec_id': _STRING, 'country': _STRING}
+
+
+def _metadata(name: str, series_type: int, is_index: bool = False) -> _pypowsybl.SeriesMetadata:
+    return _pypowsybl.SeriesMetadata(name, series_type, is_index, False, False)
+
+
+def _attributes_c_df(index_name: str, index_value: str,
+                     strings: Optional[Dict[str, Optional[str]]] = None,
+                     doubles: Optional[Dict[str, Optional[float]]] = None,
+                     ints: Optional[Dict[str, Optional[int]]] = None,
+                     bools: Optional[Dict[str, Optional[bool]]] = None) -> _pypowsybl.Dataframe:
+    """
+    Creates a one row C dataframe holding the attributes of a CRAC object.
+    Undefined (None) attributes are not sent.
+    """
+    metadata = [_metadata(index_name, _STRING, True)]
+    values: Dict[str, Any] = {}
+    for series_type, attributes, convert in ((_STRING, strings, str), (_DOUBLE, doubles, float),
+                                             (_INT, ints, int), (_BOOL, bools, bool)):
+        for name, value in (attributes or {}).items():
+            if value is not None:
+                metadata.append(_metadata(name, series_type))
+                values[name] = [convert(value)]
+    df = pd.DataFrame(values, index=pd.Index([index_value], name=index_name))
+    return _create_c_dataframe(df, metadata)
+
+
+def _cnec_attributes(_id: str, instant_id: str, name: Optional[str], operator: Optional[str], border: Optional[str],
+                     contingency_id: Optional[str], optimized: bool, monitored: bool,
+                     reliability_margin: Optional[float | int], **network_elements: str) -> _pypowsybl.Dataframe:
+    return _attributes_c_df('id', _id,
+                            strings={'instant': instant_id, 'name': name, 'operator': operator, 'border': border,
+                                     'contingency_id': contingency_id, **network_elements},
+                            doubles={'reliability_margin': reliability_margin},
+                            bools={'optimized': optimized, 'monitored': monitored})
+
+
+def _remedial_action_attributes(_id: str, name: Optional[str], operator: Optional[str], speed: Optional[int],
+                                activation_cost: Optional[float | int],
+                                doubles: Optional[Dict[str, Optional[float | int]]] = None,
+                                **strings: Optional[str]) -> _pypowsybl.Dataframe:
+    return _attributes_c_df('id', _id,
+                            strings={'name': name, 'operator': operator, **strings},
+                            doubles={'activation_cost': activation_cost, **(doubles or {})},
+                            ints={'speed': speed})
+
+
+def _standard_range_action_attributes(_id: str, name: Optional[str], operator: Optional[str], speed: Optional[int],
+                                      activation_cost: Optional[float | int],
+                                      upward_variation_cost: Optional[float | int],
+                                      downward_variation_cost: Optional[float | int],
+                                      group_id: Optional[str], **strings: str) -> _pypowsybl.Dataframe:
+    return _remedial_action_attributes(_id, name, operator, speed, activation_cost,
+                                       doubles={'upward_variation_cost': upward_variation_cost,
+                                                'downward_variation_cost': downward_variation_cost},
+                                       group_id=group_id, **strings)
+
+
+def _flatten_index(df: DataFrame) -> DataFrame:
+    """
+    Moves named index levels to columns and replaces the index by a default range index.
+    """
+    if any(index_name is not None for index_name in df.index.names):
+        return df.reset_index()
+    return df.reset_index(drop=True)
+
+
+def _sub_c_df(df: Optional[DataFrame], columns: Dict[str, int]) -> Optional[_pypowsybl.Dataframe]:
+    """
+    Creates the C dataframe of sub-elements of a CRAC object (thresholds, ranges, elementary actions...).
+    Missing values of string columns are sent as empty strings, missing values of float columns as NaN.
+    """
+    if df is None:
+        return None
+    df = _flatten_index(df)
+    unknown_columns = set(df.columns) - set(columns)
+    if unknown_columns:
+        raise PyPowsyblError(f'Unexpected columns {sorted(unknown_columns)}, expected columns are {list(columns)}')
+    df = df.copy()
+    for column in df.columns:
+        series_type = columns[column]
+        if series_type == _STRING:
+            df[column] = df[column].fillna('').astype(str)
+        elif series_type == _DOUBLE:
+            df[column] = df[column].astype(float)
+        else:
+            df[column] = df[column].astype(int)
+    # the default range index is sent as an int index column
+    metadata = [_metadata('row', _INT, True)] + [_metadata(name, series_type) for name, series_type in columns.items()]
+    return _create_c_dataframe(df, metadata)
+
+
+def _usage_rules_c_df(on_instant_usage_rules: Optional[DataFrame],
+                      on_contingency_state_usage_rules: Optional[DataFrame],
+                      on_constraint_usage_rules: Optional[DataFrame],
+                      on_flow_constraint_in_country_usage_rules: Optional[DataFrame]) -> Optional[_pypowsybl.Dataframe]:
+    """
+    Merges all the usage rules of a remedial action in a single C dataframe, with a usage_rule_type column.
+    """
+    usage_rules = []
+    for usage_rule_type, df in (('on_instant', on_instant_usage_rules),
+                                ('on_contingency_state', on_contingency_state_usage_rules),
+                                ('on_constraint', on_constraint_usage_rules),
+                                ('on_flow_constraint_in_country', on_flow_constraint_in_country_usage_rules)):
+        if df is not None:
+            usage_rules.append(_flatten_index(df).assign(usage_rule_type=usage_rule_type))
+    if not usage_rules:
+        return None
+    return _sub_c_df(pd.concat(usage_rules, ignore_index=True), _USAGE_RULES_COLUMNS)
