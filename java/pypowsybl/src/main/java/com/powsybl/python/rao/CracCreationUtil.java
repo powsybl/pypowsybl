@@ -35,7 +35,9 @@ import com.powsybl.openrao.data.crac.api.threshold.BranchThresholdAdder;
 import com.powsybl.openrao.data.crac.api.threshold.VoltageThresholdAdder;
 
 import java.util.*;
-import java.util.function.BiConsumer;
+import java.util.function.ObjIntConsumer;
+
+import static com.powsybl.python.rao.RaoConstants.*;
 
 /**
  * Builds CRAC objects (instants, contingencies, CNECs, remedial actions) from dataframes sent by Python.
@@ -47,24 +49,6 @@ import java.util.function.BiConsumer;
  */
 final class CracCreationUtil {
 
-    static final String ID = "id";
-    static final String NAME = "name";
-    static final String OPERATOR = "operator";
-    static final String BORDER = "border";
-    static final String INSTANT = "instant";
-    static final String CONTINGENCY_ID = "contingency_id";
-    static final String CNEC_ID = "cnec_id";
-    static final String COUNTRY = "country";
-    static final String UNIT = "unit";
-    static final String SIDE = "side";
-    static final String LOWER_BOUND = "lower_bound";
-    static final String UPPER_BOUND = "upper_bound";
-    static final String RANGE_TYPE = "range_type";
-    static final String ACTION_TYPE = "action_type";
-    static final String ACTIVE_POWER_VALUE = "active_power_value";
-    static final String RELIABILITY_MARGIN = "reliability_margin";
-    static final String NETWORK_ELEMENT_ID = "network_element_id";
-
     private CracCreationUtil() {
     }
 
@@ -75,20 +59,20 @@ final class CracCreationUtil {
     static void addRaUsageLimits(Crac crac, UpdatingDataframe attributes, UpdatingDataframe perTsoLimits) {
         String instantId = getString(attributes, INSTANT, 0);
         RaUsageLimitsAdder adder = crac.newRaUsageLimits(instantId);
-        getOptionalInt(attributes, "max_remedial_actions", 0).ifPresent(adder::withMaxRa);
-        if (getOptionalInt(attributes, "max_tsos", 0).isPresent()) {
+        getOptionalInt(attributes, MAX_REMEDIAL_ACTIONS, 0).ifPresent(adder::withMaxRa);
+        if (getOptionalInt(attributes, MAX_TSOS, 0).isPresent()) {
             throw new PowsyblException("Limiting the maximum number of TSOs is not supported by this version of OpenRAO");
         }
         Map<String, Map<String, Integer>> limits = new HashMap<>();
         applyOnEachRow(perTsoLimits, (df, row) -> limits
-            .computeIfAbsent(getString(df, "limit_type", row), k -> new HashMap<>())
-            .put(getString(df, "tso", row), getInt(df, "value", row)));
+            .computeIfAbsent(getString(df, LIMIT_TYPE, row), k -> new HashMap<>())
+            .put(getString(df, TSO, row), getInt(df, VALUE, row)));
         for (Map.Entry<String, Map<String, Integer>> e : limits.entrySet()) {
             switch (e.getKey()) {
-                case "max_topological_actions_per_tso" -> adder.withMaxTopoPerTso(e.getValue());
-                case "max_psts_per_tso" -> adder.withMaxPstPerTso(e.getValue());
-                case "max_remedial_actions_per_tso" -> adder.withMaxRaPerTso(e.getValue());
-                case "max_elementary_actions_per_tso" -> adder.withMaxElementaryActionPerTso(e.getValue());
+                case MAX_TOPOLOGICAL_ACTIONS_PER_TSO -> adder.withMaxTopoPerTso(e.getValue());
+                case MAX_PSTS_PER_TSO -> adder.withMaxPstPerTso(e.getValue());
+                case MAX_REMEDIAL_ACTIONS_PER_TSO -> adder.withMaxRaPerTso(e.getValue());
+                case MAX_ELEMENTARY_ACTIONS_PER_TSO -> adder.withMaxElementaryActionPerTso(e.getValue());
                 default -> throw new PowsyblException("Unknown usage limit type: " + e.getKey());
             }
         }
@@ -118,8 +102,8 @@ final class CracCreationUtil {
     private static <T extends CnecAdder<T>> T fillCnec(T adder, UpdatingDataframe attributes) {
         adder.withId(getString(attributes, ID, 0))
             .withInstant(getString(attributes, INSTANT, 0))
-            .withOptimized(getBoolean(attributes, "optimized", 0, false))
-            .withMonitored(getBoolean(attributes, "monitored", 0, false));
+            .withOptimized(getBoolean(attributes, OPTIMIZED, 0, false))
+            .withMonitored(getBoolean(attributes, MONITORED, 0, false));
         getOptionalString(attributes, NAME, 0).ifPresent(adder::withName);
         getOptionalString(attributes, OPERATOR, 0).ifPresent(adder::withOperator);
         getOptionalString(attributes, BORDER, 0).ifPresent(adder::withBorder);
@@ -141,7 +125,7 @@ final class CracCreationUtil {
         }
         applyOnEachRow(thresholds, (df, row) -> {
             BranchThresholdAdder thresholdAdder = adder.newThreshold()
-                .withUnit(toUnit(getString(df, UNIT, row)))
+                .withUnit(toEnum(Unit.class, getString(df, UNIT, row)))
                 .withSide(toEnum(TwoSides.class, getString(df, SIDE, row)));
             getOptionalDouble(df, LOWER_BOUND, row).ifPresent(thresholdAdder::withMin);
             getOptionalDouble(df, UPPER_BOUND, row).ifPresent(thresholdAdder::withMax);
@@ -152,10 +136,10 @@ final class CracCreationUtil {
 
     static void addAngleCnec(Crac crac, UpdatingDataframe attributes, UpdatingDataframe thresholds) {
         AngleCnecAdder adder = fillCnec(crac.newAngleCnec(), attributes)
-            .withExportingNetworkElement(getString(attributes, "exporting_network_element_id", 0))
-            .withImportingNetworkElement(getString(attributes, "importing_network_element_id", 0));
+            .withExportingNetworkElement(getString(attributes, EXPORTING_NETWORK_ELEMENT_ID, 0))
+            .withImportingNetworkElement(getString(attributes, IMPORTING_NETWORK_ELEMENT_ID, 0));
         applyOnEachRow(thresholds, (df, row) -> {
-            AngleThresholdAdder thresholdAdder = adder.newThreshold().withUnit(toUnit(getString(df, UNIT, row)));
+            AngleThresholdAdder thresholdAdder = adder.newThreshold().withUnit(toEnum(Unit.class, getString(df, UNIT, row)));
             getOptionalDouble(df, LOWER_BOUND, row).ifPresent(thresholdAdder::withMin);
             getOptionalDouble(df, UPPER_BOUND, row).ifPresent(thresholdAdder::withMax);
             thresholdAdder.add();
@@ -167,7 +151,7 @@ final class CracCreationUtil {
         VoltageCnecAdder adder = fillCnec(crac.newVoltageCnec(), attributes)
             .withNetworkElement(getString(attributes, NETWORK_ELEMENT_ID, 0));
         applyOnEachRow(thresholds, (df, row) -> {
-            VoltageThresholdAdder thresholdAdder = adder.newThreshold().withUnit(toUnit(getString(df, UNIT, row)));
+            VoltageThresholdAdder thresholdAdder = adder.newThreshold().withUnit(toEnum(Unit.class, getString(df, UNIT, row)));
             getOptionalDouble(df, LOWER_BOUND, row).ifPresent(thresholdAdder::withMin);
             getOptionalDouble(df, UPPER_BOUND, row).ifPresent(thresholdAdder::withMax);
             thresholdAdder.add();
@@ -179,8 +163,8 @@ final class CracCreationUtil {
         adder.withId(getString(attributes, ID, 0));
         getOptionalString(attributes, NAME, 0).ifPresent(adder::withName);
         getOptionalString(attributes, OPERATOR, 0).ifPresent(adder::withOperator);
-        getOptionalInt(attributes, "speed", 0).ifPresent(adder::withSpeed);
-        getOptionalDouble(attributes, "activation_cost", 0).ifPresent(adder::withActivationCost);
+        getOptionalInt(attributes, SPEED, 0).ifPresent(adder::withSpeed);
+        getOptionalDouble(attributes, ACTIVATION_COST, 0).ifPresent(adder::withActivationCost);
         addUsageRules(adder, usageRules);
         return adder;
     }
@@ -192,18 +176,18 @@ final class CracCreationUtil {
     private static <T extends RemedialActionAdder<T>> void addUsageRules(T adder, UpdatingDataframe usageRules) {
         applyOnEachRow(usageRules, (df, row) -> {
             String instant = getString(df, INSTANT, row);
-            String type = getString(df, "usage_rule_type", row);
+            String type = getString(df, USAGE_RULE_TYPE, row);
             switch (type) {
-                case "on_instant" -> adder.newOnInstantUsageRule().withInstant(instant).add();
-                case "on_contingency_state" -> adder.newOnContingencyStateUsageRule()
+                case ON_INSTANT -> adder.newOnInstantUsageRule().withInstant(instant).add();
+                case ON_CONTINGENCY_STATE -> adder.newOnContingencyStateUsageRule()
                     .withInstant(instant)
                     .withContingency(getString(df, CONTINGENCY_ID, row))
                     .add();
-                case "on_constraint" -> adder.newOnConstraintUsageRule()
+                case ON_CONSTRAINT -> adder.newOnConstraintUsageRule()
                     .withInstant(instant)
                     .withCnec(getString(df, CNEC_ID, row))
                     .add();
-                case "on_flow_constraint_in_country" -> {
+                case ON_FLOW_CONSTRAINT_IN_COUNTRY -> {
                     var ruleAdder = adder.newOnFlowConstraintInCountryUsageRule()
                         .withInstant(instant)
                         .withCountry(toEnum(Country.class, getString(df, COUNTRY, row)));
@@ -218,9 +202,9 @@ final class CracCreationUtil {
     private static <T extends StandardRangeActionAdder<T>> T fillStandardRangeAction(T adder, UpdatingDataframe attributes,
                                                                                      UpdatingDataframe ranges, UpdatingDataframe usageRules) {
         fillRemedialAction(adder, attributes, usageRules);
-        getOptionalString(attributes, "group_id", 0).ifPresent(adder::withGroupId);
-        getOptionalDouble(attributes, "upward_variation_cost", 0).ifPresent(cost -> adder.withVariationCost(cost, VariationDirection.UP));
-        getOptionalDouble(attributes, "downward_variation_cost", 0).ifPresent(cost -> adder.withVariationCost(cost, VariationDirection.DOWN));
+        getOptionalString(attributes, GROUP_ID, 0).ifPresent(adder::withGroupId);
+        getOptionalDouble(attributes, UPWARD_VARIATION_COST, 0).ifPresent(cost -> adder.withVariationCost(cost, VariationDirection.UP));
+        getOptionalDouble(attributes, DOWNWARD_VARIATION_COST, 0).ifPresent(cost -> adder.withVariationCost(cost, VariationDirection.DOWN));
         applyOnEachRow(ranges, (df, row) -> {
             StandardRangeAdder<T> rangeAdder = adder.newRange().withRangeType(toEnum(RangeType.class, getString(df, RANGE_TYPE, row)));
             getOptionalDouble(df, LOWER_BOUND, row).ifPresent(rangeAdder::withMin);
@@ -238,36 +222,36 @@ final class CracCreationUtil {
                                  UpdatingDataframe usageRules) {
         NetworkActionAdder adder = fillRemedialAction(crac.newNetworkAction(), attributes, usageRules);
         applyOnEachRow(terminalConnectionActions, (df, row) -> adder.newTerminalsConnectionAction()
-            .withNetworkElement(getString(df, "terminal_id", row))
+            .withNetworkElement(getString(df, TERMINAL_ID, row))
             .withActionType(toEnum(ActionType.class, getString(df, ACTION_TYPE, row)))
             .add());
         applyOnEachRow(pstTapPositionActions, (df, row) -> adder.newPhaseTapChangerTapPositionAction()
-            .withNetworkElement(getString(df, "phase_tap_changer_id", row))
-            .withTapPosition(getInt(df, "tap_position", row))
+            .withNetworkElement(getString(df, PHASE_TAP_CHANGER_ID, row))
+            .withTapPosition(getInt(df, TAP_POSITION, row))
             .add());
         applyOnEachRow(generatorActions, (df, row) -> adder.newGeneratorAction()
-            .withNetworkElement(getString(df, "generator_id", row))
+            .withNetworkElement(getString(df, GENERATOR_ID, row))
             .withActivePowerValue(getDouble(df, ACTIVE_POWER_VALUE, row))
             .add());
         applyOnEachRow(loadActions, (df, row) -> adder.newLoadAction()
-            .withNetworkElement(getString(df, "load_id", row))
+            .withNetworkElement(getString(df, LOAD_ID, row))
             .withActivePowerValue(getDouble(df, ACTIVE_POWER_VALUE, row))
             .add());
         applyOnEachRow(boundaryLineActions, (df, row) -> adder.newBoundaryLineAction()
-            .withNetworkElement(getString(df, "dangling_line_id", row))
+            .withNetworkElement(getString(df, DANGLING_LINE_ID, row))
             .withActivePowerValue(getDouble(df, ACTIVE_POWER_VALUE, row))
             .add());
         applyOnEachRow(shuntCompensatorPositionActions, (df, row) -> adder.newShuntCompensatorPositionAction()
-            .withNetworkElement(getString(df, "shunt_compensator_id", row))
-            .withSectionCount(getInt(df, "section_count", row))
+            .withNetworkElement(getString(df, SHUNT_COMPENSATOR_ID, row))
+            .withSectionCount(getInt(df, SECTION_COUNT, row))
             .add());
         applyOnEachRow(switchActions, (df, row) -> adder.newSwitchAction()
-            .withNetworkElement(getString(df, "switch_id", row))
+            .withNetworkElement(getString(df, SWITCH_ID, row))
             .withActionType(toEnum(ActionType.class, getString(df, ACTION_TYPE, row)))
             .add());
         applyOnEachRow(switchPairs, (df, row) -> adder.newSwitchPair()
-            .withSwitchToOpen(getString(df, "switch_to_open_id", row))
-            .withSwitchToClose(getString(df, "switch_to_close_id", row))
+            .withSwitchToOpen(getString(df, SWITCH_TO_OPEN_ID, row))
+            .withSwitchToClose(getString(df, SWITCH_TO_CLOSE_ID, row))
             .add());
         adder.add();
     }
@@ -277,9 +261,9 @@ final class CracCreationUtil {
         String networkElementId = getString(attributes, NETWORK_ELEMENT_ID, 0);
         PstRangeActionAdder adder = fillRemedialAction(crac.newPstRangeAction(), attributes, usageRules)
             .withNetworkElement(networkElementId);
-        getOptionalString(attributes, "group_id", 0).ifPresent(adder::withGroupId);
-        getOptionalDouble(attributes, "upward_variation_cost", 0).ifPresent(cost -> adder.withVariationCost(cost, VariationDirection.UP));
-        getOptionalDouble(attributes, "downward_variation_cost", 0).ifPresent(cost -> adder.withVariationCost(cost, VariationDirection.DOWN));
+        getOptionalString(attributes, GROUP_ID, 0).ifPresent(adder::withGroupId);
+        getOptionalDouble(attributes, UPWARD_VARIATION_COST, 0).ifPresent(cost -> adder.withVariationCost(cost, VariationDirection.UP));
+        getOptionalDouble(attributes, DOWNWARD_VARIATION_COST, 0).ifPresent(cost -> adder.withVariationCost(cost, VariationDirection.DOWN));
 
         // initial tap and tap to angle conversion map are read from the network
         TwoWindingsTransformer transformer = network.getTwoWindingsTransformer(networkElementId);
@@ -316,14 +300,14 @@ final class CracCreationUtil {
                                         UpdatingDataframe ranges, UpdatingDataframe usageRules) {
         InjectionRangeActionAdder adder = fillStandardRangeAction(crac.newInjectionRangeAction(), attributes, ranges, usageRules);
         applyOnEachRow(networkElementsAndKeys, (df, row) ->
-            adder.withNetworkElementAndKey(getDouble(df, "key", row), getString(df, NETWORK_ELEMENT_ID, row)));
+            adder.withNetworkElementAndKey(getDouble(df, KEY, row), getString(df, NETWORK_ELEMENT_ID, row)));
         adder.add();
     }
 
     static void addCounterTradeRangeAction(Crac crac, UpdatingDataframe attributes, UpdatingDataframe ranges, UpdatingDataframe usageRules) {
         fillStandardRangeAction(crac.newCounterTradeRangeAction(), attributes, ranges, usageRules)
-            .withExportingArea(getString(attributes, "exporting_country", 0))
-            .withImportingArea(getString(attributes, "importing_country", 0))
+            .withExportingArea(getString(attributes, EXPORTING_COUNTRY, 0))
+            .withImportingArea(getString(attributes, IMPORTING_COUNTRY, 0))
             .add();
     }
 
@@ -361,17 +345,21 @@ final class CracCreationUtil {
 
     static String getString(UpdatingDataframe df, String column, int row) {
         return getOptionalString(df, column, row)
-                .orElseThrow(() -> new PowsyblException("Missing value for column '" + column + "' at row " + row));
+                .orElseThrow(() -> missingValue(column, row));
     }
 
     static double getDouble(UpdatingDataframe df, String column, int row) {
         return getOptionalDouble(df, column, row)
-                .orElseThrow(() -> new PowsyblException("Missing value for column '" + column + "' at row " + row));
+                .orElseThrow(() -> missingValue(column, row));
     }
 
     static int getInt(UpdatingDataframe df, String column, int row) {
         return getOptionalInt(df, column, row)
-                .orElseThrow(() -> new PowsyblException("Missing value for column '" + column + "' at row " + row));
+                .orElseThrow(() -> missingValue(column, row));
+    }
+
+    private static PowsyblException missingValue(String column, int row) {
+        return new PowsyblException("Missing value for column '" + column + "' at row " + row);
     }
 
     static boolean getBoolean(UpdatingDataframe df, String column, int row, boolean defaultValue) {
@@ -379,7 +367,7 @@ final class CracCreationUtil {
         return value.isPresent() ? value.getAsInt() != 0 : defaultValue;
     }
 
-    private static void applyOnEachRow(UpdatingDataframe df, BiConsumer<UpdatingDataframe, Integer> applyOnRow) {
+    private static void applyOnEachRow(UpdatingDataframe df, ObjIntConsumer<UpdatingDataframe> applyOnRow) {
         if (df == null) {
             return;
         }
@@ -395,11 +383,5 @@ final class CracCreationUtil {
             throw new PowsyblException("Invalid value '" + value + "' for " + enumClass.getSimpleName()
                     + ", expected one of " + Arrays.stream(enumClass.getEnumConstants()).map(c -> c.name().toLowerCase(Locale.ROOT)).toList());
         }
-    }
-
-    private static Unit toUnit(String value) {
-        // python API uses "percent_i_max" while OpenRAO enum is PERCENT_IMAX
-        // TODO FIX with PERCENT_IMAX
-        return toEnum(Unit.class, value.equalsIgnoreCase("percent_i_max") ? "percent_imax" : value);
     }
 }

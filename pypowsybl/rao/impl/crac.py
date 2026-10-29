@@ -729,7 +729,7 @@ class Crac:
         _id: str,
         network_element_id: str,
         instant_id: str,
-        thresholds: pd.DataFrame, # columns: unit (Literal["megawatt", "ampere", "percent_i_max"]), lower_bound (float | None), upper_bound (float | None), side (Literal["one", "two"]])
+        thresholds: pd.DataFrame, # columns: unit (Literal["megawatt", "ampere", "percent_imax"]), lower_bound (float | None), upper_bound (float | None), side (Literal["one", "two"]])
         name: Optional[str] = None,
         operator: Optional[str] = None,
         border: Optional[str] = None,
