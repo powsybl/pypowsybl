@@ -595,6 +595,12 @@ public final class RaoDataframes {
             .build();
     }
 
+    private static double getInitialSetpointOrNaN(StandardRangeAction<?> rangeAction) {
+        // initial setpoint is undefined for range actions created without one (e.g. from the python API)
+        Double initialSetpoint = rangeAction.getInitialSetpoint();
+        return initialSetpoint != null ? initialSetpoint : Double.NaN;
+    }
+
     public static DataframeMapper<Crac, Void> cracHvdcRangeActions(Function<Crac, List<HvdcRangeAction>> actionsSupplier) {
         return new DataframeMapperBuilder<Crac, HvdcRangeAction, Void>()
             .itemsProvider(actionsSupplier)
@@ -607,7 +613,7 @@ public final class RaoDataframes {
             .strings("activation_cost", a -> a.getActivationCost().map(Object::toString).orElse(""))
             .strings("variation_cost_up", a -> a.getVariationCost(VariationDirection.UP).map(Object::toString).orElse(""))
             .strings("variation_cost_down", a -> a.getVariationCost(VariationDirection.DOWN).map(Object::toString).orElse(""))
-            .doubles("initial_set_point", StandardRangeAction::getInitialSetpoint)
+            .doubles("initial_set_point", RaoDataframes::getInitialSetpointOrNaN)
             .build();
     }
 
@@ -622,7 +628,7 @@ public final class RaoDataframes {
             .optionalDoubles("activation_cost", a -> a.getActivationCost().map(OptionalDouble::of).orElseGet(OptionalDouble::empty))
             .optionalDoubles("variation_cost_up", a -> a.getVariationCost(VariationDirection.UP).map(OptionalDouble::of).orElseGet(OptionalDouble::empty))
             .optionalDoubles("variation_cost_down", a -> a.getVariationCost(VariationDirection.DOWN).map(OptionalDouble::of).orElseGet(OptionalDouble::empty))
-            .doubles("initial_set_point", StandardRangeAction::getInitialSetpoint)
+            .doubles("initial_set_point", RaoDataframes::getInitialSetpointOrNaN)
             .build();
     }
 
@@ -654,7 +660,7 @@ public final class RaoDataframes {
             .optionalDoubles("activation_cost", a -> a.getActivationCost().map(OptionalDouble::of).orElseGet(OptionalDouble::empty))
             .optionalDoubles("variation_cost_up", a -> a.getVariationCost(VariationDirection.UP).map(OptionalDouble::of).orElseGet(OptionalDouble::empty))
             .optionalDoubles("variation_cost_down", a -> a.getVariationCost(VariationDirection.DOWN).map(OptionalDouble::of).orElseGet(OptionalDouble::empty))
-            .doubles("initial_set_point", StandardRangeAction::getInitialSetpoint)
+            .doubles("initial_set_point", RaoDataframes::getInitialSetpointOrNaN)
             .build();
     }
 
@@ -815,9 +821,9 @@ public final class RaoDataframes {
     }
 
     public static DataframeMapper<Crac, Void> cracOnFlowConstraintInCountryUsageRules() {
-        return new DataframeMapperBuilder<Crac, Pair<NetworkAction, OnFlowConstraintInCountry>, Void>()
-            .itemsProvider(crac -> crac.getNetworkActions().stream().flatMap(a -> a.getUsageRules().stream()
-                .filter(OnFlowConstraintInCountry.class::isInstance).map(rule -> Pair.create(a, (OnFlowConstraintInCountry) rule))).toList())
+        return new DataframeMapperBuilder<Crac, Pair<RemedialAction, OnFlowConstraintInCountry>, Void>()
+            .itemsProvider(crac -> crac.getRemedialActions().stream().flatMap(a -> a.getUsageRules().stream()
+                .filter(OnFlowConstraintInCountry.class::isInstance).map(rule -> Pair.create((RemedialAction) a, (OnFlowConstraintInCountry) rule))).toList())
             .stringsIndex("id", pair -> pair.getFirst().getId())
             .strings("instant", pair -> pair.getSecond().getInstant().getId())
             .strings("contingency_id", pair -> pair.getSecond().getContingency().map(Contingency::getId).orElse(""))

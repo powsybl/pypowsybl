@@ -1153,6 +1153,20 @@ SeriesArray* getOnContingencyStateUsageRules(const JavaHandle& cracHandle);
 SeriesArray* getOnConstraintUsageRules(const JavaHandle& cracHandle);
 SeriesArray* getOnFlowConstraintInCountryUsageRules(const JavaHandle& cracHandle);
 
+void addCracInstant(const JavaHandle& cracHandle, const std::string& id, const std::string& kind);
+void addCracRaUsageLimits(const JavaHandle& cracHandle, dataframe* attributes, dataframe* perTsoLimits);
+void addCracContingency(const JavaHandle& cracHandle, const JavaHandle& networkHandle, const std::string& id, const std::vector<std::string>& networkElementIds);
+void addCracFlowCnec(const JavaHandle& cracHandle, const JavaHandle& networkHandle, dataframe* attributes, dataframe* thresholds);
+void addCracAngleCnec(const JavaHandle& cracHandle, dataframe* attributes, dataframe* thresholds);
+void addCracVoltageCnec(const JavaHandle& cracHandle, dataframe* attributes, dataframe* thresholds);
+void addCracNetworkAction(const JavaHandle& cracHandle, dataframe* attributes, dataframe* terminalConnectionActions, dataframe* pstTapPositionActions,
+                          dataframe* generatorActions, dataframe* loadActions, dataframe* boundaryLineActions, dataframe* shuntCompensatorPositionActions,
+                          dataframe* switchActions, dataframe* switchPairs, dataframe* usageRules);
+void addCracPstRangeAction(const JavaHandle& cracHandle, const JavaHandle& networkHandle, dataframe* attributes, dataframe* ranges, dataframe* usageRules);
+void addCracHvdcRangeAction(const JavaHandle& cracHandle, dataframe* attributes, dataframe* ranges, dataframe* usageRules);
+void addCracInjectionRangeAction(const JavaHandle& cracHandle, dataframe* attributes, dataframe* networkElementsAndKeys, dataframe* ranges, dataframe* usageRules);
+void addCracCounterTradeRangeAction(const JavaHandle& cracHandle, dataframe* attributes, dataframe* ranges, dataframe* usageRules);
+
 void setLoopFlowGlsk(const JavaHandle& raoContext, const JavaHandle& glsk);
 void setMonitoringGlsk(const JavaHandle& raoContext, const JavaHandle& glsk);
 

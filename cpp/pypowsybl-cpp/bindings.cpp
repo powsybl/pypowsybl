@@ -1431,6 +1431,30 @@ PYBIND11_MODULE(_pypowsybl, m) {
     m.def("get_on_constraint_usage_rules", &pypowsybl::getOnConstraintUsageRules, "Get on constraint usage rules", py::arg("crac"));
     m.def("get_on_flow_constraint_in_country_usage_rules", &pypowsybl::getOnFlowConstraintInCountryUsageRules, "Get on flow constraint in country usage rules", py::arg("crac"));
 
+    m.def("add_crac_instant", &pypowsybl::addCracInstant, "Add an instant to a crac", py::arg("crac"), py::arg("id"), py::arg("kind"));
+    m.def("add_crac_ra_usage_limits", &pypowsybl::addCracRaUsageLimits, "Add remedial action usage limits to a crac",
+          py::arg("crac"), py::arg("attributes"), py::arg("per_tso_limits"));
+    m.def("add_crac_contingency", &pypowsybl::addCracContingency, "Add a contingency to a crac",
+          py::arg("crac"), py::arg("network"), py::arg("id"), py::arg("network_element_ids"));
+    m.def("add_crac_flow_cnec", &pypowsybl::addCracFlowCnec, "Add a flow cnec to a crac",
+          py::arg("crac"), py::arg("network"), py::arg("attributes"), py::arg("thresholds"));
+    m.def("add_crac_angle_cnec", &pypowsybl::addCracAngleCnec, "Add an angle cnec to a crac",
+          py::arg("crac"), py::arg("attributes"), py::arg("thresholds"));
+    m.def("add_crac_voltage_cnec", &pypowsybl::addCracVoltageCnec, "Add a voltage cnec to a crac",
+          py::arg("crac"), py::arg("attributes"), py::arg("thresholds"));
+    m.def("add_crac_network_action", &pypowsybl::addCracNetworkAction, "Add a network action to a crac",
+          py::arg("crac"), py::arg("attributes"), py::arg("terminal_connection_actions"), py::arg("pst_tap_position_actions"),
+          py::arg("generator_actions"), py::arg("load_actions"), py::arg("boundary_line_actions"), py::arg("shunt_compensator_position_actions"),
+          py::arg("switch_actions"), py::arg("switch_pairs"), py::arg("usage_rules"));
+    m.def("add_crac_pst_range_action", &pypowsybl::addCracPstRangeAction, "Add a PST range action to a crac",
+          py::arg("crac"), py::arg("network"), py::arg("attributes"), py::arg("ranges"), py::arg("usage_rules"));
+    m.def("add_crac_hvdc_range_action", &pypowsybl::addCracHvdcRangeAction, "Add an HVDC range action to a crac",
+          py::arg("crac"), py::arg("attributes"), py::arg("ranges"), py::arg("usage_rules"));
+    m.def("add_crac_injection_range_action", &pypowsybl::addCracInjectionRangeAction, "Add an injection range action to a crac",
+          py::arg("crac"), py::arg("attributes"), py::arg("network_elements_and_keys"), py::arg("ranges"), py::arg("usage_rules"));
+    m.def("add_crac_counter_trade_range_action", &pypowsybl::addCracCounterTradeRangeAction, "Add a counter trade range action to a crac",
+          py::arg("crac"), py::arg("attributes"), py::arg("ranges"), py::arg("usage_rules"));
+
     py::enum_<Grid2opStringValueType>(m, "Grid2opStringValueType")
             .value("VOLTAGE_LEVEL_NAME", Grid2opStringValueType::VOLTAGE_LEVEL_NAME)
             .value("LOAD_NAME", Grid2opStringValueType::LOAD_NAME)
