@@ -516,3 +516,37 @@ def test_security_analysis_with_limit_reduction():
     sa_result = sa.run_ac(n)
     df = sa_result.limit_violations
     assert [0.8] == df.loc[df["limit_name"] == "permanent"]["limit_reduction"].unique()
+
+
+def test_network_results_index():
+    n = pp.network.create_four_substations_node_breaker_network()
+    sa = pp.security.create_analysis()
+    sa.add_single_element_contingency(element_id='S4VL1_BBS_LD6_DISCONNECTOR', contingency_id='Breaker contingency')
+    sa.add_single_element_contingency(element_id='LINE_S2S3', contingency_id='Line contingency')
+    sa.add_switch_action(action_id='SwitchAction', switch_id='S4VL1_BBS_LD6_DISCONNECTOR', open=False)
+    sa.add_operator_strategy(operator_strategy_id='OperatorStrategy1', contingency_id='Breaker contingency',
+                             action_ids=['SwitchAction'], condition_type=ConditionType.TRUE_CONDITION)
+    sa.add_monitored_elements(branch_ids=['LINE_S3S4', 'LINE_S2S3'], voltage_level_ids=['S4VL1', 'S3VL1'])
+    sa_result = sa.run_ac(n)
+    for df in [sa_result.branch_results, sa_result.bus_results]:
+        # same index as the one built from the row values
+        rebuilt = pd.MultiIndex.from_arrays([df.index.get_level_values(i) for i in range(df.index.nlevels)],
+                                            names=df.index.names)
+        pd.testing.assert_index_equal(rebuilt, df.index, exact=True)
+        for level, rebuilt_level in zip(df.index.levels, rebuilt.levels):
+            pd.testing.assert_index_equal(rebuilt_level, level)
+        # rows: pre-contingency, then post-contingency, then operator strategy results
+        assert df.index.get_level_values('contingency_id')[0] == ''
+        with_strategy = pd.Series(df.index.get_level_values('operator_strategy_id') != '')
+        assert with_strategy.iloc[-1]
+        assert with_strategy.is_monotonic_increasing
+    branch_results = sa_result.branch_results
+    assert branch_results.index.names == ['contingency_id', 'operator_strategy_id', 'branch_id']
+    # the rows hold the state they are labelled with: the breaker contingency drops the load fed through LINE_S3S4,
+    # the strategy closes the disconnector again, the line contingency has no row for its own line
+    p1 = branch_results['p1']
+    assert p1['Breaker contingency', '', 'LINE_S3S4'] == pytest.approx(0, abs=1e-6)
+    assert p1['Breaker contingency', 'OperatorStrategy1', 'LINE_S3S4'] == pytest.approx(p1['', '', 'LINE_S3S4'])
+    assert list(branch_results.loc['Line contingency'].index.get_level_values('branch_id')) == ['LINE_S3S4']
+    assert sa_result.three_windings_transformer_results.empty
+    assert sa_result.three_windings_transformer_results.index.names == ['contingency_id', 'transformer_id']

@@ -9,6 +9,8 @@ package com.powsybl.dataframe.impl;
 
 import com.powsybl.dataframe.DataframeHandler;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Objects;
 import java.util.OptionalDouble;
 import java.util.OptionalInt;
@@ -86,5 +88,33 @@ public class DefaultDataframeHandler implements DataframeHandler {
         double[] values = new double[size];
         seriesConsumer.accept(new Series(name, values));
         return (i, s) -> values[i] = s;
+    }
+
+    @Override
+    public DictionaryStringSeriesWriter newDictionaryStringIndex(String name, int size) {
+        return newDictionaryStringSeries(true, name, size);
+    }
+
+    @Override
+    public DictionaryStringSeriesWriter newDictionaryStringSeries(String name, int size) {
+        return newDictionaryStringSeries(false, name, size);
+    }
+
+    private DictionaryStringSeriesWriter newDictionaryStringSeries(boolean index, String name, int size) {
+        int[] codes = new int[size];
+        List<String> dictionary = new ArrayList<>();
+        seriesConsumer.accept(Series.dictionary(index, name, codes, dictionary));
+        return new DictionaryStringSeriesWriter() {
+            @Override
+            public void set(int i, int code) {
+                codes[i] = code;
+            }
+
+            @Override
+            public void setDictionary(List<String> values) {
+                dictionary.clear();
+                dictionary.addAll(values);
+            }
+        };
     }
 }

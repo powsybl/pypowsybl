@@ -9,6 +9,7 @@ package com.powsybl.dataframe.impl;
 
 import com.powsybl.commons.PowsyblException;
 
+import java.util.List;
 import java.util.Optional;
 import java.util.OptionalDouble;
 import java.util.OptionalInt;
@@ -27,6 +28,7 @@ public class Series {
     private final OptionalDouble[] optionalDoubles;
     private final boolean[] booleans;
     private final String[] strings;
+    private final List<String> dictionary;
 
     public Series(String name, double[] values) {
         this(false, name, values, null, null, null, null, null);
@@ -62,6 +64,26 @@ public class Series {
         this.optionalDoubles = optionalDoubles;
         this.booleans = booleans;
         this.strings = strings;
+        this.dictionary = null;
+    }
+
+    private Series(boolean index, String name, int[] codes, List<String> dictionary) {
+        this.index = index;
+        this.name = name;
+        this.doubles = null;
+        this.ints = codes;
+        this.optionalInts = null;
+        this.optionalDoubles = null;
+        this.booleans = null;
+        this.strings = null;
+        this.dictionary = dictionary;
+    }
+
+    /**
+     * Dictionary-encoded string series: {@code codes} refer to {@code dictionary}, the code -1 being a missing value.
+     */
+    public static Series dictionary(boolean index, String name, int[] codes, List<String> dictionary) {
+        return new Series(index, name, codes, dictionary);
     }
 
     public static Series index(String name, String[] values) {
@@ -105,9 +127,35 @@ public class Series {
             .orElseThrow(() -> createException(getName(), "boolean"));
     }
 
+    /**
+     * The strings of a string series, or the decoded values of a dictionary-encoded string series (null for missing values).
+     */
     public String[] getStrings() {
+        if (dictionary != null) {
+            String[] values = new String[ints.length];
+            for (int i = 0; i < ints.length; i++) {
+                values[i] = ints[i] == -1 ? null : dictionary.get(ints[i]);
+            }
+            return values;
+        }
         return Optional.ofNullable(strings)
             .orElseThrow(() -> createException(getName(), "string"));
+    }
+
+    /**
+     * Whether this is a dictionary-encoded string series: {@link #getInts()} then gives the codes and
+     * {@link #getDictionary()} the values they refer to.
+     */
+    public boolean isDictionary() {
+        return dictionary != null;
+    }
+
+    /**
+     * The dictionary (distinct values) of a dictionary-encoded string series, whose codes are given by {@link #getInts()}.
+     */
+    public List<String> getDictionary() {
+        return Optional.ofNullable(dictionary)
+            .orElseThrow(() -> createException(getName(), "dictionary-encoded string"));
     }
 
     private PowsyblException createException(String name, String type) {

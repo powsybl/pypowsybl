@@ -10,6 +10,7 @@ package com.powsybl.python.network;
 import com.powsybl.commons.parameters.Parameter;
 import com.powsybl.commons.parameters.ParameterType;
 import com.powsybl.dataframe.DataframeFilter;
+import com.powsybl.dataframe.DataframeHandler;
 import com.powsybl.dataframe.DataframeMapper;
 import com.powsybl.dataframe.DataframeMapperBuilder;
 import com.powsybl.dataframe.impl.DefaultDataframeHandler;
@@ -21,10 +22,7 @@ import com.powsybl.python.commons.PyPowsyblApiHeader.ArrayPointer;
 import com.powsybl.python.commons.PyPowsyblApiHeader.SeriesPointer;
 import com.powsybl.python.dataframe.CDataframeHandler;
 import com.powsybl.python.flow_decomposition.XnecWithDecompositionContext;
-import com.powsybl.python.security.BranchResultContext;
-import com.powsybl.python.security.BusResultContext;
 import com.powsybl.python.security.LimitViolationContext;
-import com.powsybl.python.security.ThreeWindingsTransformerResultContext;
 import com.powsybl.python.shortcircuit.*;
 import com.powsybl.contingency.violations.LimitViolation;
 import com.powsybl.contingency.violations.LimitViolationType;
@@ -46,6 +44,8 @@ import static java.lang.Integer.MIN_VALUE;
  */
 public final class Dataframes {
 
+    private static final String BUS_ID = "bus_id";
+
     private static final DataframeMapper<Importer, Void> IMPORTER_PARAMETERS_MAPPER = new DataframeMapperBuilder<Importer, Parameter, Void>()
             .itemsProvider(Importer::getParameters)
             .stringsIndex("name", Parameter::getName)
@@ -64,9 +64,6 @@ public final class Dataframes {
             .strings("possible_values", p -> p.getPossibleValues() == null ? "" : p.getPossibleValues().toString())
             .build();
 
-    private static final DataframeMapper<SecurityAnalysisResult, Void> BRANCH_RESULTS_MAPPER = createBranchResultsMapper();
-    private static final DataframeMapper<SecurityAnalysisResult, Void> T3WT_RESULTS_MAPPER = createThreeWindingsTransformersResults();
-    private static final DataframeMapper<SecurityAnalysisResult, Void> BUS_RESULTS_MAPPER = createBusResultsMapper();
     private static final DataframeMapper<SecurityAnalysisResult, Void> LIMIT_VIOLATIONS_MAPPER = createLimitViolationsMapper();
     private static final DataframeMapper<VoltageLevel.NodeBreakerView, Void> NODE_BREAKER_VIEW_SWITCHES_MAPPER = createNodeBreakerViewSwitchesMapper();
     private static final DataframeMapper<VoltageLevel.NodeBreakerView, Void> NODE_BREAKER_VIEW_NODES_MAPPER = createNodeBreakerViewNodes();
@@ -89,8 +86,15 @@ public final class Dataframes {
     }
 
     public static <T, C> ArrayPointer<SeriesPointer> createCDataframe(DataframeMapper<T, C> mapper, T object, DataframeFilter dataframeFilter, C context) {
+        return createCDataframe(handler -> mapper.createDataframe(object, handler, dataframeFilter, context));
+    }
+
+    /**
+     * Creates a C struct with the series written by the provided writer.
+     */
+    public static ArrayPointer<SeriesPointer> createCDataframe(Consumer<DataframeHandler> writer) {
         CDataframeHandler handler = new CDataframeHandler();
-        mapper.createDataframe(object, handler, dataframeFilter, context);
+        writer.accept(handler);
         return handler.getDataframePtr();
     }
 
@@ -116,18 +120,6 @@ public final class Dataframes {
 
     static DataframeMapper<Exporter, Void> exporterParametersMapper() {
         return EXPORTER_PARAMETERS_MAPPER;
-    }
-
-    public static DataframeMapper<SecurityAnalysisResult, Void> branchResultsMapper() {
-        return BRANCH_RESULTS_MAPPER;
-    }
-
-    public static DataframeMapper<SecurityAnalysisResult, Void> busResultsMapper() {
-        return BUS_RESULTS_MAPPER;
-    }
-
-    public static DataframeMapper<SecurityAnalysisResult, Void> threeWindingsTransformerResultsMapper() {
-        return T3WT_RESULTS_MAPPER;
     }
 
     public static DataframeMapper<SecurityAnalysisResult, Void> limitViolationsMapper() {
@@ -164,102 +156,6 @@ public final class Dataframes {
 
     public static DataframeMapper<Map<String, List<ConnectablePosition.Feeder>>, Void> feederMapMapper() {
         return FEEDER_MAP_MAPPER;
-    }
-
-    private static List<BranchResultContext> getBranchResults(SecurityAnalysisResult result) {
-        List<BranchResultContext> branchResults = result.getPreContingencyResult().getNetworkResult()
-                .getBranchResults().stream()
-                .map(branchResult -> new BranchResultContext(branchResult, null, null))
-                .collect(Collectors.toList());
-        result.getPostContingencyResults().forEach(postContingencyResult -> {
-            postContingencyResult.getNetworkResult().getBranchResults()
-                    .forEach(branchResult -> branchResults.add(new BranchResultContext(branchResult, postContingencyResult.getContingency().getId(), null)));
-        });
-        result.getOperatorStrategyResults().forEach(operatorStrategyResult -> {
-            operatorStrategyResult.getNetworkResult().getBranchResults()
-                    .forEach(branchResult -> branchResults.add(new BranchResultContext(branchResult,
-                            operatorStrategyResult.getOperatorStrategy().getContingencyContext().getContingencyId(),
-                            operatorStrategyResult.getOperatorStrategy().getId())));
-        });
-        return branchResults;
-    }
-
-    private static DataframeMapper<SecurityAnalysisResult, Void> createBranchResultsMapper() {
-        return new DataframeMapperBuilder<SecurityAnalysisResult, BranchResultContext, Void>()
-                .itemsProvider(Dataframes::getBranchResults)
-                .stringsIndex("contingency_id", BranchResultContext::getContingencyId)
-                .stringsIndex("operator_strategy_id", BranchResultContext::getOperatorStrategyId)
-                .stringsIndex("branch_id", BranchResultContext::getBranchId)
-                .doubles("p1", BranchResultContext::getP1)
-                .doubles("q1", BranchResultContext::getQ1)
-                .doubles("i1", BranchResultContext::getI1)
-                .doubles("p2", BranchResultContext::getP2)
-                .doubles("q2", BranchResultContext::getQ2)
-                .doubles("i2", BranchResultContext::getI2)
-                .doubles("flow_transfer", BranchResultContext::getFlowTransfer)
-                .build();
-    }
-
-    private static List<BusResultContext> getBusResults(SecurityAnalysisResult result) {
-        List<BusResultContext> busResults = result.getPreContingencyResult()
-                .getNetworkResult()
-                .getBusResults().stream()
-                .map(busResult -> new BusResultContext(busResult, null, null))
-                .collect(Collectors.toList());
-        result.getPostContingencyResults().forEach(postContingencyResult -> {
-            postContingencyResult.getNetworkResult().getBusResults()
-                    .forEach(busResult -> busResults.add(new BusResultContext(busResult, postContingencyResult.getContingency().getId(), null)));
-        });
-        result.getOperatorStrategyResults().forEach(operatorStrategyResult -> {
-            operatorStrategyResult.getNetworkResult().getBusResults()
-                    .forEach(busResult -> busResults.add(new BusResultContext(busResult,
-                            operatorStrategyResult.getOperatorStrategy().getContingencyContext().getContingencyId(),
-                            operatorStrategyResult.getOperatorStrategy().getId())));
-        });
-        return busResults;
-    }
-
-    private static DataframeMapper<SecurityAnalysisResult, Void> createBusResultsMapper() {
-        return new DataframeMapperBuilder<SecurityAnalysisResult, BusResultContext, Void>()
-                .itemsProvider(Dataframes::getBusResults)
-                .stringsIndex("contingency_id", BusResultContext::getContingencyId)
-                .stringsIndex("operator_strategy_id", BusResultContext::getOperatorStrategyId)
-                .stringsIndex("voltage_level_id", BusResultContext::getVoltageLevelId)
-                .stringsIndex("bus_id", BusResultContext::getBusId)
-                .doubles("v_mag", BusResultContext::getV)
-                .doubles("v_angle", BusResultContext::getAngle)
-                .build();
-    }
-
-    private static List<ThreeWindingsTransformerResultContext> getThreeWindingsTransformerResults(SecurityAnalysisResult result) {
-        List<ThreeWindingsTransformerResultContext> threeWindingsTransformerResults = result.getPreContingencyResult()
-                .getNetworkResult().getThreeWindingsTransformerResults().stream()
-                .map(threeWindingsTransformerResult -> new ThreeWindingsTransformerResultContext(threeWindingsTransformerResult, null))
-                .collect(Collectors.toList());
-        result.getPostContingencyResults().forEach(postContingencyResult -> {
-            postContingencyResult.getNetworkResult().getThreeWindingsTransformerResults()
-                    .forEach(threeWindingsTransformerResult ->
-                            threeWindingsTransformerResults.add(new ThreeWindingsTransformerResultContext(threeWindingsTransformerResult,
-                                    postContingencyResult.getContingency().getId())));
-        });
-        return threeWindingsTransformerResults;
-    }
-
-    private static DataframeMapper<SecurityAnalysisResult, Void> createThreeWindingsTransformersResults() {
-        return new DataframeMapperBuilder<SecurityAnalysisResult, ThreeWindingsTransformerResultContext, Void>()
-                .itemsProvider(Dataframes::getThreeWindingsTransformerResults)
-                .stringsIndex("contingency_id", ThreeWindingsTransformerResultContext::getContingencyId)
-                .stringsIndex("transformer_id", ThreeWindingsTransformerResultContext::getThreeWindingsTransformerId)
-                .doubles("p1", ThreeWindingsTransformerResultContext::getP1)
-                .doubles("q1", ThreeWindingsTransformerResultContext::getQ1)
-                .doubles("i1", ThreeWindingsTransformerResultContext::getI1)
-                .doubles("p2", ThreeWindingsTransformerResultContext::getP2)
-                .doubles("q2", ThreeWindingsTransformerResultContext::getQ2)
-                .doubles("i2", ThreeWindingsTransformerResultContext::getI2)
-                .doubles("p3", ThreeWindingsTransformerResultContext::getP3)
-                .doubles("q3", ThreeWindingsTransformerResultContext::getQ3)
-                .doubles("i3", ThreeWindingsTransformerResultContext::getI3)
-                .build();
     }
 
     private static List<LimitViolationContext> getLimitViolations(SecurityAnalysisResult result) {
@@ -388,7 +284,7 @@ public final class Dataframes {
                 .itemsProvider(Dataframes::getBusBreakerViewBuses)
                 .stringsIndex("id", BusBreakerViewBusData::getId)
                 .strings("name", BusBreakerViewBusData::getName)
-                .strings("bus_id", BusBreakerViewBusData::getBusViewBusId)
+                .strings(BUS_ID, BusBreakerViewBusData::getBusViewBusId)
                 .build();
     }
 
@@ -454,7 +350,7 @@ public final class Dataframes {
                 .itemsProvider(Dataframes::getBusBreakerViewElements)
                 .stringsIndex("id", BusBreakerViewElementData::getElementId)
                 .strings("type", elementContext -> elementContext.getType().toString())
-                .strings("bus_id", BusBreakerViewElementData::getBusId)
+                .strings(BUS_ID, BusBreakerViewElementData::getBusId)
                 .strings("side", elementContext -> elementContext.getSide().isPresent() ? elementContext.getSide().get().toString() : "")
                 .build();
     }
@@ -651,7 +547,7 @@ public final class Dataframes {
                 .itemsProvider(Dataframes::getMagnitudeBusResultsContexts)
                 .stringsIndex("id", MagnitudeBusResultsContext::getFaultId)
                 .stringsIndex("voltage_level_id", MagnitudeBusResultsContext::getVoltageLevelId)
-                .stringsIndex("bus_id", MagnitudeBusResultsContext::getBusId)
+                .stringsIndex(BUS_ID, MagnitudeBusResultsContext::getBusId)
                 .doubles("initial_voltage_magnitude", MagnitudeBusResultsContext::getInitialVoltageMagnitude)
                 .doubles("voltage_drop_proportional", MagnitudeBusResultsContext::getVoltageDropProportional)
                 .doubles("voltage", MagnitudeBusResultsContext::getVoltage)
@@ -663,7 +559,7 @@ public final class Dataframes {
                 .itemsProvider(Dataframes::getFortescueBusResultsContexts)
                 .stringsIndex("id", FortescueBusResultsContext::getFaultId)
                 .stringsIndex("voltage_level_id", FortescueBusResultsContext::getVoltageLevelId)
-                .stringsIndex("bus_id", FortescueBusResultsContext::getBusId)
+                .stringsIndex(BUS_ID, FortescueBusResultsContext::getBusId)
                 .doubles("initial_voltage_magnitude", FortescueBusResultsContext::getInitialVoltageMagnitude)
                 .doubles("voltage_drop_proportional", FortescueBusResultsContext::getVoltageDropProportional)
                 .doubles("voltage_negative_angle", fortescueBusResultsContext
