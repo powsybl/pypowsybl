@@ -32,7 +32,7 @@ public class VoltageRegulationHolderSeries extends InjectionSeries {
     protected final DoubleSeries slope;
     protected final StringSeries regulatedElements;
     protected final DoubleSeries localTargetQ;
-    protected final DoubleSeries localTargetV;
+    protected DoubleSeries localTargetV;
 
     VoltageRegulationHolderSeries(UpdatingDataframe dataframe) {
         super(dataframe);
@@ -62,7 +62,7 @@ public class VoltageRegulationHolderSeries extends InjectionSeries {
                 String id = ids.get(row);
                 String elementId = regulatedElements.get(row);
                 if (!elementId.equals(id)) {
-                    NetworkUtil.setRegulatingTerminal(regulationAdder::withTerminal, network, elementId);
+                    NetworkUtil.setTerminal(regulationAdder::withTerminal, network, elementId);
                 }
             }
             regulationAdder.add();

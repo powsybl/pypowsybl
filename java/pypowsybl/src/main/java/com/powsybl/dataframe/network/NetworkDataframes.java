@@ -356,7 +356,7 @@ public final class NetworkDataframes {
                 .enums(REGULATION_MODE, RegulationMode.class, RegulationUtil::getRegulationMode, RegulationUtil::setRegulationMode)
                 .doubles(REGULATION_VALUE, RegulationUtil::getRegulationValue, RegulationUtil::setRegulationValue)
                 .strings(REGULATED_ELEMENT_ID, generator -> NetworkUtil.getRegulatedElementId(generator::getRegulatingTerminal),
-                        (generator, elementId) -> NetworkUtil.setRegulatingTerminal(t -> RegulationUtil.setRegulatingTerminal(generator, t),
+                        (generator, elementId) -> NetworkUtil.setTerminal(t -> RegulationUtil.setRegulatingTerminal(generator, t),
                                 generator.getNetwork(), elementId))
                 .strings(REGULATED_BUS_ID, generator -> getBusId(generator.getRegulatingTerminal()), false)
                 .strings(REGULATED_BUS_BREAKER_BUS_ID, generator -> getBusBreakerViewBusId(generator.getRegulatingTerminal()), false)
@@ -463,7 +463,7 @@ public final class NetworkDataframes {
                 .enums(REGULATION_MODE, RegulationMode.class, RegulationUtil::getRegulationMode, RegulationUtil::setRegulationMode)
                 .doubles(REGULATION_VALUE, RegulationUtil::getRegulationValue, RegulationUtil::setRegulationValue)
                 .strings(REGULATED_ELEMENT_ID, b -> NetworkUtil.getRegulatedElementId(b::getRegulatingTerminal),
-                        (b, elementId) -> NetworkUtil.setRegulatingTerminal(t -> RegulationUtil.setRegulatingTerminal(b, t),
+                        (b, elementId) -> NetworkUtil.setTerminal(t -> RegulationUtil.setRegulatingTerminal(b, t),
                                 b.getNetwork(), elementId))
                 .doubles("p", getPerUnitP(), setPerUnitP())
                 .doubles("q", getPerUnitQ(), setPerUnitQ())
@@ -510,7 +510,7 @@ public final class NetworkDataframes {
                 .enums(REGULATION_MODE, RegulationMode.class, RegulationUtil::getRegulationMode, RegulationUtil::setRegulationMode)
                 .doubles(REGULATION_VALUE, RegulationUtil::getRegulationValue, RegulationUtil::setRegulationValue)
                 .strings(REGULATED_ELEMENT_ID, sc -> NetworkUtil.getRegulatedElementId(sc::getRegulatingTerminal),
-                        (sc, elementId) -> NetworkUtil.setRegulatingTerminal(t -> RegulationUtil.setRegulatingTerminal(sc, t),
+                        (sc, elementId) -> NetworkUtil.setTerminal(t -> RegulationUtil.setRegulatingTerminal(sc, t),
                                 sc.getNetwork(), elementId))
                 .doubles(TARGET_DEADBAND, RegulationUtil::getTargetDeadband, RegulationUtil::setTargetDeadband)
                 .strings("regulating_bus_id", sc -> getBusId(sc.getRegulatingTerminal()))
@@ -875,7 +875,7 @@ public final class NetworkDataframes {
                 .enums(REGULATION_MODE, RegulationMode.class, RegulationUtil::getRegulationMode, RegulationUtil::setRegulationMode)
                 .doubles(REGULATION_VALUE, RegulationUtil::getRegulationValue, RegulationUtil::setRegulationValue)
                 .strings(REGULATED_ELEMENT_ID, vsc -> NetworkUtil.getRegulatedElementId(vsc::getRegulatingTerminal),
-                        (vsc, elementId) -> NetworkUtil.setRegulatingTerminal(t -> RegulationUtil.setRegulatingTerminal(vsc, t), vsc.getNetwork(), elementId))
+                        (vsc, elementId) -> NetworkUtil.setTerminal(t -> RegulationUtil.setRegulatingTerminal(vsc, t), vsc.getNetwork(), elementId))
                 .strings(REGULATED_BUS_ID, vsc -> getBusId(vsc.getRegulatingTerminal()), false)
                 .strings(REGULATED_BUS_BREAKER_BUS_ID, vsc -> getBusBreakerViewBusId(vsc.getRegulatingTerminal()), false)
                 .doubles("p", getPerUnitP(), setPerUnitP())
@@ -911,7 +911,7 @@ public final class NetworkDataframes {
                 .doubles(REGULATION_VALUE, RegulationUtil::getRegulationValue, RegulationUtil::setRegulationValue)
                 .doubles("slope", RegulationUtil::getSlope, RegulationUtil::setSlope)
                 .strings(REGULATED_ELEMENT_ID, svc -> NetworkUtil.getRegulatedElementId(svc::getRegulatingTerminal),
-                        (svc, elementId) -> NetworkUtil.setRegulatingTerminal(t -> RegulationUtil.setRegulatingTerminal(svc, t),
+                        (svc, elementId) -> NetworkUtil.setTerminal(t -> RegulationUtil.setRegulatingTerminal(svc, t),
                                 svc.getNetwork(), elementId))
                 .strings(REGULATED_BUS_ID, svc -> getBusId(svc.getRegulatingTerminal()), false)
                 .strings(REGULATED_BUS_BREAKER_BUS_ID, svc -> getBusBreakerViewBusId(svc.getRegulatingTerminal()), false)
@@ -1102,7 +1102,7 @@ public final class NetworkDataframes {
                 .booleans("dc_connected2", conv -> conv.getDcTerminal2().isConnected(),
                         (conv, dcConnected2) -> conv.getDcTerminal2().setConnected(dcConnected2))
                 .strings("pcc_terminal_id", conv -> NetworkUtil.getRegulatedElementId(conv::getPccTerminal),
-                        (conv, elementId) -> NetworkUtil.setPccTerminal(conv::setPccTerminal, conv.getNetwork(), elementId))
+                        (conv, elementId) -> NetworkUtil.setTerminal(conv::setPccTerminal, conv.getNetwork(), elementId))
                 .deprecatedBooleans(VOLTAGE_REGULATOR_ON, VoltageSourceConverter::isVoltageRegulatorOn, VoltageSourceConverter::setVoltageRegulatorOn)
                 .enums("control_mode", AcDcConverter.ControlMode.class, VoltageSourceConverter::getControlMode, VoltageSourceConverter::setControlMode)
                 .doubles("target_v_dc", (conv, context) -> perUnitV(context, conv.getTargetVdc(), conv.getDcTerminal1()),
@@ -1122,7 +1122,7 @@ public final class NetworkDataframes {
                 .enums(REGULATION_MODE, RegulationMode.class, RegulationUtil::getRegulationMode, RegulationUtil::setRegulationMode)
                 .doubles(REGULATION_VALUE, RegulationUtil::getRegulationValue, RegulationUtil::setRegulationValue)
                 .strings(REGULATED_ELEMENT_ID, vsc -> NetworkUtil.getRegulatedElementId(vsc::getRegulatingTerminal),
-                        (vsc, elementId) -> NetworkUtil.setRegulatingTerminal(t -> RegulationUtil.setRegulatingTerminal(vsc, t), vsc.getNetwork(), elementId))
+                        (vsc, elementId) -> NetworkUtil.setTerminal(t -> RegulationUtil.setRegulatingTerminal(vsc, t), vsc.getNetwork(), elementId))
                 // The core represents the "unbounded" default as -/+ Double.MAX_VALUE; expose it as -/+ infinity
                 // Non-default columns, so absent from the default dataframe.
                 .doubles("min_p",
@@ -1677,7 +1677,7 @@ public final class NetworkDataframes {
                     (row, v, context) -> RegulationUtil.setTargetDeadband(row.getRtc(), v, context))
                 .strings(REGULATED_ELEMENT_ID, row -> NetworkUtil.getRegulatedElementId(row.getRtc()::getRegulatingTerminal),
                         (row, elementId) ->
-                                NetworkUtil.setRegulatingTerminal(t -> RegulationUtil.setRegulatingTerminal(row.getRtc(), t), row.getNetwork(), elementId))
+                                NetworkUtil.setTerminal(t -> RegulationUtil.setRegulatingTerminal(row.getRtc(), t), row.getNetwork(), elementId))
                 .strings("regulating_bus_id", row -> getBusId(row.getRtc().getRegulatingTerminal()))
                 .strings("regulated_side", TapChangerRow::getRtcRegulatedSide, TapChangerRow::setRtcRegulatedSide, false)
                 .build();

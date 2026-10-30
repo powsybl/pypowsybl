@@ -165,7 +165,6 @@ public class ShuntDataframeAdder implements NetworkElementAdder {
                 setVoltageRegulationAttributes(adder, network, row);
 
                 // For compatibility with former regulation
-                applyIfPresent(targetDeadband, row, adder::setTargetDeadband);
                 applyIfPresent(targetV, row, adder::setTargetV);
 
                 ShuntCompensatorModelType modelType = ShuntCompensatorModelType.valueOf(modelTypes.get(row));
@@ -205,7 +204,7 @@ public class ShuntDataframeAdder implements NetworkElementAdder {
 
         @Override
         protected boolean newColumnsUsed() {
-            return super.newColumnsUsed() || localTargetV != null;
+            return super.newColumnsUsed() || targetDeadband != null;
         }
 
         void create(Network network, int row, boolean throwException) {

@@ -92,7 +92,7 @@ public class VscStationDataframeAdder extends AbstractSimpleAdder {
                 applyIfPresent(targetQ, row, adder::setReactivePowerSetpoint);
                 applyBooleanIfPresent(voltageRegulatorOn, row, adder::setVoltageRegulatorOn);
                 applyIfPresent(regulatingElements, row, elementId -> NetworkUtil
-                        .setRegulatingTerminal(adder::setRegulatingTerminal, network, elementId));
+                        .setTerminal(adder::setRegulatingTerminal, network, elementId));
                 return Optional.of(adder);
             }
             return Optional.empty();

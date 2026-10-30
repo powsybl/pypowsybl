@@ -1521,6 +1521,40 @@ def test_dc_lines_creation():
     assert dc_line2.connected2
 
 
+def test_deprecated_voltage_source_converters_creation():
+    n = pypowsybl.network.create_dc_detailed_vsc_symmetrical_monopole_network()
+    voltage_level_id = 'VLDC-GB-xNodeDc1gb-150'
+    ac_bus1_id = 'BUSDC-GB-xNodeDc1gb-150'
+    ac_bus2_id = "BUS_TEST"
+    n.create_buses(id=ac_bus2_id, voltage_level_id=voltage_level_id)
+
+    converter_dict = {
+        'name': '',
+        'voltage_level_id': voltage_level_id,
+        'dc_node1_id': 'dcNodeGbNeg',
+        'dc_node2_id': 'dcNodeGbPos',
+        'control_mode': 'P_PCC',
+        'target_p': 300,
+        'target_q': 200,
+        'voltage_regulator_on': True,
+        'idle_loss': 1.0,
+        'switching_loss': 1.0,
+        'resistive_loss': 1.0,
+        'target_v_ac': 400,
+        'pcc_terminal_id': 'TRDC-GB-xNodeDc1gb',
+        'bus1_id': ac_bus1_id,
+        'bus2_id': ac_bus2_id,
+        'dc_connected1': True,
+        'dc_connected2': False,
+    }
+    with pytest.warns(DeprecationWarning) as record:
+        n.create_voltage_source_converters(pd.DataFrame([converter_dict], index=["CONV_TEST"]))
+    deprecated_columns = ['target_q', 'voltage_regulator_on', 'target_v_ac']
+    assert len(record) == 3
+    for i, column in enumerate(deprecated_columns):
+        assert f'"{column}" is deprecated' in record[i].message.args[0]
+
+
 def test_voltage_source_converter_creation():
     n = pypowsybl.network.create_dc_detailed_vsc_symmetrical_monopole_network()
     voltage_level_id = 'VLDC-GB-xNodeDc1gb-150'
@@ -1535,11 +1569,14 @@ def test_voltage_source_converter_creation():
         'dc_node2_id': 'dcNodeGbPos',
         'control_mode': 'P_PCC',
         'target_p': 300,
-        'voltage_regulator_on': True,
+        'regulating': True,
+        'regulation_mode': 'VOLTAGE',
+        'regulated_element_id': 'TRDC-GB-xNodeDc1gb',
         'idle_loss': 1.0,
         'switching_loss': 1.0,
         'resistive_loss': 1.0,
-        'target_v_ac': 400,
+        'local_target_v_ac': 400,
+        'regulation_value': 401,
         'pcc_terminal_id': 'TRDC-GB-xNodeDc1gb',
     }
 
@@ -1559,11 +1596,15 @@ def test_voltage_source_converter_creation():
     assert conv.dc_node2_id == 'dcNodeGbPos'
     assert conv.control_mode == 'P_PCC'
     assert conv.target_p == 300
-    assert conv.voltage_regulator_on == True
+    assert conv.regulating == True
     assert conv.idle_loss == 1.0
     assert conv.switching_loss == 1.0
     assert conv.resistive_loss == 1.0
-    assert conv.target_v_ac == 400
+    assert conv.local_target_v_ac == 400
+    assert conv.regulation_mode == 'VOLTAGE'
+    assert np.isnan(conv.local_target_q)
+    assert conv.regulation_value == 401
+    assert conv.regulated_element_id == 'TRDC-GB-xNodeDc1gb'
     assert conv.connected1
     assert conv.connected2
     assert conv.dc_connected1 == True

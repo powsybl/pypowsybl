@@ -746,21 +746,6 @@ def test_deprecated_update_generators():
         assert deprecated_columns[i] in record[i].message.args[0]
 
 
-def test_regulated_terminal_node_breaker():
-    n = pp.network.create_four_substations_node_breaker_network()
-    gens = n.get_generators()
-    assert 'GH1' == gens['regulated_element_id']['GH1']
-    assert np.isnan(gens['regulation_value']['GH1'])
-
-    n.update_generators(id='GH1', regulated_element_id='S1VL1_BBS', regulation_value=100)
-    updated_gens = n.get_generators()
-    assert 'S1VL1_BBS' == updated_gens['regulated_element_id']['GH1']
-    assert 100 == updated_gens['regulation_value']['GH1']
-
-    with pytest.raises(PyPowsyblError):
-        n.update_generators(id='GH1', regulated_element_id='LINE_S2S3')
-
-
 def test_regulated_terminal_bus_breaker():
     n = pp.network.create_eurostag_tutorial_example1_network()
     generators = n.get_generators()

@@ -284,17 +284,7 @@ public final class NetworkUtil {
         return feeders.build();
     }
 
-    public static void setRegulatingTerminal(Consumer<Terminal> adder, Network network, String elementId) {
-        Identifiable<?> injection = network.getIdentifiable(elementId);
-        if (injection instanceof Injection<?>) {
-            adder.accept(((Injection<?>) injection).getTerminal());
-        } else {
-            throw new UnsupportedOperationException("Cannot set regulated element to " + elementId +
-                    ": the regulated element may only be a busbar section or an injection.");
-        }
-    }
-
-    public static void setPccTerminal(Consumer<Terminal> adder, Network network, String elementId) {
+    public static void setTerminal(Consumer<Terminal> adder, Network network, String elementId) {
         //It may be necessary to precise which type of Connectable and which Terminal is needed
         Connectable<?> connectable = network.getConnectable(elementId);
         adder.accept(connectable.getTerminals().getFirst());

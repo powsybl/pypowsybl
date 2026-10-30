@@ -118,7 +118,7 @@ public class GeneratorDataframeAdder extends AbstractSimpleAdder {
                 }
                 applyBooleanIfPresent(voltageRegulatorOn, row, adder::setVoltageRegulatorOn);
                 applyIfPresent(regulatedElements, row, elementId -> NetworkUtil
-                        .setRegulatingTerminal(adder::setRegulatingTerminal, network, elementId));
+                        .setTerminal(adder::setRegulatingTerminal, network, elementId));
 
                 applyIfPresent(energySource, row, EnergySource.class, adder::setEnergySource);
                 applyBooleanIfPresent(condenser, row, adder::setCondenser);
