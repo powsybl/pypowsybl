@@ -2088,6 +2088,9 @@ def test_outage_groups_types():
                for outage_group in outage_groups.values()
                for equipment_id in outage_group)
 
+    # a single element id may be passed as a string
+    assert network.get_outage_groups(element_ids='LD6') == {'LD6': outage_groups['LD6']}
+
 
 def test_bus_breaker_view_buses():
     n = pp.network.create_eurostag_tutorial_example1_network()
