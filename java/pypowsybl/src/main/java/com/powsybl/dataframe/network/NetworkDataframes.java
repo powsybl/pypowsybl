@@ -1668,7 +1668,7 @@ public final class NetworkDataframes {
                 .booleans("oltc", row -> row.getRtc().hasLoadTapChangingCapabilities(), (row, v) -> row.getRtc().setLoadTapChangingCapabilities(v))
                 .booleans(REGULATING, row -> row.getRtc().isRegulating(), (row, v) -> RegulationUtil.setRegulating(row.getRtc(), v))
                 .enums(REGULATION_MODE, RegulationMode.class,
-                    row -> row.getRtc().getVoltageRegulation().getMode(), (row, v) -> RegulationUtil.setRegulationMode(row.getRtc(), v))
+                    row -> RegulationUtil.getRegulationMode(row.getRtc()), (row, v) -> RegulationUtil.setRegulationMode(row.getRtc(), v))
                 .doubles(REGULATION_VALUE, (row, context) -> RegulationUtil.getRegulationValue(row.getRtc(), context),
                     (row, v, context) -> RegulationUtil.setRegulationValue(row.getRtc(), v, context))
                 .deprecatedDoubles(TARGET_V, (row, context) -> getTransformerTargetV(row.getRtc(), context),
