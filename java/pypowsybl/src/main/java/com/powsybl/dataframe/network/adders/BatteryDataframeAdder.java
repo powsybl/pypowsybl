@@ -46,7 +46,7 @@ public class BatteryDataframeAdder extends AbstractSimpleAdder {
             SeriesMetadata.booleans("regulating"),
             SeriesMetadata.strings("regulation_mode"),
             SeriesMetadata.doubles("regulation_value"),
-            SeriesMetadata.strings("regulating_element_id")
+            SeriesMetadata.strings("regulated_element_id")
     );
 
     @Override

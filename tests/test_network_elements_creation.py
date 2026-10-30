@@ -84,12 +84,12 @@ def test_deprecated_generators_creation():
     n = pn.create_eurostag_tutorial_example1_network()
     with pytest.warns(DeprecationWarning) as record:
         n.create_generators(pd.DataFrame.from_records(
-            data=[('GEN3', 'GEN THREE', 4999, -9999.99, 'VLHV1', True, 100, 150, 300, 'NHV1')],
-            columns=['id', 'name', 'max_p', 'min_p', 'voltage_level_id',
+        data=[('GEN3', 'GEN THREE', 4999, -9999.99, 'VLHV1', 'LOAD', True, 100, 150, 300, 'NHV1')],
+            columns=['id', 'name', 'max_p', 'min_p', 'voltage_level_id', 'regulating_element_id',
                      'voltage_regulator_on', 'target_p', 'target_q', 'target_v', 'bus_id'],
             index='id'))
-    deprecated_columns = ['voltage_regulator_on', 'target_q', 'target_v']
-    assert len(record) == 3
+    deprecated_columns = ['regulating_element_id', 'voltage_regulator_on', 'target_q', 'target_v']
+    assert len(record) == 4
     for i, column in enumerate(deprecated_columns):
         assert f'Column "{column}" is deprecated' in record[i].message.args[0]
 
@@ -115,7 +115,7 @@ def test_generators_creation():
 def test_generators_kwargs():
     n = pn.create_eurostag_tutorial_example1_network()
     n.create_generators(id='GEN3', max_p=200, min_p=50, voltage_level_id='VLHV1', bus_id='NHV1',
-                        regulating=True, regulation_mode="REACTIVE_POWER", regulating_element_id="LOAD",
+                        regulating=True, regulation_mode="REACTIVE_POWER", regulated_element_id="LOAD",
                         regulation_value=100, target_p=100, local_target_q=0, local_target_v=400)
     gen3 = n.get_generators(all_attributes=True).loc['GEN3']
     assert gen3.max_p == 200.0
@@ -167,11 +167,33 @@ def test_loads_creation():
     assert load2.bus_id == 'VLHV2_0'
 
 
-def test_batteries_creation():
+def test_deprecated_batteries_creation():
     n = util.create_battery_network()
     df = pd.DataFrame.from_records(
         columns=['id', 'voltage_level_id', 'bus_id', 'max_p', 'min_p', 'target_p', 'target_q'],
         data=[('BAT3', 'VLBAT', 'NBAT', 100, 10, 90, 20)],
+        index='id')
+    with pytest.warns(DeprecationWarning) as record:
+        n.create_batteries(df)
+    assert len(record) == 1
+    assert '"target_q" is deprecated' in record[0].message.args[0]
+
+    bat3 = n.get_batteries().loc['BAT3']
+    assert bat3.voltage_level_id == 'VLBAT'
+    assert bat3.max_p == 100
+    assert bat3.min_p == 10
+    assert bat3.target_p == 90
+    assert bat3.local_target_q == 20
+    assert np.isnan(bat3.local_target_v)
+    assert np.isnan(bat3.regulation_value)
+
+
+def test_batteries_creation():
+    n = util.create_battery_network()
+    df = pd.DataFrame.from_records(
+        columns=['id', 'voltage_level_id', 'bus_id', 'max_p', 'min_p', 'target_p', 'regulation_mode', 'local_target_q',
+                 'local_target_v', 'regulating'],
+        data=[('BAT3', 'VLBAT', 'NBAT', 100, 10, 90, 'VOLTAGE', 20, 100, True)],
         index='id')
     n.create_batteries(df)
     bat3 = n.get_batteries().loc['BAT3']
@@ -179,10 +201,15 @@ def test_batteries_creation():
     assert bat3.max_p == 100
     assert bat3.min_p == 10
     assert bat3.target_p == 90
-    assert bat3.target_q == 20
+    assert bat3.local_target_q == 20
+    assert bat3.local_target_v == 100
+    assert bat3.regulating
+    assert bat3.regulation_mode == 'VOLTAGE'
+    assert np.isnan(bat3.regulation_value)
+    assert bat3.regulated_element_id == 'BAT3'
 
 
-def test_vsc_data_frame():
+def test_deprecated_vsc_creation():
     n = pn.create_four_substations_node_breaker_network()
     df = pd.DataFrame.from_records(
         index='id',
@@ -194,14 +221,47 @@ def test_vsc_data_frame():
                'voltage_regulator_on': True,
                'loss_factor': 1.0,
                'target_v': 400}])
+    with pytest.warns(DeprecationWarning) as record:
+        n.create_vsc_converter_stations(df)
+    deprecated_columns = ['target_q', 'voltage_regulator_on', 'target_v']
+    assert len(record) == 3
+    for i, column in enumerate(deprecated_columns):
+        assert f'"{column}" is deprecated' in record[i].message.args[0]
+
+    vsc3 = n.get_vsc_converter_stations().loc['VSC3']
+    assert vsc3.voltage_level_id == 'S3VL1'
+    assert vsc3.bus_id == 'S3VL1_0'
+    assert vsc3.local_target_q == 200
+    assert vsc3.regulating
+    assert vsc3.regulation_mode == 'VOLTAGE'
+    assert vsc3.regulated_element_id == 'VSC3'
+    assert vsc3.loss_factor == 1
+    assert vsc3.local_target_v == 400
+
+
+def test_vsc_creation():
+    n = pn.create_four_substations_node_breaker_network()
+    df = pd.DataFrame.from_records(
+        index='id',
+        data=[{'id': 'VSC3',
+               'name': '',
+               'voltage_level_id': 'S3VL1',
+               'node': 1,
+               'local_target_q': 200,
+               'regulation_mode': 'VOLTAGE',
+               'regulating': True,
+               'loss_factor': 1.0,
+               'local_target_v': 400}])
     n.create_vsc_converter_stations(df)
     vsc3 = n.get_vsc_converter_stations().loc['VSC3']
     assert vsc3.voltage_level_id == 'S3VL1'
     assert vsc3.bus_id == 'S3VL1_0'
-    assert vsc3.target_q == 200
-    assert vsc3.voltage_regulator_on == True
+    assert vsc3.local_target_q == 200
+    assert vsc3.regulating
+    assert vsc3.regulation_mode == 'VOLTAGE'
+    assert vsc3.regulated_element_id == 'VSC3'
     assert vsc3.loss_factor == 1
-    assert vsc3.target_v == 400
+    assert vsc3.local_target_v == 400
 
 
 def test_lcc_creation():
@@ -214,7 +274,7 @@ def test_lcc_creation():
     assert lcc.power_factor == pytest.approx(0.2, abs=1e-6)
 
 
-def test_svc_creation():
+def test_deprecated_svc_creation():
     n = pn.create_four_substations_node_breaker_network()
     df = pd.DataFrame.from_records(
         index='id',
@@ -228,12 +288,49 @@ def test_svc_creation():
                'target_v': 400,
                'b_min': 0,
                'b_max': 2}])
+    with pytest.warns(DeprecationWarning) as record:
+        n.create_static_var_compensators(df)
+    deprecated_columns = ['target_q', 'target_v']
+    assert len(record) == 2
+    for i, column in enumerate(deprecated_columns):
+        assert f'"{column}" is deprecated' in record[i].message.args[0]
+
+    svc2 = n.get_static_var_compensators().loc['SVC2']
+    assert svc2.voltage_level_id == 'S2VL1'
+    assert svc2.local_target_q == 200
+    assert svc2.regulation_mode == 'REACTIVE_POWER'
+    assert svc2.regulating
+    assert svc2.regulated_element_id == 'SVC2'
+    assert svc2.local_target_v == 400
+    assert svc2.b_min == 0
+    assert svc2.b_max == 2
+
+
+def test_svc_creation():
+    n = pn.create_four_substations_node_breaker_network()
+    df = pd.DataFrame.from_records(
+        index='id',
+        data=[{'id': 'SVC2',
+               'name': '',
+               'voltage_level_id': 'S2VL1',
+               'node': 1,
+               'local_target_q': 200,
+               'regulation_mode': 'VOLTAGE_PER_REACTIVE_POWER',
+               'regulating': True,
+               'local_target_v': 400,
+               'slope': 0.5,
+               'b_min': 0,
+               'b_max': 2}])
     n.create_static_var_compensators(df)
     svc2 = n.get_static_var_compensators().loc['SVC2']
     assert svc2.voltage_level_id == 'S2VL1'
-    assert svc2.target_q == 200
-    assert svc2.regulation_mode == 'REACTIVE_POWER'
-    assert svc2.target_v == 400
+    assert svc2.local_target_q == 200
+    assert svc2.regulation_mode == 'VOLTAGE_PER_REACTIVE_POWER'
+    assert svc2.local_target_v == 400
+    assert svc2.regulating
+    assert svc2.regulated_element_id == 'SVC2'
+    assert svc2.slope == 0.5
+    assert np.isnan(svc2.regulation_value)
     assert svc2.b_min == 0
     assert svc2.b_max == 2
 
@@ -302,18 +399,44 @@ def test_voltage_levels_creation():
     assert vl.nominal_v == 225
 
 
+def test_deprecated_ratio_tap_changer():
+    n = pn.create_eurostag_tutorial_example1_network()
+    rtc_df = pd.DataFrame.from_records(index='id', data=[{
+        'id': 'NGEN_NHV1',
+        'target_deadband': 2,
+        'target_v': 200,
+        'oltc': True,
+        'low_tap': 0,
+        'tap': 1,
+        'regulating': True,
+        'regulated_side': 'ONE'
+    }])
+    steps_df = pd.DataFrame.from_records(index='id', data=[
+        {'id': 'NGEN_NHV1', 'b': 2, 'g': 2, 'r': 1, 'x': 1, 'rho': 0.5},
+        {'id': 'NGEN_NHV1', 'b': 2, 'g': 2, 'r': 1, 'x': 1, 'rho': 0.5},
+    ])
+
+    with pytest.warns(DeprecationWarning, match='"target_v" is deprecated'):
+        n.create_ratio_tap_changers(rtc_df, steps_df)
+
+
 def test_ratio_tap_changers_creation():
     n = pn.create_eurostag_tutorial_example1_network()
-    rtc_df = dataframe_from_string("""
-id         target_deadband  target_v  oltc  low_tap  tap  regulating  regulated_side
-NGEN_NHV1                2       200  True        0    1        True             ONE
-""")
-
-    steps_df = dataframe_from_string("""
-id         b  g  r  x  rho
-NGEN_NHV1  2  2  1  1  0.5
-NGEN_NHV1  2  2  1  1  0.5
-""")
+    rtc_df = pd.DataFrame.from_records(index='id', data=[{
+        'id': 'NGEN_NHV1',
+        'target_deadband': 2,
+        'oltc': True,
+        'low_tap': 0,
+        'tap': 1,
+        'regulating': True,
+        'regulation_mode': 'VOLTAGE',
+        'regulated_side': 'ONE',
+        'regulation_value': 200,
+    }])
+    steps_df = pd.DataFrame.from_records(index='id', data=[
+        {'id': 'NGEN_NHV1', 'b': 2, 'g': 2, 'r': 1, 'x': 1, 'rho': 0.5},
+        {'id': 'NGEN_NHV1', 'b': 2, 'g': 2, 'r': 1, 'x': 1, 'rho': 0.5},
+    ])
 
     n.create_ratio_tap_changers(rtc_df, steps_df)
 
@@ -336,22 +459,27 @@ NGEN_NHV1  2  2  1  1  0.5
 
 def test_ratio_tap_changers_creation_reactive_power_mode():
     n = pn.create_eurostag_tutorial_example1_network()
-    rtc_df = dataframe_from_string("""
-id         target_deadband  regulation_mode  regulation_value  oltc  low_tap  tap  regulating  regulated_side
-NGEN_NHV1                2   REACTIVE_POWER                50  True        0    1        True             ONE
-""")
-
-    steps_df = dataframe_from_string("""
-id         b  g  r  x  rho
-NGEN_NHV1  2  2  1  1  0.5
-NGEN_NHV1  2  2  1  1  0.5
-""")
+    rtc_df = pd.DataFrame.from_records(index='id', data=[{
+        'id': 'NGEN_NHV1',
+        'target_deadband': 2,
+        'oltc': True,
+        'low_tap': 0,
+        'tap': 1,
+        'regulating': True,
+        'regulation_mode': 'REACTIVE_POWER',
+        'regulated_side': 'ONE',
+        'regulation_value': 200,
+    }])
+    steps_df = pd.DataFrame.from_records(index='id', data=[
+        {'id': 'NGEN_NHV1', 'b': 2, 'g': 2, 'r': 1, 'x': 1, 'rho': 0.5},
+        {'id': 'NGEN_NHV1', 'b': 2, 'g': 2, 'r': 1, 'x': 1, 'rho': 0.5},
+    ])
 
     n.create_ratio_tap_changers(rtc_df, steps_df)
 
     rtc = n.get_ratio_tap_changers(all_attributes=True).loc['NGEN_NHV1']
     assert rtc.regulation_mode == 'REACTIVE_POWER'
-    assert rtc.regulation_value == 50
+    assert rtc.regulation_value == 200.0
     assert rtc.regulated_side == 'ONE'
     assert rtc.regulating
 
@@ -510,7 +638,7 @@ def test_boundary_lines():
     assert new_dl.q0 == 101
 
 
-def test_linear_shunt():
+def test_deprecated_shunt_creation():
     n = pn.create_four_substations_node_breaker_network()
     shunt_df = pd.DataFrame.from_records(
         index='id',
@@ -521,14 +649,34 @@ def test_linear_shunt():
         index='id',
         columns=['id', 'g_per_section', 'b_per_section', 'max_section_count'],
         data=[('SHUNT_TEST', 0.14, -0.01, 2)])
+    with pytest.warns(DeprecationWarning, match='"target_v" is deprecated'):
+        n.create_shunt_compensators(shunt_df, model_df)
+
+
+def test_linear_shunt():
+    n = pn.create_four_substations_node_breaker_network()
+    shunt_df = pd.DataFrame.from_records(
+        index='id',
+        columns=['id', 'name', 'model_type', 'section_count', 'local_target_v',
+                 'regulating', 'regulated_element_id', 'regulation_mode', 'regulation_value',
+                 'target_deadband', 'voltage_level_id', 'node'],
+        data=[('SHUNT_TEST', '', 'LINEAR', 1, 400, True, 'S1VL1_BBS', 'VOLTAGE',
+               390, 2, 'S1VL2', 2)])
+    model_df = pd.DataFrame.from_records(
+        index='id',
+        columns=['id', 'g_per_section', 'b_per_section', 'max_section_count'],
+        data=[('SHUNT_TEST', 0.14, -0.01, 2)])
     n.create_shunt_compensators(shunt_df, model_df)
 
     shunt = n.get_shunt_compensators().loc['SHUNT_TEST']
     assert shunt.max_section_count == 2
     assert shunt.section_count == 1
-    assert shunt.target_v == 400
+    assert shunt.local_target_v == 400
+    assert shunt.regulation_value == 390
     assert shunt.target_deadband == 2
-    assert not shunt.voltage_regulation_on
+    assert shunt.regulating
+    assert shunt.regulated_element_id == 'S1VL1_BBS'
+    assert shunt.regulation_mode == 'VOLTAGE'
     assert shunt.model_type == 'LINEAR'
     assert shunt.g == 0.14
     assert shunt.b == -0.01
@@ -543,7 +691,7 @@ def test_non_linear_shunt():
     n = pn.create_four_substations_node_breaker_network()
     shunt_df = pd.DataFrame.from_records(
         index='id',
-        columns=['id', 'name', 'model_type', 'section_count', 'target_v',
+        columns=['id', 'name', 'model_type', 'section_count', 'local_target_v',
                  'target_deadband', 'voltage_level_id', 'node'],
         data=[('SHUNT1', '', 'NON_LINEAR', 1, 400, 2, 'S1VL2', 2),
               ('SHUNT2', '', 'NON_LINEAR', 1, 400, 2, 'S1VL2', 10)])
@@ -559,9 +707,11 @@ def test_non_linear_shunt():
     shunt = n.get_shunt_compensators().loc['SHUNT1']
     assert shunt.max_section_count == 2
     assert shunt.section_count == 1
-    assert shunt.target_v == 400
+    assert shunt.local_target_v == 400
     assert shunt.target_deadband == 2
-    assert not shunt.voltage_regulation_on
+    assert not shunt.regulating
+    assert shunt.regulated_element_id == 'SHUNT1'
+    assert shunt.regulation_mode == ''
     assert shunt.model_type == 'NON_LINEAR'
     assert shunt.g == 1
     assert shunt.b == 2
@@ -673,7 +823,7 @@ def test_create_network_and_run_loadflow():
 
     generators = pd.DataFrame.from_records(index='id', data=[
         {'voltage_level_id': 'VL1', 'id': 'GEN', 'bus_id': 'B1', 'target_p': 100, 'min_p': 0, 'max_p': 200,
-         'target_v': 400, 'voltage_regulator_on': True, 'regulating_element_id': 'LOAD'}
+         'regulation_mode': 'VOLTAGE', 'regulation_value': 400, 'regulating': True, 'regulated_element_id': 'LOAD'}
     ])
     n.create_generators(generators)
 
@@ -732,7 +882,7 @@ def test_create_node_breaker_network_and_run_loadflow():
 
     generators = pd.DataFrame.from_records(index='id', data=[
         {'voltage_level_id': 'VL1', 'id': 'GEN', 'node': 3, 'target_p': 100, 'min_p': 0, 'max_p': 200,
-         'regulation_value': 400, 'regulating': True, 'regulation_mode': 'VOLTAGE', 'regulating_element_id': 'LOAD'}
+         'regulation_value': 400, 'regulating': True, 'regulation_mode': 'VOLTAGE', 'regulated_element_id': 'LOAD'}
     ])
     n.create_generators(generators)
 

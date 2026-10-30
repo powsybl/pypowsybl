@@ -4196,7 +4196,7 @@ class Network:  # pylint: disable=too-many-public-methods
             - `regulation_value`
             - `regulated_element_id`
             - `regulated_side`
-            - `target_v`
+            - `target_v` (deprecated)
             - `target_deadband`
 
         See Also:
@@ -5266,11 +5266,12 @@ class Network:  # pylint: disable=too-many-public-methods
             - **voltage_regulator_on**: deprecated, use **regulating** and **regulation_mode**
             - **regulating**: define if the generator is regulating (either voltage or reactive power depending on **regulation_mode**)
             - **regulation_mode**: define if the generator is regulating VOLTAGE or REACTIVE_POWER
-            - **regulating_element_id**: the ID of the network element where the regulation is applied.
+            - **regulating_element_id**: deprecated, use **regulated_element_id**
+            - **regulated_element_id**: the ID of the network element where the regulation is applied.
                 Must be an injection or busbar section ID, defaults to the ID of the generator itself.
             - **regulation_value**: define the value of the regulation if it is not local (either in kV or MVar depending on **regulation_mode**)
             - **local_target_v**: define the local target voltage in kV (used if **regulation_mode** is VOLTAGE, **regulating** is True
-                and no **regulating_element_id** is defined)
+                and no **regulated_element_id** is defined)
             - **local_target_q**: define the local target reactive power in MVar (used if **regulating** is False)
 
         Examples:

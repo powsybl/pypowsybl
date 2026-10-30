@@ -35,7 +35,7 @@ public class RatioTapChangerDataframeAdder implements NetworkElementAdder {
             SeriesMetadata.booleans("regulating"),
             SeriesMetadata.strings("regulation_mode"),
             SeriesMetadata.doubles("regulation_value"),
-            SeriesMetadata.strings("regulating_element_id"),
+            SeriesMetadata.strings("regulated_element_id"),
             SeriesMetadata.strings("regulated_side"),
             SeriesMetadata.strings("side")
     );
@@ -155,7 +155,7 @@ public class RatioTapChangerDataframeAdder implements NetworkElementAdder {
 
         @Override
         protected boolean newColumnsUsed() {
-            return regulatingElements != null;
+            return regulatedElements != null;
         }
     }
 

@@ -30,7 +30,7 @@ public class VoltageRegulationHolderSeries extends InjectionSeries {
     protected final DoubleSeries regulationValue;
     protected final DoubleSeries targetDeadband;
     protected final DoubleSeries slope;
-    protected final StringSeries regulatingElements;
+    protected final StringSeries regulatedElements;
     protected final DoubleSeries localTargetQ;
     protected final DoubleSeries localTargetV;
 
@@ -41,7 +41,8 @@ public class VoltageRegulationHolderSeries extends InjectionSeries {
         this.regulationValue = dataframe.getDoubles("regulation_value");
         this.targetDeadband = dataframe.getDoubles("target_deadband");
         this.slope = dataframe.getDoubles("slope");
-        this.regulatingElements = dataframe.getStrings("regulating_element_id");
+        this.regulatedElements = dataframe.getStrings("regulated_element_id") == null ?
+                dataframe.getStrings("regulating_element_id") : dataframe.getStrings("regulated_element_id");
         this.localTargetQ = dataframe.getDoubles("local_target_q");
         this.localTargetV = dataframe.getDoubles("local_target_v");
     }
@@ -51,14 +52,15 @@ public class VoltageRegulationHolderSeries extends InjectionSeries {
         applyIfPresent(localTargetV, row, adder::setLocalTargetV);
         if (newColumnsUsed()) {
             VoltageRegulationAdder<?> regulationAdder = adder.newVoltageRegulation();
+            regulationAdder.withRegulating(false);
             applyBooleanIfPresent(regulating, row, regulationAdder::withRegulating);
             applyIfPresent(regulationMode, row, RegulationMode.class, regulationAdder::withMode);
             applyIfPresent(regulationValue, row, regulationAdder::withTargetValue);
             applyIfPresent(targetDeadband, row, regulationAdder::withTargetDeadband);
             applyIfPresent(slope, row, regulationAdder::withSlope);
-            if (regulatingElements != null) {
+            if (regulatedElements != null) {
                 String id = ids.get(row);
-                String elementId = regulatingElements.get(row);
+                String elementId = regulatedElements.get(row);
                 if (!elementId.equals(id)) {
                     NetworkUtil.setRegulatingTerminal(regulationAdder::withTerminal, network, elementId);
                 }
@@ -68,6 +70,6 @@ public class VoltageRegulationHolderSeries extends InjectionSeries {
     }
 
     protected boolean newColumnsUsed() {
-        return regulating != null || regulatingElements != null || regulationMode != null || regulationValue != null;
+        return regulating != null || regulatedElements != null || regulationMode != null || regulationValue != null;
     }
 }

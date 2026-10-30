@@ -261,7 +261,7 @@ class NetworkElementAddersTest {
         addStringColumn(dataframe, "bus_id", "NGEN");
         addIntColumn(dataframe, "regulating", 1);
         addStringColumn(dataframe, "regulation_mode", "VOLTAGE");
-        addStringColumn(dataframe, "regulating_element_id", "LOAD");
+        addStringColumn(dataframe, "regulated_element_id", "LOAD");
         addIntColumn(dataframe, "condenser", 1);
 
         assertThrows(ValidationException.class, () -> NetworkElementAdders.addElements(DataframeElementType.GENERATOR, network, singletonList(dataframe)));

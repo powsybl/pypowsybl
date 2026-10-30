@@ -56,7 +56,8 @@ public class GeneratorDataframeAdder extends AbstractSimpleAdder {
             SeriesMetadata.booleans("regulating"),
             SeriesMetadata.strings("regulation_mode"),
             SeriesMetadata.doubles("regulation_value"),
-            SeriesMetadata.strings("regulating_element_id")
+            SeriesMetadata.deprecatedStrings("regulating_element_id"),
+            SeriesMetadata.strings("regulated_element_id")
     );
 
     @Override
@@ -116,7 +117,7 @@ public class GeneratorDataframeAdder extends AbstractSimpleAdder {
                     applyIfPresent(targetV, row, adder::setTargetV);
                 }
                 applyBooleanIfPresent(voltageRegulatorOn, row, adder::setVoltageRegulatorOn);
-                applyIfPresent(regulatingElements, row, elementId -> NetworkUtil
+                applyIfPresent(regulatedElements, row, elementId -> NetworkUtil
                         .setRegulatingTerminal(adder::setRegulatingTerminal, network, elementId));
 
                 applyIfPresent(energySource, row, EnergySource.class, adder::setEnergySource);

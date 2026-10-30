@@ -49,7 +49,7 @@ public class SvcDataframeAdder extends AbstractSimpleAdder {
             SeriesMetadata.deprecatedDoubles("target_q"),
             SeriesMetadata.doubles("local_target_v"),
             SeriesMetadata.doubles("local_target_q"),
-            SeriesMetadata.strings("regulating_element_id")
+            SeriesMetadata.strings("regulated_element_id")
     );
 
     @Override

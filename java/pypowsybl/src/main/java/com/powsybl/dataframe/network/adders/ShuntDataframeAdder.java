@@ -48,7 +48,7 @@ public class ShuntDataframeAdder implements NetworkElementAdder {
             SeriesMetadata.booleans("regulating"),
             SeriesMetadata.strings("regulation_mode"),
             SeriesMetadata.doubles("regulation_value"),
-            SeriesMetadata.strings("regulating_element_id"),
+            SeriesMetadata.strings("regulated_element_id"),
             SeriesMetadata.strings("model_type")
     );
 
@@ -201,6 +201,11 @@ public class ShuntDataframeAdder implements NetworkElementAdder {
             } else {
                 return Optional.empty();
             }
+        }
+
+        @Override
+        protected boolean newColumnsUsed() {
+            return super.newColumnsUsed() || localTargetV != null;
         }
 
         void create(Network network, int row, boolean throwException) {

@@ -40,11 +40,16 @@ public class VscStationDataframeAdder extends AbstractSimpleAdder {
             SeriesMetadata.strings("connectable_bus_id"),
             SeriesMetadata.ints("node"),
             SeriesMetadata.strings("name"),
-            SeriesMetadata.doubles("target_v"),
-            SeriesMetadata.doubles("target_q"),
+            SeriesMetadata.deprecatedDoubles("target_v"),
+            SeriesMetadata.deprecatedDoubles("target_q"),
             SeriesMetadata.doubles("loss_factor"),
-            SeriesMetadata.booleans("voltage_regulator_on"),
-            SeriesMetadata.strings("regulating_element_id")
+            SeriesMetadata.deprecatedBooleans("voltage_regulator_on"),
+            SeriesMetadata.doubles("local_target_v"),
+            SeriesMetadata.doubles("local_target_q"),
+            SeriesMetadata.booleans("regulating"),
+            SeriesMetadata.strings("regulation_mode"),
+            SeriesMetadata.doubles("regulation_value"),
+            SeriesMetadata.strings("regulated_element_id")
     );
 
     @Override
@@ -52,7 +57,7 @@ public class VscStationDataframeAdder extends AbstractSimpleAdder {
         return Collections.singletonList(METADATA);
     }
 
-    private static class VscStationSeries extends InjectionSeries {
+    private static class VscStationSeries extends VoltageRegulationHolderSeries {
 
         private final StringSeries voltageLevels;
         private final DoubleSeries lossFactors;
@@ -70,7 +75,7 @@ public class VscStationDataframeAdder extends AbstractSimpleAdder {
             this.targetQ = dataframe.getDoubles("target_q");
             this.voltageRegulatorOn = dataframe.getInts("voltage_regulator_on");
             this.busOrBusbarSections = dataframe.getStrings("bus_or_busbar_section_id");
-            this.regulatingElements = dataframe.getStrings("regulating_element_id");
+            this.regulatingElements = dataframe.getStrings("regulated_element_id");
         }
 
         Optional<VscConverterStationAdder> createAdder(Network network, int row, boolean throwException) {
@@ -79,6 +84,10 @@ public class VscStationDataframeAdder extends AbstractSimpleAdder {
                 VscConverterStationAdder adder = vl.get().newVscConverterStation();
                 setInjectionAttributes(adder, row);
                 applyIfPresent(lossFactors, row, f -> adder.setLossFactor((float) f));
+
+                setVoltageRegulationAttributes(adder, network, row);
+
+                // For compatibility with the old regulation
                 applyIfPresent(targetV, row, adder::setVoltageSetpoint);
                 applyIfPresent(targetQ, row, adder::setReactivePowerSetpoint);
                 applyBooleanIfPresent(voltageRegulatorOn, row, adder::setVoltageRegulatorOn);
@@ -87,6 +96,11 @@ public class VscStationDataframeAdder extends AbstractSimpleAdder {
                 return Optional.of(adder);
             }
             return Optional.empty();
+        }
+
+        @Override
+        protected boolean newColumnsUsed() {
+            return regulating != null || regulationMode != null || regulationValue != null;
         }
     }
 
