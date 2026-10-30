@@ -121,6 +121,9 @@ public final class CommonCFunctions {
         } else {
             UnmanagedMemory.free(seriesPointer.data().getPtr());
         }
+        if (seriesPointer.dictionary().getPtr().isNonNull()) {
+            Util.freeCharPtrArray(seriesPointer.dictionary());
+        }
         if (seriesPointer.getMask().isNonNull()) {
             UnmanagedMemory.free(seriesPointer.getMask());
         }

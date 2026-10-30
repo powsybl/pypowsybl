@@ -303,6 +303,7 @@ typedef struct series_struct {
     int type;
     array data;
     int* mask;
+    array dictionary; // distinct values of a dictionary-encoded string series (data holds the codes), unused otherwise
 } series;
 
 /**

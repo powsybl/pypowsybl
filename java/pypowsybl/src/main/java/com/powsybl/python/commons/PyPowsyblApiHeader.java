@@ -835,6 +835,9 @@ public final class PyPowsyblApiHeader {
         @CField("mask")
         void setMask(CIntPointer mask);
 
+        @CFieldAddress("dictionary")
+        ArrayPointer<CCharPointerPointer> dictionary();
+
         SeriesPointer addressOf(int index);
     }
 
