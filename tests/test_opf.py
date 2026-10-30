@@ -251,7 +251,7 @@ def test_vsc_symmetrical_monopole():
     assert pp.opf.run_ac(pp.network.create_dc_detailed_vsc_symmetrical_monopole_network(), opf_parameters)
 
 #VSC assymetrical monopole network is defined in powsybl-core in the file DcDetailedNetworkFactory.java
-#It defines two different nominal voltage for the two VSC DC nodes, which is not compliant with the ACDC OPF validation rules. 
+#It defines two different nominal voltage for the two VSC DC nodes, which is not compliant with the ACDC OPF validation rules.
 def test_vsc_asymmetrical_monopole():
     opf_parameters = OptimalPowerFlowParameters(mode=OptimalPowerFlowMode.ACDC)
     assert pp.opf.run_ac(pp.network.create_dc_detailed_vsc_asymmetrical_monopole_network(), opf_parameters)
@@ -268,3 +268,10 @@ def test_ac_dc_bipolar_network():
 def test_ac_dc_bipolar_metallic_return():
     opf_parameters = OptimalPowerFlowParameters(mode=OptimalPowerFlowMode.ACDC)
     assert pp.opf.run_ac(pp.network.create_ac_dc_bipolar_network_with_metallic_return(), opf_parameters)
+
+def test_invalid_mode_is_rejected():
+    opf_parameters = OptimalPowerFlowParameters(mode="UNKNOWN")
+    network = pp.network.create_ieee9()
+    with pytest.raises(ValueError, match="Expected a valid OPF mode and got UNKNOWN"):
+        pp.opf.run_ac(network, opf_parameters)
+
