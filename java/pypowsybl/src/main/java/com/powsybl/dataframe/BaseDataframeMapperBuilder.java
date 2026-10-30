@@ -198,6 +198,53 @@ public class BaseDataframeMapperBuilder<T, U, C, B extends BaseDataframeMapperBu
         return strings(name, value, null, true, true);
     }
 
+    /**
+     * String column transferred dictionary-encoded (int codes and the distinct values), for columns with many
+     * repeated values. It is read as a plain string column, like {@link #strings(String, Function)}; a null value
+     * is encoded as an empty string, which is also what a null value of a plain string column is read as.
+     */
+    public B dictionaryStrings(String name, Function<U, String> value) {
+        return dictionaryStrings(name, value, null, true);
+    }
+
+    /**
+     * Modifiable variant of {@link #dictionaryStrings(String, Function)}.
+     *
+     * @param updater the update of an object from a value
+     */
+    public B dictionaryStrings(String name, Function<U, String> value, BiConsumer<U, String> updater) {
+        return dictionaryStrings(name, value, updater, true);
+    }
+
+    /**
+     * Variant of {@link #dictionaryStrings(String, Function)} with an explicit default attribute flag.
+     *
+     * @param defaultAttribute whether the column belongs to the default attributes of the dataframe
+     */
+    public B dictionaryStrings(String name, Function<U, String> value, boolean defaultAttribute) {
+        return dictionaryStrings(name, value, null, defaultAttribute);
+    }
+
+    /**
+     * Modifiable variant of {@link #dictionaryStrings(String, Function)} with an explicit default attribute flag.
+     *
+     * @param updater          the update of an object from a value, or null when the column is not modifiable
+     * @param defaultAttribute whether the column belongs to the default attributes of the dataframe
+     */
+    public B dictionaryStrings(String name, Function<U, String> value, BiConsumer<U, String> updater, boolean defaultAttribute) {
+        series.add(new DictionaryStringSeriesMapper<>(name, false, value, updater, defaultAttribute));
+        return (B) this;
+    }
+
+    /**
+     * String index transferred dictionary-encoded, for indexes with many repeated values. It is read as a plain
+     * string index, like {@link #stringsIndex(String, Function)}; a null value is encoded as an empty string.
+     */
+    public B dictionaryStringsIndex(String name, Function<U, String> value) {
+        series.add(new DictionaryStringSeriesMapper<>(name, true, value, null, true));
+        return (B) this;
+    }
+
     public B deprecatedStrings(String name, Function<U, String> value, BiConsumer<U, String> updater, boolean defaultAttribute) {
         return strings(name, value, updater, defaultAttribute, true);
     }
