@@ -7,12 +7,12 @@
  */
 package com.powsybl.python.flow_decomposition;
 
-import com.powsybl.flow_decomposition.XnecProvider;
-import com.powsybl.flow_decomposition.xnec_provider.XnecProvider5percPtdf;
-import com.powsybl.flow_decomposition.xnec_provider.XnecProviderAllBranches;
-import com.powsybl.flow_decomposition.xnec_provider.XnecProviderByIds;
-import com.powsybl.flow_decomposition.xnec_provider.XnecProviderInterconnection;
-import com.powsybl.flow_decomposition.xnec_provider.XnecProviderUnion;
+import com.powsybl.flowdecomposition.XnecProvider;
+import com.powsybl.flowdecomposition.xnecprovider.XnecProvider5percPtdf;
+import com.powsybl.flowdecomposition.xnecprovider.XnecProviderAllBranches;
+import com.powsybl.flowdecomposition.xnecprovider.XnecProviderByIds;
+import com.powsybl.flowdecomposition.xnecprovider.XnecProviderInterconnection;
+import com.powsybl.flowdecomposition.xnecprovider.XnecProviderUnion;
 
 import java.util.ArrayList;
 import java.util.List;

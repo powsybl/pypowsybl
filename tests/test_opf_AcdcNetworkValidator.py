@@ -257,9 +257,9 @@ def test_validation_rejects_a_dc_component_with_no_v_dc_converter():
 
 
 def test_validation_rejects_a_dc_component_whose_only_converter_is_in_droop_mode():
-    """P_PCC_DROOP is not implemented by this OPF yet - it pins neither power nor voltage - so it must
+    """DC_DROOP is not implemented by this OPF yet - it pins neither power nor voltage - so it must
     not count as a valid power-balancing converter for now."""
-    network = create_two_vsc_same_dc_component_network("P_PCC_DROOP")
+    network = create_two_vsc_same_dc_component_network("DC_DROOP")
     with pytest.raises(ValueError, match="none in V_DC mode"):
         validate_acdc_network(network)
 

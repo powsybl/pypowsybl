@@ -21,7 +21,7 @@ public class LimitViolationFaultContext extends LimitViolation {
     public LimitViolationFaultContext(String faultId, LimitViolation limitViolation) {
         super(limitViolation.getSubjectId(), limitViolation.getSubjectName(), limitViolation.getLimitType(),
             limitViolation.getLimitName(), limitViolation.getAcceptableDuration(), limitViolation.getLimit(),
-            limitViolation.getLimitReduction(), limitViolation.getValue(), limitViolation.getSide());
+            limitViolation.getLimitScaling(), limitViolation.getValue(), limitViolation.getSide());
         this.faultId = Objects.requireNonNull(faultId);
     }
 

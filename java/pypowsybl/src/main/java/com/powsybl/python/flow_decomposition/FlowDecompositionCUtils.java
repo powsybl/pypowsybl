@@ -7,7 +7,7 @@
  */
 package com.powsybl.python.flow_decomposition;
 
-import com.powsybl.flow_decomposition.FlowDecompositionParameters;
+import com.powsybl.flowdecomposition.FlowDecompositionParameters;
 import com.powsybl.python.commons.PyPowsyblApiHeader;
 import com.powsybl.python.commons.PyPowsyblConfiguration;
 

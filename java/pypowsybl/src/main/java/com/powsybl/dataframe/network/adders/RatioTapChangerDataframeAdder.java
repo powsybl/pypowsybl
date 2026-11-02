@@ -7,6 +7,7 @@ import com.powsybl.dataframe.update.IntSeries;
 import com.powsybl.dataframe.update.StringSeries;
 import com.powsybl.dataframe.update.UpdatingDataframe;
 import com.powsybl.iidm.network.*;
+import com.powsybl.iidm.network.regulation.RegulationMode;
 import gnu.trove.list.array.TIntArrayList;
 
 import java.util.HashMap;
@@ -22,6 +23,7 @@ import static com.powsybl.dataframe.network.adders.SeriesUtils.applyIfPresent;
  * @author Etienne Lesot {@literal <etienne.lesot at rte-france.com>}
  * @author Sylvain Leclerc {@literal <sylvain.leclerc@rte-france.com>}
  */
+@SuppressWarnings("java:S5738") // removing "deprecated" warnings before voltage refactoring integration
 public class RatioTapChangerDataframeAdder implements NetworkElementAdder {
 
     private static final List<SeriesMetadata> METADATA = List.of(
@@ -119,7 +121,7 @@ public class RatioTapChangerDataframeAdder implements NetworkElementAdder {
             applyIfPresent(targetDeadband, row, adder::setTargetDeadband);
             applyIfPresent(targetV, row, adder::setTargetV);
             applyIfPresent(regulationValue, row, adder::setRegulationValue);
-            applyIfPresent(regulationMode, row, value -> adder.setRegulationMode(RatioTapChanger.RegulationMode.valueOf(value)));
+            applyIfPresent(regulationMode, row, value -> adder.setRegulationMode(RegulationMode.valueOf(value)));
             applyBooleanIfPresent(onLoad, row, adder::setLoadTapChangingCapabilities);
             applyIfPresent(lowTaps, row, adder::setLowTapPosition);
             applyIfPresent(taps, row, adder::setTapPosition);
