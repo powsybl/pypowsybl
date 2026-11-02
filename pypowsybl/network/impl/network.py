@@ -5455,7 +5455,15 @@ class Network:  # pylint: disable=too-many-public-methods
             - **min_p**: minimum active power, in MW
             - **max_p**: maximum active power, in MW
             - **target_p**: active power consumption, in MW
-            - **target_q**: reactive power consumption, in MVar
+            - **target_q**: deprecated, see **local_target_q**/**regulation_value**
+            - **regulating**: define if the battery is regulating (either voltage or reactive power depending on **regulation_mode**)
+            - **regulation_mode**: define if the battery is regulating VOLTAGE or REACTIVE_POWER
+            - **regulated_element_id**: the ID of the network element where the regulation is applied.
+                Defaults to the ID of the battery itself.
+            - **regulation_value**: define the value of the regulation if it is not local (either in kV or MVar depending on **regulation_mode**)
+            - **local_target_v**: define the local target voltage in kV (used if **regulation_mode** is VOLTAGE, **regulating** is True
+                and no **regulated_element_id** is defined)
+            - **local_target_q**: define the local target reactive power in MVar (used if **regulating** is False)
 
         Examples:
             Using keyword arguments:
@@ -5605,9 +5613,17 @@ class Network:  # pylint: disable=too-many-public-methods
               if the voltage level has a node-breaker topology kind.
             - **name**: an optional human-readable name
             - **loss_factor**: the loss factor of the new station
-            - **voltage_regulator_on**: true if the station regulated voltage
-            - **target_v**: the target voltage, in kV, when the station regulates voltage
-            - **target_q**: the target reactive power, in MVar, when the station does not regulate voltage
+            - **voltage_regulator_on**: deprecated, see **regulating**/**regulation_mode**
+            - **target_v**: deprecated, see **local_target_v**/**regulation_value**
+            - **target_q**: deprecated, see **local_target_q**/**regulation_value**
+            - **regulating**: define if the station is regulating
+            - **regulation_mode**: define how the station is regulating (VOLTAGE or REACTIVE_POWER)
+            - **regulated_element_id**: the ID of the network element where the regulation is applied.
+                Defaults to the ID of the station itself.
+            - **regulation_value**: define the value of the regulation if it is not local (either in kV or MVar depending on **regulation_mode**)
+            - **local_target_v**: define the local target voltage in kV (used if **regulation_mode** is VOLTAGE, **regulating** is True
+                and no **regulated_element_id** is defined)
+            - **local_target_q**: define the local target reactive power in MVar (used if **regulating** is False)
 
         Examples:
             Using keyword arguments:
@@ -5615,7 +5631,8 @@ class Network:  # pylint: disable=too-many-public-methods
             .. code-block:: python
 
                 network.create_vsc_converter_stations(id='CS-1', voltage_level_id='VL1', bus_id='B1',
-                                                      loss_factor=0.1, voltage_regulator_on=True, target_v=400.0)
+                                                      loss_factor=0.1, regulating=True,
+                                                      regulation_mode='VOLTAGE', local_target_v=400.0)
         """
         return self._create_elements(ElementType.VSC_CONVERTER_STATION, [df], **kwargs)
 
@@ -5646,10 +5663,17 @@ class Network:  # pylint: disable=too-many-public-methods
             - **name**: an optional human-readable name
             - **b_max**: the maximum susceptance, in S
             - **b_min**: the minimum susceptance, in S
-            - **regulation_mode**: the regulation mode (VOLTAGE, REACTIVE_POWER)
-            - **regulating**: True if the regulation is active
-            - **target_v**: the target voltage, in kV, when the regulation mode is VOLTAGE
-            - **target_q**: the target reactive power, in MVar, when the regulation mode is not VOLTAGE
+            - **target_v**: deprecated, see **local_target_v**/**regulation_value**
+            - **target_q**: deprecated, see **local_target_q**/**regulation_value**
+            - **regulating**: define if the compensator is regulating
+            - **regulation_mode**: define how the compensator is regulating (VOLTAGE, REACTIVE_POWER or VOLTAGE_PER_REACTIVE_POWER)
+            - **regulated_element_id**: the ID of the network element where the regulation is applied.
+                Defaults to the ID of the compensator itself.
+            - **regulation_value**: define the value of the regulation if it is not local (either in kV or MVar depending on **regulation_mode**)
+            - **slope**: define the lambda (in kV/MVar) used in mode VOLTAGE_PER_REACTIVE_POWER: U0 = U + lambda*Q
+            - **local_target_v**: define the local target voltage in kV (used if **regulation_mode** is VOLTAGE, **regulating** is True
+                and no **regulated_element_id** is defined)
+            - **local_target_q**: define the local target reactive power in MVar (used if **regulating** is False)
 
         Examples:
             Using keyword arguments:
@@ -5658,7 +5682,7 @@ class Network:  # pylint: disable=too-many-public-methods
 
                 network.create_static_var_compensators(id='CS-1', voltage_level_id='VL1', bus_id='B1',
                                                        b_min=-0.01, b_max=0.01, regulation_mode='VOLTAGE',
-                                                       regulating=True, target_v=400.0)
+                                                       regulating=True, local_target_v=400.0)
         """
         return self._create_elements(ElementType.STATIC_VAR_COMPENSATOR, [df], **kwargs)
 
@@ -5881,8 +5905,15 @@ class Network:  # pylint: disable=too-many-public-methods
             - **name**: an optional human-readable name
             - **model_type**: either LINEAR or NON_LINEAR
             - **section_count**: the current count of connected sections
-            - **target_v**: an optional target voltage in kV
-            - **target_v**: an optional deadband for the target voltage, in kV
+            - **target_v**: deprecated, see **local_target_v**/**regulation_value**
+            - **regulating**: define if the shunt is regulating
+            - **regulation_mode**: define what the shunt is regulating (only VOLTAGE for now)
+            - **regulated_element_id**: the ID of the network element where the regulation is applied.
+                Defaults to the ID of the shunt itself.
+            - **regulation_value**: define the value of the regulation if it is not local (in kV)
+            - **target_deadband**: an optional deadband for the target voltage, in kV
+            - **local_target_v**: define the local target voltage in kV (used if **regulation_mode** is VOLTAGE, **regulating** is True
+                and no **regulated_element_id** is defined)
 
             Valid attributes for the linear sections models are:
 
@@ -5909,9 +5940,10 @@ class Network:  # pylint: disable=too-many-public-methods
 
                 shunt_df = pd.DataFrame.from_records(
                     index='id',
-                    columns=['id', 'name', 'model_type', 'section_count', 'target_v',
-                             'target_deadband', 'voltage_level_id', 'node'],
-                    data=[('SHUNT-1', '', 'LINEAR', 1, 400, 2, 'S1VL2', 2)])
+                    columns=['id', 'name', 'model_type', 'section_count', 'local_target_v',
+                             'target_deadband', 'regulating', 'regulation_mode',
+                             'voltage_level_id', 'node'],
+                    data=[('SHUNT-1', '', 'LINEAR', 1, 400, 2, True, 'VOLTAGE', 'S1VL2', 2)])
                 model_df = pd.DataFrame.from_records(
                     index='id',
                     columns=['id', 'g_per_section', 'b_per_section', 'max_section_count'],
@@ -5926,10 +5958,11 @@ class Network:  # pylint: disable=too-many-public-methods
 
                 shunt_df = pd.DataFrame.from_records(
                     index='id',
-                    columns=['id', 'name', 'model_type', 'section_count', 'target_v',
-                             'target_deadband', 'voltage_level_id', 'node'],
-                    data=[('SHUNT1', '', 'NON_LINEAR', 1, 400, 2, 'S1VL2', 2),
-                          ('SHUNT2', '', 'NON_LINEAR', 1, 400, 2, 'S1VL2', 10)])
+                    columns=['id', 'name', 'model_type', 'section_count', 'local_target_v',
+                             'target_deadband', 'regulating', 'regulation_mode',
+                             'voltage_level_id', 'node'],
+                    data=[('SHUNT1', '', 'NON_LINEAR', 1, 400, 2, True, 'VOLTAGE', 'S1VL2', 2),
+                          ('SHUNT2', '', 'NON_LINEAR', 1, 400, 2, True, 'VOLTAGE', 'S1VL2', 10)])
                 model_df = pd.DataFrame.from_records(
                     index='id',
                     columns=['id', 'g', 'b'],
@@ -6049,11 +6082,13 @@ class Network:  # pylint: disable=too-many-public-methods
             - **tap**: the current tap position
             - **low_tap**: the number of the lowest tap position (default 0)
             - **oltc**: true if the transformer has on-load voltage regulation capability
-            - **target_v**: the target voltage, in kV
+            - **target_v**: deprecated, use **regulation_value**
             - **target_deadband**: the target regulation deadband, in kV
             - **regulating**: true if the tap changer should regulate (**oltc** must be true to set this to true)
             - **regulation_mode**: the regulation mode, among VOLTAGE and REACTIVE_POWER (default VOLTAGE)
             - **regulation_value**: the target value, in kV for VOLTAGE mode or in MVar for REACTIVE_POWER mode
+            - **regulated_element_id**: the ID of the network element where the regulation is applied.
+                Defaults to the ID of the tap changer itself.
             - **regulated_side**: the side where the tap changer regulates (ONE or TWO if two-winding transformer, ONE, TWO
               or THREE if three-winding transformer)
             - **side**: Side of the tap changer (only for three-winding transformers)
@@ -6319,19 +6354,27 @@ class Network:  # pylint: disable=too-many-public-methods
               It must already exist.
             - **dc_connected1**: defines if the converter is connected at the dc node 1 (boolean)
             - **dc_connected2**: defines if the converter is connected at the dc node 2 (boolean)
-            - **regulating_element_id**: the network PCC element
+            - **pcc_terminal_id**: the network PCC element
                 It must already exist.
-            - **voltage_regulator_on**: defines if the converter regulates AC voltage (boolean)
-            - **control_mode** the control mode of the converter (V_DC or P_PCC)
-            - **target_p** the AC active power setpoint
-            - **target_q** the AC reactive power setpoint
-            - **min_p** the minimum active power in MW (optional, unbounded by default)
-            - **max_p** the maximum active power in MW (optional, unbounded by default)
-            - **target_v_ac** the AC voltage setpoint
-            - **target_v_dc** the DC voltage setpoint
-            - **idle_loss** the idle loss coefficient
-            - **switching_loss** the switching loss coefficient
-            - **resistive_loss** the resistive loss coefficient
+            - **voltage_regulator_on**: deprecated, see **regulating**/**regulation_mode**
+            - **control_mode**: the control mode of the converter (V_DC or P_PCC)
+            - **target_p**: the AC active power setpoint
+            - **target_q**: deprecated, see **regulation_value**/**local_target_q**
+            - **min_p**: the minimum active power in MW (optional, unbounded by default)
+            - **max_p**: the maximum active power in MW (optional, unbounded by default)
+            - **target_v_ac**: deprecated, see **regulation_value**/**local_target_v_ac**
+            - **target_v_dc**: the DC voltage setpoint
+            - **idle_loss**: the idle loss coefficient
+            - **switching_loss**: the switching loss coefficient
+            - **resistive_loss**: the resistive loss coefficient
+            - **regulating**: defines if the converter regulates its AC side
+            - **regulation_mode**: defines the regulation mode of the converter (VOLTAGE or REACTIVE_POWER)
+            - **regulation_value**: defines the regulation value of the converter if the regulation is not local (MW or kV)
+            - **regulated_element_id**: the ID of the network element where the regulation is applied.
+                Defaults to the ID of the station itself. If defined, must be the same as **pcc_terminal_id**
+            - **local_target_v_ac**: define the local target AC voltage in kV (used if **regulation_mode** is VOLTAGE, **regulating** is True
+                and no **regulated_element_id** is defined)
+            - **local_target_q**: define the local target reactive power in MVar (used if **regulating** is False)
 
             .. note::
 
@@ -6350,8 +6393,8 @@ class Network:  # pylint: disable=too-many-public-methods
             .. code-block:: python
 
                 network.create_voltage_source_converter(id='VSC-1', voltage_level_id='VL1',dc_node1_id='DN1',
-                dc_node2_id='DN2', bus1_id='B1', voltage_regulator_on=0, control_mode='P_PCC', target_p=50.0,
-                target_q=50.0, target_v_ac=300.0, target_v_dc=400.0, idle_loss=1.0, switching_loss=2.0,
+                dc_node2_id='DN2', bus1_id='B1', regulating=False, control_mode='P_PCC', target_p=50.0,
+                local_target_q=50.0, local_target_v_ac=300.0, target_v_dc=400.0, idle_loss=1.0, switching_loss=2.0,
                 resistive_loss=3.0)
 
         """
