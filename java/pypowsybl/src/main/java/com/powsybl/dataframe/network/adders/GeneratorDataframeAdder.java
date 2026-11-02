@@ -46,12 +46,18 @@ public class GeneratorDataframeAdder extends AbstractSimpleAdder {
             SeriesMetadata.doubles("max_p"),
             SeriesMetadata.doubles("min_p"),
             SeriesMetadata.doubles("target_p"),
-            SeriesMetadata.doubles("target_q"),
+            SeriesMetadata.deprecatedDoubles("target_q"),
             SeriesMetadata.doubles("rated_s"),
-            SeriesMetadata.doubles("target_v"),
-            SeriesMetadata.doubles("equivalent_local_target_v"),
-            SeriesMetadata.booleans("voltage_regulator_on"),
-            SeriesMetadata.strings("regulating_element_id")
+            SeriesMetadata.deprecatedDoubles("target_v"),
+            SeriesMetadata.deprecatedDoubles("equivalent_local_target_v"),
+            SeriesMetadata.deprecatedBooleans("voltage_regulator_on"),
+            SeriesMetadata.doubles("local_target_v"),
+            SeriesMetadata.doubles("local_target_q"),
+            SeriesMetadata.booleans("regulating"),
+            SeriesMetadata.strings("regulation_mode"),
+            SeriesMetadata.doubles("regulation_value"),
+            SeriesMetadata.deprecatedStrings("regulating_element_id"),
+            SeriesMetadata.strings("regulated_element_id")
     );
 
     @Override
@@ -59,7 +65,7 @@ public class GeneratorDataframeAdder extends AbstractSimpleAdder {
         return Collections.singletonList(METADATA);
     }
 
-    private static class GeneratorSeries extends InjectionSeries {
+    private static class GeneratorSeries extends VoltageRegulationHolderSeries {
 
         private final StringSeries voltageLevels;
         private final DoubleSeries maxP;
@@ -72,7 +78,6 @@ public class GeneratorDataframeAdder extends AbstractSimpleAdder {
         private final IntSeries voltageRegulatorOn;
         private final StringSeries energySource;
         private final StringSeries busOrBusbarSections;
-        private final StringSeries regulatingElements;
         private final IntSeries condenser;
 
         GeneratorSeries(UpdatingDataframe dataframe) {
@@ -88,7 +93,6 @@ public class GeneratorDataframeAdder extends AbstractSimpleAdder {
             this.voltageRegulatorOn = dataframe.getInts("voltage_regulator_on");
             this.energySource = dataframe.getStrings("energy_source");
             this.busOrBusbarSections = dataframe.getStrings("bus_or_busbar_section_id");
-            this.regulatingElements = dataframe.getStrings("regulating_element_id");
             this.condenser = dataframe.getInts("condenser");
         }
 
@@ -100,6 +104,11 @@ public class GeneratorDataframeAdder extends AbstractSimpleAdder {
                 applyIfPresent(maxP, row, adder::setMaxP);
                 applyIfPresent(minP, row, adder::setMinP);
                 applyIfPresent(targetP, row, adder::setTargetP);
+                applyIfPresent(ratedS, row, adder::setRatedS);
+
+                setVoltageRegulationAttributes(adder, network, row);
+
+                // For compatibility with former regulation
                 applyIfPresent(targetQ, row, adder::setTargetQ);
                 if (equivalentLocalTargetV != null) {
                     double equivalentLocalTargetVValue = equivalentLocalTargetV.get(row);
@@ -107,15 +116,20 @@ public class GeneratorDataframeAdder extends AbstractSimpleAdder {
                 } else {
                     applyIfPresent(targetV, row, adder::setTargetV);
                 }
-                applyIfPresent(ratedS, row, adder::setRatedS);
                 applyBooleanIfPresent(voltageRegulatorOn, row, adder::setVoltageRegulatorOn);
+                applyIfPresent(regulatedElements, row, elementId -> NetworkUtil
+                        .setTerminal(adder::setRegulatingTerminal, network, elementId));
+
                 applyIfPresent(energySource, row, EnergySource.class, adder::setEnergySource);
-                applyIfPresent(regulatingElements, row, elementId -> NetworkUtil
-                        .setRegulatingTerminal(adder::setRegulatingTerminal, network, elementId));
                 applyBooleanIfPresent(condenser, row, adder::setCondenser);
                 return Optional.of(adder);
             }
             return Optional.empty();
+        }
+
+        @Override
+        protected boolean newColumnsUsed() {
+            return regulating != null || regulationMode != null || regulationValue != null;
         }
     }
 

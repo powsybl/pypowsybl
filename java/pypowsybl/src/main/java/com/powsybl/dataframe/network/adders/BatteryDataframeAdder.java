@@ -40,8 +40,13 @@ public class BatteryDataframeAdder extends AbstractSimpleAdder {
             SeriesMetadata.doubles("max_p"),
             SeriesMetadata.doubles("min_p"),
             SeriesMetadata.doubles("target_p"),
-            SeriesMetadata.doubles("target_q")
-
+            SeriesMetadata.deprecatedDoubles("target_q"),
+            SeriesMetadata.doubles("local_target_v"),
+            SeriesMetadata.doubles("local_target_q"),
+            SeriesMetadata.booleans("regulating"),
+            SeriesMetadata.strings("regulation_mode"),
+            SeriesMetadata.doubles("regulation_value"),
+            SeriesMetadata.strings("regulated_element_id")
     );
 
     @Override
@@ -49,7 +54,7 @@ public class BatteryDataframeAdder extends AbstractSimpleAdder {
         return Collections.singletonList(METADATA);
     }
 
-    private static class BatterySeries extends InjectionSeries {
+    private static class BatterySeries extends VoltageRegulationHolderSeries {
 
         private final StringSeries voltageLevels;
         private final DoubleSeries maxP;
@@ -76,7 +81,11 @@ public class BatteryDataframeAdder extends AbstractSimpleAdder {
                 applyIfPresent(maxP, row, batteryAdder::setMaxP);
                 applyIfPresent(minP, row, batteryAdder::setMinP);
                 applyIfPresent(targetP, row, batteryAdder::setTargetP);
+                setVoltageRegulationAttributes(batteryAdder, network, row);
+
+                // For compatibility with former regulation
                 applyIfPresent(targetQ, row, batteryAdder::setTargetQ);
+
                 return Optional.of(batteryAdder);
             } else {
                 return Optional.empty();

@@ -29,7 +29,11 @@ public class BooleanSeriesMapper<T, C> implements SeriesMapper<T, C> {
     }
 
     public BooleanSeriesMapper(String name, Predicate<T> value, BooleanUpdater<T> updater, boolean defaultAttribute) {
-        this.metadata = new SeriesMetadata(false, name, updater != null, SeriesDataType.BOOLEAN, defaultAttribute);
+        this(name, value, updater, defaultAttribute, false);
+    }
+
+    public BooleanSeriesMapper(String name, Predicate<T> value, BooleanUpdater<T> updater, boolean defaultAttribute, boolean deprecated) {
+        this.metadata = new SeriesMetadata(false, name, updater != null, SeriesDataType.BOOLEAN, defaultAttribute, deprecated);
         this.updater = updater;
         this.value = value;
     }

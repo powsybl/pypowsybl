@@ -13,7 +13,9 @@ import com.powsybl.dataframe.update.DoubleSeries;
 import com.powsybl.dataframe.update.IntSeries;
 import com.powsybl.dataframe.update.StringSeries;
 import com.powsybl.dataframe.update.UpdatingDataframe;
-import com.powsybl.iidm.network.*;
+import com.powsybl.iidm.network.AcDcConverter;
+import com.powsybl.iidm.network.Network;
+import com.powsybl.iidm.network.VoltageSourceConverterAdder;
 import com.powsybl.python.network.NetworkUtil;
 
 import java.util.Collections;
@@ -41,12 +43,18 @@ public class VoltageSourceConverterDataFrameAdder extends AbstractSimpleAdder {
             SeriesMetadata.strings("connectable_bus2_id"),
             SeriesMetadata.ints("dc_connected1"),
             SeriesMetadata.ints("dc_connected2"),
-            SeriesMetadata.ints("voltage_regulator_on"),
+            SeriesMetadata.deprecatedBooleans("voltage_regulator_on"),
             SeriesMetadata.strings("control_mode"),
             SeriesMetadata.doubles("target_p"),
-            SeriesMetadata.doubles("target_q"),
+            SeriesMetadata.deprecatedDoubles("target_q"),
             SeriesMetadata.doubles("target_v_dc"),
-            SeriesMetadata.doubles("target_v_ac"),
+            SeriesMetadata.deprecatedDoubles("target_v_ac"),
+            SeriesMetadata.doubles("local_target_q"),
+            SeriesMetadata.booleans("regulating"),
+            SeriesMetadata.strings("regulation_mode"),
+            SeriesMetadata.doubles("regulation_value"),
+            SeriesMetadata.strings("regulated_element_id"),
+            SeriesMetadata.doubles("local_target_v_ac"),
             SeriesMetadata.doubles("idle_loss"),
             SeriesMetadata.doubles("switching_loss"),
             SeriesMetadata.doubles("resistive_loss"),
@@ -67,7 +75,7 @@ public class VoltageSourceConverterDataFrameAdder extends AbstractSimpleAdder {
         }
     }
 
-    private static class VoltageSourceConverterSeries extends IdentifiableSeries {
+    private static class VoltageSourceConverterSeries extends VoltageRegulationHolderSeries {
 
         protected final StringSeries voltageLevels;
         protected final StringSeries buses1;
@@ -117,6 +125,8 @@ public class VoltageSourceConverterDataFrameAdder extends AbstractSimpleAdder {
             this.resistiveLoss = dataframe.getDoubles("resistive_loss");
             this.minP = dataframe.getDoubles("min_p");
             this.maxP = dataframe.getDoubles("max_p");
+
+            this.localTargetV = dataframe.getDoubles("local_target_v_ac");
         }
 
         void setVoltageSourceConverterAttributes(VoltageSourceConverterAdder adder, int row, Network network) {
@@ -154,13 +164,10 @@ public class VoltageSourceConverterDataFrameAdder extends AbstractSimpleAdder {
                 }
             });
             applyIfPresent(pccTerminals, row, elementId -> NetworkUtil
-                    .setPccTerminal(adder::setPccTerminal, network, elementId));
-            applyBooleanIfPresent(voltageRegulatorOn, row, adder::setVoltageRegulatorOn);
+                    .setTerminal(adder::setPccTerminal, network, elementId));
             applyIfPresent(controlMode, row, AcDcConverter.ControlMode.class, adder::setControlMode);
             applyIfPresent(targetP, row, adder::setTargetP);
-            applyIfPresent(targetQ, row, adder::setReactivePowerSetpoint);
             applyIfPresent(targetVdc, row, adder::setTargetVdc);
-            applyIfPresent(targetVac, row, adder::setVoltageSetpoint);
             applyIfPresent(idleLoss, row, adder::setIdleLoss);
             applyIfPresent(switchingLoss, row, adder::setSwitchingLoss);
             applyIfPresent(resistiveLoss, row, adder::setResistiveLoss);
@@ -169,6 +176,13 @@ public class VoltageSourceConverterDataFrameAdder extends AbstractSimpleAdder {
             // (creation dataframes are in SI, hence no per-unit conversion here).
             applyIfPresent(minP, row, value -> adder.setMinP(value == Double.NEGATIVE_INFINITY ? -Double.MAX_VALUE : value));
             applyIfPresent(maxP, row, value -> adder.setMaxP(value == Double.POSITIVE_INFINITY ? Double.MAX_VALUE : value));
+
+            setVoltageRegulationAttributes(adder, network, row);
+
+            // For compatibility with former regulation
+            applyBooleanIfPresent(voltageRegulatorOn, row, adder::setVoltageRegulatorOn);
+            applyIfPresent(targetVac, row, adder::setVoltageSetpoint);
+            applyIfPresent(targetQ, row, adder::setReactivePowerSetpoint);
         }
 
         void createVoltageSourceConverter(Network network, int row) {
