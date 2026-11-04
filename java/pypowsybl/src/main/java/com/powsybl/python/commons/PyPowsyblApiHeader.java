@@ -662,7 +662,8 @@ public final class PyPowsyblApiHeader {
         DC_SWITCH,
         DC_BUS,
         OVERLOAD_MANAGEMENT_SYSTEM,
-        OVERLOAD_MANAGEMENT_SYSTEM_TRIPPING;
+        OVERLOAD_MANAGEMENT_SYSTEM_TRIPPING,
+        DROOP_CURVE_SEGMENT;
 
         @CEnumValue
         public native int getCValue();

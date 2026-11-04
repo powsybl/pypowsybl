@@ -271,6 +271,7 @@ public final class Util {
             case DC_BUS -> PyPowsyblApiHeader.ElementType.DC_BUS;
             case OVERLOAD_MANAGEMENT_SYSTEM -> PyPowsyblApiHeader.ElementType.OVERLOAD_MANAGEMENT_SYSTEM;
             case OVERLOAD_MANAGEMENT_SYSTEM_TRIPPING -> PyPowsyblApiHeader.ElementType.OVERLOAD_MANAGEMENT_SYSTEM_TRIPPING;
+            case DROOP_CURVE_SEGMENT -> PyPowsyblApiHeader.ElementType.DROOP_CURVE_SEGMENT;
         };
     }
 
@@ -327,6 +328,7 @@ public final class Util {
             case DC_BUS -> DataframeElementType.DC_BUS;
             case OVERLOAD_MANAGEMENT_SYSTEM -> DataframeElementType.OVERLOAD_MANAGEMENT_SYSTEM;
             case OVERLOAD_MANAGEMENT_SYSTEM_TRIPPING -> DataframeElementType.OVERLOAD_MANAGEMENT_SYSTEM_TRIPPING;
+            case DROOP_CURVE_SEGMENT -> DataframeElementType.DROOP_CURVE_SEGMENT;
         };
     }
 
