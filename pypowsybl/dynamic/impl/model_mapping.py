@@ -78,7 +78,7 @@ class ModelMapping:
 
             - **static_id**: id of the network element to map
             - **parameter_set_id**: id of the parameter for this model given in the dynawo configuration
-            - **model_name**: name of the model used for the mapping (if none the default model will be used)
+            - **model_name**: name of the model used for the mapping
 
         Examples:
             Using keyword arguments:
@@ -109,7 +109,7 @@ class ModelMapping:
             - **static_id**: id of the network element to map
             - **parameter_set_id**: id of the parameter for this model given in the dynawo configuration
 
-            - **model_name**: name of the model used for the mapping (if none the default model will be used)
+            - **model_name**: name of the model used for the mapping
 
         Examples:
             Using keyword arguments:
@@ -140,7 +140,7 @@ class ModelMapping:
             - **static_id**: id of the network element to map
             - **parameter_set_id**: id of the parameter for this model given in the dynawo configuration
 
-            - **model_name**: name of the model used for the mapping (if none the default model will be used)
+            - **model_name**: name of the model used for the mapping
 
         Examples:
             Using keyword arguments:
@@ -171,7 +171,7 @@ class ModelMapping:
             - **static_id**: id of the network element to map
             - **parameter_set_id**: id of the parameter for this model given in the dynawo configuration
 
-            - **model_name**: name of the model used for the mapping (if none the default model will be used)
+            - **model_name**: name of the model used for the mapping
 
         Examples:
             Using keyword arguments:
@@ -202,7 +202,7 @@ class ModelMapping:
             - **static_id**: id of the network element to map
             - **parameter_set_id**: id of the parameter for this model given in the dynawo configuration
 
-            - **model_name**: name of the model used for the mapping (if none the default model will be used)
+            - **model_name**: name of the model used for the mapping
 
         Examples:
             Using keyword arguments:
@@ -233,7 +233,7 @@ class ModelMapping:
             - **static_id**: id of the network element to map
             - **parameter_set_id**: id of the parameter for this model given in the dynawo configuration
 
-            - **model_name**: name of the model used for the mapping (if none the default model will be used)
+            - **model_name**: name of the model used for the mapping
 
         Examples:
             Using keyword arguments:
@@ -264,7 +264,7 @@ class ModelMapping:
             - **static_id**: id of the network element to map
             - **parameter_set_id**: id of the parameter for this model given in the dynawo configuration
 
-            - **model_name**: name of the model used for the mapping (if none the default model will be used)
+            - **model_name**: name of the model used for the mapping
 
         Examples:
             Using keyword arguments:
@@ -295,7 +295,7 @@ class ModelMapping:
             - **static_id**: id of the network element to map
             - **parameter_set_id**: id of the parameter for this model given in the dynawo configuration
 
-            - **model_name**: name of the model used for the mapping (if none the default model will be used)
+            - **model_name**: name of the model used for the mapping
 
         Examples:
             Using keyword arguments:
@@ -326,7 +326,7 @@ class ModelMapping:
             - **static_id**: id of the network element to map
             - **parameter_set_id**: id of the parameter for this model given in the dynawo configuration
 
-            - **model_name**: name of the model used for the mapping (if none the default model will be used)
+            - **model_name**: name of the model used for the mapping
 
         Examples:
             Using keyword arguments:
@@ -357,7 +357,7 @@ class ModelMapping:
             - **static_id**: id of the network element to map
             - **parameter_set_id**: id of the parameter for this model given in the dynawo configuration
 
-            - **model_name**: name of the model used for the mapping (if none the default model will be used)
+            - **model_name**: name of the model used for the mapping
 
         Examples:
             Using keyword arguments:
@@ -388,7 +388,7 @@ class ModelMapping:
             - **static_id**: id of the network element to map
             - **parameter_set_id**: id of the parameter for this model given in the dynawo configuration
 
-            - **model_name**: name of the model used for the mapping (if none the default model will be used)
+            - **model_name**: name of the model used for the mapping
 
         Examples:
             Using keyword arguments:
@@ -419,7 +419,7 @@ class ModelMapping:
             - **static_id**: id of the network element to map
             - **parameter_set_id**: id of the parameter for this model given in the dynawo configuration
 
-            - **model_name**: name of the model used for the mapping (if none the default model will be used)
+            - **model_name**: name of the model used for the mapping
 
         Examples:
             Using keyword arguments:
@@ -450,7 +450,7 @@ class ModelMapping:
             - **static_id**: id of the network element to map
             - **parameter_set_id**: id of the parameter for this model given in the dynawo configuration
 
-            - **model_name**: name of the model used for the mapping (if none the default model will be used)
+            - **model_name**: name of the model used for the mapping
 
         Examples:
             Using keyword arguments:
@@ -481,7 +481,7 @@ class ModelMapping:
             - **static_id**: id of the network element to map
             - **parameter_set_id**: id of the parameter for this model given in the dynawo configuration
 
-            - **model_name**: name of the model used for the mapping (if none the default model will be used)
+            - **model_name**: name of the model used for the mapping
 
         Examples:
             Using keyword arguments:
@@ -512,7 +512,7 @@ class ModelMapping:
             - **static_id**: id of the network element to map
             - **parameter_set_id**: id of the parameter for this model given in the dynawo configuration
 
-            - **model_name**: name of the model used for the mapping (if none the default model will be used)
+            - **model_name**: name of the model used for the mapping
 
         Examples:
             Using keyword arguments:
@@ -543,7 +543,7 @@ class ModelMapping:
             - **static_id**: id of the network element to map
             - **parameter_set_id**: id of the parameter for this model given in the dynawo configuration
 
-            - **model_name**: name of the model used for the mapping (if none the default model will be used)
+            - **model_name**: name of the model used for the mapping
 
         Examples:
             Using keyword arguments:
@@ -574,7 +574,7 @@ class ModelMapping:
             - **static_id**: id of the network element to map
             - **parameter_set_id**: id of the parameter for this model given in the dynawo configuration
 
-            - **model_name**: name of the model used for the mapping (if none the default model will be used)
+            - **model_name**: name of the model used for the mapping
 
         Examples:
             Using keyword arguments:
@@ -605,7 +605,7 @@ class ModelMapping:
             - **static_id**: id of the network element to map
             - **parameter_set_id**: id of the parameter for this model given in the dynawo configuration
 
-            - **model_name**: name of the model used for the mapping (if none the default model will be used)
+            - **model_name**: name of the model used for the mapping
 
         Examples:
             Using keyword arguments:
@@ -636,7 +636,7 @@ class ModelMapping:
             - **static_id**: id of the network element to map
             - **parameter_set_id**: id of the parameter for this model given in the dynawo configuration
 
-            - **model_name**: name of the model used for the mapping (if none the default model will be used)
+            - **model_name**: name of the model used for the mapping
 
         Examples:
             Using keyword arguments:
@@ -667,7 +667,7 @@ class ModelMapping:
             - **static_id**: id of the network element to map
             - **parameter_set_id**: id of the parameter for this model given in the dynawo configuration
 
-            - **model_name**: name of the model used for the mapping (if none the default model will be used)
+            - **model_name**: name of the model used for the mapping
 
         Examples:
             Using keyword arguments:
@@ -700,7 +700,7 @@ class ModelMapping:
                 - **controlled_branch**: id of the branch controlled by the automation system
                 - **i_measurement**: id of the branch used for the current intensity measurement
                 - **i_measurement_side**: measured side of the i_measurement branch (ONE or TWO)
-                - **model_name**: name of the model used for the mapping (if none the default model will be used)
+                - **model_name**: name of the model used for the mapping
 
         Examples:
             Using keyword arguments:
@@ -738,7 +738,7 @@ class ModelMapping:
                 - **i_measurement_1_side**: measured side of the i_measurement_1 branch (ONE or TWO)
                 - **i_measurement_2**: id of the second branch used for the current intensity measurement
                 - **i_measurement_2_side**: measured side of the i_measurement_2 branch (ONE or TWO)
-                - **model_name**: name of the model used for the mapping (if none the default model will be used)
+                - **model_name**: name of the model used for the mapping
 
         Examples:
             Using keyword arguments:
@@ -774,7 +774,7 @@ class ModelMapping:
                 - **dynamic_model_id**: id of the under voltage automation system
                 - **parameter_set_id**: id of the parameter for this model given in the dynawo configuration
                 - **generator**: id of the generator controlled by the automation system
-                - **model_name**: name of the model used for the mapping (if none the default model will be used)
+                - **model_name**: name of the model used for the mapping
 
         Examples:
             Using keyword arguments:
@@ -806,7 +806,7 @@ class ModelMapping:
                 - **dynamic_model_id**: id of the phase shifter I automation system
                 - **parameter_set_id**: id of the parameter for this model given in the dynawo configuration
                 - **transformer**: id of the transformer controlled by the automation system
-                - **model_name**: name of the model used for the mapping (if none the default model will be used)
+                - **model_name**: name of the model used for the mapping
 
         Examples:
             Using keyword arguments:
@@ -838,7 +838,7 @@ class ModelMapping:
                 - **dynamic_model_id**: id of the phase shifter P automation system
                 - **parameter_set_id**: id of the parameter for this model given in the dynawo configuration
                 - **transformer**: id of the transformer controlled by the automation system
-                - **model_name**: name of the model used for the mapping (if none the default model will be used)
+                - **model_name**: name of the model used for the mapping
 
         Examples:
             Using keyword arguments:
@@ -870,7 +870,7 @@ class ModelMapping:
                 - **dynamic_model_id**: id of the phase shifter blocking I automation system
                 - **parameter_set_id**: id of the parameter for this model given in the dynawo configuration
                 - **phase_shifter_id**: id of the phase shifter I automation system controlled by the automation system
-                - **model_name**: name of the model used for the mapping (if none the default model will be used)
+                - **model_name**: name of the model used for the mapping
 
         Examples:
             Using keyword arguments:
@@ -903,7 +903,7 @@ class ModelMapping:
                 - **parameter_set_id**: id of the parameter for this model given in the dynawo configuration
                 - **static_id**: id of the load on which the tap changer is added
                 - **side**: transformer side of the tap changer (HIGH_VOLTAGE, LOW_VOLTAGE or NONE)
-                - **model_name**: name of the model used for the mapping (if none the default model will be used)
+                - **model_name**: name of the model used for the mapping
 
         Examples:
             Using keyword arguments:
@@ -937,7 +937,7 @@ class ModelMapping:
             
                 - **dynamic_model_id**: id of the tap changer blocking automation system
                 - **parameter_set_id**: id of the parameter for this model given in the dynawo configuration
-                - **model_name**: name of the model used for the mapping (if none the default model will be used)
+                - **model_name**: name of the model used for the mapping
 
             Valid attributes for the transformer dataframes are:
                 - **dynamic_model_id**: id of the tap changer blocking automation system
