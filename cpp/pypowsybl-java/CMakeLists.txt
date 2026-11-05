@@ -110,6 +110,11 @@ elseif(NOT "${PYPOWSYBL_PGO_PROFILES}" STREQUAL "")
     list(APPEND NATIVE_IMAGE_BUILD_OPTIONS "--pgo=${PYPOWSYBL_PGO_PROFILES}")
 endif()
 
+# Match the native library's minimum macOS version to the wheel's deployment target.
+if(APPLE AND NOT "${CMAKE_OSX_DEPLOYMENT_TARGET}" STREQUAL "")
+    list(APPEND NATIVE_IMAGE_BUILD_OPTIONS "-H:NativeLinkerOption=-mmacosx-version-min=${CMAKE_OSX_DEPLOYMENT_TARGET}")
+endif()
+
 # as of GraalVM 23.0.0 G1 GC is only supported on Linux ADM64
 if(${CMAKE_SYSTEM_NAME} STREQUAL "Linux" AND ${OS_BITS} STREQUAL "64")
     set(NATIVE_IMAGE_GC "G1")
