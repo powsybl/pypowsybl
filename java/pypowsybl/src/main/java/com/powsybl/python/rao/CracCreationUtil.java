@@ -116,7 +116,6 @@ final class CracCreationUtil {
         String networkElementId = getString(attributes, NETWORK_ELEMENT_ID, 0);
         FlowCnecAdder adder = fillCnec(crac.newFlowCnec(), attributes).withNetworkElement(networkElementId);
         // nominal voltages and iMax are needed for thresholds in AMPERE or PERCENT_IMAX
-        // TODO Check if nominal voltages and iMax should be provided as attributes in the dataframe rather that being queried on the network
         if (network != null && network.getIdentifiable(networkElementId) instanceof Branch<?> branch) {
             for (TwoSides side : TwoSides.values()) {
                 adder.withNominalVoltage(branch.getTerminal(side).getVoltageLevel().getNominalV(), side);
