@@ -43,13 +43,12 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
  */
 class DynamicModelsAdderTest {
 
-    private static final String DEFAULT_SUFFIX = "_DEFAULT";
     private DefaultUpdatingDataframe dataframe;
     private PythonDynamicModelsSupplier dynamicModelsSupplier;
 
     @BeforeEach
     void setup() {
-        dataframe = new DefaultUpdatingDataframe(2);
+        dataframe = new DefaultUpdatingDataframe(1);
         dynamicModelsSupplier = new PythonDynamicModelsSupplier();
     }
 
@@ -57,15 +56,14 @@ class DynamicModelsAdderTest {
     @MethodSource("equipmentDataProvider")
     void testEquipmentsAdder(String category, Network network, String staticId) {
         String expectedModelName = DynamicMappingHandler.getSupportedModels(category).stream().findFirst().orElse("");
-        dataframe.addSeries(STATIC_ID, true, createTwoRowsSeries(staticId));
-        dataframe.addSeries(PARAMETER_SET_ID, false, createTwoRowsSeries("eq_par"));
-        dataframe.addSeries(MODEL_NAME, false, new TestStringSeries(expectedModelName, ""));
+        dataframe.addSeries(STATIC_ID, true, new TestStringSeries(staticId));
+        dataframe.addSeries(PARAMETER_SET_ID, false, new TestStringSeries("eq_par"));
+        dataframe.addSeries(MODEL_NAME, false, new TestStringSeries(expectedModelName));
         DynamicMappingHandler.addElements(category, dynamicModelsSupplier, List.of(dataframe));
 
         assertThat(dynamicModelsSupplier.get(network)).satisfiesExactly(
                 model1 -> assertThat(model1).hasFieldOrPropertyWithValue("dynamicModelId", staticId)
-                        .hasFieldOrPropertyWithValue("lib", expectedModelName),
-                model2 -> assertThat(model2).hasFieldOrPropertyWithValue("dynamicModelId", staticId));
+                        .hasFieldOrPropertyWithValue("lib", expectedModelName));
     }
 
     @ParameterizedTest(name = "{0}")
@@ -98,8 +96,6 @@ class DynamicModelsAdderTest {
 
         assertThat(dynamicModelsSupplier.get(network)).satisfiesExactly(
                 model1 -> assertThat(model1).hasFieldOrPropertyWithValue("dynamicModelId", dynamicModelId)
-                        .isInstanceOf(AbstractPureDynamicBlackBoxModel.class),
-                model2 -> assertThat(model2).hasFieldOrPropertyWithValue("dynamicModelId", dynamicModelId + DEFAULT_SUFFIX)
                         .isInstanceOf(AbstractPureDynamicBlackBoxModel.class));
     }
 
@@ -108,17 +104,16 @@ class DynamicModelsAdderTest {
         String expectedModelName = DynamicMappingHandler.getSupportedModels("TapChangerBlocking").stream().findFirst().orElse("");
         Network network = EurostagTutorialExample1Factory.createWithLFResults();
         String dynamicModelId = "BBM_TCB";
-        String defaultDynamicModelId = dynamicModelId + DEFAULT_SUFFIX;
         // Setup Tcb df
         setupDataFrame(dataframe, dynamicModelId, expectedModelName);
         // Setup Tfo df
-        DefaultUpdatingDataframe tfoDataFrame = new DefaultUpdatingDataframe(3);
-        tfoDataFrame.addSeries(DYNAMIC_MODEL_ID, true, new TestStringSeries(dynamicModelId, dynamicModelId, defaultDynamicModelId));
-        tfoDataFrame.addSeries(TRANSFORMER_ID, false, new TestStringSeries("NGEN_NHV1", "NHV2_NLOAD", "NHV2_NLOAD"));
+        DefaultUpdatingDataframe tfoDataFrame = new DefaultUpdatingDataframe(2);
+        tfoDataFrame.addSeries(DYNAMIC_MODEL_ID, true, new TestStringSeries(dynamicModelId, dynamicModelId));
+        tfoDataFrame.addSeries(TRANSFORMER_ID, false, new TestStringSeries("NGEN_NHV1", "NHV2_NLOAD"));
         // Setup measurement points df
-        DefaultUpdatingDataframe m1DataFrame = new DefaultUpdatingDataframe(3);
-        m1DataFrame.addSeries(DYNAMIC_MODEL_ID, true, new TestStringSeries(dynamicModelId, dynamicModelId, defaultDynamicModelId));
-        m1DataFrame.addSeries(MEASUREMENT_POINT_ID, false, new TestStringSeries("BBS_NGEN", "NGEN", "NHV1"));
+        DefaultUpdatingDataframe m1DataFrame = new DefaultUpdatingDataframe(2);
+        m1DataFrame.addSeries(DYNAMIC_MODEL_ID, true, new TestStringSeries(dynamicModelId, dynamicModelId));
+        m1DataFrame.addSeries(MEASUREMENT_POINT_ID, false, new TestStringSeries("BBS_NGEN", "NGEN"));
         DefaultUpdatingDataframe m2DataFrame = new DefaultUpdatingDataframe(2);
         m2DataFrame.addSeries(DYNAMIC_MODEL_ID, true, new TestStringSeries(dynamicModelId, dynamicModelId));
         m2DataFrame.addSeries(MEASUREMENT_POINT_ID, false, new TestStringSeries("OLD_NLOAD_ID", "NLOAD"));
@@ -129,12 +124,7 @@ class DynamicModelsAdderTest {
                         .isInstanceOf(TapChangerBlockingAutomationSystem.class)
                         .extracting("uMeasurements")
                         .asInstanceOf(InstanceOfAssertFactories.LIST)
-                        .containsExactly(network.getBusBreakerView().getBus("NGEN"), network.getBusBreakerView().getBus("NLOAD")),
-                model2 -> assertThat(model2).hasFieldOrPropertyWithValue("dynamicModelId", defaultDynamicModelId)
-                        .isInstanceOf(TapChangerBlockingAutomationSystem.class)
-                        .extracting("uMeasurements")
-                        .asInstanceOf(InstanceOfAssertFactories.LIST)
-                        .containsExactly(network.getBusBreakerView().getBus("NHV1")));
+                        .containsExactly(network.getBusBreakerView().getBus("NGEN"), network.getBusBreakerView().getBus("NLOAD")));
     }
 
     @Test
@@ -202,44 +192,40 @@ class DynamicModelsAdderTest {
                 Arguments.of("OverloadManagementSystem",
                         (Consumer<DefaultUpdatingDataframe>) df -> {
                             String lineId = "NGEN_NHV1";
-                            df.addSeries(CONTROLLED_BRANCH, false, createTwoRowsSeries(lineId));
-                            df.addSeries(I_MEASUREMENT, false, createTwoRowsSeries(lineId));
-                            df.addSeries(I_MEASUREMENT_SIDE, false, createTwoRowsSeries(TwoSides.ONE.toString()));
+                            df.addSeries(CONTROLLED_BRANCH, false, new TestStringSeries(lineId));
+                            df.addSeries(I_MEASUREMENT, false, new TestStringSeries(lineId));
+                            df.addSeries(I_MEASUREMENT_SIDE, false, new TestStringSeries(TwoSides.ONE.toString()));
                         }),
                 Arguments.of("TwoLevelOverloadManagementSystem",
                         (Consumer<DefaultUpdatingDataframe>) df -> {
                             String lineId = "NGEN_NHV1";
-                            df.addSeries(CONTROLLED_BRANCH, false, createTwoRowsSeries(lineId));
-                            df.addSeries(I_MEASUREMENT_1, false, createTwoRowsSeries("NHV1_NHV2_1"));
-                            df.addSeries(I_MEASUREMENT_1_SIDE, false, createTwoRowsSeries(TwoSides.ONE.toString()));
-                            df.addSeries(I_MEASUREMENT_2, false, createTwoRowsSeries("NHV1_NHV2_2"));
-                            df.addSeries(I_MEASUREMENT_2_SIDE, false, createTwoRowsSeries(TwoSides.ONE.toString()));
+                            df.addSeries(CONTROLLED_BRANCH, false, new TestStringSeries(lineId));
+                            df.addSeries(I_MEASUREMENT_1, false, new TestStringSeries("NHV1_NHV2_1"));
+                            df.addSeries(I_MEASUREMENT_1_SIDE, false, new TestStringSeries(TwoSides.ONE.toString()));
+                            df.addSeries(I_MEASUREMENT_2, false, new TestStringSeries("NHV1_NHV2_2"));
+                            df.addSeries(I_MEASUREMENT_2_SIDE, false, new TestStringSeries(TwoSides.ONE.toString()));
                         }),
                 Arguments.of("PhaseShifterI",
-                        (Consumer<DefaultUpdatingDataframe>) df -> df.addSeries(DynamicModelDataframeConstants.TRANSFORMER, false, createTwoRowsSeries("NGEN_NHV1"))),
+                        (Consumer<DefaultUpdatingDataframe>) df -> df.addSeries(DynamicModelDataframeConstants.TRANSFORMER, false, new TestStringSeries("NGEN_NHV1"))),
                 Arguments.of("PhaseShifterP",
-                        (Consumer<DefaultUpdatingDataframe>) df -> df.addSeries(DynamicModelDataframeConstants.TRANSFORMER, false, createTwoRowsSeries("NGEN_NHV1"))),
+                        (Consumer<DefaultUpdatingDataframe>) df -> df.addSeries(DynamicModelDataframeConstants.TRANSFORMER, false, new TestStringSeries("NGEN_NHV1"))),
                 Arguments.of("PhaseShifterBlockingI",
-                        (Consumer<DefaultUpdatingDataframe>) df -> df.addSeries(PHASE_SHIFTER_ID, false, createTwoRowsSeries("PSI"))),
+                        (Consumer<DefaultUpdatingDataframe>) df -> df.addSeries(PHASE_SHIFTER_ID, false, new TestStringSeries("PSI"))),
                 Arguments.of("TapChanger",
                         (Consumer<DefaultUpdatingDataframe>) df -> {
-                            df.addSeries(STATIC_ID, false, createTwoRowsSeries("LOAD"));
-                            df.addSeries(SIDE, false, createTwoRowsSeries(TransformerSide.LOW_VOLTAGE.toString()));
+                            df.addSeries(STATIC_ID, false, new TestStringSeries("LOAD"));
+                            df.addSeries(SIDE, false, new TestStringSeries(TransformerSide.LOW_VOLTAGE.toString()));
                         }),
                 Arguments.of("TapChanger",
-                        (Consumer<DefaultUpdatingDataframe>) df -> df.addSeries(STATIC_ID, false, createTwoRowsSeries("LOAD"))),
+                        (Consumer<DefaultUpdatingDataframe>) df -> df.addSeries(STATIC_ID, false, new TestStringSeries("LOAD"))),
                 Arguments.of("UnderVoltageAutomationSystem",
-                        (Consumer<DefaultUpdatingDataframe>) df -> df.addSeries(GENERATOR, false, createTwoRowsSeries("GEN")))
+                        (Consumer<DefaultUpdatingDataframe>) df -> df.addSeries(GENERATOR, false, new TestStringSeries("GEN")))
         );
     }
 
     private static void setupDataFrame(DefaultUpdatingDataframe dataframe, String dynamicModelId, String modelName) {
-        dataframe.addSeries(DYNAMIC_MODEL_ID, true, new TestStringSeries(dynamicModelId, dynamicModelId + DEFAULT_SUFFIX));
-        dataframe.addSeries(PARAMETER_SET_ID, false, createTwoRowsSeries("as_par"));
-        dataframe.addSeries(MODEL_NAME, false, new TestStringSeries(modelName, ""));
-    }
-
-    private static TestStringSeries createTwoRowsSeries(String value) {
-        return new TestStringSeries(value, value);
+        dataframe.addSeries(DYNAMIC_MODEL_ID, true, new TestStringSeries(dynamicModelId));
+        dataframe.addSeries(PARAMETER_SET_ID, false, new TestStringSeries("as_par"));
+        dataframe.addSeries(MODEL_NAME, false, new TestStringSeries(modelName));
     }
 }

@@ -42,11 +42,6 @@ public class InfiniteBusAdder extends AbstractEquipmentAdder {
         return new AbstractEquipmentSeries<Bus, InfiniteBusBuilder>(dataframe) {
 
             @Override
-            protected InfiniteBusBuilder createBuilder(Network network, ReportNode reportNode) {
-                return InfiniteBusBuilder.of(network, reportNode);
-            }
-
-            @Override
             protected InfiniteBusBuilder createBuilder(Network network, String modelName, ReportNode reportNode) {
                 return InfiniteBusBuilder.of(network, modelName, reportNode);
             }

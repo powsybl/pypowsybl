@@ -66,11 +66,6 @@ public class UnderVoltageAutomationSystemAdder extends AbstractSimpleDynamicMode
         }
 
         @Override
-        protected UnderVoltageAutomationSystemBuilder createBuilder(Network network, ReportNode reportNode) {
-            return UnderVoltageAutomationSystemBuilder.of(network, reportNode);
-        }
-
-        @Override
         protected UnderVoltageAutomationSystemBuilder createBuilder(Network network, String modelName, ReportNode reportNode) {
             return UnderVoltageAutomationSystemBuilder.of(network, modelName, reportNode);
         }

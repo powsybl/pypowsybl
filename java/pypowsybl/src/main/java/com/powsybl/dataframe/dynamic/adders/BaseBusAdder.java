@@ -42,11 +42,6 @@ public class BaseBusAdder extends AbstractEquipmentAdder {
         return new AbstractEquipmentSeries<Bus, StandardBusBuilder>(dataframe) {
 
             @Override
-            protected StandardBusBuilder createBuilder(Network network, ReportNode reportNode) {
-                return StandardBusBuilder.of(network, reportNode);
-            }
-
-            @Override
             protected StandardBusBuilder createBuilder(Network network, String modelName, ReportNode reportNode) {
                 return StandardBusBuilder.of(network, modelName, reportNode);
             }

@@ -42,11 +42,6 @@ public class LoadTwoTransformersTapChangersAdder extends AbstractEquipmentAdder 
         return new AbstractEquipmentSeries<Load, LoadTwoTransformersTapChangersBuilder>(dataframe) {
 
             @Override
-            protected LoadTwoTransformersTapChangersBuilder createBuilder(Network network, ReportNode reportNode) {
-                return LoadTwoTransformersTapChangersBuilder.of(network, reportNode);
-            }
-
-            @Override
             protected LoadTwoTransformersTapChangersBuilder createBuilder(Network network, String modelName, ReportNode reportNode) {
                 return LoadTwoTransformersTapChangersBuilder.of(network, modelName, reportNode);
             }

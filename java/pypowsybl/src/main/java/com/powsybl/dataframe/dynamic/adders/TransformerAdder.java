@@ -42,11 +42,6 @@ public class TransformerAdder extends AbstractEquipmentAdder {
         return new AbstractEquipmentSeries<TwoWindingsTransformer, TransformerFixedRatioBuilder>(dataframe) {
 
             @Override
-            protected TransformerFixedRatioBuilder createBuilder(Network network, ReportNode reportNode) {
-                return TransformerFixedRatioBuilder.of(network, reportNode);
-            }
-
-            @Override
             protected TransformerFixedRatioBuilder createBuilder(Network network, String modelName, ReportNode reportNode) {
                 return TransformerFixedRatioBuilder.of(network, modelName, reportNode);
             }

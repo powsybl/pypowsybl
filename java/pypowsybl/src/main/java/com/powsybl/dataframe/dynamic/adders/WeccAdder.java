@@ -42,11 +42,6 @@ public class WeccAdder extends AbstractEquipmentAdder {
         return new AbstractEquipmentSeries<Generator, WeccBuilder>(dataframe) {
 
             @Override
-            protected WeccBuilder createBuilder(Network network, ReportNode reportNode) {
-                return WeccBuilder.of(network, reportNode);
-            }
-
-            @Override
             protected WeccBuilder createBuilder(Network network, String modelName, ReportNode reportNode) {
                 return WeccBuilder.of(network, modelName, reportNode);
             }

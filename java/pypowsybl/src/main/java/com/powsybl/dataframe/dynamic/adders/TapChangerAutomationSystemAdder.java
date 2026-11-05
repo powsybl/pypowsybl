@@ -71,11 +71,6 @@ public class TapChangerAutomationSystemAdder extends AbstractSimpleDynamicModelA
         }
 
         @Override
-        protected TapChangerAutomationSystemBuilder createBuilder(Network network, ReportNode reportNode) {
-            return TapChangerAutomationSystemBuilder.of(network, reportNode);
-        }
-
-        @Override
         protected TapChangerAutomationSystemBuilder createBuilder(Network network, String modelName, ReportNode reportNode) {
             return TapChangerAutomationSystemBuilder.of(network, modelName, reportNode);
         }

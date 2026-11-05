@@ -42,11 +42,6 @@ public class InertialGridAdder extends AbstractEquipmentAdder {
         return new AbstractEquipmentSeries<Generator, InertialGridBuilder>(dataframe) {
 
             @Override
-            protected InertialGridBuilder createBuilder(Network network, ReportNode reportNode) {
-                return InertialGridBuilder.of(network, reportNode);
-            }
-
-            @Override
             protected InertialGridBuilder createBuilder(Network network, String modelName, ReportNode reportNode) {
                 return InertialGridBuilder.of(network, modelName, reportNode);
             }

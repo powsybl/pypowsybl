@@ -42,11 +42,6 @@ public class LoadTwoTransformersAdder extends AbstractEquipmentAdder {
         return new AbstractEquipmentSeries<Load, LoadTwoTransformersBuilder>(dataframe) {
 
             @Override
-            protected LoadTwoTransformersBuilder createBuilder(Network network, ReportNode reportNode) {
-                return LoadTwoTransformersBuilder.of(network, reportNode);
-            }
-
-            @Override
             protected LoadTwoTransformersBuilder createBuilder(Network network, String modelName, ReportNode reportNode) {
                 return LoadTwoTransformersBuilder.of(network, modelName, reportNode);
             }

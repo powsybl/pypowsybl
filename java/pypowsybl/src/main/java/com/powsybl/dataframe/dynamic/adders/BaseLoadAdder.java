@@ -42,11 +42,6 @@ public class BaseLoadAdder extends AbstractEquipmentAdder {
         return new AbstractEquipmentSeries<Load, BaseLoadBuilder>(dataframe) {
 
             @Override
-            protected BaseLoadBuilder createBuilder(Network network, ReportNode reportNode) {
-                return BaseLoadBuilder.of(network, reportNode);
-            }
-
-            @Override
             protected BaseLoadBuilder createBuilder(Network network, String modelName, ReportNode reportNode) {
                 return BaseLoadBuilder.of(network, modelName, reportNode);
             }
