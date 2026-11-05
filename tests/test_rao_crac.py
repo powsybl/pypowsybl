@@ -298,3 +298,98 @@ class TestRaoCrac:
         assert 'curative' == action['instant']
         assert 'contingency2Id' == action['contingency_id']
         assert 'FR' == action['country']
+
+class TestRaoCracCreation:
+    def setup_method(self):
+        self.network = pp.network.load(DATA_DIR.joinpath("rao/network_crac.xiidm"))
+        self.crac = Crac.from_file_source(self.network, DATA_DIR.joinpath("rao/crac-v2.8.json"))
+
+    def test_add_instant(self):
+        self.crac.add_instant('curative2', 'curative')
+        df = self.crac.get_instants()
+        assert df.loc['curative2', 'kind'] == 'CURATIVE'
+        assert df.loc['curative2', 'order'] == 5
+
+    def test_add_remedial_action_usage_limits(self):
+        self.crac.add_remedial_action_usage_limits('preventive', max_remedial_actions=3,
+                                                   max_topological_actions_per_tso={'FR': 2, 'BE': 1})
+        assert self.crac.get_max_remedial_actions_usage_limits().loc['preventive', 'value'] == 3
+        df = self.crac.get_max_topological_actions_per_tso_usage_limits()
+        assert df.loc[('preventive', 'FR'), 'value'] == 2
+        assert df.loc[('preventive', 'BE'), 'value'] == 1
+
+    def test_add_contingency(self):
+        self.crac.add_contingency('newContingency', 'ne4Id', 'ne5Id')
+        assert 'newContingency' in self.crac.get_contingencies().index
+        df = self.crac.get_contingency_elements()
+        assert ('newContingency', 'ne4Id') in df.index
+        assert ('newContingency', 'ne5Id') in df.index
+
+    def test_add_flow_cnec(self):
+        thresholds = pd.DataFrame({'unit': ['megawatt', 'ampere'], 'lower_bound': [-500., None],
+                                   'upper_bound': [500., 1000.], 'side': ['one', 'two']})
+        self.crac.add_flow_cnec('newFlowCnec', 'ne4Id', 'curative', thresholds, contingency_id='contingency1Id',
+                                operator='FR', reliability_margin=10)
+        df = self.crac.get_flow_cnecs()
+        assert 'newFlowCnec' in df.index
+        assert len(self.crac.get_thresholds().loc['newFlowCnec']) == 2
+
+    def test_add_angle_cnec(self):
+        thresholds = pd.DataFrame({'unit': ['degree'], 'lower_bound': [-30.], 'upper_bound': [30.]})
+        self.crac.add_angle_cnec('newAngleCnec', 'ne4Id', 'ne5Id', 'preventive', thresholds)
+        assert 'newAngleCnec' in self.crac.get_angle_cnecs().index
+
+    def test_add_voltage_cnec(self):
+        thresholds = pd.DataFrame({'unit': ['kilovolt'], 'lower_bound': [380.], 'upper_bound': [None]})
+        self.crac.add_voltage_cnec('newVoltageCnec', 'ne4Id', 'preventive', thresholds, optimized=False, monitored=True)
+        assert 'newVoltageCnec' in self.crac.get_voltage_cnecs().index
+
+    def test_add_network_action(self):
+        self.crac.add_network_action('newNetworkAction', operator='FR', speed=10,
+                                     generator_actions=pd.DataFrame({'generator_id': ['G2'], 'active_power_value': [100.]}),
+                                     switch_actions=pd.DataFrame({'switch_id': ['BR1'], 'action_type': ['open']}),
+                                     on_instant_usage_rules=pd.DataFrame({'instant': ['preventive']}),
+                                     on_contingency_state_usage_rules=pd.DataFrame({'instant': ['curative'],
+                                                                                    'contingency_id': ['contingency1Id']}))
+        assert 'newNetworkAction' in self.crac.get_network_actions().index
+        assert 'newNetworkAction' in self.crac.get_generator_actions().index
+        assert 'newNetworkAction' in self.crac.get_switch_actions().index
+        assert 'newNetworkAction' in self.crac.get_on_instant_usage_rules().index
+        assert 'newNetworkAction' in self.crac.get_on_contingency_state_usage_rules().index
+
+    def test_add_pst_range_action(self):
+        self.crac.add_pst_range_action('newPstRange', 'pst',
+                                       ranges=pd.DataFrame({'lower_bound': [-5], 'upper_bound': [5],
+                                                            'range_type': ['absolute']}),
+                                       on_instant_usage_rules=pd.DataFrame({'instant': ['preventive']}))
+        assert 'newPstRange' in self.crac.get_pst_range_actions().index
+
+    def test_add_hvdc_range_action(self):
+        self.crac.add_hvdc_range_action('newHvdcRange', 'hvdc',
+                                        pd.DataFrame({'lower_bound': [-1000.], 'upper_bound': [1000.],
+                                                      'range_type': ['absolute']}),
+                                        on_instant_usage_rules=pd.DataFrame({'instant': ['preventive']}))
+        assert 'newHvdcRange' in self.crac.get_hvdc_range_actions().index
+
+    def test_add_injection_range_action(self):
+        self.crac.add_injection_range_action('newInjectionRange',
+                                             pd.DataFrame({'lower_bound': [-100.], 'upper_bound': [100.],
+                                                           'range_type': ['absolute']}),
+                                             {'generator1Id': 1., 'generator2Id': -1.},
+                                             on_flow_constraint_in_country_usage_rules=pd.DataFrame(
+                                                 {'instant': ['preventive'], 'country': ['FR']}))
+        assert 'newInjectionRange' in self.crac.get_injection_range_actions().index
+        assert 'newInjectionRange' in self.crac.get_on_flow_constraint_in_country_usage_rules().index
+
+    def test_add_counter_trade_range_action(self):
+        self.crac.add_counter_trade_range_action('newCounterTradeRange',
+                                                 pd.DataFrame({'lower_bound': [-100.], 'upper_bound': [100.],
+                                                               'range_type': ['absolute']}),
+                                                 'FR', 'DE',
+                                                 on_instant_usage_rules=pd.DataFrame({'instant': ['preventive']}))
+        assert 'newCounterTradeRange' in self.crac.get_counter_trade_range_actions().index
+
+    def test_unknown_column(self):
+        with pytest.raises(pp.PyPowsyblError, match='Unexpected columns'):
+            self.crac.add_angle_cnec('badAngleCnec', 'ne4Id', 'ne5Id', 'preventive',
+                                     pd.DataFrame({'unit': ['degree'], 'min': [-30.]}))

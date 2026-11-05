@@ -2429,6 +2429,55 @@ SeriesArray* getOnFlowConstraintInCountryUsageRules(const JavaHandle& cracHandle
   return new SeriesArray(PowsyblCaller::get()->callJava<array*>(::getOnFlowConstraintInCountryUsageRules, cracHandle));
 }
 
+void addCracInstant(const JavaHandle& cracHandle, const std::string& id, const std::string& kind) {
+  PowsyblCaller::get()->callJava(::addCracInstant, cracHandle, (char*) id.data(), (char*) kind.data());
+}
+
+void addCracRaUsageLimits(const JavaHandle& cracHandle, dataframe* attributes, dataframe* perTsoLimits) {
+  PowsyblCaller::get()->callJava(::addCracRaUsageLimits, cracHandle, attributes, perTsoLimits);
+}
+
+void addCracContingency(const JavaHandle& cracHandle, const JavaHandle& networkHandle, const std::string& id, const std::vector<std::string>& networkElementIds) {
+  ToCharPtrPtr networkElementIdsPtr(networkElementIds);
+  PowsyblCaller::get()->callJava(::addCracContingency, cracHandle, networkHandle, (char*) id.data(), networkElementIdsPtr.get(), networkElementIds.size());
+}
+
+void addCracFlowCnec(const JavaHandle& cracHandle, const JavaHandle& networkHandle, dataframe* attributes, dataframe* thresholds) {
+  PowsyblCaller::get()->callJava(::addCracFlowCnec, cracHandle, networkHandle, attributes, thresholds);
+}
+
+void addCracAngleCnec(const JavaHandle& cracHandle, dataframe* attributes, dataframe* thresholds) {
+  PowsyblCaller::get()->callJava(::addCracAngleCnec, cracHandle, attributes, thresholds);
+}
+
+void addCracVoltageCnec(const JavaHandle& cracHandle, dataframe* attributes, dataframe* thresholds) {
+  PowsyblCaller::get()->callJava(::addCracVoltageCnec, cracHandle, attributes, thresholds);
+}
+
+void addCracNetworkAction(const JavaHandle& cracHandle, dataframe* attributes, dataframe* terminalConnectionActions, dataframe* pstTapPositionActions,
+                          dataframe* generatorActions, dataframe* loadActions, dataframe* boundaryLineActions, dataframe* shuntCompensatorPositionActions,
+                          dataframe* switchActions, dataframe* switchPairs, dataframe* usageRules) {
+  PowsyblCaller::get()->callJava(::addCracNetworkAction, cracHandle, attributes, terminalConnectionActions, pstTapPositionActions,
+                                 generatorActions, loadActions, boundaryLineActions, shuntCompensatorPositionActions,
+                                 switchActions, switchPairs, usageRules);
+}
+
+void addCracPstRangeAction(const JavaHandle& cracHandle, const JavaHandle& networkHandle, dataframe* attributes, dataframe* ranges, dataframe* usageRules) {
+  PowsyblCaller::get()->callJava(::addCracPstRangeAction, cracHandle, networkHandle, attributes, ranges, usageRules);
+}
+
+void addCracHvdcRangeAction(const JavaHandle& cracHandle, dataframe* attributes, dataframe* ranges, dataframe* usageRules) {
+  PowsyblCaller::get()->callJava(::addCracHvdcRangeAction, cracHandle, attributes, ranges, usageRules);
+}
+
+void addCracInjectionRangeAction(const JavaHandle& cracHandle, dataframe* attributes, dataframe* networkElementsAndKeys, dataframe* ranges, dataframe* usageRules) {
+  PowsyblCaller::get()->callJava(::addCracInjectionRangeAction, cracHandle, attributes, networkElementsAndKeys, ranges, usageRules);
+}
+
+void addCracCounterTradeRangeAction(const JavaHandle& cracHandle, dataframe* attributes, dataframe* ranges, dataframe* usageRules) {
+  PowsyblCaller::get()->callJava(::addCracCounterTradeRangeAction, cracHandle, attributes, ranges, usageRules);
+}
+
 JavaHandle getCrac(const JavaHandle& raoContext) {
     return pypowsybl::PowsyblCaller::get()->callJava<JavaHandle>(::getCrac, raoContext);
 }

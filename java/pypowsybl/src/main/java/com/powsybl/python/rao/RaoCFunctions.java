@@ -57,6 +57,7 @@ import java.util.function.Supplier;
 import static com.powsybl.python.commons.CTypeUtil.*;
 import static com.powsybl.python.commons.Util.*;
 import static com.powsybl.python.loadflow.LoadFlowCUtils.createLoadFlowParameters;
+import static com.powsybl.python.network.NetworkCFunctions.createDataframe;
 import static com.powsybl.python.rao.RaoDataframes.*;
 import static com.powsybl.python.sensitivity.SensitivityAnalysisCFunctions.convertToSensitivityAnalysisParametersPointer;
 import static com.powsybl.python.sensitivity.SensitivityAnalysisCFunctions.getProvider;
@@ -925,6 +926,152 @@ public final class RaoCFunctions {
     @CEntryPoint(name = "getOnFlowConstraintInCountryUsageRules")
     public static ArrayPointer<SeriesPointer> getOnFlowConstraintInCountryUsageRules(IsolateThread thread, ObjectHandle cracHandle, ExceptionHandlerPointer exceptionHandlerPtr) {
         return cracGenericMethod(thread, cracHandle, cracOnFlowConstraintInCountryUsageRules(), exceptionHandlerPtr);
+    }
+
+    @CEntryPoint(name = "addCracInstant")
+    public static void addCracInstant(IsolateThread thread, ObjectHandle cracHandle, CCharPointer idPtr, CCharPointer kindPtr,
+                                      ExceptionHandlerPointer exceptionHandlerPtr) {
+        doCatch(exceptionHandlerPtr, new Runnable() {
+            @Override
+            public void run() {
+                Crac crac = ObjectHandles.getGlobal().get(cracHandle);
+                CracCreationUtil.addInstant(crac, CTypeUtil.toString(idPtr), CTypeUtil.toString(kindPtr));
+            }
+        });
+    }
+
+    @CEntryPoint(name = "addCracRaUsageLimits")
+    public static void addCracRaUsageLimits(IsolateThread thread, ObjectHandle cracHandle, DataframePointer attributes,
+                                            DataframePointer perTsoLimits, ExceptionHandlerPointer exceptionHandlerPtr) {
+        doCatch(exceptionHandlerPtr, new Runnable() {
+            @Override
+            public void run() {
+                Crac crac = ObjectHandles.getGlobal().get(cracHandle);
+                CracCreationUtil.addRaUsageLimits(crac, createDataframe(attributes), createDataframe(perTsoLimits));
+            }
+        });
+    }
+
+    @CEntryPoint(name = "addCracContingency")
+    public static void addCracContingency(IsolateThread thread, ObjectHandle cracHandle, ObjectHandle networkHandle, CCharPointer idPtr,
+                                          CCharPointerPointer elementIdsPtrPtr, int elementIdsCount, ExceptionHandlerPointer exceptionHandlerPtr) {
+        doCatch(exceptionHandlerPtr, new Runnable() {
+            @Override
+            public void run() {
+                Crac crac = ObjectHandles.getGlobal().get(cracHandle);
+                Network network = ObjectHandles.getGlobal().get(networkHandle);
+                CracCreationUtil.addContingency(crac, network, CTypeUtil.toString(idPtr), CTypeUtil.toStringList(elementIdsPtrPtr, elementIdsCount));
+            }
+        });
+    }
+
+    @CEntryPoint(name = "addCracFlowCnec")
+    public static void addCracFlowCnec(IsolateThread thread, ObjectHandle cracHandle, ObjectHandle networkHandle, DataframePointer attributes,
+                                       DataframePointer thresholds, ExceptionHandlerPointer exceptionHandlerPtr) {
+        doCatch(exceptionHandlerPtr, new Runnable() {
+            @Override
+            public void run() {
+                Crac crac = ObjectHandles.getGlobal().get(cracHandle);
+                Network network = ObjectHandles.getGlobal().get(networkHandle);
+                CracCreationUtil.addFlowCnec(crac, network, createDataframe(attributes), createDataframe(thresholds));
+            }
+        });
+    }
+
+    @CEntryPoint(name = "addCracAngleCnec")
+    public static void addCracAngleCnec(IsolateThread thread, ObjectHandle cracHandle, DataframePointer attributes,
+                                        DataframePointer thresholds, ExceptionHandlerPointer exceptionHandlerPtr) {
+        doCatch(exceptionHandlerPtr, new Runnable() {
+            @Override
+            public void run() {
+                Crac crac = ObjectHandles.getGlobal().get(cracHandle);
+                CracCreationUtil.addAngleCnec(crac, createDataframe(attributes), createDataframe(thresholds));
+            }
+        });
+    }
+
+    @CEntryPoint(name = "addCracVoltageCnec")
+    public static void addCracVoltageCnec(IsolateThread thread, ObjectHandle cracHandle, DataframePointer attributes,
+                                          DataframePointer thresholds, ExceptionHandlerPointer exceptionHandlerPtr) {
+        doCatch(exceptionHandlerPtr, new Runnable() {
+            @Override
+            public void run() {
+                Crac crac = ObjectHandles.getGlobal().get(cracHandle);
+                CracCreationUtil.addVoltageCnec(crac, createDataframe(attributes), createDataframe(thresholds));
+            }
+        });
+    }
+
+    @CEntryPoint(name = "addCracNetworkAction")
+    public static void addCracNetworkAction(IsolateThread thread, ObjectHandle cracHandle, DataframePointer attributes,
+                                            DataframePointer terminalConnectionActions, DataframePointer pstTapPositionActions,
+                                            DataframePointer generatorActions, DataframePointer loadActions,
+                                            DataframePointer boundaryLineActions, DataframePointer shuntCompensatorPositionActions,
+                                            DataframePointer switchActions, DataframePointer switchPairs,
+                                            DataframePointer usageRules, ExceptionHandlerPointer exceptionHandlerPtr) {
+        doCatch(exceptionHandlerPtr, new Runnable() {
+            @Override
+            public void run() {
+                Crac crac = ObjectHandles.getGlobal().get(cracHandle);
+                CracCreationUtil.addNetworkAction(crac, createDataframe(attributes),
+                        createDataframe(terminalConnectionActions), createDataframe(pstTapPositionActions),
+                        createDataframe(generatorActions), createDataframe(loadActions),
+                        createDataframe(boundaryLineActions), createDataframe(shuntCompensatorPositionActions),
+                        createDataframe(switchActions), createDataframe(switchPairs),
+                        createDataframe(usageRules));
+            }
+        });
+    }
+
+    @CEntryPoint(name = "addCracPstRangeAction")
+    public static void addCracPstRangeAction(IsolateThread thread, ObjectHandle cracHandle, ObjectHandle networkHandle, DataframePointer attributes,
+                                             DataframePointer ranges, DataframePointer usageRules, ExceptionHandlerPointer exceptionHandlerPtr) {
+        doCatch(exceptionHandlerPtr, new Runnable() {
+            @Override
+            public void run() {
+                Crac crac = ObjectHandles.getGlobal().get(cracHandle);
+                Network network = ObjectHandles.getGlobal().get(networkHandle);
+                CracCreationUtil.addPstRangeAction(crac, network, createDataframe(attributes), createDataframe(ranges), createDataframe(usageRules));
+            }
+        });
+    }
+
+    @CEntryPoint(name = "addCracHvdcRangeAction")
+    public static void addCracHvdcRangeAction(IsolateThread thread, ObjectHandle cracHandle, DataframePointer attributes,
+                                              DataframePointer ranges, DataframePointer usageRules, ExceptionHandlerPointer exceptionHandlerPtr) {
+        doCatch(exceptionHandlerPtr, new Runnable() {
+            @Override
+            public void run() {
+                Crac crac = ObjectHandles.getGlobal().get(cracHandle);
+                CracCreationUtil.addHvdcRangeAction(crac, createDataframe(attributes), createDataframe(ranges), createDataframe(usageRules));
+            }
+        });
+    }
+
+    @CEntryPoint(name = "addCracInjectionRangeAction")
+    public static void addCracInjectionRangeAction(IsolateThread thread, ObjectHandle cracHandle, DataframePointer attributes,
+                                                   DataframePointer networkElementsAndKeys, DataframePointer ranges,
+                                                   DataframePointer usageRules, ExceptionHandlerPointer exceptionHandlerPtr) {
+        doCatch(exceptionHandlerPtr, new Runnable() {
+            @Override
+            public void run() {
+                Crac crac = ObjectHandles.getGlobal().get(cracHandle);
+                CracCreationUtil.addInjectionRangeAction(crac, createDataframe(attributes), createDataframe(networkElementsAndKeys),
+                        createDataframe(ranges), createDataframe(usageRules));
+            }
+        });
+    }
+
+    @CEntryPoint(name = "addCracCounterTradeRangeAction")
+    public static void addCracCounterTradeRangeAction(IsolateThread thread, ObjectHandle cracHandle, DataframePointer attributes,
+                                                      DataframePointer ranges, DataframePointer usageRules, ExceptionHandlerPointer exceptionHandlerPtr) {
+        doCatch(exceptionHandlerPtr, new Runnable() {
+            @Override
+            public void run() {
+                Crac crac = ObjectHandles.getGlobal().get(cracHandle);
+                CracCreationUtil.addCounterTradeRangeAction(crac, createDataframe(attributes), createDataframe(ranges), createDataframe(usageRules));
+            }
+        });
     }
 
     public static ArrayPointer<SeriesPointer> cracGenericMethod(IsolateThread thread, ObjectHandle cracHandle, DataframeMapper<Crac, Void> mapper, ExceptionHandlerPointer exceptionHandlerPtr) {
