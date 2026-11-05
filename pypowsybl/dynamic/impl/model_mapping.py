@@ -108,7 +108,6 @@ class ModelMapping:
 
             - **static_id**: id of the network element to map
             - **parameter_set_id**: id of the parameter for this model given in the dynawo configuration
-
             - **model_name**: name of the model used for the mapping
 
         Examples:
@@ -139,7 +138,6 @@ class ModelMapping:
 
             - **static_id**: id of the network element to map
             - **parameter_set_id**: id of the parameter for this model given in the dynawo configuration
-
             - **model_name**: name of the model used for the mapping
 
         Examples:
@@ -170,7 +168,6 @@ class ModelMapping:
 
             - **static_id**: id of the network element to map
             - **parameter_set_id**: id of the parameter for this model given in the dynawo configuration
-
             - **model_name**: name of the model used for the mapping
 
         Examples:
@@ -201,7 +198,6 @@ class ModelMapping:
 
             - **static_id**: id of the network element to map
             - **parameter_set_id**: id of the parameter for this model given in the dynawo configuration
-
             - **model_name**: name of the model used for the mapping
 
         Examples:
@@ -232,7 +228,6 @@ class ModelMapping:
 
             - **static_id**: id of the network element to map
             - **parameter_set_id**: id of the parameter for this model given in the dynawo configuration
-
             - **model_name**: name of the model used for the mapping
 
         Examples:
@@ -263,7 +258,6 @@ class ModelMapping:
 
             - **static_id**: id of the network element to map
             - **parameter_set_id**: id of the parameter for this model given in the dynawo configuration
-
             - **model_name**: name of the model used for the mapping
 
         Examples:
@@ -294,7 +288,6 @@ class ModelMapping:
 
             - **static_id**: id of the network element to map
             - **parameter_set_id**: id of the parameter for this model given in the dynawo configuration
-
             - **model_name**: name of the model used for the mapping
 
         Examples:
@@ -325,7 +318,6 @@ class ModelMapping:
 
             - **static_id**: id of the network element to map
             - **parameter_set_id**: id of the parameter for this model given in the dynawo configuration
-
             - **model_name**: name of the model used for the mapping
 
         Examples:
@@ -356,7 +348,6 @@ class ModelMapping:
 
             - **static_id**: id of the network element to map
             - **parameter_set_id**: id of the parameter for this model given in the dynawo configuration
-
             - **model_name**: name of the model used for the mapping
 
         Examples:
@@ -387,7 +378,6 @@ class ModelMapping:
 
             - **static_id**: id of the network element to map
             - **parameter_set_id**: id of the parameter for this model given in the dynawo configuration
-
             - **model_name**: name of the model used for the mapping
 
         Examples:
@@ -418,7 +408,6 @@ class ModelMapping:
 
             - **static_id**: id of the network element to map
             - **parameter_set_id**: id of the parameter for this model given in the dynawo configuration
-
             - **model_name**: name of the model used for the mapping
 
         Examples:
@@ -449,7 +438,6 @@ class ModelMapping:
 
             - **static_id**: id of the network element to map
             - **parameter_set_id**: id of the parameter for this model given in the dynawo configuration
-
             - **model_name**: name of the model used for the mapping
 
         Examples:
@@ -480,7 +468,6 @@ class ModelMapping:
 
             - **static_id**: id of the network element to map
             - **parameter_set_id**: id of the parameter for this model given in the dynawo configuration
-
             - **model_name**: name of the model used for the mapping
 
         Examples:
@@ -511,7 +498,6 @@ class ModelMapping:
 
             - **static_id**: id of the network element to map
             - **parameter_set_id**: id of the parameter for this model given in the dynawo configuration
-
             - **model_name**: name of the model used for the mapping
 
         Examples:
@@ -542,7 +528,6 @@ class ModelMapping:
 
             - **static_id**: id of the network element to map
             - **parameter_set_id**: id of the parameter for this model given in the dynawo configuration
-
             - **model_name**: name of the model used for the mapping
 
         Examples:
@@ -573,7 +558,6 @@ class ModelMapping:
 
             - **static_id**: id of the network element to map
             - **parameter_set_id**: id of the parameter for this model given in the dynawo configuration
-
             - **model_name**: name of the model used for the mapping
 
         Examples:
@@ -604,7 +588,6 @@ class ModelMapping:
 
             - **static_id**: id of the network element to map
             - **parameter_set_id**: id of the parameter for this model given in the dynawo configuration
-
             - **model_name**: name of the model used for the mapping
 
         Examples:
@@ -635,7 +618,6 @@ class ModelMapping:
 
             - **static_id**: id of the network element to map
             - **parameter_set_id**: id of the parameter for this model given in the dynawo configuration
-
             - **model_name**: name of the model used for the mapping
 
         Examples:
@@ -666,7 +648,6 @@ class ModelMapping:
 
             - **static_id**: id of the network element to map
             - **parameter_set_id**: id of the parameter for this model given in the dynawo configuration
-
             - **model_name**: name of the model used for the mapping
 
         Examples:
