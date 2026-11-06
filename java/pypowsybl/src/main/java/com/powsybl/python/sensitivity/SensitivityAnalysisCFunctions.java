@@ -10,6 +10,7 @@ package com.powsybl.python.sensitivity;
 import com.powsybl.commons.PowsyblException;
 import com.powsybl.commons.report.ReportNode;
 import com.powsybl.iidm.network.Network;
+import com.powsybl.openloadflow.sensi.OpenSensitivityAnalysisParameters;
 import com.powsybl.python.commons.*;
 import com.powsybl.python.commons.PyPowsyblApiHeader.ArrayPointer;
 import com.powsybl.python.commons.PyPowsyblApiHeader.ExceptionHandlerPointer;
@@ -249,8 +250,24 @@ public final class SensitivityAnalysisCFunctions {
         paramsPtr.setVoltageVoltageSensitivityValueThreshold(parameters.getVoltageVoltageSensitivityValueThreshold());
         paramsPtr.setFlowVoltageSensitivityValueThreshold(parameters.getFlowVoltageSensitivityValueThreshold());
         paramsPtr.setAngleFlowSensitivityValueThreshold(parameters.getAngleFlowSensitivityValueThreshold());
-        paramsPtr.getProviderParameters().setProviderParametersValuesCount(0);
-        paramsPtr.getProviderParameters().setProviderParametersKeysCount(0);
+
+        // Only support OpenSensitivityAnalysisParameters until SensitivityProvider has any generic API to query specific parameters (like LoadFLowProvider)
+        OpenSensitivityAnalysisParameters extParameters = parameters.getExtension(OpenSensitivityAnalysisParameters.class);
+        if (extParameters != null) {
+            List<String> keys = List.of(OpenSensitivityAnalysisParameters.START_WITH_FROZEN_AC_EMULATION_PARAM_NAME,
+                    OpenSensitivityAnalysisParameters.DEBUG_DIR_PARAM_NAME,
+                    OpenSensitivityAnalysisParameters.THREAD_COUNT_PARAM_NAME);
+            List<String> values = List.of(String.valueOf(extParameters.isStartWithFrozenACEmulation()),
+                    extParameters.getDebugDir() != null ? extParameters.getDebugDir() : OpenSensitivityAnalysisParameters.DEBUG_DIR_DEFAULT_VALUE,
+                    String.valueOf(extParameters.getThreadCount()));
+            paramsPtr.getProviderParameters().setProviderParametersKeys(Util.getStringListAsPtr(keys));
+            paramsPtr.getProviderParameters().setProviderParametersKeysCount(keys.size());
+            paramsPtr.getProviderParameters().setProviderParametersValues(Util.getStringListAsPtr(values));
+            paramsPtr.getProviderParameters().setProviderParametersValuesCount(values.size());
+        } else {
+            paramsPtr.getProviderParameters().setProviderParametersValuesCount(0);
+            paramsPtr.getProviderParameters().setProviderParametersKeysCount(0);
+        }
         return paramsPtr;
     }
 
