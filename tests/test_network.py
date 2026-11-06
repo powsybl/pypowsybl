@@ -82,6 +82,43 @@ def test_update_network_from_binary_buffers():
     assert 10.0 == network.get_loads()["p0"]["EnergyConsumer"]
 
 
+def _load_ssh_with_later_scenario_time() -> bytes:
+    original = b'<md:Model.scenarioTime>2024-02-21T11:00:00Z<'
+    ssh = DATA_DIR.joinpath('load_SSH.xml').read_bytes()
+    assert original in ssh
+    return ssh.replace(original, b'<md:Model.scenarioTime>2024-02-21T15:30:00Z<')
+
+
+def _assert_times_of_load_eq(network):
+    assert datetime.datetime(2024, 2, 21, 11, 0, tzinfo=datetime.timezone.utc) == network.case_date
+    assert datetime.timedelta(0) == network.forecast_distance
+
+
+def _assert_times_of_later_ssh(network):
+    assert datetime.datetime(2024, 2, 21, 15, 30, tzinfo=datetime.timezone.utc) == network.case_date
+    assert datetime.timedelta(hours=4, minutes=30) == network.forecast_distance
+
+
+def test_update_network_from_file_refreshes_case_date_and_forecast_distance(tmp_path):
+    network = pp.network.load(DATA_DIR.joinpath('load_EQ.xml'))
+    _assert_times_of_load_eq(network)
+    ssh_file = tmp_path / 'load_SSH.xml'
+    ssh_file.write_bytes(_load_ssh_with_later_scenario_time())
+    network.update_from_file(ssh_file)
+    _assert_times_of_later_ssh(network)
+
+
+def test_update_network_from_binary_buffer_refreshes_case_date_and_forecast_distance():
+    network = pp.network.load(DATA_DIR.joinpath('load_EQ.xml'))
+    _assert_times_of_load_eq(network)
+    buffer = io.BytesIO()
+    with zipfile.ZipFile(buffer, 'w') as zf:
+        zf.writestr('load_SSH.xml', _load_ssh_with_later_scenario_time())
+    buffer.seek(0)
+    network.update_from_binary_buffer(buffer)
+    _assert_times_of_later_ssh(network)
+
+
 def test_load_post_processor():
     assert ['geoJsonImporter', 'loadflowResultsCompletion', 'replaceTieLinesByLines'] == pp.network.get_import_post_processors()
     pp.network.load(DATA_DIR.joinpath('CGMES_Full.zip'), post_processors=['replaceTieLinesByLines'])
