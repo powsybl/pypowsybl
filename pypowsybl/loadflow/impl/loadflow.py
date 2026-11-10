@@ -88,6 +88,22 @@ def run_dc(network: Network, parameters: Optional[Parameters] = None, provider: 
     """
     Run a DC load flow on a network.
 
+    Voltage magnitudes and currents are not computed by a DC load flow. For
+    converged components, network dataframes report the values which are
+    implied by the DC approximation instead:
+
+    - voltage magnitudes are the nominal voltages;
+    - currents are estimated at every terminal, in amperes, as
+      ``abs(p) * 1000 / (sqrt(3) * nominal_v * dc_power_factor)``, so they are
+      balanced at each bus;
+    - currents of shunt and static var compensators remain undefined.
+
+    These estimates ignore voltage variations and the actual reactive
+    powers. The network itself is not modified: this
+    interpretation follows cloned variants, but it is lost when the network
+    is exported, pickled, copied or merged.
+    See the user guide for more details.
+
     Args:
         network:    a network
         parameters: the load flow parameters, dc attribute is forced to true

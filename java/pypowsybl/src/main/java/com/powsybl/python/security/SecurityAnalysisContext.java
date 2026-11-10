@@ -51,7 +51,13 @@ public class SecurityAnalysisContext extends ContingencyContainerImpl {
                 .setReportNode(reportNode == null ? ReportNode.NO_OP : reportNode);
         SecurityAnalysisReport report = SecurityAnalysis.find(provider)
                 .run(network, network.getVariantManager().getWorkingVariantId(), contingencies, runParameters);
-        return report.getResult();
+        SecurityAnalysisResult result = report.getResult();
+        if (securityAnalysisParameters.getLoadFlowParameters().isDc()) {
+            DcBusVoltage.attach(network, result.getPreContingencyResult().getNetworkResult());
+            result.getPostContingencyResults().forEach(r -> DcBusVoltage.attach(network, r.getNetworkResult()));
+            result.getOperatorStrategyResults().forEach(r -> DcBusVoltage.attach(network, r.getNetworkResult()));
+        }
+        return result;
     }
 
     void addActionFromJsonFile(Path path) {

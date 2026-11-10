@@ -59,6 +59,12 @@ class SecurityAnalysis(ContingencyContainer):
                provider: str = '', report_node: Optional[ReportNode] = None) -> SecurityAnalysisResult:
         """ Runs a DC security analysis.
 
+        Voltage magnitudes are not computed by a DC security analysis: the
+        voltage magnitudes of monitored buses are their nominal voltages.
+        The currents of monitored branches are estimates supplied by the
+        provider (OpenLoadFlow uses ``dc_power_factor``): they ignore voltage
+        variations and the actual reactive power flows.
+
         Args:
             network:    Network on which the security analysis will be computed
             parameters: Security analysis parameters

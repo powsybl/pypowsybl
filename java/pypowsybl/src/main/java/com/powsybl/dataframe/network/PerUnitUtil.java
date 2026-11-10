@@ -9,6 +9,7 @@ package com.powsybl.dataframe.network;
 
 import com.powsybl.commons.PowsyblException;
 import com.powsybl.iidm.network.*;
+import com.powsybl.python.loadflow.DcLoadFlowResults;
 import org.apache.commons.math3.complex.Complex;
 
 import static java.lang.Math.*;
@@ -39,7 +40,7 @@ public final class PerUnitUtil {
     }
 
     public static double perUnitI(NetworkDataframeContext context, Terminal terminal) {
-        return perUnitI(context, terminal.getI(), terminal.getVoltageLevel().getNominalV());
+        return perUnitI(context, DcLoadFlowResults.current(terminal), terminal.getVoltageLevel().getNominalV());
     }
 
     public static double perUnitI(NetworkDataframeContext context, DcTerminal terminal) {

@@ -29,12 +29,15 @@ import com.powsybl.security.SecurityAnalysisResult;
 import com.powsybl.security.limitreduction.LimitReduction;
 import com.powsybl.security.monitor.StateMonitor;
 import com.powsybl.security.results.BranchResult;
+import com.powsybl.security.results.BusResult;
+import com.powsybl.security.results.NetworkResult;
 import org.assertj.core.api.Assertions;
 import org.assertj.core.data.Offset;
 import org.junit.jupiter.api.Test;
 
 import java.util.Collections;
 import java.util.List;
+import java.util.Set;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -43,6 +46,46 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
  * @author Etienne Lesot {@literal <etienne.lesot at rte-france.com>}
  */
 class SecurityAnalysisTest {
+
+    @Test
+    void testDcMonitoredResults() {
+        Network network = Networks.createEurostagTutorialExample1();
+        SecurityAnalysisContext context = new SecurityAnalysisContext();
+        context.addContingency("outage", List.of("NHV1_NHV2_1"));
+        context.addMonitor(new StateMonitor(new ContingencyContext(null, ContingencyContextType.ALL),
+                Set.of("NHV1_NHV2_2", "NGEN_NHV1"), Set.of("VLHV1"), Collections.emptySet()));
+        var parameters = new SecurityAnalysisParameters();
+        parameters.getLoadFlowParameters().setDc(true).setDcPowerFactor(0.9);
+        var result = context.run(network, parameters, "OpenLoadFlow", ReportNode.NO_OP);
+        var states = List.of(result.getPreContingencyResult().getNetworkResult(),
+                result.getPostContingencyResults().getFirst().getNetworkResult());
+        for (var state : states) {
+            assertThat(state.getBusResults()).isNotEmpty();
+            for (var bus : state.getBusResults()) {
+                assertEquals(network.getVoltageLevel(bus.getVoltageLevelId()).getNominalV(),
+                        new BusResultContext(bus, null, null).getV());
+            }
+            for (var branch : state.getBranchResults()) {
+                var element = network.getBranch(branch.getBranchId());
+                assertEquals(Math.abs(branch.getP1()) * 1000 / (Math.sqrt(3) * element.getTerminal1().getVoltageLevel().getNominalV() * 0.9),
+                        branch.getI1(), 1e-6);
+                assertEquals(Math.abs(branch.getP2()) * 1000 / (Math.sqrt(3) * element.getTerminal2().getVoltageLevel().getNominalV() * 0.9),
+                        branch.getI2(), 1e-6);
+            }
+        }
+    }
+
+    @Test
+    void testDcBusVoltageOnlyCompletesUndefinedVoltages() {
+        Network network = Networks.createEurostagTutorialExample1();
+        BusResult undefined = new BusResult("VLHV1", "NHV1", Double.NaN, 0);
+        BusResult defined = new BusResult("VLHV2", "NHV2", 385, -3.5);
+        BusResult notComputed = new BusResult("VLLOAD", "NLOAD", Double.NaN, Double.NaN);
+        DcBusVoltage.attach(network, new NetworkResult(List.of(), List.of(undefined, defined, notComputed), List.of()));
+        assertEquals(380, new BusResultContext(undefined, null, null).getV());
+        assertEquals(385, new BusResultContext(defined, null, null).getV());
+        assertEquals(Double.NaN, new BusResultContext(notComputed, null, null).getV());
+    }
 
     @Test
     void testStateMonitors() {
