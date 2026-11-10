@@ -1,3 +1,111 @@
 [build-system]
 requires = ["setuptools>=78.1.1", "wheel", "pybind11[global]>=2.13.6", "cmake>=3.20"]
 build-backend = "setuptools.build_meta"
+
+[project]
+name = "pypowsybl"
+dynamic = ["version"]
+description = "A PowSyBl Python API (fork with a positional fast path, see docs/fork)"
+readme = "README.md"
+authors = [{ name = "Geoffroy Jamgotchian", email = "geoffroy.jamgotchian@gmail.com" }]
+license = "MPL-2.0"
+license-files = ["LICENSE"]
+requires-python = ">=3.10"
+classifiers = [
+    "Development Status :: 5 - Production/Stable",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3 :: Only",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+    "Programming Language :: Python :: 3.14",
+    "Programming Language :: Python :: Implementation :: CPython",
+    "Operating System :: POSIX :: Linux",
+    "Operating System :: MacOS",
+    "Operating System :: Microsoft :: Windows",
+]
+dependencies = [
+    "prettytable>=2.0.0",
+    "pandas>=2.2.3",
+    "networkx",
+]
+
+[project.optional-dependencies]
+pandapower = ["pandapower>=2.14.11"]
+opf = [
+    "pyoptinterface==0.6.1",
+    "tccbox",
+    "llvmlite; platform_system!='Darwin' or platform_machine!='x86_64'",
+    "tabulate==0.9.0",
+]
+
+[project.urls]
+Homepage = "https://github.com/powsybl/pypowsybl"
+
+# `uv sync` installs the dev group by default; docs with `uv sync --group docs`
+[dependency-groups]
+dev = [
+    "pytest>=8.3.3",
+    "pytest-asyncio==0.24.0",
+    "coverage==7.3.2",
+    "ruff>=0.8",
+    "mypy==1.15.0",
+    "pandas-stubs==2.2.2.240603",
+    "types-tabulate",
+    "pylint==3.2.0",
+    "matplotlib",
+]
+docs = [
+    "sphinx==8.1.3; python_version=='3.10'",
+    "sphinx==9.0.4; python_version>='3.11'",
+    "furo==2025.12.19",
+]
+
+[tool.setuptools]
+zip-safe = false
+include-package-data = true
+
+[tool.setuptools.dynamic]
+version = { attr = "pypowsybl.__version__" }
+
+[tool.setuptools.packages.find]
+include = ["pypowsybl*"]
+
+[tool.setuptools.package-data]
+pypowsybl = ["py.typed", "*.pyi"]
+
+[tool.uv]
+# the wheel embeds the native image and the C++ extension: rebuild when their sources change
+cache-keys = [
+    { file = "pyproject.toml" },
+    { file = "setup.py" },
+    { file = "cpp/**/*" },
+    { file = "java/**/*.java" },
+    { file = "java/**/pom.xml" },
+    { file = "java/pypowsybl/src/main/resources/**/*" },
+]
+
+[tool.pytest.ini_options]
+# change these options to get logs
+log_cli = false
+log_level = "ERROR"
+testpaths = ["tests"]
+
+[tool.mypy]
+disallow_untyped_defs = true
+
+[[tool.mypy.overrides]]
+module = ["networkx.*", "prettytable.*", "pandapower.*", "pyoptinterface", "scipy.*"]
+ignore_missing_imports = true
+
+# ruff is only applied to the files added by this fork: the upstream code keeps its own style (pylint)
+[tool.ruff]
+line-length = 120
+include = ["pypowsybl/fast/**/*.py", "tests/fast/**/*.py", "benchmarks/fastpath/**/*.py"]
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "W", "UP", "B"]
+
+[tool.ruff.lint.isort]
+known-first-party = ["pypowsybl"]

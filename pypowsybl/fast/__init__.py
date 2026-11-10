@@ -26,7 +26,7 @@ read the bus columns again).
 """
 from collections.abc import Iterable, Sequence
 from os import PathLike
-from typing import NamedTuple
+from typing import Any, NamedTuple
 
 import numpy as np
 
@@ -58,7 +58,7 @@ SKIPPABLE = ('temporary-limits', 'limits', 'bus-state', 'properties', 'extension
 
 
 def load(file: str | PathLike, skip: Iterable[str] = (), parameters: dict[str, str] | None = None,
-         **kwargs) -> Network:  # type: ignore[no-untyped-def]
+         **kwargs: Any) -> Network:
     """Loads a binary IIDM (.biidm) file, leaving out the parts listed in ``skip`` (see :data:`SKIPPABLE`).
 
     Shorthand for ``pypowsybl.network.load(file, parameters={SKIP_PARAMETER: 'a,b'})``: the parameter can as well be
@@ -177,12 +177,10 @@ class FastNetwork:
 
     def positions(self, element_type: str, ids: Sequence[str]) -> np.ndarray:
         """Positions of the given ids, as an int32 array (to be computed once and reused)."""
-        if element_type == _BUS:
+        index = None if element_type == _BUS else self._positions.get(element_type)
+        if index is None:
             index = {id_: i for i, id_ in enumerate(self.ids(element_type))}
-        else:
-            index = self._positions.get(element_type)
-            if index is None:
-                index = {id_: i for i, id_ in enumerate(self.ids(element_type))}
+            if element_type != _BUS:  # bus ids change with the topology: never cached
                 self._positions[element_type] = index
         try:
             return np.fromiter((index[id_] for id_ in ids), dtype=np.int32, count=len(ids))
@@ -214,13 +212,12 @@ class FastNetwork:
         type_code, column_code, is_double, writable = self._column(element_type, column)
         if not writable:
             raise ValueError(f"Column '{column}' of '{element_type}' is read only")
-        if positions is not None:
-            positions = np.ascontiguousarray(positions, dtype=np.int32)
+        where = None if positions is None else np.ascontiguousarray(positions, dtype=np.int32)
         if is_double:
-            _pp.fast_set_doubles(self._handle, type_code, column_code, positions,
+            _pp.fast_set_doubles(self._handle, type_code, column_code, where,
                                  np.ascontiguousarray(values, dtype=np.float64))
         else:
-            _pp.fast_set_ints(self._handle, type_code, column_code, positions,
+            _pp.fast_set_ints(self._handle, type_code, column_code, where,
                               np.ascontiguousarray(values, dtype=np.int32))
 
     def set_at(self, element_type: str, column: str, position: int, value: float) -> None:
@@ -231,7 +228,7 @@ class FastNetwork:
         if is_double:
             _pp.fast_set_double_at(self._handle, type_code, column_code, position, value)
         else:
-            _pp.fast_set_int_at(self._handle, type_code, column_code, position, value)
+            _pp.fast_set_int_at(self._handle, type_code, column_code, position, int(value))
 
     def apply_switches_and_get_topology(self, switch_positions: Sequence[int], switch_open: Sequence[int]) -> Topology:
         """Sets the open / closed state of the given switches, then returns the bus number of every load, generator,

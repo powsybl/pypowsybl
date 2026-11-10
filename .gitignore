@@ -62,3 +62,10 @@ tests/_trial_temp/*
 
 # Documentation generated files (autosummary)
 docs/reference/api/
+
+# fork: scratch work directory (builds logs, benchmark results), private test networks, tool caches
+/.work
+/tests/assets
+.ruff_cache
+.mypy_cache
+.pytest_cache

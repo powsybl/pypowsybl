@@ -13,6 +13,12 @@ Python code quality :
 Java code quality :
 [![Quality Gate Status (java)](https://sonarcloud.io/api/project_badges/measure?project=powsybl_pypowsybl-java&metric=alert_status)](https://sonarcloud.io/dashboard?id=powsybl_pypowsybl-java)
 
+> **This is a performance fork** of pypowsybl `v1.16.1` (powsybl-core 7.3.0, OpenLoadFlow 2.3.0). The existing API
+> is unchanged; the fork adds `pypowsybl.fast`, a positional, numpy-based access to a network for code that makes
+> many small reads and writes, and an import parameter to skip parts of a `.biidm` file when loading.
+> See [docs/fork/README.md](docs/fork/README.md) for the API, the build with uv, the tests and the timings, and
+> [docs/fork/rte-plugins.md](docs/fork/rte-plugins.md) for what it would take to include the RTE plugins.
+
 The PyPowSyBl project gives access PowSyBl Java framework to Python developers. This Python integration relies on
 GraalVM to compile Java code to a native library.
 
@@ -105,32 +111,21 @@ Requirements:
 - Python >= 3.10 for Linux, Windows and MacOS (amd64 and arm64)
 - [Oracle GraalVM Java 21](https://www.graalvm.org/downloads/)
 
-To build from sources and install PyPowSyBl package:
+To build from sources (this fork uses [uv](https://docs.astral.sh/uv/); `pyproject.toml` holds the project
+metadata, the dependency groups and the tool configuration, `uv.lock` pins them):
 
 ```bash
-git clone https://github.com/powsybl/pypowsybl.git
-cd pypowsybl
-export JAVA_HOME=<path to GraalVM>
-pip install --upgrade setuptools pip
-pip install -r requirements.txt
-pip install .
+export JAVA_HOME=<path to Oracle GraalVM 21>
+tools/build_wheel.sh            # full build (maven + native-image + C++), wheel in dist/
+uv venv && uv pip install dist/pypowsybl-*.whl
 ```
 
-While developing, you may find it convenient to use the developer (or editable)
-mode of installation:
+For development, set up `.venv` with the dev tools, then install the wheel in it and run the tests:
 
 ```bash
-pip install -e .
-# or, to build the C extension with debug symbols:
-python setup.py build --debug develop --user
-```
-
-Please refer to pip and setuptools documentations for more information.
-
-To run unit tests:
-
-```bash
-pytest tests
+uv sync --no-install-project
+uv pip install dist/pypowsybl-*.whl
+cd tests && ../.venv/bin/python -m pytest .      # from tests/, so that the installed package is imported
 ```
 
 To run static type checking with `mypy`:
