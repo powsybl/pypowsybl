@@ -19,7 +19,7 @@ public class BusResultContext extends BusResult {
     private final String operatorStrategyId;
 
     public BusResultContext(BusResult busResults, String contingency, String operatorStrategyId) {
-        super(busResults.getVoltageLevelId(), busResults.getBusId(), busResults.getV(), busResults.getAngle());
+        super(busResults.getVoltageLevelId(), busResults.getBusId(), DcBusVoltage.voltage(busResults), busResults.getAngle());
         this.contingencyId = contingency;
         this.operatorStrategyId = operatorStrategyId;
     }

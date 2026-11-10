@@ -16,6 +16,7 @@ import com.powsybl.dataframe.network.extensions.ExtensionDataframeKey;
 import com.powsybl.dataframe.update.UpdatingDataframe;
 import com.powsybl.iidm.network.*;
 import com.powsybl.python.commons.PyPowsyblApiHeader;
+import com.powsybl.python.loadflow.DcLoadFlowResults;
 import com.powsybl.python.network.NetworkUtil;
 import com.powsybl.python.network.SideEnum;
 import com.powsybl.python.network.TemporaryLimitData;
@@ -384,7 +385,7 @@ public final class NetworkDataframes {
                         getOrThrow((b, id) -> b.getBusView().getBus(id), "Bus"))
                 .stringsIndex("id", Bus::getId)
                 .strings("name", b -> b.getOptionalName().orElse(""), Identifiable::setName)
-                .doubles("v_mag", (b, context) -> perUnitV(context, b.getV(), b),
+                .doubles("v_mag", (b, context) -> perUnitV(context, DcLoadFlowResults.voltage(b), b),
                     (b, v, context) -> b.setV(unPerUnitV(context, v, b)))
                 .doubles("v_angle", (b, context) -> perUnitAngle(context, b.getAngle()), (b, vAngle, context) -> b.setAngle(unPerUnitAngle(context, vAngle)))
                 .ints("connected_component", ifExistsInt(Bus::getConnectedComponent, Component::getNum))
@@ -742,8 +743,8 @@ public final class NetworkDataframes {
                 .doubles("i", (dl, context) -> perUnitI(context, dl.getTerminal()))
                 .doubles("boundary_p", (dl, context) -> perUnitPQ(context, dl.getBoundary().getP()), false)
                 .doubles("boundary_q", (dl, context) -> perUnitPQ(context, dl.getBoundary().getQ()), false)
-                .doubles("boundary_i", (dl, context) -> perUnitI(context, dl.getBoundary().getI(), dl.getTerminal().getVoltageLevel().getNominalV()), false)
-                .doubles("boundary_v_mag", (dl, context) -> perUnitV(context, dl.getBoundary().getV(), dl.getTerminal()), false)
+                .doubles("boundary_i", (dl, context) -> perUnitI(context, DcLoadFlowResults.boundaryCurrent(dl), dl.getTerminal().getVoltageLevel().getNominalV()), false)
+                .doubles("boundary_v_mag", (dl, context) -> perUnitV(context, DcLoadFlowResults.boundaryVoltage(dl), dl.getTerminal()), false)
                 .doubles("boundary_v_angle", (dl, context) -> perUnitAngle(context, dl.getBoundary().getAngle()), false)
                 .strings("voltage_level_id", getVoltageLevelId())
                 .strings("bus_id", dl -> getBusId(dl.getTerminal()))
@@ -968,7 +969,7 @@ public final class NetworkDataframes {
         return NetworkDataframeMapperBuilder.ofStream(Network::getBusbarSectionStream, getOrThrow(Network::getBusbarSection, "Bus bar section"))
                 .stringsIndex("id", BusbarSection::getId)
                 .strings("name", bbs -> bbs.getOptionalName().orElse(""), Identifiable::setName)
-                .doubles("v", (busbar, context) -> perUnitV(context, busbar.getV(), busbar.getTerminal()))
+                .doubles("v", (busbar, context) -> perUnitV(context, DcLoadFlowResults.voltage(busbar), busbar.getTerminal()))
                 .doubles("angle", (busbar, context) -> perUnitAngle(context, busbar.getAngle()))
                 .strings("voltage_level_id", bbs -> bbs.getTerminal().getVoltageLevel().getId())
                 .strings("bus_id", bbs -> getBusId(bbs.getTerminal()))

@@ -159,8 +159,11 @@ public final class LoadFlowCFunctions {
                 LoadFlowParameters parameters = LoadFlowCUtils.createLoadFlowParameters(loadFlowParametersPtr, loadFlowProvider);
                 LoadFlow.Runner runner = new LoadFlow.Runner(loadFlowProvider);
                 ReportNode reportNode = ReportCUtils.getReportNode(reportNodeHandle);
-                LoadFlowResult result = runner.run(network, network.getVariantManager().getWorkingVariantId(),
+                String variantId = network.getVariantManager().getWorkingVariantId();
+                DcLoadFlowResults.clear(network, variantId);
+                LoadFlowResult result = runner.run(network, variantId,
                         CommonObjects.getComputationManager(), parameters, reportNode);
+                DcLoadFlowResults.record(network, variantId, parameters, result);
                 return createLoadFlowComponentResultArrayPointer(result);
             }
         });
@@ -198,6 +201,7 @@ public final class LoadFlowCFunctions {
                 LoadFlowParameters parameters = LoadFlowCUtils.createLoadFlowParameters(loadFlowParametersPtr, loadFlowProvider);
                 LoadFlow.Runner runner = new LoadFlow.Runner(loadFlowProvider);
                 ReportNode reportNode = ReportCUtils.getReportNode(reportNodeHandle);
+                DcLoadFlowResults.clear(network, variantIdStr);
                 runner.runAsync(network, variantIdStr,
                                 CommonObjects.getComputationManager(), parameters, reportNode)
                         .whenComplete(new BiConsumer<>() {
@@ -207,6 +211,7 @@ public final class LoadFlowCFunctions {
                                     var messagePtr = CTypeUtil.toCharPtr(Util.getNonNullMessage(throwable));
                                     loadFlowExceptionCallback.invoke(messagePtr, resultFuturePtr);
                                 } else {
+                                    DcLoadFlowResults.record(network, variantIdStr, parameters, loadFlowResult);
                                     var resultsPtr = createLoadFlowComponentResultArrayPointer(loadFlowResult);
                                     loadFlowResultCallback.invoke(resultsPtr, resultFuturePtr);
                                 }

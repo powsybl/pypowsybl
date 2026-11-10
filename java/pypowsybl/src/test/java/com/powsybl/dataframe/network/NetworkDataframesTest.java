@@ -22,10 +22,15 @@ import com.powsybl.dataframe.update.*;
 import com.powsybl.iidm.network.*;
 import com.powsybl.iidm.network.extensions.*;
 import com.powsybl.iidm.network.test.BatteryNetworkFactory;
+import com.powsybl.iidm.network.test.BoundaryLineNetworkFactory;
 import com.powsybl.iidm.network.test.DcDetailedNetworkFactory;
 import com.powsybl.iidm.network.test.EurostagTutorialExample1Factory;
+import com.powsybl.iidm.network.test.FourSubstationsNodeBreakerFactory;
 import com.powsybl.iidm.network.test.HvdcTestNetwork;
 import com.powsybl.iidm.network.test.TwoVoltageLevelNetworkFactory;
+import com.powsybl.loadflow.LoadFlow;
+import com.powsybl.loadflow.LoadFlowParameters;
+import com.powsybl.python.loadflow.DcLoadFlowResults;
 import com.powsybl.python.network.NetworkUtilTest;
 import com.powsybl.python.network.Networks;
 
@@ -1144,5 +1149,62 @@ class NetworkDataframesTest {
         assertThat(series)
                 .extracting(Series::getName)
                 .containsExactly("id", "name", "connected_component", "dc_component", "v");
+    }
+
+    private static Map<String, Series> allAttributes(DataframeElementType type, Network network) {
+        return createDataFrame(type, network, new DataframeFilter(ALL_ATTRIBUTES, Collections.emptyList())).stream()
+                .collect(Collectors.toMap(Series::getName, Function.identity()));
+    }
+
+    private static void runDcLoadFlow(Network network, double powerFactor) {
+        LoadFlowParameters parameters = new LoadFlowParameters().setDc(true).setDcPowerFactor(powerFactor);
+        String variantId = network.getVariantManager().getWorkingVariantId();
+        DcLoadFlowResults.record(network, variantId, parameters, LoadFlow.find("OpenLoadFlow").run(network, parameters));
+    }
+
+    @Test
+    void dcLoadFlowResults() {
+        Network network = FourSubstationsNodeBreakerFactory.create();
+        runDcLoadFlow(network, 0.9);
+
+        Map<String, Series> buses = allAttributes(BUS, network);
+        assertThat(buses.get("v_mag").getDoubles()).containsOnly(225, 400);
+        assertThat(allAttributes(BUS_FROM_BUS_BREAKER_VIEW, network).get("v_mag").getDoubles()).containsOnly(225, 400);
+        assertThat(allAttributes(BUSBAR_SECTION, network).get("v").getDoubles()).containsOnly(225, 400);
+
+        // the power factor stands for the reactive powers which are not computed
+        Map<String, Series> lines = allAttributes(LINE, network);
+        assertThat(lines.get("q1").getDoubles()).containsOnly(Double.NaN);
+        for (int side = 1; side <= 2; side++) {
+            double[] p = lines.get("p" + side).getDoubles();
+            double[] i = lines.get("i" + side).getDoubles();
+            for (int line = 0; line < p.length; line++) {
+                assertEquals(Math.abs(p[line]) * 1000 / (Math.sqrt(3) * 400 * 0.9), i[line], 1e-9);
+            }
+        }
+
+        // the same rule applies to injections, whatever the reactive power of their terminal
+        Map<String, Series> loads = allAttributes(LOAD, network);
+        double[] nominalV = network.getLoadStream().mapToDouble(load -> load.getTerminal().getVoltageLevel().getNominalV()).toArray();
+        for (int load = 0; load < nominalV.length; load++) {
+            assertTrue(loads.get("q").getDoubles()[load] > 0);
+            assertEquals(Math.abs(loads.get("p").getDoubles()[load]) * 1000 / (Math.sqrt(3) * nominalV[load] * 0.9),
+                    loads.get("i").getDoubles()[load], 1e-9);
+        }
+        assertThat(allAttributes(STATIC_VAR_COMPENSATOR, network).get("i").getDoubles()).containsOnly(Double.NaN);
+        assertThat(allAttributes(SHUNT_COMPENSATOR, network).get("i").getDoubles()).containsOnly(Double.NaN);
+    }
+
+    @Test
+    void dcLoadFlowResultsOfBoundaryLines() {
+        Network network = BoundaryLineNetworkFactory.create();
+        runDcLoadFlow(network, 0.9);
+
+        Map<String, Series> boundaryLines = allAttributes(BOUNDARY_LINE, network);
+        double expected = 50 * 1000 / (Math.sqrt(3) * 100 * 0.9);
+        assertThat(boundaryLines.get("p").getDoubles()).containsExactly(50);
+        assertEquals(expected, boundaryLines.get("i").getDoubles()[0], 1e-9);
+        assertEquals(expected, boundaryLines.get("boundary_i").getDoubles()[0], 1e-6);
+        assertThat(boundaryLines.get("boundary_v_mag").getDoubles()).containsExactly(100);
     }
 }
