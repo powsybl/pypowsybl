@@ -16,6 +16,7 @@ class PYBIND11_EXPORT PyPowsyblError;
 }
 #include "powsybl-cpp.h"
 #include "pylogging.h"
+#include "fast.h"
 #include <iostream>
 
 namespace py = pybind11;
@@ -1267,6 +1268,7 @@ PYBIND11_MODULE(_pypowsybl, m) {
     m.def("remove_elements_modification", &pypowsybl::removeElementsModification, "remove a list of feeder bays", py::arg("network"), py::arg("connectable_ids"), py::arg("extraDataDf"), py::arg("remove_modification_type"), py::arg("raise_exception"), py::arg("report_node"));
 
     dynamicSimulationBindings(m);
+    fastBindings(m);
     voltageInitializerBinding(m);
 
     m.def("get_network_modification_metadata", &pypowsybl::getModificationMetadata, "Get network modification metadata", py::arg("network_modification_type"));

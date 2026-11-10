@@ -39,6 +39,7 @@ import com.powsybl.nad.model.Point;
 import com.powsybl.nad.svg.*;
 import com.powsybl.nad.svg.iidm.DefaultLabelProviderFactory;
 import com.powsybl.python.commons.CTypeUtil;
+import com.powsybl.python.fast.SkippingBinaryImporter;
 import com.powsybl.python.commons.Directives;
 import com.powsybl.python.commons.PyPowsyblApiHeader;
 import com.powsybl.python.commons.Util;
@@ -255,7 +256,16 @@ public final class NetworkCFunctions {
                     reportNode = ReportNode.NO_OP;
                 }
                 var importConfig = createImportConfig(postProcessorsPtrPtr, postProcessorsCount);
-                Network network = Network.read(Paths.get(fileStr), LocalComputationManager.getDefault(), importConfig, parameters, IMPORTERS_LOADER_SUPPLIER, reportNode);
+                Network network;
+                if (parameters.containsKey(SkippingBinaryImporter.SKIP_PARAMETER)) {
+                    // fast path fork: partial read of a binary IIDM file
+                    if (postProcessorsCount > 0) {
+                        throw new PowsyblException("Post processors are not supported with import parameter " + SkippingBinaryImporter.SKIP_PARAMETER);
+                    }
+                    network = new SkippingBinaryImporter().read(Paths.get(fileStr), parameters, reportNode);
+                } else {
+                    network = Network.read(Paths.get(fileStr), LocalComputationManager.getDefault(), importConfig, parameters, IMPORTERS_LOADER_SUPPLIER, reportNode);
+                }
                 network.getVariantManager().allowVariantMultiThreadAccess(allowVariantMultiThreadAccess);
                 return ObjectHandles.getGlobal().create(network);
             }
