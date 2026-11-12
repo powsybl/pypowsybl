@@ -35,7 +35,11 @@ abstract class AbstractDynamicModelSeries<T extends ModelBuilder<DynamicModel>> 
     @Override
     public BiFunction<Network, ReportNode, DynamicModel> getModelSupplier(int row) {
         return (network, reportNode) -> {
-            T builder = getBuilder(network, reportNode, row);
+            String modelName = modelsNames != null ? modelsNames.get(row) : null;
+            if (modelName == null || modelName.isEmpty()) {
+                return null;
+            }
+            T builder = createBuilder(network, modelName, reportNode);
             if (builder == null) {
                 return null;
             }
@@ -45,14 +49,6 @@ abstract class AbstractDynamicModelSeries<T extends ModelBuilder<DynamicModel>> 
     }
 
     protected abstract void applyOnBuilder(int row, T builder);
-
-    protected T getBuilder(Network network, ReportNode reportNode, int row) {
-        String modelName = modelsNames != null ? modelsNames.get(row) : null;
-        return modelName == null || modelName.isEmpty() ? createBuilder(network, reportNode)
-                : createBuilder(network, modelName, reportNode);
-    }
-
-    protected abstract T createBuilder(Network network, ReportNode reportNode);
 
     protected abstract T createBuilder(Network network, String modelName, ReportNode reportNode);
 }
