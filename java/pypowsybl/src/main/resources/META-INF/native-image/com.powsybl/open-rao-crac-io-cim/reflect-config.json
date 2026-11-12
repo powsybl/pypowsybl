@@ -1,0 +1,152 @@
+[
+  {
+    "name":"com.powsybl.openrao.data.crac.io.cim.xsd.ActionStatus",
+    "allDeclaredFields":true,
+    "queryAllDeclaredMethods":true,
+    "methods":[{"name":"<init>","parameterTypes":[] }]
+  },
+  {
+    "name":"com.powsybl.openrao.data.crac.io.cim.xsd.AdditionalConstraintRegisteredResource",
+    "allDeclaredFields":true,
+    "queryAllDeclaredMethods":true,
+    "methods":[{"name":"<init>","parameterTypes":[] }]
+  },
+  {
+    "name":"com.powsybl.openrao.data.crac.io.cim.xsd.AdditionalConstraintSeries",
+    "allDeclaredFields":true,
+    "queryAllDeclaredMethods":true,
+    "methods":[{"name":"<init>","parameterTypes":[] }]
+  },
+  {
+    "name":"com.powsybl.openrao.data.crac.io.cim.xsd.Analog",
+    "allDeclaredFields":true,
+    "queryAllDeclaredMethods":true,
+    "methods":[{"name":"<init>","parameterTypes":[] }]
+  },
+  {
+    "name":"com.powsybl.openrao.data.crac.io.cim.xsd.AreaIDString",
+    "allDeclaredFields":true,
+    "queryAllDeclaredMethods":true,
+    "methods":[{"name":"<init>","parameterTypes":[] }]
+  },
+  {
+    "name":"com.powsybl.openrao.data.crac.io.cim.xsd.CRACMarketDocument",
+    "allDeclaredFields":true,
+    "queryAllDeclaredMethods":true,
+    "methods":[{"name":"<init>","parameterTypes":[] }]
+  },
+  {
+    "name":"com.powsybl.openrao.data.crac.io.cim.xsd.ContingencyRegisteredResource",
+    "allDeclaredFields":true,
+    "queryAllDeclaredMethods":true,
+    "methods":[{"name":"<init>","parameterTypes":[] }]
+  },
+  {
+    "name":"com.powsybl.openrao.data.crac.io.cim.xsd.ContingencySeries",
+    "allDeclaredFields":true,
+    "queryAllDeclaredMethods":true,
+    "methods":[{"name":"<init>","parameterTypes":[] }]
+  },
+  {
+    "name":"com.powsybl.openrao.data.crac.io.cim.xsd.ESMPDateTimeInterval",
+    "allDeclaredFields":true,
+    "queryAllDeclaredMethods":true,
+    "methods":[{"name":"<init>","parameterTypes":[] }]
+  },
+  {
+    "name":"com.powsybl.openrao.data.crac.io.cim.xsd.MarketDocument",
+    "allDeclaredFields":true,
+    "queryAllDeclaredMethods":true,
+    "methods":[{"name":"<init>","parameterTypes":[] }]
+  },
+  {
+    "name":"com.powsybl.openrao.data.crac.io.cim.xsd.MonitoredRegisteredResource",
+    "allDeclaredFields":true,
+    "queryAllDeclaredMethods":true,
+    "methods":[{"name":"<init>","parameterTypes":[] }]
+  },
+  {
+    "name":"com.powsybl.openrao.data.crac.io.cim.xsd.MonitoredSeries",
+    "allDeclaredFields":true,
+    "queryAllDeclaredMethods":true,
+    "methods":[{"name":"<init>","parameterTypes":[] }]
+  },
+  {
+    "name":"com.powsybl.openrao.data.crac.io.cim.xsd.PartyIDString",
+    "allDeclaredFields":true,
+    "queryAllDeclaredMethods":true,
+    "methods":[{"name":"<init>","parameterTypes":[] }]
+  },
+  {
+    "name":"com.powsybl.openrao.data.crac.io.cim.xsd.PartyMarketParticipant",
+    "allDeclaredFields":true,
+    "queryAllDeclaredMethods":true,
+    "methods":[{"name":"<init>","parameterTypes":[] }]
+  },
+  {
+    "name":"com.powsybl.openrao.data.crac.io.cim.xsd.Point",
+    "allDeclaredFields":true,
+    "queryAllDeclaredMethods":true,
+    "methods":[{"name":"<init>","parameterTypes":[] }]
+  },
+  {
+    "name":"com.powsybl.openrao.data.crac.io.cim.xsd.Reason",
+    "allDeclaredFields":true,
+    "queryAllDeclaredMethods":true,
+    "methods":[{"name":"<init>","parameterTypes":[] }]
+  },
+  {
+    "name":"com.powsybl.openrao.data.crac.io.cim.xsd.RegisteredResourceReason",
+    "allDeclaredFields":true,
+    "queryAllDeclaredMethods":true,
+    "methods":[{"name":"<init>","parameterTypes":[] }]
+  },
+  {
+    "name":"com.powsybl.openrao.data.crac.io.cim.xsd.RemedialActionRegisteredResource",
+    "allDeclaredFields":true,
+    "queryAllDeclaredMethods":true,
+    "methods":[{"name":"<init>","parameterTypes":[] }]
+  },
+  {
+    "name":"com.powsybl.openrao.data.crac.io.cim.xsd.RemedialActionSeries",
+    "allDeclaredFields":true,
+    "queryAllDeclaredMethods":true,
+    "methods":[{"name":"<init>","parameterTypes":[] }]
+  },
+  {
+    "name":"com.powsybl.openrao.data.crac.io.cim.xsd.ResourceIDString",
+    "allDeclaredFields":true,
+    "queryAllDeclaredMethods":true,
+    "methods":[{"name":"<init>","parameterTypes":[] }]
+  },
+  {
+    "name":"com.powsybl.openrao.data.crac.io.cim.xsd.Series",
+    "allDeclaredFields":true,
+    "queryAllDeclaredMethods":true,
+    "methods":[{"name":"<init>","parameterTypes":[] }]
+  },
+  {
+    "name":"com.powsybl.openrao.data.crac.io.cim.xsd.SeriesPeriod",
+    "allDeclaredFields":true,
+    "queryAllDeclaredMethods":true,
+    "methods":[{"name":"<init>","parameterTypes":[] }]
+  },
+  {
+    "name":"com.powsybl.openrao.data.crac.io.cim.xsd.SeriesReason",
+    "allDeclaredFields":true,
+    "queryAllDeclaredMethods":true,
+    "methods":[{"name":"<init>","parameterTypes":[] }]
+  },
+  {
+    "name":"com.powsybl.openrao.data.crac.io.cim.xsd.SharedDomain",
+    "allDeclaredFields":true,
+    "queryAllDeclaredMethods":true,
+    "methods":[{"name":"<init>","parameterTypes":[] }]
+  },
+  {
+    "name":"com.powsybl.openrao.data.crac.io.cim.xsd.TimeSeries",
+    "allDeclaredFields":true,
+    "queryAllDeclaredMethods":true,
+    "methods":[{"name":"<init>","parameterTypes":[] }]
+  }
+]

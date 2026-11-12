@@ -149,6 +149,8 @@ def test_add_event():
     event_mapping.add_node_fault(static_id='BUS', start_time=12, fault_time=2, r_pu=0.1, x_pu=0.2)
     # Event model from event name
     event_mapping.add_event_model(event_name='ActivePowerVariation', static_id='GEN', start_time=1.5, delta_p=5)
+    event_mapping.add_event_model(event_name='OpenSwitch', static_id='BREAKER', start_time=1.4)
+    event_mapping.add_event_model(event_name='CloseSwitch', static_id='BREAKER', start_time=1.4)
 
 
 def test_add_event_dataframe():

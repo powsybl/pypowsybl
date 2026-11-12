@@ -23,6 +23,8 @@ public class DcLineDataframeAdder extends AbstractSimpleAdder {
             SeriesMetadata.stringIndex("id"),
             SeriesMetadata.strings("dc_node1_id"),
             SeriesMetadata.strings("dc_node2_id"),
+            SeriesMetadata.ints("connected1"),
+            SeriesMetadata.ints("connected2"),
             SeriesMetadata.strings("name"),
             SeriesMetadata.doubles("r")
     );

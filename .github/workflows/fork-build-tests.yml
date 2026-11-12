@@ -5,6 +5,9 @@ on:
 
 permissions: {}
 
+env:
+  PGO_BUILD: 'false'
+
 jobs:
   build-tests:
     name: Build ${{ matrix.config.name }} wheel
@@ -89,17 +92,30 @@ jobs:
         env:
           MACOSX_DEPLOYMENT_TARGET: ${{ matrix.config.macosx_deployment_target }}
         run: |
-          ${{ env.PYTHON }} setup.py bdist_wheel ${{ matrix.config.bdist_wheel_args }}
+          BDIST_WHEEL_ARGS="${{ matrix.config.bdist_wheel_args }}" .github/workflows/scripts/build_wheel.sh
           if [ "${{ matrix.config.name }}" == "linux" ]; then
             auditwheel repair dist/*.whl
           fi
 
-      - name: Install wheel
-        run: ${{ env.PYTHON }} -m pip install ${{ matrix.config.wheel-dir }}/*.whl --user
-
-      - name: Run basic pypowsybl import
+      - name: Run basic pypowsybl import (in isolated venv)
         working-directory: ./tests
-        run: ${{ env.PYTHON }} basic_import_test.py
+        shell: bash
+        run: |
+          ${{ env.PYTHON }} -m venv "${RUNNER_TEMP:-/tmp}/wheel-only-venv"
+          VENV_DIR="${RUNNER_TEMP:-/tmp}/wheel-only-venv"
+          if [ -x "$VENV_DIR/bin/python" ]; then
+            VENV_PY="$VENV_DIR/bin/python"
+          else
+            VENV_PY="$VENV_DIR/Scripts/python.exe"
+          fi
+          "$VENV_PY" -m pip install --upgrade pip
+          "$VENV_PY" -m pip install ../${{ matrix.config.wheel-dir }}/*.whl
+          "$VENV_PY" basic_import_test.py
+
+      - name: Install wheel
+        run: |
+          WHEEL_FILE=$(ls ${{ matrix.config.wheel-dir }}/*.whl | head -n 1)
+          ${{ env.PYTHON }} -m pip install "${WHEEL_FILE}[pandapower, opf]" --user
 
       - name: Run tests
         working-directory: ./tests # Run in subdir to use installed lib, not sources
@@ -154,7 +170,7 @@ jobs:
 
       - name: Install the package
         run: |
-          pip install -e .
+          pip install -e .[pandapower,opf]
 
       - name: Generate coverage
         run: |
@@ -205,11 +221,11 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: Set up JDK 21
+      - name: Set up JDK 25
         uses: actions/setup-java@be666c2fcd27ec809703dec50e508c2fdc7f6654 # v5.2.0
         with:
           distribution: 'temurin'
-          java-version: '21'
+          java-version: '25'
           cache: 'maven'
 
       - name: Build with Maven (Ubuntu)

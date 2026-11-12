@@ -332,6 +332,22 @@ def test_busbar_section_sensi():
     result = analysis.run(network)
     assert -0.8 == pytest.approx(result.get_sensitivity_matrix('m1').loc['S2VL1_BBS']['LINE_S2S3'], 1e-4)
 
+
+@pytest.mark.parametrize('network_factory, bus_id, target_voltage_id', [
+    (pp.network.create_eurostag_tutorial_example1_network, 'VLGEN_0', 'GEN'),
+    (pp.network.create_eurostag_tutorial_example1_network, 'NGEN', 'GEN'),
+    (pp.network.create_four_substations_node_breaker_network, 'S3VL1_0', 'GTH2'),
+    (pp.network.create_four_substations_node_breaker_network, 'S3VL1_BBS', 'GTH2'),
+])
+def test_bus_voltage_sensi_id_resolution(network_factory, bus_id, target_voltage_id):
+    network = network_factory()
+    analysis = pp.sensitivity.create_ac_analysis()
+    analysis.add_bus_voltage_factor_matrix([bus_id], [target_voltage_id])
+    result = analysis.run(network)
+    df = result.get_sensitivity_matrix()
+    assert df.shape == (1, 1)
+    assert df[bus_id][target_voltage_id] == pytest.approx(1.0, abs=1e-6)
+
 def test_transfo3_sensi():
     network = pp.network.create_micro_grid_be_network()
     t3e_id = network.get_3_windings_transformers().head(1).index[0]
@@ -353,3 +369,52 @@ def test_transfo3_sensi():
     analysis.add_branch_flow_factor_matrix([line_id], [t3e_id], "ptc_test")
     result = analysis.run(network)
     assert -0.002685 == pytest.approx(result.get_sensitivity_matrix('ptc_test').loc[t3e_id][line_id], 1e-3)
+
+def test_shunt_sensi():
+    n = pp.network.create_ieee14()
+    analysis = pp.sensitivity.create_ac_analysis()
+    analysis.add_factor_matrix(['VL1_0', 'VL4_0', 'VL9_0'], ['B9-SH'], [], ContingencyContextType.NONE,
+                               SensitivityFunctionType.BUS_VOLTAGE, SensitivityVariableType.SHUNT_COMPENSATOR_SUSCEPTANCE, 'm1')
+    result = analysis.run(n)
+    assert 0.0 == pytest.approx(result.get_sensitivity_matrix('m1').loc['B9-SH']['VL1_0'], 1e-3)
+    assert 3.577598 == pytest.approx(result.get_sensitivity_matrix('m1').loc['B9-SH']['VL4_0'], 1e-3)
+    assert 2.062478 == pytest.approx(result.get_sensitivity_matrix('m1').loc['B9-SH']['VL9_0'], 1e-3)
+
+
+def test_branch_parameter_sensi():
+    n = pp.network.create_eurostag_tutorial_example1_network()
+    line = 'NHV1_NHV2_1'
+    analysis = pp.sensitivity.create_ac_analysis()
+    analysis.add_factor_matrix([line], [line], [], ContingencyContextType.NONE,
+                               SensitivityFunctionType.BRANCH_ACTIVE_POWER_1, SensitivityVariableType.BRANCH_RESISTANCE, 'r')
+    analysis.add_factor_matrix([line], [line], [], ContingencyContextType.NONE,
+                               SensitivityFunctionType.BRANCH_ACTIVE_POWER_1, SensitivityVariableType.BRANCH_REACTANCE, 'x')
+    analysis.add_factor_matrix([line], [line], [], ContingencyContextType.NONE,
+                               SensitivityFunctionType.BRANCH_ACTIVE_POWER_1, SensitivityVariableType.BRANCH_ADMITTANCE, 'y')
+    result = analysis.run(n)
+    assert 1.880628 == pytest.approx(result.get_sensitivity_matrix('r').loc[line][line], 1e-3)
+    assert -4.719600 == pytest.approx(result.get_sensitivity_matrix('x').loc[line][line], 1e-3)
+    assert 4973.888550 == pytest.approx(result.get_sensitivity_matrix('y').loc[line][line], 1e-3)
+
+
+def test_svc_pilot_point_sensi():
+    n = pp.network.create_ieee14()
+    zones = pd.DataFrame.from_records(index='name',
+                                      data=[{'name': 'z1', 'target_v': 12.7, 'bus_ids': 'B10'}])
+    units = pd.DataFrame.from_records(index='unit_id',
+                                      data=[{'unit_id': 'B6-G', 'zone_name': 'z1', 'participate': True},
+                                            {'unit_id': 'B8-G', 'zone_name': 'z1', 'participate': True}])
+    n.create_extensions('secondaryVoltageControl', [zones, units])
+
+    params = pp.sensitivity.Parameters()
+    params.load_flow_parameters.use_reactive_limits = False
+    params.load_flow_parameters.provider_parameters = {'secondaryVoltageControl': 'true',
+                                                        'maxPlausibleTargetVoltage': '1.6'}
+    analysis = pp.sensitivity.create_ac_analysis()
+    analysis.add_factor_matrix(['B10', 'VL6_0', 'VL8_0'], ['z1'], [], ContingencyContextType.NONE,
+                               SensitivityFunctionType.BUS_VOLTAGE, SensitivityVariableType.SVC_PILOT_POINT_TARGET_VOLTAGE, 'm1')
+    result = analysis.run(n, params)
+    df = result.get_sensitivity_matrix('m1')
+    assert 1.0 == pytest.approx(df.loc['z1']['B10'], 1e-3)
+    assert 1.112380 == pytest.approx(df.loc['z1']['VL6_0'], 1e-3)
+    assert 2.559211 == pytest.approx(df.loc['z1']['VL8_0'], 1e-3)

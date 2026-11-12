@@ -1,0 +1,20 @@
+{
+  "crac-factory" : "CracImplFactory",
+  "default-monitored-line-side" : "monitor-lines-on-both-sides",
+  "ra-usage-limits-per-instant" : [ {
+    "instant" : "preventive",
+    "max-ra" : 12,
+    "max-topo-per-tso" : { },
+    "max-pst-per-tso" : { },
+    "max-ra-per-tso" : { },
+    "max-elementary-actions-per-tso" : { }
+  } ],
+  "extensions" : {
+    "FbConstraintCracCreatorParameters" : {
+      "timestamp" : "2019-01-08T00:30:00Z",
+      "ics-cost-up" : 10.0,
+      "ics-cost-down" : 10.0,
+      "internal-hvdcs" : [ ]
+    }
+  }
+}

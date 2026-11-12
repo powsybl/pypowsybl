@@ -45,11 +45,14 @@ from .impl.network_creation_util import (
     _create_network,
     create_dc_detailed_lcc_bipole_ground_return_network,
     create_dc_detailed_lcc_bipole_ground_return_negative_pole_outage_network,
-    create_dc_detailed_lcc_bipole_ground_return_negative_pole_outage_network,
     create_dc_detailed_lcc_bipole_ground_return_with_dc_line_segments_network,
     create_dc_detailed_lcc_bipole_metallic_return_network,
     create_dc_detailed_vsc_symmetrical_monopole_network,
-    create_dc_detailed_vsc_asymmetrical_monopole_network
+    create_dc_detailed_vsc_asymmetrical_monopole_network,
+    create_dc_detailed_dc_switch_2_nodes,
+    create_ac_dc_monopolar_network,
+    create_ac_dc_bipolar_network,
+    create_ac_dc_bipolar_network_with_metallic_return
 )
 from .impl.util import (
     get_extensions_names,
@@ -90,6 +93,5 @@ from .impl.network_element_modification_util import (
     replace_3_windings_transformers_with_3_2_windings_transformers,
     replace_3_2_windings_transformers_with_3_windings_transformers
 )
-from .impl.perunit import (PerUnitView, per_unit_view)
 from .impl.pandapower_converter import convert_from_pandapower
 from .scalable import *

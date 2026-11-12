@@ -19,6 +19,8 @@ public class EventModelAdderLoaderImpl implements EventModelAdderLoader {
 
     private static final List<EventMappingAdder> BASE_MODEL_ADDERS = List.of(
             new DisconnectAdder(),
+            new OpenSwitchAdder(),
+            new CloseSwitchAdder(),
             new NodeFaultAdder(),
             new ActivePowerVariationAdder(),
             new ReactivePowerVariationAdder(),

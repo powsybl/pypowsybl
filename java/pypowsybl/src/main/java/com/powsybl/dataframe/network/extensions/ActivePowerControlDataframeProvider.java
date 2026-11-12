@@ -13,8 +13,11 @@ import com.powsybl.dataframe.network.ExtensionInformation;
 import com.powsybl.dataframe.network.NetworkDataframeMapper;
 import com.powsybl.dataframe.network.NetworkDataframeMapperBuilder;
 import com.powsybl.dataframe.network.adders.NetworkElementAdder;
+import com.powsybl.dataframe.network.adders.NetworkUtils;
+import com.powsybl.iidm.network.Battery;
 import com.powsybl.iidm.network.Generator;
 import com.powsybl.iidm.network.Identifiable;
+import com.powsybl.iidm.network.Injection;
 import com.powsybl.iidm.network.Network;
 import com.powsybl.iidm.network.extensions.ActivePowerControl;
 
@@ -36,7 +39,7 @@ public class ActivePowerControlDataframeProvider extends AbstractSingleDataframe
     @Override
     public ExtensionInformation getExtensionInformation() {
         return new ExtensionInformation(ActivePowerControl.NAME,
-                "Provides information about the participation of generators to balancing",
+                "Provides information about the participation of generators and batteries to balancing",
                 "index : id (str), " +
                         "participate (bool), " +
                         "droop (float), " +
@@ -46,19 +49,16 @@ public class ActivePowerControlDataframeProvider extends AbstractSingleDataframe
     }
 
     private Stream<ActivePowerControl> itemsStream(Network network) {
-        return network.getGeneratorStream()
-                .map(g -> (ActivePowerControl) g.getExtension(ActivePowerControl.class))
+        return Stream.<Injection<?>>concat(network.getGeneratorStream(), network.getBatteryStream())
+                .map(i -> (ActivePowerControl) i.getExtension(ActivePowerControl.class))
                 .filter(Objects::nonNull);
     }
 
     private ActivePowerControl getOrThrow(Network network, String id) {
-        Generator gen = network.getGenerator(id);
-        if (gen == null) {
-            throw new PowsyblException("Generator '" + id + "' not found");
-        }
-        ActivePowerControl apc = gen.getExtension(ActivePowerControl.class);
+        Injection<?> injection = NetworkUtils.getGenOrBatteryOrThrow(network, id);
+        ActivePowerControl apc = injection.getExtension(ActivePowerControl.class);
         if (apc == null) {
-            throw new PowsyblException("Generator '" + id + "' has no ActivePowerControl extension");
+            throw new PowsyblException("Network element '" + id + "' has no ActivePowerControl extension");
         }
         return apc;
     }
@@ -78,9 +78,9 @@ public class ActivePowerControlDataframeProvider extends AbstractSingleDataframe
     @Override
     public void removeExtensions(Network network, List<String> ids) {
         ids.stream().filter(Objects::nonNull)
-                .map(network::getGenerator)
-                .filter(Objects::nonNull)
-                .forEach(g -> g.removeExtension(ActivePowerControl.class));
+                .map(network::getIdentifiable)
+                .filter(i -> i instanceof Generator || i instanceof Battery)
+                .forEach(i -> i.removeExtension(ActivePowerControl.class));
     }
 
     @Override

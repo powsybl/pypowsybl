@@ -6,6 +6,7 @@
 # SPDX-License-Identifier: MPL-2.0
 #
 import math
+from typing import Optional
 
 import pandas as pd
 from pandas import DataFrame
@@ -18,33 +19,58 @@ from pypowsybl.opf.impl.model.bounds import Bounds
 class NetworkCache:
     def __init__(self, network: Network) -> None:
         self._network = network
+        self._old_per_unit: Optional[bool] = None  # None outside the with block
+        old_per_unit = network.per_unit
+        network.per_unit = True
+        try:
+            self._voltage_levels = self._build_voltage_levels(network)
+            self._buses = self._build_buses(network, self._voltage_levels)
+            self._generators = self._build_generators(network, self.buses)
+            self._loads = self._build_loads(network, self.buses)
+            self._shunts = self._build_shunt_compensators(network, self.buses)
+            self._static_var_compensators = self._build_static_var_compensators(network, self.buses)
+            self._vsc_converter_stations = self._build_vsc_converter_stations(network, self.buses)
+            self._lcc_converter_stations = self._build_lcc_converter_stations(network, self.buses)
+            self._hvdc_lines = self._build_hvdc_lines(network, self._vsc_converter_stations, self._lcc_converter_stations, self.buses)
+            self._lines = self._build_lines(network, self.buses)
+            self._transformers_2w = self._build_2w_transformers(network, self.buses)
+            self._transformers_3w = self._build_3w_transformers(network, self.buses)
+            self._branches = self._build_branches(network, self.buses)
+            self._boundary_lines = self._build_boundary_lines(network, self.buses)
+            self._batteries = self._build_batteries(network, self.buses)
+            self._current_limits1, self._current_limits2 = self._build_current_limits(network)
+            self._slack_terminal = self._build_stack_terminal(network, self.buses)
+            self._reactive_capability_curve_points = self._build_reactive_capability_curve_points(network, self._generators, self._vsc_converter_stations)
+            self._dc_buses = self._build_dc_buses(network)
+            self._dc_nodes = self._build_dc_nodes(network, self.dc_buses)
+            self._dc_lines = self._build_dc_lines(network)
+            self._dc_switches = self._build_dc_switches(network)
+            self._voltage_source_converters = self._build_voltage_source_converters(network)
+            self._dc_grounds = self._build_dc_grounds(network)
+        finally:
+            network.per_unit = old_per_unit
+
+    def __enter__(self) -> 'NetworkCache':
+        if self._old_per_unit is not None:
+            raise RuntimeError("NetworkCache is not reentrant")
+        self._old_per_unit = self._network.per_unit
         self._network.per_unit = True
-        self._voltage_levels = self._build_voltage_levels(network)
-        self._buses = self._build_buses(network, self._voltage_levels)
-        self._generators = self._build_generators(network, self.buses)
-        self._loads = self._build_loads(network, self.buses)
-        self._shunts = self._build_shunt_compensators(network, self.buses)
-        self._static_var_compensators = self._build_static_var_compensators(network, self.buses)
-        self._vsc_converter_stations = self._build_vsc_converter_stations(network, self.buses)
-        self._lcc_converter_stations = self._build_lcc_converter_stations(network, self.buses)
-        self._hvdc_lines = self._build_hvdc_lines(network, self._vsc_converter_stations, self._lcc_converter_stations, self.buses)
-        self._lines = self._build_lines(network, self.buses)
-        self._transformers_2w = self._build_2w_transformers(network, self.buses)
-        self._transformers_3w = self._build_3w_transformers(network, self.buses)
-        self._branches = self._build_branches(network, self.buses)
-        self._boundary_lines = self._build_boundary_lines(network, self.buses)
-        self._batteries = self._build_batteries(network, self.buses)
-        self._current_limits1, self._current_limits2 = self._build_current_limits(network)
-        self._slack_terminal = self._build_stack_terminal(network, self.buses)
-        self._reactive_capability_curve_points = self._build_reactive_capability_curve_points(network, self._generators, self._vsc_converter_stations)
+        return self
+
+    def __exit__(self, exc_type: object, exc_value: object, traceback: object) -> None:
+        # TODO go all the way with context: move construction to __enter__ and check that the object is
+        # active in all update* methods.
+        if self._old_per_unit is None:
+            raise RuntimeError("NetworkCache exited without being entered")
+        self._network.per_unit = self._old_per_unit
+        self._old_per_unit = None
 
     @staticmethod
     def _filter_injections(injections: DataFrame, buses: DataFrame) -> DataFrame:
         if len(injections) == 0:
             return injections
         injections_and_buses = pd.merge(injections, buses, right_index=True, left_on='bus_id', how='left', validate='m:1')
-        return injections_and_buses[
-            (injections_and_buses['connected_component'] == 0) & (injections_and_buses['synchronous_component'] == 0)]
+        return injections_and_buses[injections_and_buses['connected_component'] == 0]
 
     @staticmethod
     def _filter_branches(branches: DataFrame, buses: DataFrame) -> DataFrame:
@@ -54,9 +80,8 @@ class NetworkCache:
         branches_and_buses = pd.merge(branches_and_buses, buses, left_on='bus2_id', right_index=True,
                                       suffixes=('', '_2'), how='left', validate='m:1')
         return branches_and_buses[
-            (branches_and_buses['connected_component'] == 0) & (branches_and_buses['synchronous_component'] == 0) | (
-                    branches_and_buses['connected_component_2'] == 0) & (
-                    branches_and_buses['synchronous_component_2'] == 0)]
+            (branches_and_buses['connected_component'] == 0) | (
+                    branches_and_buses['connected_component_2'] == 0)]
 
     @staticmethod
     def _filter_3w_transformers(transformers_3w: DataFrame, buses: DataFrame) -> DataFrame:
@@ -167,7 +192,8 @@ class NetworkCache:
     @staticmethod
     def _build_buses(network: Network, voltage_levels: DataFrame) -> DataFrame:
         buses = network.get_buses(attributes=['voltage_level_id', 'connected_component', 'synchronous_component'])
-        buses = buses[(buses['synchronous_component'] == 0) & (buses['connected_component'] == 0)]
+        buses = buses[buses['connected_component'] == 0]
+        buses = buses.astype({'voltage_level_id': object})
         return pd.merge(buses, voltage_levels, left_on='voltage_level_id', right_index=True, how='left', validate='m:1')
 
     @staticmethod
@@ -193,7 +219,7 @@ class NetworkCache:
 
     @staticmethod
     def _build_current_limits(network: Network) -> tuple[DataFrame, DataFrame]:
-        limits = network.get_operational_limits(attributes=['name', 'value']).reset_index(
+        limits = network.get_loading_limits(attributes=['name', 'value']).reset_index(
             level=['side', 'type', 'acceptable_duration', 'group_name'])
         limits = limits[(limits['type'] == 'CURRENT') & (limits['name'] == 'permanent_limit')]
         return limits[limits['side'] == 'ONE'][['value']], limits[limits['side'] == 'TWO'][['value']]
@@ -214,6 +240,36 @@ class NetworkCache:
         points.loc[points['id'].isin(vsc_converter_stations.index), 'element_type'] = 'VSC'
         points = points[points['element_type'].notna()]
         return points.set_index(['id', 'num'])
+
+    @staticmethod
+    def _build_dc_buses(network: Network) -> DataFrame:
+        dc_buses = network.get_dc_buses(attributes=['connected_component', 'dc_component'])
+        return dc_buses[dc_buses['connected_component'] == 0]
+
+    @staticmethod
+    def _build_dc_nodes(network: Network, dc_buses: DataFrame) -> DataFrame:
+        dc_nodes = network.get_dc_nodes(attributes=['dc_bus_id', 'nominal_v'])
+        dc_nodes = dc_nodes.astype({'dc_bus_id': object})
+        return pd.merge(dc_nodes, dc_buses, left_on='dc_bus_id', right_index=True, how='left')
+
+    @staticmethod
+    def _build_dc_lines(network: Network) -> DataFrame:
+        return network.get_dc_lines(attributes=['dc_node1_id', 'dc_node2_id', 'connected1', 'connected2', 'r'])
+
+    @staticmethod
+    def _build_dc_switches(network: Network) -> DataFrame:
+        return network.get_dc_switches(attributes=['dc_node1_id', 'dc_node2_id', 'open', 'r'])
+
+    @staticmethod
+    def _build_voltage_source_converters(network: Network) -> DataFrame:
+        return network.get_voltage_source_converters(attributes=['voltage_level_id', 'bus1_id', 'bus2_id', 'dc_node1_id', 'dc_node2_id',
+                                     'dc_connected1', 'dc_connected2', 'pcc_terminal_id', 'voltage_regulator_on',
+                                     'control_mode', 'target_v_dc', 'target_v_ac', 'target_p', 'target_q', 'idle_loss',
+                                     'switching_loss', 'resistive_loss', 'min_p', 'max_p'])
+
+    @staticmethod
+    def _build_dc_grounds(network: Network) -> DataFrame:
+        return network.get_dc_grounds(attributes=['dc_node_id', 'connected', 'r'])
 
     @property
     def network(self) -> Network:
@@ -290,6 +346,30 @@ class NetworkCache:
     @property
     def reactive_capability_curve_points(self) -> DataFrame:
         return self._reactive_capability_curve_points
+
+    @property
+    def dc_buses(self) -> DataFrame:
+        return self._dc_buses
+
+    @property
+    def dc_lines(self) -> DataFrame:
+        return self._dc_lines
+
+    @property
+    def dc_nodes(self) -> DataFrame:
+        return self._dc_nodes
+
+    @property
+    def dc_switches(self) -> DataFrame:
+        return self._dc_switches
+
+    @property
+    def voltage_source_converters(self) -> DataFrame:
+        return self._voltage_source_converters
+
+    @property
+    def dc_grounds(self) -> DataFrame:
+        return self._dc_grounds
 
     @staticmethod
     def is_rectifier(vsc_cs_id: str, hvdc_line_row: HvdcRow) -> bool:
@@ -488,3 +568,40 @@ class NetworkCache:
                                                           angle=[math.nan] * len(disconnected_bl_ids))
 
         self._boundary_lines = self._build_boundary_lines(self._network, self._buses)
+
+    def update_dc_nodes(self,
+                     dc_node_ids: list[str],
+                     dc_node_v: list[float]) -> None:
+        self._network.update_dc_nodes(id=dc_node_ids, v=dc_node_v)
+        self._dc_nodes = self._build_dc_nodes(self._network, self.dc_buses)
+
+    def update_dc_lines(self,
+                        dc_line_ids: list[str],
+                        dc_line_i: list[float]) -> None:
+        # i2 is the mirror of i1: oriented dc_node2 -> dc_node1.
+        dc_line_i2 = [-i for i in dc_line_i]
+        self._network.update_dc_lines(id=dc_line_ids,
+                                      i1=dc_line_i,
+                                      i2=dc_line_i2)
+        self._dc_lines = self._build_dc_lines(self._network)
+
+    def update_voltage_source_converters(self,
+                                         conv_ids: list[str],
+                                         conv_p: list[float],
+                                         conv_q: list[float],
+                                         conv_p_dc1: list[float],
+                                         conv_p_dc2: list[float],
+                                         conv_target_p: list[float],
+                                         conv_target_q:list[float],
+                                         conv_target_v_dc: list[float],
+                                         conv_target_v_ac: list[float]) -> None:
+        self._network.update_voltage_source_converters(id=conv_ids,
+                                                       p_ac=conv_p,
+                                                       q_ac=conv_q,
+                                                       p_dc1=conv_p_dc1,
+                                                       p_dc2=conv_p_dc2,
+                                                       target_p=conv_target_p,
+                                                       target_q=conv_target_q,
+                                                       target_v_dc=conv_target_v_dc,
+                                                       target_v_ac=conv_target_v_ac)
+        self._voltage_source_converters = self._build_voltage_source_converters(self._network)

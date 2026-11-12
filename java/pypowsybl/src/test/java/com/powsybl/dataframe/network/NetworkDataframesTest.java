@@ -10,21 +10,25 @@ package com.powsybl.dataframe.network;
 import com.google.common.collect.ImmutableMap;
 import com.powsybl.cgmes.extensions.CgmesMetadataModels;
 import com.powsybl.cgmes.extensions.CgmesMetadataModelsAdder;
+import com.powsybl.commons.PowsyblException;
 import com.powsybl.dataframe.DataframeElementType;
 import com.powsybl.dataframe.DataframeFilter;
 import com.powsybl.dataframe.DoubleIndexedSeries;
 import com.powsybl.dataframe.impl.DefaultDataframeHandler;
 import com.powsybl.dataframe.impl.Series;
+import com.powsybl.dataframe.network.adders.NetworkElementAdders;
 import com.powsybl.dataframe.network.extensions.NetworkExtensions;
 import com.powsybl.dataframe.update.*;
 import com.powsybl.iidm.network.*;
 import com.powsybl.iidm.network.extensions.*;
+import com.powsybl.iidm.network.test.BatteryNetworkFactory;
 import com.powsybl.iidm.network.test.DcDetailedNetworkFactory;
 import com.powsybl.iidm.network.test.EurostagTutorialExample1Factory;
 import com.powsybl.iidm.network.test.HvdcTestNetwork;
 import com.powsybl.iidm.network.test.TwoVoltageLevelNetworkFactory;
 import com.powsybl.python.network.NetworkUtilTest;
 import com.powsybl.python.network.Networks;
+
 import org.junit.jupiter.api.Test;
 
 import java.util.*;
@@ -110,6 +114,61 @@ class NetworkDataframesTest {
                 .containsExactly(0, 0, 0, 0);
         assertThat(series.get(6).getStrings())
                 .containsExactly("VLGEN", "VLHV1", "VLHV2", "VLLOAD");
+
+        List<Series> allAttributeSeries = createDataFrame(BUS, network, new DataframeFilter(ALL_ATTRIBUTES, Collections.emptyList()));
+        assertThat(allAttributeSeries)
+                .extracting(Series::getName)
+                .contains("fictitious_p0", "fictitious_q0");
+    }
+
+    @Test
+    void busesFictitiousInjectionUpdate() {
+        Network network = EurostagTutorialExample1Factory.create();
+
+        DefaultUpdatingDataframe dataframe = new DefaultUpdatingDataframe(1);
+        dataframe.addSeries("id", true, new TestStringSeries("VLGEN_0"));
+        dataframe.addSeries("fictitious_p0", false, new TestDoubleSeries(1.0));
+        dataframe.addSeries("fictitious_q0", false, new TestDoubleSeries(2.0));
+        NetworkDataframeMapper mapper = NetworkDataframes.getDataframeMapper(BUS);
+        mapper.updateSeries(network, dataframe, NetworkDataframeContext.DEFAULT);
+
+        Bus bus = network.getBusView().getBus("VLGEN_0");
+        assertEquals(1.0, bus.getFictitiousP0(), 0.0);
+        assertEquals(2.0, bus.getFictitiousQ0(), 0.0);
+
+        Map<String, Series> attributes = createDataFrame(BUS, network, new DataframeFilter(ALL_ATTRIBUTES, Collections.emptyList()))
+                .stream().collect(ImmutableMap.toImmutableMap(Series::getName, Function.identity()));
+        assertThat(attributes.get("fictitious_p0").getDoubles()).contains(1.0);
+        assertThat(attributes.get("fictitious_q0").getDoubles()).contains(2.0);
+    }
+
+    @Test
+    void busBreakerViewBusesFictitiousInjection() {
+        // VL1 is Node/Breaker, VL2 is Bus/Breaker
+        Network network = TwoVoltageLevelNetworkFactory.create();
+        List<Series> series = createDataFrame(BUS_FROM_BUS_BREAKER_VIEW, network,
+                new DataframeFilter(ALL_ATTRIBUTES, Collections.emptyList()));
+        assertThat(series)
+                .extracting(Series::getName)
+                .contains("fictitious_p0", "fictitious_q0");
+    }
+
+    @Test
+    void busesFictitiousInjectionUpdateNodeBreaker() {
+        // VL1 is Node/Breaker: its bus view bus is a calculated bus aggregating the fictitious injection over its nodes
+        Network network = TwoVoltageLevelNetworkFactory.create();
+        String busId = network.getBusView().getBusStream().findFirst().orElseThrow().getId();
+
+        DefaultUpdatingDataframe dataframe = new DefaultUpdatingDataframe(1);
+        dataframe.addSeries("id", true, new TestStringSeries(busId));
+        dataframe.addSeries("fictitious_p0", false, new TestDoubleSeries(1.0));
+        dataframe.addSeries("fictitious_q0", false, new TestDoubleSeries(2.0));
+        NetworkDataframeMapper mapper = NetworkDataframes.getDataframeMapper(BUS);
+        mapper.updateSeries(network, dataframe, NetworkDataframeContext.DEFAULT);
+
+        Bus bus = network.getBusView().getBus(busId);
+        assertEquals(1.0, bus.getFictitiousP0(), 0.0);
+        assertEquals(2.0, bus.getFictitiousQ0(), 0.0);
     }
 
     @Test
@@ -249,6 +308,72 @@ class NetworkDataframesTest {
                 network.getGeneratorStream().map(Generator::getNameOrId).collect(Collectors.toList()));
         series = createExtensionDataFrame("activePowerControl", network);
         assertEquals(0, series.get(0).getStrings().length);
+    }
+
+    @Test
+    void batteriesExtension() {
+        Network network = BatteryNetworkFactory.create();
+        network.getBattery("BAT2")
+                .newExtension(ActivePowerControlAdder.class)
+                .withParticipate(true)
+                .withDroop(1.1)
+                .add();
+        List<Series> series = createExtensionDataFrame("activePowerControl", network);
+        assertThat(series.get(0).getStrings())
+                .containsExactly("BAT2");
+        assertThat(series.get(1).getDoubles())
+                .containsExactly(1.1);
+        assertThat(series.get(2).getBooleans())
+                .containsExactly(true);
+
+        DefaultUpdatingDataframe dataframe = new DefaultUpdatingDataframe(1);
+        dataframe.addSeries("id", true, new TestStringSeries("BAT2"));
+        dataframe.addSeries("droop", false, new TestDoubleSeries(1.2));
+        dataframe.addSeries("participation_factor", false, new TestDoubleSeries(1.5));
+        dataframe.addSeries("max_target_p", false, new TestDoubleSeries(150.));
+        dataframe.addSeries("min_target_p", false, new TestDoubleSeries(-150.));
+        updateExtension("activePowerControl", network, dataframe);
+        series = createExtensionDataFrame("activePowerControl", network);
+        assertThat(series.get(1).getDoubles())
+                .containsExactly(1.2);
+        assertThat(series.get(3).getDoubles())
+                .containsExactly(1.5);
+        assertThat(series.get(4).getDoubles())
+                .containsExactly(150.);
+        assertThat(series.get(5).getDoubles())
+                .containsExactly(-150.);
+
+        NetworkExtensions.removeExtensions(network, "activePowerControl", List.of("BAT2"));
+        series = createExtensionDataFrame("activePowerControl", network);
+        assertEquals(0, series.get(0).getStrings().length);
+    }
+
+    @Test
+    void generatorsAndBatteriesExtension() {
+        Network network = BatteryNetworkFactory.create();
+        DefaultUpdatingDataframe dataframe = new DefaultUpdatingDataframe(2);
+        dataframe.addSeries("id", true, new TestStringSeries("GEN", "BAT"));
+        dataframe.addSeries("droop", false, new TestDoubleSeries(1.1, 2.2));
+        dataframe.addSeries("participate", false, new TestIntSeries(1, 0));
+        NetworkElementAdders.addExtensions("activePowerControl", network, List.of(dataframe));
+
+        List<Series> series = createExtensionDataFrame("activePowerControl", network);
+        // generators are listed first, then batteries
+        assertThat(series.get(0).getStrings())
+                .containsExactly("GEN", "BAT");
+        assertThat(series.get(1).getDoubles())
+                .containsExactly(1.1, 2.2);
+        assertThat(series.get(2).getBooleans())
+                .containsExactly(true, false);
+
+        // a load is neither a generator nor a battery
+        DefaultUpdatingDataframe loadDataframe = new DefaultUpdatingDataframe(1);
+        loadDataframe.addSeries("id", true, new TestStringSeries("LOAD"));
+        loadDataframe.addSeries("droop", false, new TestDoubleSeries(1.1));
+        List<UpdatingDataframe> loadDataframes = List.of(loadDataframe);
+        PowsyblException e = assertThrows(PowsyblException.class,
+                () -> NetworkElementAdders.addExtensions("activePowerControl", network, loadDataframes));
+        assertEquals("Network element 'LOAD' is not a generator or a battery", e.getMessage());
     }
 
     @Test
@@ -608,6 +733,49 @@ class NetworkDataframesTest {
     }
 
     @Test
+    void overloadManagementSystemTrippings() {
+        Network network = EurostagTutorialExample1Factory.create();
+        network.getSubstation("P1").newOverloadManagementSystem()
+                .setId("OMS1")
+                .setMonitoredElementId("NHV1_NHV2_1")
+                .setMonitoredElementSide(ThreeSides.ONE)
+                .newBranchTripping()
+                    .setKey("trip1")
+                    .setCurrentLimit(1000.)
+                    .setOpenAction(true)
+                    .setBranchToOperateId("NHV1_NHV2_2")
+                    .setSideToOperate(TwoSides.ONE)
+                .add()
+                .add();
+
+        List<Series> series = createDataFrame(OVERLOAD_MANAGEMENT_SYSTEM_TRIPPING, network);
+        assertThat(series)
+                .extracting(Series::getName)
+                .containsExactly("id", "tripping_key", "name", "tripping_type", "current_limit", "open_action",
+                        "element_to_operate_id", "side_to_operate");
+        assertThat(series.get(0).getStrings()).containsExactly("OMS1");
+        assertThat(series.get(1).getStrings()).containsExactly("trip1");
+        assertThat(series.get(3).getStrings()).containsExactly("BRANCH_TRIPPING");
+        assertThat(series.get(6).getStrings()).containsExactly("NHV1_NHV2_2");
+        assertThat(series.get(7).getStrings()).containsExactly("ONE");
+
+        DefaultUpdatingDataframe dataframe = new DefaultUpdatingDataframe(1);
+        dataframe.addSeries("id", true, new TestStringSeries("OMS1"));
+        dataframe.addSeries("tripping_key", true, new TestStringSeries("trip1"));
+        dataframe.addSeries("current_limit", false, new TestDoubleSeries(1200.));
+        dataframe.addSeries("element_to_operate_id", false, new TestStringSeries("NHV1_NHV2_1"));
+        dataframe.addSeries("side_to_operate", false, new TestStringSeries("TWO"));
+        NetworkDataframes.getDataframeMapper(OVERLOAD_MANAGEMENT_SYSTEM_TRIPPING)
+                .updateSeries(network, dataframe, NetworkDataframeContext.DEFAULT);
+
+        OverloadManagementSystem.BranchTripping tripping = (OverloadManagementSystem.BranchTripping)
+                network.getOverloadManagementSystem("OMS1").getTrippings().getFirst();
+        assertEquals(1200., tripping.getCurrentLimit(), 0.);
+        assertEquals("NHV1_NHV2_1", tripping.getBranchToOperateId());
+        assertEquals(TwoSides.TWO, tripping.getSideToOperate());
+    }
+
+    @Test
     void phaseTapChangerSteps() {
         Network network = EurostagTutorialExample1Factory.create();
         List<Series> series = createDataFrame(PHASE_TAP_CHANGER_STEP, network);
@@ -807,10 +975,10 @@ class NetworkDataframesTest {
     }
 
     @Test
-    void testOperationalLimits() {
+    void testLoadingLimits() {
         Network network = EurostagTutorialExample1Factory.createWithFixedLimits();
-        List<Series> limits = createDataFrame(OPERATIONAL_LIMITS, network);
-        List<Series> selectedLimits = createDataFrame(SELECTED_OPERATIONAL_LIMITS, network);
+        List<Series> limits = createDataFrame(LOADING_LIMITS, network);
+        List<Series> selectedLimits = createDataFrame(SELECTED_LOADING_LIMITS, network);
 
         assertThat(limits)
             .extracting(Series::getName).containsExactly("element_id", "element_type", "side",
@@ -904,7 +1072,7 @@ class NetworkDataframesTest {
 
         assertThat(series)
                 .extracting(Series::getName)
-                .containsExactly("id", "name", "dc_node1_id", "dc_node2_id", "r", "i1", "p1", "i2", "p2");
+                .containsExactly("id", "name", "dc_node1_id", "dc_node2_id", "connected1", "connected2", "r", "i1", "p1", "i2", "p2");
     }
 
     @Test
@@ -915,9 +1083,30 @@ class NetworkDataframesTest {
         assertThat(series)
                 .extracting(Series::getName)
                 .containsExactly("id", "name", "voltage_level_id", "bus1_id", "bus2_id", "dc_node1_id", "dc_node2_id",
-                        "dc_connected1", "dc_connected2", "pcc_terminal_id", "voltage_regulator_on", "control_mode",
+                        "connected1", "connected2", "dc_connected1", "dc_connected2", "pcc_terminal_id", "voltage_regulator_on", "control_mode",
                         "target_v_dc", "target_v_ac", "target_p", "target_q", "idle_loss", "switching_loss", "resistive_loss", "p_ac",
                         "q_ac", "p_dc1", "p_dc2");
+    }
+
+    @Test
+    void voltageSourceConvertersMinMaxP() {
+        Network network = DcDetailedNetworkFactory.createVscSymmetricalMonopole();
+
+        Map<String, Series> attrs = createDataFrame(VOLTAGE_SOURCE_CONVERTER, network,
+                new DataframeFilter(ALL_ATTRIBUTES, Collections.emptyList()))
+                .stream().collect(ImmutableMap.toImmutableMap(Series::getName, Function.identity()));
+        // default unbounded -> +/-inf for both converters (VscFr, VscGb)
+        assertThat(attrs.get("min_p").getDoubles()).containsExactly(Double.NEGATIVE_INFINITY, Double.NEGATIVE_INFINITY);
+        assertThat(attrs.get("max_p").getDoubles()).containsExactly(Double.POSITIVE_INFINITY, Double.POSITIVE_INFINITY);
+
+        // finite values via core API read back
+        network.getVoltageSourceConverter("VscFr").setMinP(-100.0).setMaxP(200.0);
+        attrs = createDataFrame(VOLTAGE_SOURCE_CONVERTER, network, new DataframeFilter(ALL_ATTRIBUTES, Collections.emptyList()))
+                .stream().collect(ImmutableMap.toImmutableMap(Series::getName, Function.identity()));
+        int row = Arrays.asList(attrs.get("id").getStrings()).indexOf("VscFr");
+        assertThat(row).isNotNegative();
+        assertThat(attrs.get("min_p").getDoubles()[row]).isEqualTo(-100.0);
+        assertThat(attrs.get("max_p").getDoubles()[row]).isEqualTo(200.0);
     }
 
     @Test
@@ -927,7 +1116,24 @@ class NetworkDataframesTest {
 
         assertThat(series)
                 .extracting(Series::getName)
-                .containsExactly("id", "name", "dc_node_id", "r");
+                .containsExactly("id", "name", "dc_node_id", "connected", "r");
+    }
+
+    @Test
+    void dcSwitches() {
+        Network network = DcDetailedNetworkFactory.createSimple2NodesDcSwitch();
+        List<Series> series = createDataFrame(DC_SWITCH, network);
+
+        assertThat(series)
+                .extracting(Series::getName)
+                .containsExactly("id", "name", "dc_node1_id", "dc_node2_id", "kind", "open", "r");
+        // fictitious is hidden by default
+
+        // With all columns
+        List<Series> allAttributeSeries = createDataFrame(DC_SWITCH, network, new DataframeFilter(ALL_ATTRIBUTES, Collections.emptyList()));
+        assertThat(allAttributeSeries)
+                .extracting(Series::getName)
+                .containsExactly("id", "name", "dc_node1_id", "dc_node2_id", "kind", "open", "r", "fictitious");
     }
 
     @Test

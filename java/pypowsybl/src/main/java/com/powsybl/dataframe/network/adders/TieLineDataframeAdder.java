@@ -17,8 +17,6 @@ import com.powsybl.iidm.network.TieLineAdder;
 import java.util.Collections;
 import java.util.List;
 
-import static com.powsybl.dataframe.network.adders.SeriesUtils.applyIfPresent;
-
 /**
  * @author Coline Piloquet {@literal <coline.piloquet@rte-france.com>}
  */
@@ -28,7 +26,9 @@ public class TieLineDataframeAdder extends AbstractSimpleAdder {
             SeriesMetadata.stringIndex("id"),
             SeriesMetadata.strings("name"),
             SeriesMetadata.strings("boundary_line1_id"),
-            SeriesMetadata.strings("boundary_line2_id")
+            SeriesMetadata.strings("boundary_line2_id"),
+            SeriesMetadata.deprecatedStrings("dangling_line1_id"),
+            SeriesMetadata.deprecatedStrings("dangling_line2_id")
     );
 
     @Override
@@ -40,18 +40,30 @@ public class TieLineDataframeAdder extends AbstractSimpleAdder {
 
         private final StringSeries boundaryLine1Ids;
         private final StringSeries boundaryLine2Ids;
+        private final StringSeries danglingLine1Ids;
+        private final StringSeries danglingLine2Ids;
 
         TieLineSeries(UpdatingDataframe dataframe) {
             super(dataframe);
             this.boundaryLine1Ids = dataframe.getStrings("boundary_line1_id");
             this.boundaryLine2Ids = dataframe.getStrings("boundary_line2_id");
+            this.danglingLine1Ids = dataframe.getStrings("dangling_line1_id");
+            this.danglingLine2Ids = dataframe.getStrings("dangling_line2_id");
         }
 
         TieLineAdder create(Network network, int row) {
             TieLineAdder adder = network.newTieLine();
             setIdentifiableAttributes(adder, row);
-            applyIfPresent(boundaryLine1Ids, row, adder::setBoundaryLine1);
-            applyIfPresent(boundaryLine2Ids, row, adder::setBoundaryLine2);
+            if (boundaryLine1Ids != null) {
+                adder.setBoundaryLine1(boundaryLine1Ids.get(row));
+            } else if (danglingLine1Ids != null) {
+                adder.setBoundaryLine1(danglingLine1Ids.get(row));
+            }
+            if (boundaryLine2Ids != null) {
+                adder.setBoundaryLine2(boundaryLine2Ids.get(row));
+            } else if (danglingLine2Ids != null) {
+                adder.setBoundaryLine2(danglingLine2Ids.get(row));
+            }
             return adder;
         }
     }

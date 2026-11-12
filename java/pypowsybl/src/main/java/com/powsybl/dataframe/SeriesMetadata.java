@@ -17,13 +17,19 @@ public class SeriesMetadata {
     private final boolean modifiable;
     private final SeriesDataType type;
     private final boolean defaultAttribute;
+    private final boolean deprecated;
 
     public SeriesMetadata(boolean index, String name, boolean modifiable, SeriesDataType type, boolean defaultAttribute) {
+        this(index, name, modifiable, type, defaultAttribute, false);
+    }
+
+    public SeriesMetadata(boolean index, String name, boolean modifiable, SeriesDataType type, boolean defaultAttribute, boolean deprecated) {
         this.index = index;
         this.name = name;
         this.modifiable = modifiable;
         this.type = type;
         this.defaultAttribute = defaultAttribute;
+        this.deprecated = deprecated;
     }
 
     public boolean isIndex() {
@@ -44,6 +50,10 @@ public class SeriesMetadata {
 
     public static SeriesMetadata strings(String name) {
         return new SeriesMetadata(false, name, false, SeriesDataType.STRING, false);
+    }
+
+    public static SeriesMetadata deprecatedStrings(String name) {
+        return new SeriesMetadata(false, name, false, SeriesDataType.STRING, false, true);
     }
 
     public static SeriesMetadata ints(String name) {
@@ -68,5 +78,9 @@ public class SeriesMetadata {
 
     public boolean isDefaultAttribute() {
         return defaultAttribute;
+    }
+
+    public boolean isDeprecated() {
+        return deprecated;
     }
 }

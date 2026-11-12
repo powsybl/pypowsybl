@@ -1,5 +1,5 @@
 {
-  "version" : "3.3",
+  "version" : "3.4",
   "objective-function" : {
     "type" : "MAX_MIN_MARGIN",
     "enforce-curative-security" : true

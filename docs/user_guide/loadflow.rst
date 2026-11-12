@@ -185,11 +185,11 @@ Reports contain detailed computation information. To see those reports, pass a r
 
 .. code-block:: python
 
-    >>> report_node = pp.report.ReportNode()
+    >>> report_node = pp.report.ReportNode('Load flow report')
     >>> network = pn.create_eurostag_tutorial_example1_network()
     >>> results = lf.run_ac(network, parameters, report_node=report_node)
     >>> print(report_node)
-    +
+    + Load flow report
        + Load flow on network 'sim1'
           + Network CC0 SC0
              + Network info

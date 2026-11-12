@@ -30,8 +30,7 @@ class NetworkStatistics:
             return self._network_cache.batteries[attribute_id] if len(self._network_cache.batteries) > 0 else None
         if element_type == ElementType.VSC_CONVERTER_STATION:
             return self._network_cache.vsc_converter_stations[attribute_id] if len(self._network_cache.vsc_converter_stations) > 0 else None
-        else:
-            raise ValueError(f"Unknown element type: {element_type}")
+        raise ValueError(f"Unknown element type: {element_type}")
 
     def add(self, element_type: ElementType, attribute_id: str) -> None:
         column = self._get_column(element_type, attribute_id)

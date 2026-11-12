@@ -76,4 +76,4 @@ def test_runner():
     results.apply_all_modifications(n)
 
     assert results.status == v_init.VoltageInitializerStatus.OK
-    assert len(results.indicators) == 86
+    assert len(results.indicators) == 92

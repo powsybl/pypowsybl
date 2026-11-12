@@ -54,6 +54,22 @@ public final class PerUnitUtil {
         return context.isPerUnit() ? i / ((sqrt(3) * nominalV) / (context.getNominalApparentPower() * pow(10, 3))) : i;
     }
 
+    public static double perUnitDcI(NetworkDataframeContext context, DcTerminal terminal) {
+        return perUnitDcI(context, terminal.getI(), terminal.getDcNode().getNominalV());
+    }
+
+    public static double perUnitDcI(NetworkDataframeContext context, double i, double nominalV) {
+        return context.isPerUnit() ? nominalV / (context.getNominalApparentPower() * 1e3) * i : i;
+    }
+
+    public static double unPerUnitDcI(NetworkDataframeContext context, double i, double nominalV) {
+        return context.isPerUnit() ? i / (nominalV / (context.getNominalApparentPower() * 1e3)) : i;
+    }
+
+    public static double unPerUnitDcI(NetworkDataframeContext context, double i, DcTerminal terminal) {
+        return unPerUnitDcI(context, i, terminal.getDcNode().getNominalV());
+    }
+
     public static double perUnitGSide1(NetworkDataframeContext context, Line line) {
         return perUnitG(context, line.getG1(), line.getR(), line.getX(),
             line.getTerminal1().getVoltageLevel().getNominalV(), line.getTerminal2().getVoltageLevel().getNominalV());
@@ -184,6 +200,14 @@ public final class PerUnitUtil {
         return perUnitRX(context, dcLine.getR(), dcLine.getDcTerminal1().getDcNode().getNominalV(), dcLine.getDcTerminal2().getDcNode().getNominalV());
     }
 
+    public static double perUnitR(NetworkDataframeContext context, DcSwitch dcSwitch) {
+        return perUnitRX(context, dcSwitch.getR(), dcSwitch.getDcNode1().getNominalV(), dcSwitch.getDcNode2().getNominalV());
+    }
+
+    public static double perUnitR(NetworkDataframeContext context, DcGround dcGround) {
+        return perUnitR(context, dcGround.getR(), dcGround.getDcTerminal().getDcNode().getNominalV());
+    }
+
     public static double perUnitRX(NetworkDataframeContext context, double rx, Terminal terminal) {
         return perUnitRX(context, rx, terminal.getVoltageLevel().getNominalV(), terminal.getVoltageLevel().getNominalV());
     }
@@ -198,6 +222,15 @@ public final class PerUnitUtil {
 
     public static double unPerUnitRX(NetworkDataframeContext context, DcLine dcLine, double r) {
         return unPerUnitRX(context, r, dcLine.getDcTerminal1().getDcNode().getNominalV(), dcLine.getDcTerminal2().getDcNode().getNominalV());
+    }
+
+    public static double unPerUnitRX(NetworkDataframeContext context, DcSwitch dcSwitch, double r) {
+        return unPerUnitRX(context, r, dcSwitch.getDcNode1().getNominalV(), dcSwitch.getDcNode2().getNominalV());
+    }
+
+    public static double unPerUnitRX(NetworkDataframeContext context, DcGround dcGround, double r) {
+        double nominalV = dcGround.getDcTerminal().getDcNode().getNominalV();
+        return unPerUnitRX(context, r, nominalV, nominalV);
     }
 
     public static double unPerUnitRX(NetworkDataframeContext context, Terminal terminal, double r) {
@@ -310,6 +343,14 @@ public final class PerUnitUtil {
 
     public static double perUnitV(NetworkDataframeContext context, double v, double nominalV) {
         return context.isPerUnit() ? v / nominalV : v;
+    }
+
+    public static double perUnitDcSwitchingLoss(NetworkDataframeContext context, double switchingLoss, DcTerminal terminal) {
+        return context.isPerUnit() ? 1000.0 * perUnitV(context, switchingLoss, terminal) : switchingLoss;
+    }
+
+    public static double unPerUnitDcSwitchingLoss(NetworkDataframeContext context, double switchingLoss, DcTerminal terminal) {
+        return context.isPerUnit() ? unPerUnitV(context, switchingLoss / 1000.0, terminal) : switchingLoss;
     }
 
     public static double perUnitRho(NetworkDataframeContext context, TwoWindingsTransformer twt, double rho) {

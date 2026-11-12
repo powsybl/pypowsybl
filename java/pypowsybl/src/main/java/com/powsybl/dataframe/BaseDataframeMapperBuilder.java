@@ -172,7 +172,12 @@ public class BaseDataframeMapperBuilder<T, U, C, B extends BaseDataframeMapperBu
     }
 
     public B strings(String name, Function<U, String> value, BiConsumer<U, String> updater, boolean defaultAttribute) {
-        series.add(new StringSeriesMapper<>(name, value, updater, defaultAttribute));
+        return strings(name, value, updater, defaultAttribute, false);
+    }
+
+    public B strings(String name, Function<U, String> value, BiConsumer<U, String> updater, boolean defaultAttribute,
+                     boolean deprecated) {
+        series.add(new StringSeriesMapper<>(name, false, value, updater, defaultAttribute, deprecated));
         return (B) this;
     }
 
@@ -187,6 +192,14 @@ public class BaseDataframeMapperBuilder<T, U, C, B extends BaseDataframeMapperBu
     public B stringsIndex(String name, Function<U, String> value) {
         series.add(new StringSeriesMapper<>(name, true, value));
         return (B) this;
+    }
+
+    public B deprecatedStrings(String name, Function<U, String> value) {
+        return strings(name, value, null, true, true);
+    }
+
+    public B deprecatedStrings(String name, Function<U, String> value, BiConsumer<U, String> updater, boolean defaultAttribute) {
+        return strings(name, value, updater, defaultAttribute, true);
     }
 
     public <E extends Enum<E>> B enums(String name, Class<E> enumClass, Function<U, E> value, BiConsumer<U, E> updater) {

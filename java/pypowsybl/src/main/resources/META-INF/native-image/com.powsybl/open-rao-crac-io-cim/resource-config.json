@@ -1,0 +1,16 @@
+{
+  "resources":{
+  "includes":[
+    {
+      "pattern":"\\Qxsd/etso-code-lists.xsd\\E"
+    }, {
+      "pattern":"\\Qxsd/etso-core-cmpts.xsd\\E"
+    }, {
+      "pattern":"\\Qxsd/flowbasedconstraintdocument-25.xsd\\E"
+    }, {
+      "pattern":"\\Qxsd/iec62325-451-n-crac_v2_3.xsd\\E"
+    }, {
+      "pattern":"\\Qxsd/urn-entsoe-eu-wgedi-codelists.xsd\\E"
+    }
+  ]}
+}

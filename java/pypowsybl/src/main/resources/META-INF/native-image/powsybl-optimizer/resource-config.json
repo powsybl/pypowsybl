@@ -1,6 +1,7 @@
 {
   "resources":{
     "includes":[
-      {"pattern":"\\Qcom/powsybl/optimizer/commons/reports.properties\\E"}
+      {"pattern":"\\Qcom/powsybl/optimizer/commons/reports.properties\\E"},
+      {"pattern":"\\Qcom/powsybl/optimizer/commons/reports_fr.properties\\E"}
     ]}
 }

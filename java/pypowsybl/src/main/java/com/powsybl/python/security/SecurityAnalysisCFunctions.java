@@ -443,6 +443,9 @@ public final class SecurityAnalysisCFunctions {
         paramsPtr.setHighVoltageProportionalThreshold(parameters.getIncreasedViolationsParameters().getHighVoltageProportionalThreshold());
         paramsPtr.setLowVoltageAbsoluteThreshold(parameters.getIncreasedViolationsParameters().getLowVoltageAbsoluteThreshold());
         paramsPtr.setLowVoltageProportionalThreshold(parameters.getIncreasedViolationsParameters().getLowVoltageProportionalThreshold());
+        paramsPtr.setMonitoredElementPowerModificationThreshold(parameters.getModifiedMonitoredElementsParameters().getPowerModificationThreshold());
+        paramsPtr.setMonitoredElementVoltageModificationAbsoluteThreshold(parameters.getModifiedMonitoredElementsParameters().getVoltageModificationAbsoluteThreshold());
+        paramsPtr.setMonitoredElementVoltageModificationProportionalThreshold(parameters.getModifiedMonitoredElementsParameters().getVoltageModificationProportionalThreshold());
         paramsPtr.getProviderParameters().setProviderParametersValuesCount(0);
         paramsPtr.getProviderParameters().setProviderParametersKeysCount(0);
         return paramsPtr;

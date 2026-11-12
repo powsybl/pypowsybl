@@ -80,6 +80,10 @@ class PyPowsyblBuild(build_ext):
                 for filename in glob.glob(os.path.join(bin_dir, '*.*')):
                     shutil.copy(filename, extdir)
 
+        pgo_instrument = 'ON' if os.environ.get('PYPOWSYBL_PGO_INSTRUMENT') else 'OFF'
+        cmake_args += ["-DPYPOWSYBL_PGO_INSTRUMENT=" + pgo_instrument]
+        cmake_args += ["-DPYPOWSYBL_PGO_PROFILES=" + os.environ.get('PYPOWSYBL_PGO_PROFILES', '')]
+
         cpp_source_dir=os.path.abspath('cpp')
         subprocess.check_call(['cmake', cpp_source_dir] + cmake_args, cwd=self.build_temp, env=env)
         subprocess.check_call(['cmake', '--build', '.'] + build_args, cwd=self.build_temp)

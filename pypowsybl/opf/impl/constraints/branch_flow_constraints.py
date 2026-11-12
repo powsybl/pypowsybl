@@ -148,4 +148,3 @@ class BranchFlowConstraints(Constraints):
             self.add_branch_constraint(branch_index, t_row.bus1_id, t_row.bus2_id, network_cache, model,
                                        r, x, g1, b1, g2, b2, r1, a1,
                                        variable_context)
-

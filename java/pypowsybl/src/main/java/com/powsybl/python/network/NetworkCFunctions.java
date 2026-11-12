@@ -37,13 +37,12 @@ import com.powsybl.nad.NadParameters;
 import com.powsybl.nad.layout.*;
 import com.powsybl.nad.model.Point;
 import com.powsybl.nad.svg.*;
-import com.powsybl.nad.svg.EdgeInfoEnum;
-import com.powsybl.nad.svg.EdgeInfoParameters;
 import com.powsybl.nad.svg.iidm.DefaultLabelProviderFactory;
 import com.powsybl.python.commons.CTypeUtil;
 import com.powsybl.python.commons.Directives;
 import com.powsybl.python.commons.PyPowsyblApiHeader;
 import com.powsybl.python.commons.Util;
+import com.powsybl.python.commons.Util.PointerProvider;
 import com.powsybl.python.dataframe.CDoubleSeries;
 import com.powsybl.python.dataframe.CIntSeries;
 import com.powsybl.python.dataframe.CStringSeries;
@@ -1029,21 +1028,6 @@ public final class NetworkCFunctions {
         UnmanagedMemory.free(metadata.getAttributesMetadata());
     }
 
-    private static void createSeriesMetadata(List<SeriesMetadata> metadata, DataframeMetadataPointer cMetadata) {
-        SeriesMetadataPointer seriesMetadataPtr = UnmanagedMemory.calloc(metadata.size() * SizeOf.get(SeriesMetadataPointer.class));
-        for (int i = 0; i < metadata.size(); i++) {
-            SeriesMetadata colMetadata = metadata.get(i);
-            SeriesMetadataPointer metadataPtr = seriesMetadataPtr.addressOf(i);
-            metadataPtr.setName(CTypeUtil.toCharPtr(colMetadata.getName()));
-            metadataPtr.setType(convert(colMetadata.getType()));
-            metadataPtr.setIndex(colMetadata.isIndex());
-            metadataPtr.setModifiable(colMetadata.isModifiable());
-            metadataPtr.setDefault(colMetadata.isDefaultAttribute());
-        }
-        cMetadata.setAttributesCount(metadata.size());
-        cMetadata.setAttributesMetadata(seriesMetadataPtr);
-    }
-
     @CEntryPoint(name = "updateNetworkElementsExtensionsWithSeries")
     public static void updateNetworkElementsExtensionsWithSeries(IsolateThread thread, ObjectHandle networkHandle, CCharPointer namePtr,
                                                                  CCharPointer tableNamePtr, DataframePointer dataframe,
@@ -1186,6 +1170,19 @@ public final class NetworkCFunctions {
                 Network network = ObjectHandles.getGlobal().get(networkHandle);
                 String idStr = CTypeUtil.toString(id);
                 return NetworkUtil.updateSwitchPosition(network, idStr, open);
+            }
+        });
+    }
+
+    @CEntryPoint(name = "updateDcSwitchPosition")
+    public static boolean updateDcSwitchPosition(IsolateThread thread, ObjectHandle networkHandle, CCharPointer id, boolean open,
+                                               ExceptionHandlerPointer exceptionHandlerPtr) {
+        return doCatch(exceptionHandlerPtr, new BooleanSupplier() {
+            @Override
+            public boolean getAsBoolean() {
+                Network network = ObjectHandles.getGlobal().get(networkHandle);
+                String idStr = CTypeUtil.toString(id);
+                return NetworkUtil.updateDcSwitchPosition(network, idStr, open);
             }
         });
     }
@@ -2080,11 +2077,14 @@ public final class NetworkCFunctions {
     }
 
     @CEntryPoint(name = "validate")
-    public static ValidationLevelType validate(IsolateThread thread, ObjectHandle networkHandle, ExceptionHandlerPointer exceptionHandlerPtr) {
+    public static ValidationLevelType validate(IsolateThread thread, ObjectHandle networkHandle, ObjectHandle reportNodeHandle,
+                                               ExceptionHandlerPointer exceptionHandlerPtr) {
         exceptionHandlerPtr.setMessage(WordFactory.nullPointer());
+        ReportNode reportNode = ObjectHandles.getGlobal().get(reportNodeHandle);
+        boolean throwException = reportNode == null;
         try {
             Network network = ObjectHandles.getGlobal().get(networkHandle);
-            return Util.convert(network.runValidationChecks());
+            return Util.convert(network.runValidationChecks(throwException, reportNode == null ? ReportNode.NO_OP : reportNode));
         } catch (Throwable t) {
             setException(exceptionHandlerPtr, t);
             return Util.convert(ValidationLevel.MINIMUM_VALUE);
@@ -2118,7 +2118,7 @@ public final class NetworkCFunctions {
                 DataframeMetadataPointer dataframeMetadataArray = UnmanagedMemory.calloc(metadata.size() * SizeOf.get(DataframeMetadataPointer.class));
                 int i = 0;
                 for (List<SeriesMetadata> dataframeMetadata : metadata) {
-                    createSeriesMetadata(dataframeMetadata, dataframeMetadataArray.addressOf(i));
+                    CTypeUtil.createSeriesMetadata(dataframeMetadata, dataframeMetadataArray.addressOf(i));
                     i++;
                 }
                 DataframesMetadataPointer res = UnmanagedMemory.calloc(SizeOf.get(DataframesMetadataPointer.class));

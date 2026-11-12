@@ -9,6 +9,7 @@ package com.powsybl.dataframe.network.adders;
 
 import com.powsybl.dataframe.SeriesMetadata;
 import com.powsybl.dataframe.update.DoubleSeries;
+import com.powsybl.dataframe.update.IntSeries;
 import com.powsybl.dataframe.update.StringSeries;
 import com.powsybl.dataframe.update.UpdatingDataframe;
 import com.powsybl.iidm.network.DcGroundAdder;
@@ -17,6 +18,7 @@ import com.powsybl.iidm.network.Network;
 import java.util.Collections;
 import java.util.List;
 
+import static com.powsybl.dataframe.network.adders.SeriesUtils.applyBooleanIfPresent;
 import static com.powsybl.dataframe.network.adders.SeriesUtils.applyIfPresent;
 
 /**
@@ -28,6 +30,7 @@ public class DcGroundDataFrameAdder extends AbstractSimpleAdder {
             SeriesMetadata.stringIndex("id"),
             SeriesMetadata.strings("name"),
             SeriesMetadata.strings("dc_node_id"),
+            SeriesMetadata.ints("connected"),
             SeriesMetadata.doubles("r")
     );
 
@@ -48,10 +51,12 @@ public class DcGroundDataFrameAdder extends AbstractSimpleAdder {
 
         private final DoubleSeries r;
         private final StringSeries dcNodes;
+        private final IntSeries connected;
 
         DcGroundSeries(UpdatingDataframe dataframe) {
             super(dataframe);
             this.dcNodes = dataframe.getStrings("dc_node_id");
+            this.connected = dataframe.getInts("connected");
             this.r = dataframe.getDoubles("r");
         }
 
@@ -59,6 +64,7 @@ public class DcGroundDataFrameAdder extends AbstractSimpleAdder {
             DcGroundAdder adder = network.newDcGround();
             setIdentifiableAttributes(adder, row);
             applyIfPresent(dcNodes, row, adder::setDcNode);
+            applyBooleanIfPresent(connected, row, adder::setConnected);
             applyIfPresent(r, row, adder::setR);
             adder.add();
         }

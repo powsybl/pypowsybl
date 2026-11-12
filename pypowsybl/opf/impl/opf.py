@@ -7,6 +7,7 @@
 #
 import logging
 import time
+from typing import Optional
 
 import pyoptinterface as poi
 from pypowsybl._pypowsybl import ElementType
@@ -19,6 +20,9 @@ from pypowsybl.opf.impl.bounds.generator_power_bounds import GeneratorPowerBound
 from pypowsybl.opf.impl.bounds.slack_bus_angle_bounds import SlackBusAngleBounds
 from pypowsybl.opf.impl.bounds.transformer_3w_middle_voltage_bounds import Transformer3wMiddleVoltageBounds
 from pypowsybl.opf.impl.bounds.vsc_cs_power_bounds import VscCsPowerBounds
+from pypowsybl.opf.impl.bounds.dc_node_voltage_bounds import DcNodeVoltageBounds
+from pypowsybl.opf.impl.bounds.dc_line_current_bounds import DcLineCurrentBounds
+from pypowsybl.opf.impl.bounds.voltage_source_converter_power_bounds import VoltageSourceConverterPowerBounds
 from pypowsybl.opf.impl.constraints.branch_flow_constraints import BranchFlowConstraints
 from pypowsybl.opf.impl.constraints.current_limit_constraints import CurrentLimitConstraints
 from pypowsybl.opf.impl.constraints.boundary_line_flow_constraints import BoundaryLineFlowConstraints
@@ -28,8 +32,14 @@ from pypowsybl.opf.impl.constraints.shunt_flow_constraints import ShuntFlowConst
 from pypowsybl.opf.impl.constraints.static_var_compensator_reactive_limits_constraints import \
     StaticVarCompensatorReactiveLimitsConstraints
 from pypowsybl.opf.impl.constraints.transformer_3w_flow_constraints import Transformer3wFlowConstraints
+from pypowsybl.opf.impl.constraints.dc_line_constraints import DcLineConstraints
+from pypowsybl.opf.impl.constraints.dc_switch_constraints import DcSwitchConstraints
+from pypowsybl.opf.impl.constraints.voltage_source_converter_constraints import VoltageSourceConverterConstraints
+from pypowsybl.opf.impl.constraints.dc_current_balance_constraints import DcCurrentBalanceConstraints
+from pypowsybl.opf.impl.constraints.dc_ground_constraints import DcGroundConstraints
 from pypowsybl.opf.impl.costs.minimize_against_reference_cost_function import MinimizeAgainstReferenceCostFunction
 from pypowsybl.opf.impl.costs.redispatching_cost_function import RedispatchingCostFunction
+from pypowsybl.opf.impl.costs.minimize_dc_losses import MinimizeDcLossesFunction
 from pypowsybl.opf.impl.model.bounds import Bounds
 from pypowsybl.opf.impl.model.constraints import Constraints
 from pypowsybl.opf.impl.model.cost_function import CostFunction
@@ -38,7 +48,7 @@ from pypowsybl.opf.impl.model.network_cache import NetworkCache
 from pypowsybl.opf.impl.model.opf_model import OpfModel
 from pypowsybl.opf.impl.network_statistics import NetworkStatistics
 from pypowsybl.opf.impl.parameters import OptimalPowerFlowParameters, OptimalPowerFlowMode
-
+from pypowsybl.opf.impl.acdc_network_validator import validate_acdc_network
 logger = logging.getLogger(__name__)
 
 
@@ -64,64 +74,89 @@ class OptimalPowerFlow:
         self._network = network
 
     def run(self, parameters: OptimalPowerFlowParameters) -> bool:
-        network_cache = NetworkCache(self._network)
 
-        variable_bounds = [BusVoltageBounds(),
-                           SlackBusAngleBounds(),
-                           GeneratorPowerBounds(),
-                           BatteryPowerBounds(),
-                           VscCsPowerBounds(),
-                           BoundaryLineVoltageBounds(),
-                           Transformer3wMiddleVoltageBounds()]
-        constraints: list[Constraints] = [BranchFlowConstraints(),
-                                          ShuntFlowConstraints(),
-                                          StaticVarCompensatorReactiveLimitsConstraints(),
-                                          HvdcLineConstraints(),
-                                          PowerBalanceConstraints(),
-                                          BoundaryLineFlowConstraints(),
-                                          Transformer3wFlowConstraints()]
-        if parameters.mode == OptimalPowerFlowMode.REDISPATCHING:
-            constraints.append(CurrentLimitConstraints())
-            cost_function: CostFunction = RedispatchingCostFunction(1.0, 1.0, 1.0)
-        else:
-            cost_function = MinimizeAgainstReferenceCostFunction()
-        model_parameters = ModelParameters(parameters.reactive_bounds_reduction,
-                                           parameters.twt_split_shunt_admittance,
-                                           Bounds(parameters.default_voltage_bounds[0], parameters.default_voltage_bounds[1]),
-                                           parameters.solver_type,
-                                           parameters.solver_options)
-        opf_model = OpfModel.build(network_cache, model_parameters, variable_bounds, constraints, cost_function)
+        validate_acdc_network(self._network)
 
-        network_stats = NetworkStatistics(network_cache)
-        network_stats.add(ElementType.GENERATOR, 'target_v')
-        network_stats.add(ElementType.BATTERY, 'target_v')
-        network_stats.add(ElementType.VSC_CONVERTER_STATION, 'target_v')
-        network_stats.add(ElementType.GENERATOR, 'target_p')
-        network_stats.add(ElementType.BATTERY, 'target_p')
-        network_stats.add(ElementType.VSC_CONVERTER_STATION, 'target_p')
+        with NetworkCache(self._network) as network_cache:
+            variable_bounds = [BusVoltageBounds(),
+                               SlackBusAngleBounds(),
+                               GeneratorPowerBounds(),
+                               BatteryPowerBounds(),
+                               VscCsPowerBounds(),
+                               BoundaryLineVoltageBounds(),
+                               Transformer3wMiddleVoltageBounds(),
+                               VoltageSourceConverterPowerBounds(),
+                               DcNodeVoltageBounds(),
+                               DcLineCurrentBounds()]
+            constraints: list[Constraints] = [BranchFlowConstraints(),
+                                              ShuntFlowConstraints(),
+                                              StaticVarCompensatorReactiveLimitsConstraints(),
+                                              HvdcLineConstraints(),
+                                              PowerBalanceConstraints(),
+                                              BoundaryLineFlowConstraints(),
+                                              Transformer3wFlowConstraints(),
+                                              DcLineConstraints(),
+                                              DcSwitchConstraints(),
+                                              VoltageSourceConverterConstraints(),
+                                              DcCurrentBalanceConstraints(),
+                                              DcGroundConstraints()]
+            if parameters.mode == OptimalPowerFlowMode.REDISPATCHING:
+                constraints.append(CurrentLimitConstraints())
+                cost_function: CostFunction = RedispatchingCostFunction(1.0, 1.0, 1.0)
+            elif parameters.mode == OptimalPowerFlowMode.LOADFLOW:
+                cost_function = MinimizeAgainstReferenceCostFunction()
+            elif parameters.mode == OptimalPowerFlowMode.ACDC:
+                cost_function = MinimizeDcLossesFunction()
+            else:
+                raise ValueError(f"Expected a valid OPF mode and got {parameters.mode}")
+            model_parameters = ModelParameters(parameters.reactive_bounds_reduction,
+                                               parameters.twt_split_shunt_admittance,
+                                               Bounds(parameters.default_voltage_bounds[0], parameters.default_voltage_bounds[1]),
+                                               parameters.solver_type,
+                                               parameters.solver_options)
+            opf_model = OpfModel.build(network_cache, model_parameters, variable_bounds, constraints, cost_function)
 
-        logger.info(f"Starting optimization with {parameters.solver_type.name}...")
-        start = time.perf_counter()
+            network_stats = NetworkStatistics(network_cache)
+            network_stats.add(ElementType.GENERATOR, 'target_v')
+            network_stats.add(ElementType.BATTERY, 'target_v')
+            network_stats.add(ElementType.VSC_CONVERTER_STATION, 'target_v')
+            network_stats.add(ElementType.GENERATOR, 'target_p')
+            network_stats.add(ElementType.BATTERY, 'target_p')
+            network_stats.add(ElementType.VSC_CONVERTER_STATION, 'target_p')
 
-        opf_model.model.set_model_attribute(poi.ModelAttribute.Silent, False)
-        opf_model.model.optimize()
-        status = opf_model.model.get_model_attribute(poi.ModelAttribute.TerminationStatus)
+            logger.info(f"Starting optimization with {parameters.solver_type.name}...")
+            start = time.perf_counter()
 
-        logger.info(f"Optimization ends with status {status.name} in {time.perf_counter() - start:.3f} seconds.")
+            opf_model.model.set_model_attribute(poi.ModelAttribute.Silent, False)
+            opf_model.model.optimize()
+            status = opf_model.model.get_model_attribute(poi.ModelAttribute.TerminationStatus)
 
-        # for debugging
-        opf_model.analyze_violations(model_parameters)
+            logger.info(f"Optimization ends with status {status.name} in {time.perf_counter() - start:.3f} seconds.")
 
-        # update network
-        opf_model.update_network()
+            # for debugging
+            opf_model.analyze_violations(model_parameters)
 
-        network_stats.print()
+            converged = status in (poi.TerminationStatusCode.OPTIMAL, poi.TerminationStatusCode.LOCALLY_SOLVED)
+            if converged:
+                opf_model.update_network()
 
-        network_cache.network.per_unit = False # FIXME design to improve
+            network_stats.print()
 
-        return status in (poi.TerminationStatusCode.OPTIMAL, poi.TerminationStatusCode.LOCALLY_SOLVED)
+            return converged
 
 
-def run_ac(network: Network, parameters: OptimalPowerFlowParameters = OptimalPowerFlowParameters()) -> bool:
+def run_ac(network: Network, parameters: Optional[OptimalPowerFlowParameters] = None) -> bool:
+    """Run AC optimal power flow on the provided network.
+
+    Args:
+        network (Network): The network on which to solve the optimal power flow.
+        parameters (OptimalPowerFlowParameters, optional): Optimization parameters and solver settings.
+            Defaults to a fresh OptimalPowerFlowParameters().
+
+    Returns:
+        bool: True if the optimization terminated with an optimal or locally solved status, False otherwise.
+    """
+    if parameters is None:
+        parameters = OptimalPowerFlowParameters()
     opf = OptimalPowerFlow(network)
     return opf.run(parameters)

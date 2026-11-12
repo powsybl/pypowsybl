@@ -5,8 +5,9 @@
 # SPDX-License-Identifier: MPL-2.0
 #
 import pandas as pd
-from pypowsybl import _pypowsybl as _pp
 from pypowsybl._pypowsybl import DynamicSimulationStatus
+
+from pypowsybl import _pypowsybl as _pp
 from pypowsybl.utils import create_data_frame_from_series_array
 
 

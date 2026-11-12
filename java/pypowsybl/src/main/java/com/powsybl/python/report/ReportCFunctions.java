@@ -38,16 +38,14 @@ public final class ReportCFunctions {
     }
 
     @CEntryPoint(name = "createReportNode")
-    public static ObjectHandle createReportNode(IsolateThread thread, CCharPointer taskKeyPtr, CCharPointer defaultNamePtr, PyPowsyblApiHeader.ExceptionHandlerPointer exceptionHandlerPtr) {
+    public static ObjectHandle createReportNode(IsolateThread thread, CCharPointer taskKeyPtr, PyPowsyblApiHeader.ExceptionHandlerPointer exceptionHandlerPtr) {
         return doCatch(exceptionHandlerPtr, new PointerProvider<>() {
             @Override
             public ObjectHandle get() {
-                String taskKey = CTypeUtil.toString(taskKeyPtr);
-                String defaultName = CTypeUtil.toString(defaultNamePtr);
                 ReportNode reportNode = ReportNode.newRootReportNode()
                         .withAllResourceBundlesFromClasspath()
                         .withStrictMode(false)
-                        .withMessageTemplate(defaultName) //TODO : choose what to keep on python side
+                        .withMessageTemplate(CTypeUtil.toString(taskKeyPtr))
                         .build();
                 return ObjectHandles.getGlobal().create(reportNode);
             }

@@ -1,7 +1,7 @@
 {
   "resources":{
   "includes":[{
-    "pattern":"[a-z]+/[a-z0-9]+/libzstd-jni-[0-9.-]+(so|dll|dylib)"
+    "pattern":"[a-z]+/[a-z0-9_]+/libzstd-jni-[0-9.-]+(so|dll|dylib)"
   }]},
   "bundles":[]
 }

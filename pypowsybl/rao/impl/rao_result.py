@@ -6,21 +6,23 @@
 #
 import io
 import json
-
-from pypowsybl import _pypowsybl
-from pypowsybl._pypowsybl import RaoComputationStatus
-from pypowsybl.utils import create_data_frame_from_series_array
-from .crac import Crac
-from pandas import DataFrame
-from pypowsybl.utils import path_to_str
+from datetime import datetime as Datetime
 from os import PathLike
-
 from typing import (
     Union,
     Dict,
     Any,
     List
 )
+
+from pandas import DataFrame
+from pypowsybl._pypowsybl import RaoComputationStatus
+
+from pypowsybl import _pypowsybl
+from pypowsybl.utils import create_data_frame_from_series_array
+from pypowsybl.utils import path_to_str
+from .crac import Crac
+
 
 class RaoResult:
     """
@@ -74,6 +76,14 @@ class RaoResult:
     def get_cost_results(self) -> DataFrame:
         serie_flow = _pypowsybl.get_cost_results(self._handle_crac, self._handle_result)
         return create_data_frame_from_series_array(serie_flow)
+
+    def get_global_cost_results(self) -> DataFrame:
+        serie = _pypowsybl.get_global_cost_results(self._handle_crac, self._handle_result)
+        return create_data_frame_from_series_array(serie)
+
+    def get_cost_results_for_timestamp(self, timestamp: Datetime) -> DataFrame:
+        serie = _pypowsybl.get_cost_results_for_timestamp(self._handle_crac, self._handle_result, timestamp.strftime('%Y-%m-%dT%H:%M:%S+01:00'))
+        return create_data_frame_from_series_array(serie)
 
     def get_virtual_cost_names(self) -> List[str]:
         return _pypowsybl.get_virtual_cost_names(self._handle_result)

@@ -94,9 +94,9 @@ public final class NetworkDataframes {
         mappers.put(DataframeElementType.RATIO_TAP_CHANGER, rtcs());
         mappers.put(DataframeElementType.PHASE_TAP_CHANGER, ptcs());
         mappers.put(DataframeElementType.REACTIVE_CAPABILITY_CURVE_POINT, reactiveCapabilityCurves());
-        mappers.put(DataframeElementType.OPERATIONAL_LIMITS, operationalLimits(false));
+        mappers.put(DataframeElementType.LOADING_LIMITS, loadingLimits(false));
         mappers.put(DataframeElementType.VOLTAGE_ANGLE_LIMITS, voltageAngleLimits());
-        mappers.put(DataframeElementType.SELECTED_OPERATIONAL_LIMITS, operationalLimits(true));
+        mappers.put(DataframeElementType.SELECTED_LOADING_LIMITS, loadingLimits(true));
         mappers.put(DataframeElementType.ALIAS, aliases());
         mappers.put(DataframeElementType.IDENTIFIABLE, identifiables());
         mappers.put(DataframeElementType.INJECTION, injections());
@@ -107,7 +107,10 @@ public final class NetworkDataframes {
         mappers.put(DataframeElementType.DC_NODE, dcNodes());
         mappers.put(DataframeElementType.VOLTAGE_SOURCE_CONVERTER, voltageSourceConverters());
         mappers.put(DataframeElementType.DC_GROUND, dcGrounds());
+        mappers.put(DataframeElementType.DC_SWITCH, dcSwitches());
         mappers.put(DataframeElementType.DC_BUS, dcBuses());
+        mappers.put(DataframeElementType.OVERLOAD_MANAGEMENT_SYSTEM, overloadManagementSystems());
+        mappers.put(DataframeElementType.OVERLOAD_MANAGEMENT_SYSTEM_TRIPPING, overloadManagementSystemTrippings());
         return Collections.unmodifiableMap(mappers);
     }
 
@@ -164,19 +167,19 @@ public final class NetworkDataframes {
     }
 
     static <U extends DcLine> ToDoubleBiFunction<U, NetworkDataframeContext> getPerUnitI1() {
-        return (dl, context) -> perUnitI(context, dl.getDcTerminal1());
+        return (dl, context) -> perUnitDcI(context, dl.getDcTerminal1());
     }
 
     static <U extends DcLine> ToDoubleBiFunction<U, NetworkDataframeContext> getPerUnitI2() {
-        return (dl, context) -> perUnitI(context, dl.getDcTerminal2());
+        return (dl, context) -> perUnitDcI(context, dl.getDcTerminal2());
     }
 
     static <U extends DcLine> DoubleSeriesMapper.DoubleUpdater<U, NetworkDataframeContext> setPerUnitI1() {
-        return (dl, i, context) -> dl.getDcTerminal1().setI(unPerUnitI(context, i, dl.getDcTerminal1().getDcNode().getNominalV()));
+        return (dl, i, context) -> dl.getDcTerminal1().setI(unPerUnitDcI(context, i, dl.getDcTerminal1().getDcNode().getNominalV()));
     }
 
     static <U extends DcLine> DoubleSeriesMapper.DoubleUpdater<U, NetworkDataframeContext> setPerUnitI2() {
-        return (dl, i, context) -> dl.getDcTerminal2().setI(unPerUnitI(context, i, dl.getDcTerminal2().getDcNode().getNominalV()));
+        return (dl, i, context) -> dl.getDcTerminal2().setI(unPerUnitDcI(context, i, dl.getDcTerminal2().getDcNode().getNominalV()));
     }
 
     static <U extends Injection<U>> Function<U, String> getVoltageLevelId() {
@@ -283,6 +286,22 @@ public final class NetworkDataframes {
         };
     }
 
+    private static <U extends AcDcConverter<U>> BooleanSeriesMapper.BooleanUpdater<U> connectConverterAcTerminal1() {
+        return (g, b) -> {
+            Boolean res = b ? g.getTerminal1().connect() : g.getTerminal1().disconnect();
+        };
+    }
+
+    private static <U extends AcDcConverter<U>> BooleanSeriesMapper.BooleanUpdater<U> connectConverterAcTerminal2() {
+        return (g, b) -> {
+            if (g.getTerminal2().isPresent()) {
+                Boolean res = b ? g.getTerminal2().get().connect() : g.getTerminal2().get().disconnect();
+            } else {
+                throw new PowsyblException("Terminal2 of converter " + g.getId() + " is missing");
+            }
+        };
+    }
+
     public static <T, U> ToDoubleBiFunction<T, NetworkDataframeContext> ifExistsDoublePerUnitPQ(Function<T, U> objectGetter, ToDoubleFunction<U> valueGetter) {
         return (item, context) -> {
             U object = objectGetter.apply(item);
@@ -375,6 +394,10 @@ public final class NetworkDataframes {
             builder.strings("bus_id", b -> NetworkUtil.getBusViewBus(b).map(Bus::getId).orElse(""));
         }
         return builder.booleans("fictitious", Identifiable::isFictitious, Identifiable::setFictitious, false)
+                .doubles("fictitious_p0", (b, context) -> perUnitPQ(context, b.getFictitiousP0()),
+                    (b, p, context) -> b.setFictitiousP0(unPerUnitPQ(context, p)), false)
+                .doubles("fictitious_q0", (b, context) -> perUnitPQ(context, b.getFictitiousQ0()),
+                    (b, q, context) -> b.setFictitiousQ0(unPerUnitPQ(context, q)), false)
                 .addProperties()
                 .build();
     }
@@ -762,11 +785,11 @@ public final class NetworkDataframes {
                 .stringsIndex("id", TieLine::getId)
                 .strings("name", tl -> tl.getOptionalName().orElse(""), Identifiable::setName)
                 .strings("boundary_line1_id", tl -> tl.getBoundaryLine1().getId())
-                .strings("dangling_line1_id", tl -> tl.getBoundaryLine1().getId())
+                .deprecatedStrings("dangling_line1_id", tl -> tl.getBoundaryLine1().getId())
                 .strings("boundary_line2_id", tl -> tl.getBoundaryLine2().getId())
-                .strings("dangling_line2_id", tl -> tl.getBoundaryLine2().getId())
+                .deprecatedStrings("dangling_line2_id", tl -> tl.getBoundaryLine2().getId())
                 .strings("pairing_key", tl -> Objects.toString(tl.getPairingKey(), ""))
-                .strings("ucte_xnode_code", tl -> Objects.toString(tl.getPairingKey(), ""))
+                .deprecatedStrings("ucte_xnode_code", tl -> Objects.toString(tl.getPairingKey(), ""))
                 .booleans("connected1", t -> t.getTerminal1().isConnected(), connectBranchSide1())
                 .booleans("connected2", t -> t.getTerminal2().isConnected(), connectBranchSide2())
                 .booleans("fictitious", Identifiable::isFictitious, Identifiable::setFictitious, false)
@@ -997,6 +1020,10 @@ public final class NetworkDataframes {
                 .strings("name", dcLine -> dcLine.getOptionalName().orElse(""), Identifiable::setName)
                 .strings("dc_node1_id", dl -> getDcNodeId(dl.getDcTerminal1()))
                 .strings("dc_node2_id", dl -> getDcNodeId(dl.getDcTerminal2()))
+                .booleans("connected1", dl -> dl.getDcTerminal1().isConnected(),
+                        (dl, dcConnected1) -> dl.getDcTerminal1().setConnected(dcConnected1))
+                .booleans("connected2", dl -> dl.getDcTerminal2().isConnected(),
+                        (dl, dcConnected2) -> dl.getDcTerminal2().setConnected(dcConnected2))
                 .doubles("r", (dcLine, context) -> perUnitR(context, dcLine),
                         (dcLine, r, context) -> dcLine.setR(unPerUnitRX(context, dcLine, r)))
                 .doubles("i1", getPerUnitI1(), setPerUnitI1())
@@ -1019,9 +1046,11 @@ public final class NetworkDataframes {
                 .strings("bus2_id", conv -> conv.getTerminal2().isPresent() ? getBusId(conv.getTerminal2().get()) : null)
                 .strings("bus_breaker_bus2_id", conv -> conv.getTerminal2().isPresent() ? getBusBreakerViewBusId(conv.getTerminal2().get()) : null,
                         (conv, id) -> setBusBreakerViewBusId(conv.getTerminal2().orElseThrow(() ->
-                                new PowsyblException("Terminal2 of converter" + conv.getId() + "is missing")), id), false)
+                                new PowsyblException("Terminal2 of converter " + conv.getId() + " is missing")), id), false)
                 .strings("dc_node1_id", conv -> conv.getDcTerminal1().getDcNode().getId())
                 .strings("dc_node2_id", conv -> conv.getDcTerminal2().getDcNode().getId())
+                .booleans("connected1", conv -> conv.getTerminal1().isConnected(), connectConverterAcTerminal1())
+                .booleans("connected2", conv -> conv.getTerminal2().isPresent() ? conv.getTerminal2().get().isConnected() : false, connectConverterAcTerminal2())
                 .booleans("dc_connected1", conv -> conv.getDcTerminal1().isConnected(),
                         (conv, dcConnected1) -> conv.getDcTerminal1().setConnected(dcConnected1))
                 .booleans("dc_connected2", conv -> conv.getDcTerminal2().isConnected(),
@@ -1039,10 +1068,23 @@ public final class NetworkDataframes {
                         (conv, targetP, context) -> conv.setTargetP(unPerUnitPQ(context, targetP)))
                 .doubles("target_q", (conv, context) -> perUnitPQ(context, conv.getReactivePowerSetpoint()),
                         (conv, targetQ, context) -> conv.setReactivePowerSetpoint(unPerUnitPQ(context, targetQ)))
+                // The core represents the "unbounded" default as -/+ Double.MAX_VALUE; expose it as -/+ infinity
+                // Non-default columns, so absent from the default dataframe.
+                .doubles("min_p",
+                        (conv, context) -> conv.getMinP() == -Double.MAX_VALUE
+                                ? Double.NEGATIVE_INFINITY : perUnitPQ(context, conv.getMinP()),
+                        (conv, minP, context) -> conv.setMinP(minP == Double.NEGATIVE_INFINITY
+                                ? -Double.MAX_VALUE : unPerUnitPQ(context, minP)), false)
+                .doubles("max_p",
+                        (conv, context) -> conv.getMaxP() == Double.MAX_VALUE
+                                ? Double.POSITIVE_INFINITY : perUnitPQ(context, conv.getMaxP()),
+                        (conv, maxP, context) -> conv.setMaxP(maxP == Double.POSITIVE_INFINITY
+                                ? Double.MAX_VALUE : unPerUnitPQ(context, maxP)), false)
                 .doubles("idle_loss", (conv, context) -> perUnitPQ(context, conv.getIdleLoss()),
                         (conv, idleLoss, context) -> conv.setIdleLoss(unPerUnitPQ(context, idleLoss)))
-                .doubles("switching_loss", (conv, context) -> perUnitV(context, conv.getSwitchingLoss(), conv.getTerminal1()),
-                        (conv, switchingLoss, context) -> conv.setSwitchingLoss(unPerUnitV(context, switchingLoss, conv.getTerminal1())))
+                .doubles("switching_loss",
+                        (conv, context) -> perUnitDcSwitchingLoss(context, conv.getSwitchingLoss(), conv.getDcTerminal1()),
+                        (conv, switchingLoss, context) -> conv.setSwitchingLoss(unPerUnitDcSwitchingLoss(context, switchingLoss, conv.getDcTerminal1())))
                 .doubles("resistive_loss", (conv, context) -> perUnitR(context, conv.getResistiveLoss(), conv.getTerminal1().getVoltageLevel().getNominalV()),
                         (conv, r, context) -> conv.setResistiveLoss(unPerUnitRX(context, r,
                                 conv.getTerminal1().getVoltageLevel().getNominalV(), conv.getTerminal1().getVoltageLevel().getNominalV())))
@@ -1064,7 +1106,29 @@ public final class NetworkDataframes {
                 .stringsIndex("id", DcGround::getId)
                 .strings("name", dn -> dn.getOptionalName().orElse(""), Identifiable::setName)
                 .strings("dc_node_id", dg -> dg.getDcTerminal().getDcNode().getId())
-                .doubles("r", (dg, context) -> dg.getR(), (dg, r, context) -> dg.setR(r))
+                .booleans("connected", dg -> dg.getDcTerminal().isConnected(),
+                        (dg, dcConnected) -> dg.getDcTerminal().setConnected(dcConnected))
+                .doubles("r", (dg, context) -> perUnitR(context, dg),
+                        (dg, r, context) -> dg.setR(unPerUnitRX(context, dg, r)))
+                .booleans("fictitious", Identifiable::isFictitious, Identifiable::setFictitious, false)
+                .addProperties()
+                .build();
+    }
+
+    /**
+     * Fetch DC Switches from the network in a Python DataFrame.
+     * @return a data frame with all fields.
+     */
+    private static NetworkDataframeMapper dcSwitches() {
+        return NetworkDataframeMapperBuilder.ofStream(Network::getDcSwitchStream, getOrThrow(Network::getDcSwitch, "Dc switch"))
+                .stringsIndex("id", DcSwitch::getId)
+                .strings("name", ds -> ds.getOptionalName().orElse(""), Identifiable::setName)
+                .strings("dc_node1_id", ds -> ds.getDcNode1().getId())
+                .strings("dc_node2_id", ds -> ds.getDcNode2().getId())
+                .enums("kind", DcSwitchKind.class, DcSwitch::getKind)
+                .booleans("open", DcSwitch::isOpen, DcSwitch::setOpen)
+                .doubles("r", (ds, context) -> perUnitR(context, ds),
+                        (ds, r, context) -> ds.setR(unPerUnitRX(context, ds, r)))
                 .booleans("fictitious", Identifiable::isFictitious, Identifiable::setFictitious, false)
                 .addProperties()
                 .build();
@@ -1080,6 +1144,103 @@ public final class NetworkDataframes {
                 .doubles("v", (db, context) -> perUnitV(context, db.getV(), db.getDcNodes().iterator().next().getNominalV()),
                         (db, v, context) -> db.setV(unPerUnitV(context, v, db.getDcNodes().iterator().next().getNominalV())))
                 .addProperties()
+                .build();
+    }
+
+    private static NetworkDataframeMapper overloadManagementSystems() {
+        return NetworkDataframeMapperBuilder.ofStream(Network::getOverloadManagementSystemStream,
+                        getOrThrow(Network::getOverloadManagementSystem, "Overload management system"))
+                .stringsIndex("id", OverloadManagementSystem::getId)
+                .strings("name", oms -> oms.getOptionalName().orElse(""), Identifiable::setName)
+                .strings("substation_id", oms -> oms.getSubstation().getId())
+                .booleans("enabled", OverloadManagementSystem::isEnabled, OverloadManagementSystem::setEnabled)
+                .strings("monitored_element_id", OverloadManagementSystem::getMonitoredElementId)
+                .enums("monitored_element_side", ThreeSides.class, OverloadManagementSystem::getMonitoredSide)
+                .ints("tripping_count", oms -> oms.getTrippings().size())
+                .addProperties()
+                .build();
+    }
+
+    record OverloadManagementSystemTrippingRow(OverloadManagementSystem oms, OverloadManagementSystem.Tripping tripping) {
+        String getId() {
+            return oms.getId();
+        }
+
+        String getKey() {
+            return tripping.getKey();
+        }
+
+        String getElementToOperateId() {
+            return switch (tripping) {
+                case OverloadManagementSystem.BranchTripping t -> t.getBranchToOperateId();
+                case OverloadManagementSystem.ThreeWindingsTransformerTripping t -> t.getThreeWindingsTransformerToOperateId();
+                case OverloadManagementSystem.SwitchTripping t -> t.getSwitchToOperateId();
+                default -> throw new PowsyblException("Unexpected tripping type: " + tripping.getType());
+            };
+        }
+
+        void setElementToOperateId(String elementId) {
+            switch (tripping) {
+                case OverloadManagementSystem.BranchTripping t -> t.setBranchToOperateId(elementId);
+                case OverloadManagementSystem.ThreeWindingsTransformerTripping t -> t.setThreeWindingsTransformerToOperateId(elementId);
+                case OverloadManagementSystem.SwitchTripping t -> t.setSwitchToOperateId(elementId);
+                default -> throw new PowsyblException("Unexpected tripping type: " + tripping.getType());
+            }
+        }
+
+        String getSideToOperate() {
+            return switch (tripping) {
+                case OverloadManagementSystem.BranchTripping t -> t.getSideToOperate().name();
+                case OverloadManagementSystem.ThreeWindingsTransformerTripping t -> t.getSideToOperate().name();
+                default -> "";
+            };
+        }
+
+        void setSideToOperate(String side) {
+            switch (tripping) {
+                case OverloadManagementSystem.BranchTripping t -> t.setSideToOperate(TwoSides.valueOf(side));
+                case OverloadManagementSystem.ThreeWindingsTransformerTripping t -> t.setSideToOperate(ThreeSides.valueOf(side));
+                default -> throw new PowsyblException("Cannot set a side to operate on switch tripping '" + getKey()
+                        + "' of overload management system '" + getId() + "'.");
+            }
+        }
+    }
+
+    private static Stream<OverloadManagementSystemTrippingRow> getOverloadManagementSystemTrippingRows(Network network) {
+        return network.getOverloadManagementSystemStream()
+                .flatMap(oms -> oms.getTrippings().stream().map(tripping -> new OverloadManagementSystemTrippingRow(oms, tripping)));
+    }
+
+    static OverloadManagementSystemTrippingRow getOverloadManagementSystemTrippingRow(Network network, UpdatingDataframe dataframe, int index) {
+        String id = dataframe.getStringValue("id", index)
+                .orElseThrow(() -> new IllegalArgumentException("id column is missing"));
+        String key = dataframe.getStringValue("tripping_key", index)
+                .orElseThrow(() -> new IllegalArgumentException("tripping_key column is missing"));
+        OverloadManagementSystem oms = network.getOverloadManagementSystem(id);
+        if (oms == null) {
+            throw new PowsyblException("Overload management system '" + id + "' does not exist.");
+        }
+        return oms.getTrippings().stream()
+                .filter(tripping -> tripping.getKey().equals(key))
+                .findFirst()
+                .map(tripping -> new OverloadManagementSystemTrippingRow(oms, tripping))
+                .orElseThrow(() -> new PowsyblException("Tripping '" + key + "' does not exist in overload management system '" + id + "'."));
+    }
+
+    private static NetworkDataframeMapper overloadManagementSystemTrippings() {
+        return NetworkDataframeMapperBuilder.ofStream(NetworkDataframes::getOverloadManagementSystemTrippingRows,
+                        NetworkDataframes::getOverloadManagementSystemTrippingRow)
+                .stringsIndex("id", OverloadManagementSystemTrippingRow::getId)
+                .stringsIndex("tripping_key", OverloadManagementSystemTrippingRow::getKey)
+                .strings("name", row -> row.tripping().getNameOrKey(), (row, name) -> row.tripping().setName(name))
+                .enums("tripping_type", OverloadManagementSystem.Tripping.Type.class, row -> row.tripping().getType())
+                .doubles("current_limit", (row, context) -> row.tripping().getCurrentLimit(),
+                    (row, currentLimit, context) -> row.tripping().setCurrentLimit(currentLimit))
+                .booleans("open_action", row -> row.tripping().isOpenAction(), (row, openAction) -> row.tripping().setOpenAction(openAction))
+                .strings("element_to_operate_id", OverloadManagementSystemTrippingRow::getElementToOperateId,
+                    OverloadManagementSystemTrippingRow::setElementToOperateId)
+                .strings("side_to_operate", OverloadManagementSystemTrippingRow::getSideToOperate,
+                    OverloadManagementSystemTrippingRow::setSideToOperate)
                 .build();
     }
 
@@ -1435,6 +1596,10 @@ public final class NetworkDataframes {
                 .ints("step_count", row -> row.getRtc().getStepCount())
                 .booleans("oltc", row -> row.getRtc().hasLoadTapChangingCapabilities(), (row, v) -> row.getRtc().setLoadTapChangingCapabilities(v))
                 .booleans(REGULATING, row -> row.getRtc().isRegulating(), (row, v) -> row.getRtc().setRegulating(v))
+                .enums("regulation_mode", RatioTapChanger.RegulationMode.class,
+                    row -> row.getRtc().getRegulationMode(), (row, v) -> row.getRtc().setRegulationMode(v), false)
+                .doubles("regulation_value", (row, context) -> row.getRtc().getRegulationValue(),
+                    (row, v, context) -> row.getRtc().setRegulationValue(v), false)
                 .doubles("target_v", (row, context) -> getTransformerTargetV(row.getRtc(), context),
                         (row, targetV, context) -> setTransformerTargetV(row.getRtc(), targetV, context))
                 .doubles("target_deadband", (row, context) -> row.getRtc().getTargetDeadband(),
@@ -1756,7 +1921,7 @@ public final class NetworkDataframes {
         transformer.getPhaseTapChanger().setRegulationTerminal(getBranchTerminal(transformer, side));
     }
 
-    private static NetworkDataframeMapper operationalLimits(boolean onlyActive) {
+    private static NetworkDataframeMapper loadingLimits(boolean onlyActive) {
         return NetworkDataframeMapperBuilder.ofStream(onlyActive ? NetworkUtil::getSelectedLimits : NetworkUtil::getLimits,
                         NetworkDataframes::getLimit)
                 .stringsIndex("element_id", TemporaryLimitData::getId)

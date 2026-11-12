@@ -9,9 +9,11 @@ import pytest
 
 import pypowsybl as pp
 import pandas as pd
+import numpy as np
 from numpy import nan
 
 import util
+from pypowsybl._pypowsybl import ElementType, get_network_elements_dataframe_metadata
 
 
 def test_per_unit_line():
@@ -227,6 +229,28 @@ def test_get_static_var_compensators_per_unit():
                  'p', 'q', 'i', 'voltage_level_id', 'bus_id', 'connected'],
         data=[['SVC', '', -0.05, 0.05, 3, 4, 'VOLTAGE', True, 'SVC', 0, -0.13, 0.13, 'S4VL1', 'S4VL1_0', True]])
     pd.testing.assert_frame_equal(expected, n.get_static_var_compensators(), check_dtype=False, atol=1e-2)
+
+
+def test_voltage_source_converters_min_max_p():
+    n = pp.network.create_dc_detailed_vsc_symmetrical_monopole_network()
+    n.per_unit = True
+
+    # unbounded default stays +/-inf regardless of per-unit
+    df = n.get_voltage_source_converters(all_attributes=True)
+    assert np.isneginf(df['min_p']['VscFr'])
+    assert np.isposinf(df['max_p']['VscFr'])
+
+    # finite limits are written in per-unit (Sbase default 100 MVA) and read back in per-unit
+    n.update_voltage_source_converters(id='VscFr', min_p=-1.0, max_p=1.0)
+    df = n.get_voltage_source_converters(all_attributes=True)
+    assert df['min_p']['VscFr'] == pytest.approx(-1.0)
+    assert df['max_p']['VscFr'] == pytest.approx(1.0)
+
+    # switching back to SI confirms the per-unit write was scaled by Sbase (-1 pu -> -100 MW)
+    n.per_unit = False
+    df = n.get_voltage_source_converters(all_attributes=True)
+    assert df['min_p']['VscFr'] == pytest.approx(-100.0)
+    assert df['max_p']['VscFr'] == pytest.approx(100.0)
 
 
 def test_voltage_level_per_unit():
@@ -485,3 +509,82 @@ def test_phase_tap_changer_steps_per_unit():
     assert steps.loc['T196-2040-1', 0]['x'] == 3
     assert steps.loc['T196-2040-1', 0]['g'] == 4
     assert steps.loc['T196-2040-1', 0]['b'] == 2
+
+
+# --- detailed DC model -------------------------------------------------------------------------
+# 400 kV nodes with Sb = 100 MVA give Zbase = V^2/Sb = 1600 ohm, so 0.4 ohm is 0.00025 pu.
+DC_NOMINAL_V = 400.0
+DC_BASE_POWER = 100.0
+DC_Z_BASE = DC_NOMINAL_V ** 2 / DC_BASE_POWER
+DC_R_OHM = 0.4
+DC_R_PU = DC_R_OHM / DC_Z_BASE
+
+
+def _dc_network_with_every_resistive_element():
+    """Exactly one DC line, one DC switch and one DC ground, all DC_R_OHM, and nothing else.
+
+    Deliberately built from an empty network rather than a factory one: the guard test below sweeps
+    every DC element there is, so the fixture must contain no element it did not put there.
+    """
+    n = pp.network.create_empty('dc-per-unit')
+    n.nominal_apparent_power = DC_BASE_POWER
+    n.create_dc_nodes(id=['dnA', 'dnB'], nominal_v=[DC_NOMINAL_V, DC_NOMINAL_V])
+    n.create_dc_lines(id='dlAB', dc_node1_id='dnA', dc_node2_id='dnB', r=DC_R_OHM)
+    n.create_dc_switches(id='dsAB', dc_node1_id='dnA', dc_node2_id='dnB', kind='BREAKER',
+                         open=False, r=DC_R_OHM)
+    n.create_dc_grounds(id='dgA', dc_node_id='dnA', r=DC_R_OHM)
+    return n
+
+
+def test_per_unit_dc_switch():
+    n = _dc_network_with_every_resistive_element()
+    n.per_unit = True
+    assert n.get_dc_switches().loc['dsAB', 'r'] == pytest.approx(DC_R_PU, abs=1e-12)
+    n.update_dc_switches(id='dsAB', r=0.25)
+    n.per_unit = False
+    assert n.get_dc_switches().loc['dsAB', 'r'] == pytest.approx(0.25 * DC_Z_BASE, abs=1e-9)
+
+
+def test_per_unit_dc_ground():
+    n = _dc_network_with_every_resistive_element()
+    n.per_unit = True
+    assert n.get_dc_grounds().loc['dgA', 'r'] == pytest.approx(DC_R_PU, abs=1e-12)
+    n.update_dc_grounds(id='dgA', r=0.25)
+    n.per_unit = False
+    assert n.get_dc_grounds().loc['dgA', 'r'] == pytest.approx(0.25 * DC_Z_BASE, abs=1e-9)
+
+
+def test_per_unit_dc_line():
+    n = _dc_network_with_every_resistive_element()
+    n.per_unit = True
+    assert n.get_dc_lines().loc['dlAB', 'r'] == pytest.approx(DC_R_PU, abs=1e-12)
+    n.update_dc_lines(id='dlAB', r=0.25)
+    n.per_unit = False
+    assert n.get_dc_lines().loc['dlAB', 'r'] == pytest.approx(0.25 * DC_Z_BASE, abs=1e-9)
+
+
+def test_per_unit_every_dc_resistance_uses_the_same_impedance_base():
+    """Guard: no DC element may expose an ohmic 'r' that skips the per-unit view.
+
+    DcSwitch.r and DcGround.r once did, while DcLine.r did not, and nothing caught it because no
+    detailed-DC dataframe was per-unit tested. Rather than list the element types, this discovers
+    them from the dataframe metadata, so a DC element added later cannot quietly repeat it: if it
+    declares an 'r' and the fixture above does not build one, this test fails and says so.
+    """
+    n = _dc_network_with_every_resistive_element()
+    dc_types_with_r = [ElementType.__members__[name] for name in ElementType.__members__
+                       if name.startswith('DC_')
+                       and 'r' in [s.name for s in get_network_elements_dataframe_metadata(
+                           ElementType.__members__[name])]]
+    assert dc_types_with_r, "no DC element type declares an 'r' column - metadata lookup broke"
+
+    n.per_unit = True
+    for element_type in dc_types_with_r:
+        elements = n.get_elements(element_type)
+        assert not elements.empty, (
+            f"{element_type.name} declares an 'r' column but the fixture builds none - add one, "
+            f"so its per-unit handling is covered too")
+        for element_id, r in elements['r'].items():
+            assert r == pytest.approx(DC_R_PU, abs=1e-12), (
+                f"{element_type.name} '{element_id}' reports r={r} in per-unit mode, expected "
+                f"{DC_R_PU} - it is most likely being returned in ohms")

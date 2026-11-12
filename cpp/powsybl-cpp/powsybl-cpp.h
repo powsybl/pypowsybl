@@ -191,6 +191,7 @@ typedef Array<operator_strategy_result> OperatorStrategyResultArray;
 typedef Array<limit_violation> LimitViolationArray;
 typedef Array<series> SeriesArray;
 
+std::vector<void*> objectHandleVectorToPtrs(std::vector<JavaHandle>& handles);
 
 template<typename T>
 std::vector<T> toVector(array* arrayPtr) {
@@ -282,12 +283,17 @@ enum XnecSelectionStrategy {
 
 class SeriesMetadata {
 public:
-    SeriesMetadata(const std::string& name, int type, bool isIndex, bool isModifiable, bool isDefault):
+    SeriesMetadata(const std::string& name, int type, bool isIndex, bool isModifiable, bool isDefault, bool isDeprecated):
         name_(name),
         type_(type),
         isIndex_(isIndex),
         isModifiable_(isModifiable),
-        isDefault_(isDefault) {
+        isDefault_(isDefault),
+        isDeprecated_(isDeprecated) {
+    }
+
+    SeriesMetadata(const std::string& name, int type, bool isIndex, bool isModifiable, bool isDefault):
+        SeriesMetadata(name, type, isIndex, isModifiable, isDefault, false) {
     }
 
     const std::string& name() const { return name_; }
@@ -295,6 +301,7 @@ public:
     bool isIndex() const { return isIndex_; }
     bool isModifiable() const { return isModifiable_; }
     bool isDefault() const { return isDefault_; }
+    bool isDeprecated() const { return isDeprecated_; }
 
 private:
     std::string name_;
@@ -302,6 +309,7 @@ private:
     bool isIndex_;
     bool isModifiable_;
     bool isDefault_;
+    bool isDeprecated_;
 };
 
 
@@ -362,6 +370,9 @@ public:
     double low_voltage_absolute_threshold;
     double high_voltage_proportional_threshold;
     double high_voltage_absolute_threshold;
+    double monitored_element_power_modification_threshold;
+    double monitored_element_voltage_modification_absolute_threshold;
+    double monitored_element_voltage_modification_proportional_threshold;
     std::vector<std::string> provider_parameters_keys;
     std::vector<std::string> provider_parameters_values;
 };
@@ -685,6 +696,8 @@ void applySolvedTapPositionAndSolvedSectionCount(const JavaHandle& network);
 
 bool updateSwitchPosition(const JavaHandle& network, const std::string& id, bool open);
 
+bool updateDcSwitchPosition(const JavaHandle& network, const std::string& id, bool open);
+
 bool updateConnectableStatus(const JavaHandle& network, const std::string& id, bool connected, bool allowDisconnectors,
                              bool allowFictitious);
 
@@ -757,6 +770,8 @@ DynamicSimulationParameters* createDynamicSimulationParameters();
 std::string saveNetworkToString(const JavaHandle& network, const std::string& format, const std::map<std::string, std::string>& parameters, JavaHandle* reportNode);
 
 void reduceNetwork(const JavaHandle& network, const double v_min, const double v_max, const std::vector<std::string>& ids, const std::vector<std::string>& vls, const std::vector<int>& depths, bool withBoundaryLines);
+
+bool checkLoadFlowParameters(const LoadFlowParameters& parameters, const std::string& provider, JavaHandle* reportNode);
 
 LoadFlowComponentResultArray* runLoadFlow(const JavaHandle& network, const LoadFlowParameters& parameters, const std::string& provider, JavaHandle* reportNode);
 
@@ -842,9 +857,9 @@ void addFactorMatrix(const JavaHandle& sensitivityAnalysisContext, std::string m
 
 JavaHandle runSensitivityAnalysis(const JavaHandle& sensitivityAnalysisContext, const JavaHandle& network, SensitivityAnalysisParameters& parameters, const std::string& provider, JavaHandle* reportNode);
 
-matrix* getSensitivityMatrix(const JavaHandle& sensitivityAnalysisResultContext, const std::string& matrixId, const std::string &contingencyId);
+std::shared_ptr<matrix> getSensitivityMatrix(const JavaHandle& sensitivityAnalysisResultContext, const std::string& matrixId, const std::string &contingencyId);
 
-matrix* getReferenceMatrix(const JavaHandle& sensitivityAnalysisResultContext, const std::string& matrixId, const std::string& contingencyId);
+std::shared_ptr<matrix> getReferenceMatrix(const JavaHandle& sensitivityAnalysisResultContext, const std::string& matrixId, const std::string& contingencyId);
 
 SeriesArray* createNetworkElementsSeriesArray(const JavaHandle& network, element_type elementType, filter_attributes_type filterAttributesType, const std::vector<std::string>& attributes, dataframe* dataframe, bool perUnit, double nominalApparentPower);
 
@@ -914,7 +929,7 @@ void createElement(pypowsybl::JavaHandle network, dataframe_array* dataframes, e
 
 ::validation_level_type getValidationLevel(const JavaHandle& network);
 
-::validation_level_type validate(const JavaHandle& network);
+::validation_level_type validate(const JavaHandle& network, JavaHandle* reportNode);
 
 void setMinValidationLevel(pypowsybl::JavaHandle network, validation_level_type validationLevel);
 
@@ -934,7 +949,7 @@ std::vector<std::vector<SeriesMetadata>> getNetworkExtensionsCreationDataframesM
 
 void createExtensions(pypowsybl::JavaHandle network, dataframe_array* dataframes, std::string& name);
 
-JavaHandle createReportNode(const std::string& taskKey, const std::string& defaultName);
+JavaHandle createReportNode(const std::string& taskKey);
 
 std::string printReport(const JavaHandle& reportNode);
 
@@ -1101,6 +1116,8 @@ SeriesArray* getNetworkActionResults(const JavaHandle& cracHandle, const JavaHan
 SeriesArray* getPstRangeActionResults(const JavaHandle& cracHandle, const JavaHandle& resultHandle);
 SeriesArray* getRangeActionResults(const JavaHandle& cracHandle, const JavaHandle& resultHandle);
 SeriesArray* getCostResults(const JavaHandle& cracHandle, const JavaHandle& resultHandle);
+SeriesArray* getGlobalCostResults(const JavaHandle& cracHandle, const JavaHandle& resultHandle);
+SeriesArray* getCostResultsForTimestamp(const JavaHandle& cracHandle, const JavaHandle& resultHandle, const std::string& timestamp);
 std::vector<std::string> getVirtualCostNames(const JavaHandle& resultHandle);
 SeriesArray* getVirtualCostsResults(const JavaHandle& cracHandle, const JavaHandle& resultHandle, const std::string& virtualCostName);
 
@@ -1143,6 +1160,8 @@ JavaHandle createDefaultRaoParameters();
 JavaHandle runRaoWithParameters(const JavaHandle& networkHandle, const JavaHandle& cracHandle, const JavaHandle& raoHandle, const RaoParameters& parameters, const std::string& raoProvider);
 JavaHandle runVoltageMonitoring(const JavaHandle& networkHandle, const JavaHandle& resultHandle, const JavaHandle& cracHandle, const JavaHandle& contextHandle, const LoadFlowParameters& parameters, const std::string& provider);
 JavaHandle runAngleMonitoring(const JavaHandle& networkHandle, const JavaHandle& resultHandle, const JavaHandle& cracHandle, const JavaHandle& contextHandle, const LoadFlowParameters& parameters, const std::string& provider);
+JavaHandle runMarmot(const std::vector<std::string>& timestamps, std::vector<JavaHandle>& networks, std::vector<JavaHandle>& cracs,
+                     const RaoParameters& parameters, const JavaHandle& constraints);
 
 JavaHandle createGrid2opBackend(const JavaHandle& networkHandle, bool considerOpenBranchReactiveFlow, bool checkIsolatedAndDisconnectedInjections, int busesPerVoltageLevel, bool connectAllElementsToFirstBus);
 void freeGrid2opBackend(const JavaHandle& backendHandle);

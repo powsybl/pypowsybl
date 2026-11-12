@@ -1,0 +1,23 @@
+{
+  "crac-factory": "CracImplFactory",
+  "extensions": {
+    "NcCracCreatorParameters": {
+      "timestamp": "2026-04-27T16:58:00Z",
+      "capacity-calculation-region": "10Y1001C--00095L",
+      "curative-instants": [
+        {
+          "name": "curative 1",
+          "application-time": 300
+        },
+        {
+          "name": "curative 2",
+          "application-time": 600
+        },
+        {
+          "name": "curative 3",
+          "application-time": 1200
+        }
+      ]
+    }
+  }
+}

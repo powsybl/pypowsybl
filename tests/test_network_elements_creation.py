@@ -4,21 +4,21 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 #
-import io
+
+import pathlib
+import re
 
 import numpy as np
 import pandas as pd
 import pytest
-import re
+from numpy import nan
 
 import pypowsybl
 import pypowsybl.network
 import pypowsybl.network as pn
 import util
-from util import dataframe_from_string
-import pathlib
-from numpy import nan
 from pypowsybl import PyPowsyblError
+from util import dataframe_from_string
 
 
 @pytest.fixture
@@ -315,18 +315,117 @@ NGEN_NHV1  2  2  1  1  0.5
     assert step1.rho == 0.5
 
 
+def test_ratio_tap_changers_creation_reactive_power_mode():
+    n = pn.create_eurostag_tutorial_example1_network()
+    rtc_df = dataframe_from_string("""
+id         target_deadband  regulation_mode  regulation_value  oltc  low_tap  tap  regulating  regulated_side
+NGEN_NHV1                2   REACTIVE_POWER                50  True        0    1        True             ONE
+""")
+
+    steps_df = dataframe_from_string("""
+id         b  g  r  x  rho
+NGEN_NHV1  2  2  1  1  0.5
+NGEN_NHV1  2  2  1  1  0.5
+""")
+
+    n.create_ratio_tap_changers(rtc_df, steps_df)
+
+    rtc = n.get_ratio_tap_changers(all_attributes=True).loc['NGEN_NHV1']
+    assert rtc.regulation_mode == 'REACTIVE_POWER'
+    assert rtc.regulation_value == 50
+    assert rtc.regulated_side == 'ONE'
+    assert rtc.regulating
+
+
+def test_overload_management_systems_creation():
+    n = pn.create_four_substations_node_breaker_network()
+    assert n.get_overload_management_systems().empty
+
+    oms_df = pd.DataFrame.from_records(index='id', data=[
+        {'id': 'OMS1', 'name': 'OMS 1', 'substation_id': 'S2',
+         'monitored_element_id': 'LINE_S2S3', 'monitored_element_side': 'ONE', 'enabled': True}])
+    trippings_df = pd.DataFrame.from_records(index='id', data=[
+        {'id': 'OMS1', 'tripping_key': 'trip_branch', 'name': 'branch tripping',
+         'tripping_type': 'BRANCH_TRIPPING', 'current_limit': 1000.0, 'open_action': True,
+         'element_to_operate_id': 'LINE_S2S3', 'side_to_operate': 'TWO'},
+        {'id': 'OMS1', 'tripping_key': 'trip_switch', 'name': 'switch tripping',
+         'tripping_type': 'SWITCH_TRIPPING', 'current_limit': 1200.0, 'open_action': True,
+         'element_to_operate_id': 'S2VL1_LINES2S3_BREAKER', 'side_to_operate': ''}])
+    n.create_overload_management_systems(oms_df, trippings_df)
+
+    oms = n.get_overload_management_systems().loc['OMS1']
+    assert oms['name'] == 'OMS 1'
+    assert oms.substation_id == 'S2'
+    assert oms.monitored_element_id == 'LINE_S2S3'
+    assert oms.monitored_element_side == 'ONE'
+    assert oms.enabled
+    assert oms.tripping_count == 2
+
+    trippings = n.get_overload_management_systems_trippings()
+    assert trippings.index.names == ['id', 'tripping_key']
+    assert len(trippings) == 2
+    branch_tripping = trippings.loc[('OMS1', 'trip_branch')]
+    assert branch_tripping['name'] == 'branch tripping'
+    assert branch_tripping.tripping_type == 'BRANCH_TRIPPING'
+    assert branch_tripping.current_limit == 1000.0
+    assert branch_tripping.open_action
+    assert branch_tripping.element_to_operate_id == 'LINE_S2S3'
+    assert branch_tripping.side_to_operate == 'TWO'
+    switch_tripping = trippings.loc[('OMS1', 'trip_switch')]
+    assert switch_tripping.tripping_type == 'SWITCH_TRIPPING'
+    assert switch_tripping.element_to_operate_id == 'S2VL1_LINES2S3_BREAKER'
+    assert switch_tripping.side_to_operate == ''
+
+
+def test_overload_management_systems_update():
+    n = pn.create_four_substations_node_breaker_network()
+    oms_df = pd.DataFrame.from_records(index='id', data=[
+        {'id': 'OMS1', 'substation_id': 'S2', 'monitored_element_id': 'LINE_S2S3', 'monitored_element_side': 'ONE'}])
+    trippings_df = pd.DataFrame.from_records(index='id', data=[
+        {'id': 'OMS1', 'tripping_key': 'trip_branch', 'tripping_type': 'BRANCH_TRIPPING', 'current_limit': 1000.0,
+         'open_action': True, 'element_to_operate_id': 'LINE_S2S3', 'side_to_operate': 'TWO'},
+        {'id': 'OMS1', 'tripping_key': 'trip_switch', 'tripping_type': 'SWITCH_TRIPPING', 'current_limit': 1200.0,
+         'open_action': True, 'element_to_operate_id': 'S2VL1_LINES2S3_BREAKER', 'side_to_operate': ''}])
+    n.create_overload_management_systems(oms_df, trippings_df)
+
+    n.update_overload_management_systems(id='OMS1', name='new name', enabled=False)
+    oms = n.get_overload_management_systems().loc['OMS1']
+    assert oms['name'] == 'new name'
+    assert not oms.enabled
+
+    n.update_overload_management_systems_trippings(id='OMS1', tripping_key='trip_branch', name='new branch name',
+                                                   current_limit=1100.0, open_action=False, side_to_operate='ONE')
+    n.update_overload_management_systems_trippings(pd.DataFrame(
+        index=pd.MultiIndex.from_tuples([('OMS1', 'trip_switch')], names=['id', 'tripping_key']),
+        data={'current_limit': [1300.0], 'element_to_operate_id': ['S2VL1_BBS_LINES2S3_DISCONNECTOR']}))
+    trippings = n.get_overload_management_systems_trippings()
+    branch_tripping = trippings.loc[('OMS1', 'trip_branch')]
+    assert branch_tripping['name'] == 'new branch name'
+    assert branch_tripping.current_limit == 1100.0
+    assert not branch_tripping.open_action
+    assert branch_tripping.side_to_operate == 'ONE'
+    switch_tripping = trippings.loc[('OMS1', 'trip_switch')]
+    assert switch_tripping.current_limit == 1300.0
+    assert switch_tripping.element_to_operate_id == 'S2VL1_BBS_LINES2S3_DISCONNECTOR'
+
+    with pytest.raises(PyPowsyblError, match="Tripping 'unknown' does not exist"):
+        n.update_overload_management_systems_trippings(id='OMS1', tripping_key='unknown', current_limit=1.0)
+    with pytest.raises(PyPowsyblError, match="Cannot set a side to operate on switch tripping"):
+        n.update_overload_management_systems_trippings(id='OMS1', tripping_key='trip_switch', side_to_operate='ONE')
+
+
 def test_phase_tap_changers_creation():
     n = pn.create_four_substations_node_breaker_network()
     n.create_2_windings_transformers(dataframe_from_string("""
-id          r   x  g    b  rated_u1  rated_u2 voltage_level1_id voltage_level2_id  node1  node2                                                                                         
+id          r   x  g    b  rated_u1  rated_u2 voltage_level1_id voltage_level2_id  node1  node2
 TWT_TEST  0.1  10  1  0.1       400       158             S1VL1             S1VL2      1      2
 """))
     ptc_df = dataframe_from_string("""
-id        target_deadband  regulation_mode  target_value  low_tap  tap  regulating  regulated_side                                                  
+id        target_deadband  regulation_mode  target_value  low_tap  tap  regulating  regulated_side
 TWT_TEST                2  CURRENT_LIMITER           300        0    1        True             TWO
 """)
     steps_df = dataframe_from_string("""
-id        b  g  r  x  rho  alpha                          
+id        b  g  r  x  rho  alpha
 TWT_TEST  2  2  1  1  0.5    0.1
 TWT_TEST  2  2  1  1  0.5    0.1
 """)
@@ -633,7 +732,7 @@ def test_create_node_breaker_network_and_run_loadflow():
 
 def test_create_limits():
     net = pn.create_eurostag_tutorial_example1_network()
-    net.create_operational_limits(pd.DataFrame.from_records(index=['element_id'], data=[
+    net.create_loading_limits(pd.DataFrame.from_records(index=['element_id'], data=[
         {'element_id': 'NHV1_NHV2_1', 'name': 'permanent_limit', 'side': 'ONE',
          'type': 'APPARENT_POWER', 'value': 600,
          'acceptable_duration': np.inf, 'fictitious': False},
@@ -654,7 +753,7 @@ def test_create_limits():
               ['LINE', 'ONE', 'permanent_limit', 'ACTIVE_POWER', 400, -1, False, 'DEFAULT', True],
               ['LINE', 'ONE', 'permanent_limit', 'APPARENT_POWER', 600, -1, False, 'DEFAULT', True],
               ['LINE', 'TWO', 'permanent_limit', 'CURRENT', 1100, -1, False, 'DEFAULT', True]])
-    limits = net.get_operational_limits(all_attributes=True).loc['NHV1_NHV2_1']
+    limits = net.get_loading_limits(all_attributes=True).loc['NHV1_NHV2_1']
     permanent_limits = limits[limits['name'] == 'permanent_limit']
     pd.testing.assert_frame_equal(expected, permanent_limits, check_dtype=False, check_index_type=False)
 
@@ -666,6 +765,24 @@ def test_create_limits():
               ['LINE', 'TWO', '1\'', 'CURRENT', 1500, 60, False, 'DEFAULT', True]])
     one_minute_limits = limits[limits['name'] == '1\'']
     pd.testing.assert_frame_equal(expected, one_minute_limits, check_dtype=False, check_index_type=False)
+
+def test_deprecated_operational_limits():
+    net = pn.create_eurostag_tutorial_example1_network()
+    with pytest.warns(DeprecationWarning, match=re.escape("create_operational_limits is deprecated, use create_loading_limits instead")):
+        net.create_operational_limits(pd.DataFrame.from_records(index=['element_id'], data=[
+            {'element_id': 'NHV1_NHV2_1', 'name': 'permanent_limit', 'side': 'ONE',
+             'type': 'APPARENT_POWER', 'value': 600,
+             'acceptable_duration': np.inf, 'fictitious': False},
+            {'element_id': 'NHV1_NHV2_1', 'name': '1\'', 'side': 'ONE',
+             'type': 'APPARENT_POWER', 'value': 1000,
+             'acceptable_duration': 60, 'fictitious': False},
+            {'element_id': 'NHV1_NHV2_1', 'name': 'permanent_limit', 'side': 'ONE',
+             'type': 'ACTIVE_POWER', 'value': 400,
+             'acceptable_duration': np.inf, 'fictitious': False},
+            {'element_id': 'NHV1_NHV2_1', 'name': '1\'', 'side': 'ONE',
+             'type': 'ACTIVE_POWER', 'value': 700,
+             'acceptable_duration': 60, 'fictitious': False}
+        ]))
 
 
 def test_create_voltage_angle_limits():
@@ -943,12 +1060,12 @@ def test_tie_line_deprecated_dangling_line():
         columns=['id', 'dangling_line1_id', 'dangling_line2_id'],
         data=[('TIE_LINE_TEST', 'BL_TEST', 'BL_TEST2')],
         index='id')
-    with pytest.warns(DeprecationWarning, match=re.escape("dangling_line1_id is deprecated")):
-        with pytest.warns(DeprecationWarning, match=re.escape("dangling_line2_id is deprecated")):
+    with pytest.warns(DeprecationWarning, match=re.escape('"dangling_line1_id" is deprecated')):
+        with pytest.warns(DeprecationWarning, match=re.escape('"dangling_line2_id" is deprecated')):
             network.create_tie_lines(df)
     network.remove_elements('TIE_LINE_TEST')
-    with pytest.warns(DeprecationWarning, match=re.escape("dangling_line1_id is deprecated")):
-        with pytest.warns(DeprecationWarning, match=re.escape("dangling_line2_id is deprecated")):
+    with pytest.warns(DeprecationWarning, match=re.escape('"dangling_line1_id" is deprecated')):
+        with pytest.warns(DeprecationWarning, match=re.escape('"dangling_line2_id" is deprecated')):
             network.create_tie_lines(id='TIE_LINE_TEST', dangling_line1_id='BL_TEST', dangling_line2_id='BL_TEST2')
 
 
@@ -1064,7 +1181,7 @@ def test_3_windings_transformers_creation():
     assert transformer.phase_tap_position2 == 1
 
     #Add some limits
-    n.create_operational_limits(pd.DataFrame.from_records(index='element_id', data=[
+    n.create_loading_limits(pd.DataFrame.from_records(index='element_id', data=[
         {'element_id': 'TWT_TEST', 'name': 'permanent_limit',
          'side': 'ONE',
          'type': 'APPARENT_POWER', 'value': 600,
@@ -1080,7 +1197,7 @@ def test_3_windings_transformers_creation():
          'type': 'ACTIVE_POWER', 'value': 700,
          'acceptable_duration': 60, 'fictitious': False}
     ]))
-    operational_limits = n.get_operational_limits().loc['TWT_TEST']
+    operational_limits = n.get_loading_limits().loc['TWT_TEST']
     assert operational_limits.shape[0] == 4
 
 
@@ -1192,11 +1309,12 @@ def test_dc_node_creation():
     print(n.get_dc_nodes().to_string())
     n.create_dc_nodes(pd.DataFrame(index=['DC_NODE_TEST'], columns=['nominal_v'], data=[[500.0]]))
 
-    expected = pd.DataFrame(
-        index=pd.Series(name='id', data=['dcNodeGbNeg', 'dcNodeGbPos', 'dcNodeFrNeg', 'dcNodeFrPos', 'DC_NODE_TEST']),
-        columns=['name', 'dc_bus_id', 'nominal_v', 'v'],
-        data=[['', 'dcNodeGbNeg_dcBus', 250.0, nan], ['', 'dcNodeGbPos_dcBus', 250.0, nan],
-              ['', 'dcNodeFrNeg_dcBus', 250.0, nan], ['', 'dcNodeFrPos_dcBus', 250.0, nan], ['', '', 500.0, nan]])
+    expected = pd.DataFrame({
+        'name': ['', '', '', '', ''],
+        'dc_bus_id': ['dcNodeGbNeg_dcBus', 'dcNodeGbPos_dcBus', 'dcNodeFrNeg_dcBus', 'dcNodeFrPos_dcBus', ''],
+        'nominal_v': [250.0, 250.0, 250.0, 250.0, 500.0],
+        'v': [nan, nan, nan, nan, nan]
+    }, index=pd.Series(['dcNodeGbNeg', 'dcNodeGbPos', 'dcNodeFrNeg', 'dcNodeFrPos', 'DC_NODE_TEST'], name='id'))
     pd.testing.assert_frame_equal(expected, n.get_dc_nodes(), check_dtype=False)
 
 
@@ -1204,30 +1322,68 @@ def test_dc_lines_creation():
     n = pypowsybl.network.create_dc_detailed_vsc_symmetrical_monopole_network().get_sub_network(
         'VscSymmetricalMonopole')
 
-    n.create_dc_lines(
-        pd.DataFrame(index=pd.Series(name='id', data=['DC_LINE_TEST']), columns=['r', 'dc_node1_id', 'dc_node2_id'],
-                     data=[[2, 'dcNodeGbNeg', 'dcNodeGbPos']]))
+    n.create_dc_lines(pd.DataFrame({
+        'r': 2,
+        'dc_node1_id': 'dcNodeGbNeg',
+        'dc_node2_id': 'dcNodeGbPos',
+        'connected1': False,
+        'connected2': True
+    }, index=['DC_LINE_TEST']))
+
     dc_line = n.get_dc_lines().loc['DC_LINE_TEST']
 
     assert dc_line.r == 2
     assert dc_line.dc_node1_id == 'dcNodeGbNeg'
     assert dc_line.dc_node2_id == 'dcNodeGbPos'
+    assert not dc_line.connected1
+    assert dc_line.connected2
+
+    # Test default values of 'connected1' and 'connected2'
+    n.create_dc_lines(pd.DataFrame({
+        'r': 2,
+        'dc_node1_id': 'dcNodeGbNeg',
+        'dc_node2_id': 'dcNodeGbPos'
+    }, index=['DC_LINE_TEST_2']))
+    dc_line2 = n.get_dc_lines().loc['DC_LINE_TEST_2']
+    assert dc_line2.r == 2
+    assert dc_line2.dc_node1_id == 'dcNodeGbNeg'
+    assert dc_line2.dc_node2_id == 'dcNodeGbPos'
+    assert dc_line2.connected1
+    assert dc_line2.connected2
 
 
 def test_voltage_source_converter_creation():
     n = pypowsybl.network.create_dc_detailed_vsc_symmetrical_monopole_network()
-    n.create_buses(id='BUS_TEST', voltage_level_id='VLDC-GB-xNodeDc1gb-150')
-    n.create_voltage_source_converters(pd.DataFrame(index=pd.Series(name='id', data=['CONV_TEST']),
-                                                    columns=['id', 'name', 'voltage_level_id', 'bus1_id', 'bus2_id',
-                                                             'dc_node1_id', 'dc_node2_id', 'control_mode', 'target_p',
-                                                             'voltage_regulator_on', 'idle_loss', 'switching_loss',
-                                                             'resistive_loss', 'target_v_ac', 'dc_connected1',
-                                                             'dc_connected2', 'pcc_terminal_id'], data=[
-            ['CONV_TEST', '', 'VLDC-GB-xNodeDc1gb-150', 'BUSDC-GB-xNodeDc1gb-150', 'BUS_TEST', 'dcNodeGbNeg',
-             'dcNodeGbPos', 'P_PCC', 300, True, 1.0, 1.0, 1.0, 400, True, False, 'TRDC-GB-xNodeDc1gb']]))
+    voltage_level_id = 'VLDC-GB-xNodeDc1gb-150'
+    ac_bus1_id = 'BUSDC-GB-xNodeDc1gb-150'
+    ac_bus2_id = "BUS_TEST"
+    n.create_buses(id=ac_bus2_id, voltage_level_id=voltage_level_id)
+
+    params_dict = {
+        'name': '',
+        'voltage_level_id': voltage_level_id,
+        'dc_node1_id': 'dcNodeGbNeg',
+        'dc_node2_id': 'dcNodeGbPos',
+        'control_mode': 'P_PCC',
+        'target_p': 300,
+        'voltage_regulator_on': True,
+        'idle_loss': 1.0,
+        'switching_loss': 1.0,
+        'resistive_loss': 1.0,
+        'target_v_ac': 400,
+        'pcc_terminal_id': 'TRDC-GB-xNodeDc1gb',
+    }
+
+    connection_params_dict1 = {
+        'bus1_id': ac_bus1_id,
+        'bus2_id': ac_bus2_id,
+        'dc_connected1': True,
+        'dc_connected2': False,
+    }
+    n.create_voltage_source_converters(pd.DataFrame([params_dict | connection_params_dict1], index=["CONV_TEST"]))
     conv = n.get_voltage_source_converters().loc['CONV_TEST']
 
-    assert conv.voltage_level_id == 'VLDC-GB-xNodeDc1gb-150'
+    assert conv.voltage_level_id == voltage_level_id
     assert conv.bus1_id == 'VLDC-GB-xNodeDc1gb-150_0'
     assert conv.bus2_id == 'VLDC-GB-xNodeDc1gb-150_1'
     assert conv.dc_node1_id == 'dcNodeGbNeg'
@@ -1239,17 +1395,108 @@ def test_voltage_source_converter_creation():
     assert conv.switching_loss == 1.0
     assert conv.resistive_loss == 1.0
     assert conv.target_v_ac == 400
+    assert conv.connected1
+    assert conv.connected2
     assert conv.dc_connected1 == True
     assert conv.dc_connected2 == False
     assert conv.pcc_terminal_id == 'TRDC-GB-xNodeDc1gb'
 
+    # min_p / max_p not set at creation -> core default is unbounded (+/-inf)
+    convAll = n.get_voltage_source_converters(all_attributes=True).loc['CONV_TEST']
+    assert np.isneginf(convAll.min_p)
+    assert np.isposinf(convAll.max_p)
+
+    # Test without specifying dc_connected1/2 and replacing bus1/2_id by connectable_bus1/2_id;
+    # The DC side should be connected, but not the AC side
+    connection_params_dict2 = {
+        'connectable_bus1_id': ac_bus1_id,
+        'connectable_bus2_id': ac_bus2_id,
+    }
+    n.create_voltage_source_converters(pd.DataFrame([params_dict | connection_params_dict2], index=["CONV_TEST2"]))
+    conv2 = n.get_voltage_source_converters(all_attributes=True).loc['CONV_TEST2']
+
+    assert conv2.bus1_id == ""
+    assert conv2.bus2_id == ""
+    assert conv2.bus_breaker_bus1_id == ac_bus1_id
+    assert conv2.bus_breaker_bus2_id == ac_bus2_id
+    assert conv2.dc_node1_id == 'dcNodeGbNeg'
+    assert conv2.dc_node2_id == 'dcNodeGbPos'
+    assert not conv2.connected1
+    assert not conv2.connected2
+    assert conv2.dc_connected1
+    assert conv2.dc_connected2
+
+    # Test creation without second AC terminal
+    connection_params_dict3 = {
+        'bus1_id': ac_bus1_id,
+    }
+    n.create_voltage_source_converters(pd.DataFrame([params_dict | connection_params_dict3], index=["CONV_TEST3"]))
+    conv3 = n.get_voltage_source_converters(all_attributes=True).loc['CONV_TEST3']
+
+    assert conv3.bus1_id == 'VLDC-GB-xNodeDc1gb-150_0'
+    assert conv3.bus2_id == ""
+    assert conv3.bus_breaker_bus1_id == ac_bus1_id
+    assert conv3.bus_breaker_bus2_id == ""
+    assert conv3.connected1
+    assert not conv3.connected2
+
+
+def test_voltage_source_converter_creation_min_max_p():
+    n = pypowsybl.network.create_dc_detailed_vsc_symmetrical_monopole_network()
+    n.create_buses(id='BUS_TEST', voltage_level_id='VLDC-GB-xNodeDc1gb-150')
+    n.create_voltage_source_converters(pd.DataFrame.from_records(index='id', data=[{
+        'id': 'CONV_TEST',
+        'name': '',
+        'voltage_level_id': 'VLDC-GB-xNodeDc1gb-150',
+        'bus1_id': 'BUSDC-GB-xNodeDc1gb-150',
+        'bus2_id': 'BUS_TEST',
+        'dc_node1_id': 'dcNodeGbNeg',
+        'dc_node2_id': 'dcNodeGbPos',
+        'control_mode': 'P_PCC',
+        'target_p': 300,
+        'voltage_regulator_on': True,
+        'idle_loss': 1.0,
+        'switching_loss': 1.0,
+        'resistive_loss': 1.0,
+        'target_v_ac': 400,
+        'dc_connected1': True,
+        'dc_connected2': False,
+        'pcc_terminal_id': 'TRDC-GB-xNodeDc1gb',
+        'min_p': -100,
+        'max_p': 100
+    }]))
+    conv = n.get_voltage_source_converters(all_attributes=True).loc['CONV_TEST']
+
+    assert conv.min_p == -100
+    assert conv.max_p == 100
+
 
 def test_dc_ground_creation():
     n = pypowsybl.network.create_dc_detailed_lcc_bipole_ground_return_network().get_sub_network('LccBipoleGroundReturn')
-    n.create_dc_grounds(
-        pd.DataFrame(index=['DC_GROUND_TEST'], columns=['dc_node_id', 'r'], data=[['dcNodeGbMid', 0.1]]))
+    n.create_dc_grounds(pd.DataFrame({'dc_node_id': ['dcNodeGbMid'], 'r': [0.1]}, index=['DC_GROUND_TEST']))
 
-    expected = pd.DataFrame(index=pd.Series(name='id', data=['dcGroundGb', 'dcGroundFr', 'DC_GROUND_TEST']),
-                            columns=['name', 'dc_node_id', 'r'],
-                            data=[['', 'dcNodeGbMid', 0.0], ['', 'dcNodeFrMid', 0.0], ['', 'dcNodeGbMid', 0.1]])
+    expected = pd.DataFrame({
+        'name': ['', '', ''],
+        'dc_node_id': ['dcNodeGbMid', 'dcNodeFrMid', 'dcNodeGbMid'],
+        'connected': [False, True, True],
+        'r': [0.0, 0.0, 0.1]
+    }, index=pd.Series(['dcGroundGb', 'dcGroundFr', 'DC_GROUND_TEST'], name='id'))
+
     pd.testing.assert_frame_equal(expected, n.get_dc_grounds(), check_dtype=False)
+
+
+def test_dc_switch_creation():
+    n = pypowsybl.network.create_dc_detailed_dc_switch_2_nodes()
+    n.create_dc_switches(
+        pd.DataFrame(index=['DC_SWITCH_TEST'],
+                     columns=['r', 'dc_node1_id', 'dc_node2_id', 'kind', 'open'],
+                     data=[[0.2, 'dcNode1', 'dcNode2', 'BREAKER', True]]))
+
+    expected = pd.DataFrame(index=pd.Series(name='id', data=['dcSwitch', 'DC_SWITCH_TEST']),
+                            columns=['name', 'r', 'dc_node1_id', 'dc_node2_id', 'kind', 'open'],
+                            data=[['', 0.125, 'dcNode1', 'dcNode2', 'DISCONNECTOR', False],
+                                  ['', 0.2, 'dcNode1', 'dcNode2', 'BREAKER', True]])
+
+    dc_switches = n.get_dc_switches()
+    # check_like = True to avoid testing column ordering
+    pd.testing.assert_frame_equal(expected, dc_switches, check_dtype=False, check_like=True)

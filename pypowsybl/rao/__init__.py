@@ -19,6 +19,9 @@ from .impl.fast_rao_parameters import FastRaoParameters
 from .impl.rao_search_tree_parameters import RaoSearchTreeParameters
 from .impl.crac import Crac
 from .impl.glsk import Glsk
+from .impl.time_coupled_constraints import TimeCoupledConstraints
+from .impl.time_coupled_rao_input import TimeCoupledRaoInput
+from .impl.time_coupled_rao import TimeCoupledRao
 from .impl.util import (
   create_rao,
   RaoLogFilter

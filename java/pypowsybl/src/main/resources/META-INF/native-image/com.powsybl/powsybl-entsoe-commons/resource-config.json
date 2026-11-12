@@ -1,6 +1,7 @@
 {
   "resources":{
     "includes":[
-      {"pattern":"\\Qcom/powsybl/entsoe/commons/reports.properties\\E"}
+      {"pattern":"\\Qcom/powsybl/entsoe/commons/reports.properties\\E"},
+      {"pattern":"\\Qcom/powsybl/entsoe/commons/reports_fr.properties\\E"}
     ]}
 }

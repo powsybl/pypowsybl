@@ -15,7 +15,7 @@ import java.util.*;
 
 import static com.powsybl.dataframe.network.adders.SeriesUtils.*;
 
-public class OperationalLimitsDataframeAdder implements NetworkElementAdder {
+public class LoadingLimitsDataframeAdder implements NetworkElementAdder {
 
     private static final List<SeriesMetadata> METADATA = List.of(
         SeriesMetadata.stringIndex("element_id"),
@@ -34,7 +34,7 @@ public class OperationalLimitsDataframeAdder implements NetworkElementAdder {
         return Collections.singletonList(METADATA);
     }
 
-    private static final class OperationalLimitsSeries {
+    private static final class LoadingLimitsSeries {
 
         private final StringSeries elementIds;
         private final StringSeries names;
@@ -45,7 +45,7 @@ public class OperationalLimitsDataframeAdder implements NetworkElementAdder {
         private final IntSeries fictitious;
         private final StringSeries groupNames;
 
-        OperationalLimitsSeries(UpdatingDataframe dataframe) {
+        LoadingLimitsSeries(UpdatingDataframe dataframe) {
             this.elementIds = getRequiredStrings(dataframe, "element_id");
             this.names = dataframe.getStrings("name");
             this.sides = getRequiredStrings(dataframe, "side");
@@ -92,7 +92,7 @@ public class OperationalLimitsDataframeAdder implements NetworkElementAdder {
     @Override
     public void addElements(Network network, List<UpdatingDataframe> dataframes) {
         UpdatingDataframe primaryTable = dataframes.get(0);
-        OperationalLimitsSeries series = new OperationalLimitsSeries(primaryTable);
+        LoadingLimitsSeries series = new LoadingLimitsSeries(primaryTable);
 
         Map<LimitsDataframeAdderKey, TIntArrayList> indexMap = new HashMap<>();
         for (int i = 0; i < primaryTable.getRowCount(); i++) {
@@ -111,12 +111,12 @@ public class OperationalLimitsDataframeAdder implements NetworkElementAdder {
         addElements(network, series, indexMap);
     }
 
-    private static void addElements(Network network, OperationalLimitsSeries series, Map<LimitsDataframeAdderKey, TIntArrayList> indexMap) {
+    private static void addElements(Network network, LoadingLimitsSeries series, Map<LimitsDataframeAdderKey, TIntArrayList> indexMap) {
         indexMap.forEach((key, indexList) -> createLimits(network, series, key.getElementId(),
             key.getSide(), key.getLimitType(), key.getGroupId(), indexList));
     }
 
-    private static void createLimits(Network network, OperationalLimitsSeries series, String elementId, String side, String type,
+    private static void createLimits(Network network, LoadingLimitsSeries series, String elementId, String side, String type,
                                      String groupId, TIntArrayList indexList) {
         LimitType limitType = LimitType.valueOf(type);
         TemporaryLimitData.Side limitSide = TemporaryLimitData.Side.valueOf(side);
@@ -128,7 +128,7 @@ public class OperationalLimitsDataframeAdder implements NetworkElementAdder {
         adder.add();
     }
 
-    private static void createLimits(LoadingLimitsAdder<?, ?> adder, int row, OperationalLimitsSeries series) {
+    private static void createLimits(LoadingLimitsAdder<?, ?> adder, int row, LoadingLimitsSeries series) {
         int acceptableDuration = series.getAcceptableDurations().get(row);
         if (acceptableDuration == -1) {
             applyIfPresent(series.getValues(), row, adder::setPermanentLimit);
@@ -179,7 +179,7 @@ public class OperationalLimitsDataframeAdder implements NetworkElementAdder {
             }
 
             @Override
-            public Collection<OperationalLimitsGroup> getAllSelectedOperationalLimitsGroups() {
+            public List<OperationalLimitsGroup> getAllSelectedOperationalLimitsGroups() {
                 return branch.getAllSelectedOperationalLimitsGroups(side);
             }
 
@@ -262,17 +262,20 @@ public class OperationalLimitsDataframeAdder implements NetworkElementAdder {
 
             @Override
             public CurrentLimitsAdder newCurrentLimits() {
-                return side == TwoSides.ONE ? branch.newCurrentLimits1() : branch.newCurrentLimits2();
+                return side == TwoSides.ONE ? branch.getOrCreateSelectedOperationalLimitsGroup1().newCurrentLimits()
+                        : branch.getOrCreateSelectedOperationalLimitsGroup2().newCurrentLimits();
             }
 
             @Override
             public ApparentPowerLimitsAdder newApparentPowerLimits() {
-                return side == TwoSides.ONE ? branch.newApparentPowerLimits1() : branch.newApparentPowerLimits2();
+                return side == TwoSides.ONE ? branch.getOrCreateSelectedOperationalLimitsGroup1().newApparentPowerLimits()
+                        : branch.getOrCreateSelectedOperationalLimitsGroup2().newApparentPowerLimits();
             }
 
             @Override
             public ActivePowerLimitsAdder newActivePowerLimits() {
-                return side == TwoSides.ONE ? branch.newActivePowerLimits1() : branch.newActivePowerLimits2();
+                return side == TwoSides.ONE ? branch.getOrCreateSelectedOperationalLimitsGroup1().newActivePowerLimits()
+                        : branch.getOrCreateSelectedOperationalLimitsGroup2().newActivePowerLimits();
             }
         };
     }

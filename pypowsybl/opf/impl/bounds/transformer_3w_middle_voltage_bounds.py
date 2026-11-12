@@ -29,4 +29,4 @@ class Transformer3wMiddleVoltageBounds(VariableBounds):
                 t3_index = variable_context.t3_num_2_index[t3_num]
                 model.set_variable_bounds(variable_context.t3_middle_v_vars[t3_index],
                                           *Bounds.fix(t3_row.Index, v_bounds.min_value, v_bounds.max_value))
-                model.set_variable_start(variable_context.t3_middle_ph_vars[t3_index], 1.0)
+                model.set_variable_start(variable_context.t3_middle_v_vars[t3_index], 1.0)

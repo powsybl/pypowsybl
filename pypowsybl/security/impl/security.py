@@ -5,18 +5,19 @@
 # SPDX-License-Identifier: MPL-2.0
 #
 from typing import Union, List, Optional
+
 from numpy.typing import ArrayLike
 from pandas import DataFrame
+from pypowsybl._pypowsybl import ContingencyContextType, ConditionType, ViolationType, Side
+from pypowsybl._pypowsybl import PostContingencyComputationStatus as ComputationStatus
 
 import pypowsybl.loadflow
 from pypowsybl import _pypowsybl
-from pypowsybl._pypowsybl import ContingencyContextType, ConditionType, ViolationType, Side
-from pypowsybl._pypowsybl import PostContingencyComputationStatus as ComputationStatus
 from pypowsybl.network import Network
 from pypowsybl.report import ReportNode
+from .contingency_container import ContingencyContainer
 from .parameters import Parameters
 from .security_analysis_result import SecurityAnalysisResult
-from .contingency_container import ContingencyContainer
 
 ComputationStatus.__name__ = 'ComputationStatus'
 ComputationStatus.__module__ = __name__

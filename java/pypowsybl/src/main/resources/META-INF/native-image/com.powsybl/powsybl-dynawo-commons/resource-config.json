@@ -1,6 +1,7 @@
 {
   "resources":{
     "includes":[
-      {"pattern":"\\Qcom/powsybl/dynawo/commons/reports.properties\\E"}
+      {"pattern":"\\Qcom/powsybl/dynawo/commons/reports.properties\\E"},
+      {"pattern":"\\Qcom/powsybl/dynawo/commons/reports_fr.properties\\E"}
     ]}
 }

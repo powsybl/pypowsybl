@@ -97,6 +97,9 @@ typedef struct security_analysis_parameters_struct {
     double low_voltage_absolute_threshold;
     double high_voltage_proportional_threshold;
     double high_voltage_absolute_threshold;
+    double monitored_element_power_modification_threshold;
+    double monitored_element_voltage_modification_absolute_threshold;
+    double monitored_element_voltage_modification_proportional_threshold;
 } security_analysis_parameters;
 
 typedef struct sensitivity_analysis_parameters_struct {
@@ -173,9 +176,9 @@ typedef enum {
     RATIO_TAP_CHANGER,
     PHASE_TAP_CHANGER,
     REACTIVE_CAPABILITY_CURVE_POINT,
-    OPERATIONAL_LIMITS,
+    LOADING_LIMITS,
     VOLTAGE_ANGLE_LIMITS,
-    SELECTED_OPERATIONAL_LIMITS,
+    SELECTED_LOADING_LIMITS,
     MINMAX_REACTIVE_LIMITS,
     ALIAS,
     IDENTIFIABLE,
@@ -192,7 +195,10 @@ typedef enum {
     DC_NODE,
     VOLTAGE_SOURCE_CONVERTER,
     DC_GROUND,
-    DC_BUS
+    DC_SWITCH,
+    DC_BUS,
+    OVERLOAD_MANAGEMENT_SYSTEM,
+    OVERLOAD_MANAGEMENT_SYSTEM_TRIPPING
 } element_type;
 
 typedef enum {
@@ -259,6 +265,11 @@ typedef enum {
     TRANSFORMER_PHASE_1,
     TRANSFORMER_PHASE_2,
     TRANSFORMER_PHASE_3,
+    SHUNT_COMPENSATOR_SUSCEPTANCE,
+    BRANCH_RESISTANCE,
+    BRANCH_REACTANCE,
+    BRANCH_ADMITTANCE,
+    SVC_PILOT_POINT_TARGET_VOLTAGE,
 } sensitivity_variable_type;
 
 typedef enum {
@@ -319,6 +330,7 @@ typedef struct series_metadata_struct {
     unsigned char  is_index;
     unsigned char  is_modifiable;
     unsigned char  is_default;
+    unsigned char  is_deprecated;
 } series_metadata;
 
 /**

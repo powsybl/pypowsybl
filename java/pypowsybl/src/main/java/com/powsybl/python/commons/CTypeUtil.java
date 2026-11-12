@@ -11,6 +11,8 @@ import com.powsybl.dataframe.SeriesMetadata;
 import com.powsybl.python.commons.PyPowsyblApiHeader.DataframeMetadataPointer;
 import com.powsybl.python.commons.PyPowsyblApiHeader.SeriesMetadataPointer;
 import com.powsybl.python.commons.PyPowsyblApiHeader.StringMap;
+import org.graalvm.nativeimage.ObjectHandle;
+import org.graalvm.nativeimage.ObjectHandles;
 import org.graalvm.nativeimage.UnmanagedMemory;
 import org.graalvm.nativeimage.c.struct.SizeOf;
 import org.graalvm.nativeimage.c.type.*;
@@ -116,6 +118,16 @@ public final class CTypeUtil {
         return ints;
     }
 
+    public static <T> List<T> toObjectHandleList(PyPowsyblApiHeader.VoidPointerPointer handlePtr, int length) {
+        List<T> objectList = new ArrayList<>(length);
+        for (int i = 0; i < length; i++) {
+            ObjectHandle handle = handlePtr.read(i);
+            T obj = ObjectHandles.getGlobal().get(handle);
+            objectList.add(obj);
+        }
+        return objectList;
+    }
+
     /**
      * Convert an int list to a set of enum using the specified converter
      */
@@ -168,6 +180,7 @@ public final class CTypeUtil {
             metadataPtr.setIndex(colMetadata.isIndex());
             metadataPtr.setModifiable(colMetadata.isModifiable());
             metadataPtr.setDefault(colMetadata.isDefaultAttribute());
+            metadataPtr.setDeprecated(colMetadata.isDeprecated());
         }
         cMetadata.setAttributesCount(metadata.size());
         cMetadata.setAttributesMetadata(seriesMetadataPtr);
