@@ -17,7 +17,7 @@ import java.util.List;
 /**
  * @author Laurent Issertial {@literal <laurent.issertial at rte-france.com>}
  */
-abstract class AbstractSimpleDynamicModelAdder implements DynamicMappingAdder {
+public abstract class AbstractSimpleDynamicModelAdder implements DynamicMappingAdder {
 
     private final List<List<SeriesMetadata>> metadata;
     private final CategoryInformation categoryInformation;
