@@ -1416,6 +1416,7 @@ PYBIND11_MODULE(_pypowsybl, m) {
     m.def("get_crac_injection_range_actions", &pypowsybl::getCracInjectionRangeActions, "Get crac injection range actions", py::arg("crac"));
     m.def("get_network_element_ids_and_keys", &pypowsybl::getNetworkElementIdsAndKeys, "Get crac injection ra elements", py::arg("crac"));
     m.def("get_crac_counter_trade_range_actions", &pypowsybl::getCracCounterTradeRangeActions, "Get crac counter trade range actions", py::arg("crac"));
+    m.def("get_crac_counter_trade_connected_areas", &pypowsybl::getCracCounterTradeConnectedAreas, "Get crac counter trade connected areas", py::arg("crac"));
     m.def("get_crac_range_action_ranges", &pypowsybl::getCracRangeActionRanges, "Get crac range action ranges", py::arg("crac"));
     m.def("get_crac_network_actions", &pypowsybl::getCracNetworkActions, "Get crac network actions", py::arg("crac"));
     m.def("get_crac_terminal_connection_actions", &pypowsybl::getCracTerminalConnectionActions, "Get terminal connection actions", py::arg("crac"));
