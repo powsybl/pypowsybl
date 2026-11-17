@@ -87,6 +87,7 @@ public class SvcDataframeAdder extends AbstractSimpleAdder {
                 setVoltageRegulationAttributes(adder, network, row);
 
                 // For compatibility with former regulation
+                // Not used by adder.add() if any new regulation field is used
                 applyIfPresent(targetQ, row, adder::setReactivePowerSetpoint);
                 applyIfPresent(targetV, row, adder::setVoltageSetpoint);
                 applyBooleanIfPresent(regulating, row, adder::setRegulating);

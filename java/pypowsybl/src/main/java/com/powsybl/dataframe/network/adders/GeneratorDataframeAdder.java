@@ -109,6 +109,7 @@ public class GeneratorDataframeAdder extends AbstractSimpleAdder {
                 setVoltageRegulationAttributes(adder, network, row);
 
                 // For compatibility with former regulation
+                // Not used by adder.add() if any new regulation field is used
                 applyIfPresent(targetQ, row, adder::setTargetQ);
                 if (equivalentLocalTargetV != null) {
                     double equivalentLocalTargetVValue = equivalentLocalTargetV.get(row);

@@ -88,6 +88,7 @@ public class VscStationDataframeAdder extends AbstractSimpleAdder {
                 setVoltageRegulationAttributes(adder, network, row);
 
                 // For compatibility with the old regulation
+                // Not used by adder.add() if any new regulation field is used
                 applyIfPresent(targetV, row, adder::setVoltageSetpoint);
                 applyIfPresent(targetQ, row, adder::setReactivePowerSetpoint);
                 applyBooleanIfPresent(voltageRegulatorOn, row, adder::setVoltageRegulatorOn);

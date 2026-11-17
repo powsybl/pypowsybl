@@ -180,6 +180,7 @@ public class VoltageSourceConverterDataFrameAdder extends AbstractSimpleAdder {
             setVoltageRegulationAttributes(adder, network, row);
 
             // For compatibility with former regulation
+            // Not used by adder.add() if any new regulation field is used
             applyBooleanIfPresent(voltageRegulatorOn, row, adder::setVoltageRegulatorOn);
             applyIfPresent(targetVac, row, adder::setVoltageSetpoint);
             applyIfPresent(targetQ, row, adder::setReactivePowerSetpoint);

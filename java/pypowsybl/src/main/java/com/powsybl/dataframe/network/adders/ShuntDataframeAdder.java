@@ -165,6 +165,7 @@ public class ShuntDataframeAdder implements NetworkElementAdder {
                 setVoltageRegulationAttributes(adder, network, row);
 
                 // For compatibility with former regulation
+                // Not used by adder.add() if any new regulation field is used
                 applyIfPresent(targetV, row, adder::setTargetV);
 
                 ShuntCompensatorModelType modelType = ShuntCompensatorModelType.valueOf(modelTypes.get(row));

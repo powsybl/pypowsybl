@@ -117,6 +117,7 @@ public class RatioTapChangerDataframeAdder implements NetworkElementAdder {
 
             setVoltageRegulationAttributes(adder, network, row);
             // For compatibility with former regulation
+            // Not used by adder.add() if any new regulation field is used
             applyIfPresent(targetDeadband, row, adder::setTargetDeadband);
             applyBooleanIfPresent(regulating, row, adder::setRegulating);
             applyIfPresent(regulationValue, row, adder::setRegulationValue);

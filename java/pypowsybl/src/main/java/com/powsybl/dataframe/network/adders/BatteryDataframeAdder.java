@@ -84,6 +84,7 @@ public class BatteryDataframeAdder extends AbstractSimpleAdder {
                 setVoltageRegulationAttributes(batteryAdder, network, row);
 
                 // For compatibility with former regulation
+                // Not used by adder.add() if any new regulation field is used
                 applyIfPresent(targetQ, row, batteryAdder::setTargetQ);
 
                 return Optional.of(batteryAdder);
