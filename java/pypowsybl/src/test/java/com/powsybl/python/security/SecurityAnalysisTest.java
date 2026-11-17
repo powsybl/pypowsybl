@@ -26,7 +26,7 @@ import com.powsybl.python.network.Dataframes;
 import com.powsybl.python.network.Networks;
 import com.powsybl.security.SecurityAnalysisParameters;
 import com.powsybl.security.SecurityAnalysisResult;
-import com.powsybl.security.limitreduction.LimitReduction;
+import com.powsybl.security.limitscaling.LimitScaling;
 import com.powsybl.security.monitor.StateMonitor;
 import com.powsybl.security.results.BranchResult;
 import org.assertj.core.api.Assertions;
@@ -105,15 +105,15 @@ class SecurityAnalysisTest {
         dataframe.addSeries("value", false, new TestDoubleSeries(0.8, 0.5));
         new LimitReductionDataframeAdder().addElements(analysisContext, dataframe);
 
-        List<LimitReduction> limitReductions = analysisContext.getLimitReductions();
-        assertThat(limitReductions).hasSize(2);
-        LimitReduction limitReduction = limitReductions.getFirst();
-        assertEquals(LimitType.CURRENT, limitReduction.getLimitType());
-        assertEquals(ContingencyContext.all(), limitReduction.getContingencyContext());
-        assertThat(limitReduction.getDurationCriteria()).hasSize(1);
-        assertEquals(LimitDurationCriterion.LimitDurationType.PERMANENT, limitReduction.getDurationCriteria().getFirst().getType());
-        assertThat(limitReduction.getNetworkElementCriteria()).hasSize(1);
-        IdentifiableCriterion networkElementCriterion = (IdentifiableCriterion) limitReduction.getNetworkElementCriteria().getFirst();
+        List<LimitScaling> limitScalings = analysisContext.getLimitsScalings();
+        assertThat(limitScalings).hasSize(2);
+        LimitScaling limitScaling = limitScalings.getFirst();
+        assertEquals(LimitType.CURRENT, limitScaling.getLimitType());
+        assertEquals(ContingencyContext.all(), limitScaling.getContingencyContext());
+        assertThat(limitScaling.getDurationCriteria()).hasSize(1);
+        assertEquals(LimitDurationCriterion.LimitDurationType.PERMANENT, limitScaling.getDurationCriteria().getFirst().getType());
+        assertThat(limitScaling.getNetworkElementCriteria()).hasSize(1);
+        IdentifiableCriterion networkElementCriterion = (IdentifiableCriterion) limitScaling.getNetworkElementCriteria().getFirst();
         assertEquals(400.0, networkElementCriterion.getNominalVoltageCriterion().getVoltageInterval().getNominalVoltageHighBound().get());
         assertEquals(Country.FR, networkElementCriterion.getCountryCriterion().getCountries().getFirst());
     }

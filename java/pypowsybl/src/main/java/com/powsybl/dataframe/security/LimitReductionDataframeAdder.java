@@ -26,7 +26,7 @@ import com.powsybl.iidm.criteria.duration.PermanentDurationCriterion;
 import com.powsybl.iidm.network.Country;
 import com.powsybl.iidm.network.LimitType;
 import com.powsybl.python.security.SecurityAnalysisContext;
-import com.powsybl.security.limitreduction.LimitReduction;
+import com.powsybl.security.limitscaling.LimitScaling;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -132,23 +132,23 @@ public class LimitReductionDataframeAdder {
             for (int row = 0; row < dataframe.getRowCount(); row++) {
                 LimitType type = LimitType.valueOf(series.getLimitType().get(row));
                 double value = series.getValue().get(row);
-                LimitReduction.Builder reductionBuilder = LimitReduction.builder(type, value);
+                LimitScaling.Builder scalingBuilder = LimitScaling.builder(type, value);
                 SeriesUtils.applyIfPresent(series.getContingencyContext(), row,
-                        contingencyCxt -> reductionBuilder.
+                        contingencyCxt -> scalingBuilder.
                                 withContingencyContext(ContingencyContext.create(null,
                                         ContingencyContextType.valueOf(contingencyCxt)))
                 );
-                SeriesUtils.applyBooleanIfPresent(series.getMonitoring(), row, reductionBuilder::withMonitoringOnly);
+                SeriesUtils.applyBooleanIfPresent(series.getMonitoring(), row, scalingBuilder::withMonitoringOnly);
 
-                addLimitDurationCriteria(series, row, reductionBuilder);
-                addNetworkElementCriterion(series, row, reductionBuilder);
+                addLimitDurationCriteria(series, row, scalingBuilder);
+                addNetworkElementCriterion(series, row, scalingBuilder);
 
-                context.addLimitReduction(reductionBuilder.build());
+                context.addLimitReduction(scalingBuilder.build());
             }
         }
     }
 
-    private void addLimitDurationCriteria(LimitReductionSeries series, int row, LimitReduction.Builder reductionBuilder) {
+    private void addLimitDurationCriteria(LimitReductionSeries series, int row, LimitScaling.Builder scalingBuilder) {
         List<LimitDurationCriterion> durationCriteria = new ArrayList<>();
         if (series.getPermanent().get(row) == 1) {
             durationCriteria.add(new PermanentDurationCriterion());
@@ -172,10 +172,10 @@ public class LimitReductionDataframeAdder {
                 durationCriteria.add(new AllTemporaryDurationCriterion());
             }
         }
-        reductionBuilder.withLimitDurationCriteria(durationCriteria);
+        scalingBuilder.withLimitDurationCriteria(durationCriteria);
     }
 
-    private void addNetworkElementCriterion(LimitReductionSeries series, int row, LimitReduction.Builder reductionBuilder) {
+    private void addNetworkElementCriterion(LimitReductionSeries series, int row, LimitScaling.Builder scalingBuilder) {
         AtLeastOneCountryCriterion countryCriterion = series.getCountry() != null ?
                 new AtLeastOneCountryCriterion(List.of(Country.valueOf(series.getCountry().get(row)))) : null;
         AtLeastOneNominalVoltageCriterion voltageCriterion = null;
@@ -195,7 +195,7 @@ public class LimitReductionDataframeAdder {
             ));
         }
         if (countryCriterion != null || voltageCriterion != null) {
-            reductionBuilder.withNetworkElementCriteria(List.of(new IdentifiableCriterion(countryCriterion, voltageCriterion)));
+            scalingBuilder.withNetworkElementCriteria(List.of(new IdentifiableCriterion(countryCriterion, voltageCriterion)));
         }
     }
 }

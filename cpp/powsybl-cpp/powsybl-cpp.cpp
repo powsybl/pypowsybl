@@ -2391,6 +2391,10 @@ SeriesArray* getCracCounterTradeRangeActions(const JavaHandle& cracHandle) {
   return new SeriesArray(PowsyblCaller::get()->callJava<array*>(::getCracCounterTradeRangeActions, cracHandle));
 }
 
+SeriesArray* getCracCounterTradeConnectedAreas(const JavaHandle& cracHandle) {
+  return new SeriesArray(PowsyblCaller::get()->callJava<array*>(::getCracCounterTradeConnectedAreas, cracHandle));
+}
+
 SeriesArray* getCracRangeActionRanges(const JavaHandle& cracHandle) {
   return new SeriesArray(PowsyblCaller::get()->callJava<array*>(::getCracRangeActionRanges, cracHandle));
 }

@@ -14,7 +14,7 @@ public class LimitViolationContext extends LimitViolation {
     public LimitViolationContext(String contingencyId, LimitViolation limitViolation) {
         super(limitViolation.getSubjectId(), limitViolation.getSubjectName(), limitViolation.getLimitType(),
             limitViolation.getLimitName(), limitViolation.getAcceptableDuration(), limitViolation.getLimit(),
-            limitViolation.getLimitReduction(), limitViolation.getValue(), limitViolation.getSide());
+            limitViolation.getLimitScaling(), limitViolation.getValue(), limitViolation.getSide());
         this.contingencyId = Objects.requireNonNull(contingencyId);
     }
 
