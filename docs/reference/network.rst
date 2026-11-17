@@ -330,6 +330,7 @@ Miscellaneous network functions
    Network.get_validation_level
    Network.validate
    Network.set_min_validation_level
+   Network.get_outage_groups
 
 
 I/O
