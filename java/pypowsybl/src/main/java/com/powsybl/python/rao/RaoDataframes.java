@@ -647,14 +647,44 @@ public final class RaoDataframes {
             .stringsIndex("id", CounterTradeRangeAction::getId)
             .strings("name", CounterTradeRangeAction::getName)
             .strings("operator", CounterTradeRangeAction::getOperator)
-            .strings("exporting_area", a -> a.getExportingArea())
-            .strings("importing_area", a -> a.getImportingArea())
+            .strings("area_id", CounterTradeRangeAction::getAreaId)
             .strings("group_id", a -> a.getGroupId().orElse(""))
             .optionalInts("speed", a -> a.getSpeed().map(OptionalInt::of).orElse(OptionalInt.empty()))
             .optionalDoubles("activation_cost", a -> a.getActivationCost().map(OptionalDouble::of).orElseGet(OptionalDouble::empty))
             .optionalDoubles("variation_cost_up", a -> a.getVariationCost(VariationDirection.UP).map(OptionalDouble::of).orElseGet(OptionalDouble::empty))
             .optionalDoubles("variation_cost_down", a -> a.getVariationCost(VariationDirection.DOWN).map(OptionalDouble::of).orElseGet(OptionalDouble::empty))
             .doubles("initial_set_point", StandardRangeAction::getInitialSetpoint)
+            .build();
+    }
+
+    private record CounterTradeConnectedArea(String raId, String areaId, Double min, Double max, RangeType rangeType) { }
+
+    private static List<CounterTradeConnectedArea> flattenConnectedAreas(Crac crac) {
+        List<CounterTradeConnectedArea> list = new ArrayList<>();
+        crac.getCounterTradeRangeActions().forEach(
+            a -> a.getConnectedAreas().forEach(
+                ca -> {
+                    if (ca.getBorderRanges().isEmpty()) {
+                        list.add(new CounterTradeConnectedArea(a.getId(), ca.getAreaId(), null, null, null));
+                    } else {
+                        ca.getBorderRanges().forEach(
+                            r -> list.add(new CounterTradeConnectedArea(a.getId(), ca.getAreaId(), r.getMin(), r.getMax(), r.getRangeType()))
+                        );
+                    }
+                }
+            )
+        );
+        return list;
+    }
+
+    public static DataframeMapper<Crac, Void> cracCounterTradeConnectedAreas() {
+        return new DataframeMapperBuilder<Crac, CounterTradeConnectedArea, Void>()
+            .itemsProvider(RaoDataframes::flattenConnectedAreas)
+            .stringsIndex("id", CounterTradeConnectedArea::raId)
+            .strings("area_id", CounterTradeConnectedArea::areaId)
+            .optionalDoubles("min", a -> a.min() != null ? OptionalDouble.of(a.min()) : OptionalDouble.empty())
+            .optionalDoubles("max", a -> a.max() != null ? OptionalDouble.of(a.max()) : OptionalDouble.empty())
+            .strings("range_type", a -> a.rangeType() != null ? a.rangeType().name() : "")
             .build();
     }
 
