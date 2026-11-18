@@ -21,7 +21,6 @@ import com.powsybl.dynamicsimulation.OutputVariable;
 import com.powsybl.iidm.network.ThreeSides;
 import com.powsybl.iidm.network.ValidationLevel;
 import com.powsybl.openreac.parameters.input.algo.OpenReacAmplLogLevel;
-import com.powsybl.openreac.parameters.input.algo.OpenReacOptimisationObjective;
 import com.powsybl.openreac.parameters.input.algo.OpenReacSolverLogLevel;
 import com.powsybl.openreac.parameters.input.algo.ReactiveSlackBusesMode;
 import com.powsybl.openreac.parameters.output.OpenReacStatus;
@@ -408,14 +407,6 @@ public final class Util {
 
     public static VoltageInitializerStatus convert(OpenReacStatus status) {
         return status == OpenReacStatus.OK ? VoltageInitializerStatus.OK : VoltageInitializerStatus.NOT_OK;
-    }
-
-    public static OpenReacOptimisationObjective convert(VoltageInitializerObjective obj) {
-        return switch (obj) {
-            case MIN_GENERATION -> OpenReacOptimisationObjective.MIN_GENERATION;
-            case BETWEEN_HIGH_AND_LOW_VOLTAGE_LIMIT -> OpenReacOptimisationObjective.BETWEEN_HIGH_AND_LOW_VOLTAGE_LIMIT;
-            case SPECIFIC_VOLTAGE_PROFILE -> OpenReacOptimisationObjective.SPECIFIC_VOLTAGE_PROFILE;
-        };
     }
 
     public static OpenReacAmplLogLevel convert(VoltageInitializerLogLevelAmpl obj) {
