@@ -15,6 +15,7 @@ import com.powsybl.entsoe.util.EntsoeArea;
 import com.powsybl.entsoe.util.EntsoeGeographicalCode;
 import com.powsybl.iidm.network.*;
 import com.powsybl.iidm.network.extensions.*;
+import com.powsybl.iidm.network.regulation.RegulationMode;
 import com.powsybl.iidm.network.test.*;
 import com.powsybl.python.network.Networks;
 import org.junit.jupiter.api.Disabled;
@@ -297,7 +298,7 @@ class NetworkElementAddersTest {
     @Test
     void svc() {
         var network = SvcTestCaseFactory.create();
-        var mode = StaticVarCompensator.RegulationMode.VOLTAGE;
+        var mode = RegulationMode.VOLTAGE;
         var dataframe = new DefaultUpdatingDataframe(1);
         addDoubleColumn(dataframe, "b_min", 0.0003);
         addDoubleColumn(dataframe, "b_max", 0.0009);
@@ -312,7 +313,7 @@ class NetworkElementAddersTest {
         addIntColumn(dataframe, "section_count", 4);
         NetworkElementAdders.addElements(DataframeElementType.STATIC_VAR_COMPENSATOR, network, singletonList(dataframe));
         assertEquals(2, network.getStaticVarCompensatorCount());
-        assertEquals(mode, network.getStaticVarCompensator("SVC").getRegulationMode());
+        assertEquals(mode, network.getStaticVarCompensator("SVC").getVoltageRegulation().getMode());
     }
 
     @Test
@@ -513,6 +514,41 @@ class NetworkElementAddersTest {
         NetworkElementAdders.addExtensions("secondaryVoltageControl", network, dataframes);
         extension = network.getExtension(SecondaryVoltageControl.class);
         assertNotNull(extension);
+    }
+
+    @Test
+    void linePositionExtension() {
+        var network = EurostagTutorialExample1Factory.create();
+        String lineId = "NHV1_NHV2_1";
+        assertNull(network.getLine(lineId).getExtension(LinePosition.class));
+
+        // coordinates given out of order
+        DefaultUpdatingDataframe dataframe = new DefaultUpdatingDataframe(3);
+        addStringColumn(dataframe, "id", lineId, lineId, lineId);
+        addIntColumn(dataframe, "num", 2, 0, 1);
+        addDoubleColumn(dataframe, "latitude", 63.41, 63.40, 63.405);
+        addDoubleColumn(dataframe, "longitude", 10.40, 10.39, 10.395);
+        NetworkElementAdders.addExtensions("linePosition", network, singletonList(dataframe));
+
+        LinePosition<Line> extension = network.getLine(lineId).getExtension(LinePosition.class);
+        assertNotNull(extension);
+        assertEquals(List.of(new Coordinate(63.40, 10.39), new Coordinate(63.405, 10.395), new Coordinate(63.41, 10.40)),
+                extension.getCoordinates());
+    }
+
+    @Test
+    void linePositionExtensionWithMissingCoordinate() {
+        var network = EurostagTutorialExample1Factory.create();
+        String lineId = "NHV1_NHV2_1";
+        DefaultUpdatingDataframe dataframe = new DefaultUpdatingDataframe(2);
+        addStringColumn(dataframe, "id", lineId, lineId);
+        addIntColumn(dataframe, "num", 0, 2);
+        addDoubleColumn(dataframe, "latitude", 63.40, 63.41);
+        addDoubleColumn(dataframe, "longitude", 10.39, 10.40);
+        List<UpdatingDataframe> dataframes = singletonList(dataframe);
+        PowsyblException e = assertThrows(PowsyblException.class,
+                () -> NetworkElementAdders.addExtensions("linePosition", network, dataframes));
+        assertEquals("Missing coordinate at 1 for line 'NHV1_NHV2_1'", e.getMessage());
     }
 
     @Test
