@@ -29,7 +29,12 @@ public class DoubleSeriesMapper<T, C> implements SeriesMapper<T, C> {
     }
 
     public DoubleSeriesMapper(String name, ToDoubleBiFunction<T, C> value, DoubleUpdater<T, C> updater, boolean defaultAttribute) {
-        this.metadata = new SeriesMetadata(false, name, updater != null, SeriesDataType.DOUBLE, defaultAttribute);
+        this(name, value, updater, defaultAttribute, false);
+    }
+
+    public DoubleSeriesMapper(String name, ToDoubleBiFunction<T, C> value, DoubleUpdater<T, C> updater, boolean defaultAttribute,
+                              boolean deprecated) {
+        this.metadata = new SeriesMetadata(false, name, updater != null, SeriesDataType.DOUBLE, defaultAttribute, deprecated);
         this.updater = updater;
         this.value = value;
     }
