@@ -64,6 +64,10 @@ In AC mode, you can define voltage sensitivities, in addition to flows sensitivi
     SensitivityAnalysis.add_precontingency_branch_flow_factor_matrix
     SensitivityAnalysis.add_postcontingency_branch_flow_factor_matrix
     AcSensitivityAnalysis.set_bus_voltage_factor_matrix
+    AcSensitivityAnalysis.add_bus_voltage_factor_matrix
+    AcSensitivityAnalysis.add_shunt_susceptance_factor_matrix
+    AcSensitivityAnalysis.add_branch_admittance_factor_matrix
+    AcSensitivityAnalysis.add_svc_pilot_factor_matrix
     SensitivityAnalysis.set_zones
 
 In order to create, inspect and manipulate zones, you can use the following methods:

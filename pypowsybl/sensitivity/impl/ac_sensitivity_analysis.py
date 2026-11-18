@@ -54,6 +54,54 @@ class AcSensitivityAnalysis(SensitivityAnalysis):
         self.bus_voltage_ids = bus_ids
         self.target_voltage_ids = target_voltage_ids
 
+    def add_shunt_susceptance_factor_matrix(self, functions_ids: List[str], shunt_ids: List[str],
+                                            sensitivity_function_type: SensitivityFunctionType,
+                                            matrix_id: str = DEFAULT_MATRIX_ID) -> None:
+        """
+        Declare sensitivities of monitored functions to shunt susceptances.
+
+        Args:
+            functions_ids:             ids of the monitored elements (buses for BUS_VOLTAGE, branches for
+                                       BRANCH_CURRENT / BRANCH_ACTIVE_POWER, ...)
+            shunt_ids:                 ids of the controllable shunt compensators (the levers)
+            sensitivity_function_type: type of the monitored function (e.g. BUS_VOLTAGE, BRANCH_CURRENT_1)
+            matrix_id:                 the factor matrix unique identifier
+        """
+        self.add_factor_matrix(functions_ids, shunt_ids, [], ContingencyContextType.ALL,
+                               sensitivity_function_type, SensitivityVariableType.SHUNT_COMPENSATOR_SUSCEPTANCE, matrix_id)
+
+    def add_branch_admittance_factor_matrix(self, functions_ids: List[str], branch_ids: List[str],
+                                            sensitivity_function_type: SensitivityFunctionType,
+                                            matrix_id: str = DEFAULT_MATRIX_ID) -> None:
+        """
+        Declare sensitivities of monitored functions to branch admittances.
+
+        Args:
+            functions_ids:             ids of the monitored elements
+            branch_ids:                ids of the controllable branches/lines (the levers)
+            sensitivity_function_type: type of the monitored function (e.g. BUS_VOLTAGE, BRANCH_CURRENT_1)
+            matrix_id:                 the factor matrix unique identifier
+        """
+        self.add_factor_matrix(functions_ids, branch_ids, [], ContingencyContextType.ALL,
+                               sensitivity_function_type, SensitivityVariableType.BRANCH_ADMITTANCE, matrix_id)
+
+    def add_svc_pilot_factor_matrix(self, functions_ids: List[str], zone_ids: List[str],
+                                    sensitivity_function_type: SensitivityFunctionType,
+                                    matrix_id: str = DEFAULT_MATRIX_ID) -> None:
+        """
+        Declare sensitivities of monitored functions to secondary-voltage-control pilot-point target
+        voltages. The variable ids are the SVC zone names (the network must carry the
+        SecondaryVoltageControl extension and the load flow must run with secondaryVoltageControl on).
+
+        Args:
+            functions_ids:             ids of the monitored elements
+            zone_ids:                  names of the SVC zones (the levers)
+            sensitivity_function_type: type of the monitored function (e.g. BUS_VOLTAGE, BRANCH_CURRENT_1)
+            matrix_id:                 the factor matrix unique identifier
+        """
+        self.add_factor_matrix(functions_ids, zone_ids, [], ContingencyContextType.ALL,
+                               sensitivity_function_type, SensitivityVariableType.SVC_PILOT_POINT_TARGET_VOLTAGE, matrix_id)
+
     def run(self, network: Network, parameters: Optional[Union[Parameters, LfParameters]] = None,
             provider: str = '', report_node: Optional[ReportNode] = None) -> AcSensitivityAnalysisResult:
         """

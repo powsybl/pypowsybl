@@ -418,3 +418,70 @@ def test_svc_pilot_point_sensi():
     assert 1.0 == pytest.approx(df.loc['z1']['B10'], 1e-3)
     assert 1.112380 == pytest.approx(df.loc['z1']['VL6_0'], 1e-3)
     assert 2.559211 == pytest.approx(df.loc['z1']['VL8_0'], 1e-3)
+
+
+def _shunt_and_line_lever_network():
+    n = pp.network.create_ieee14()
+    pp.loadflow.run_ac(n)
+    return n
+
+
+def test_add_shunt_susceptance_factor_matrix():
+    # the wrapper only fixes the variable type, so it must give exactly what stating that type by hand gives
+    n = _shunt_and_line_lever_network()
+    via_wrapper = pp.sensitivity.create_ac_analysis()
+    via_wrapper.add_shunt_susceptance_factor_matrix(['VL10_0'], ['B9-SH'], SensitivityFunctionType.BUS_VOLTAGE, 'm')
+    by_hand = pp.sensitivity.create_ac_analysis()
+    by_hand.add_factor_matrix(['VL10_0'], ['B9-SH'], [], ContingencyContextType.ALL,
+                              SensitivityFunctionType.BUS_VOLTAGE,
+                              SensitivityVariableType.SHUNT_COMPENSATOR_SUSCEPTANCE, 'm')
+
+    wrapped = via_wrapper.run(n).get_sensitivity_matrix('m')
+    manual = by_hand.run(n).get_sensitivity_matrix('m')
+    pd.testing.assert_frame_equal(manual, wrapped)
+    assert abs(wrapped['VL10_0']['B9-SH']) > 0.1
+
+
+def test_add_branch_admittance_factor_matrix():
+    n = _shunt_and_line_lever_network()
+    via_wrapper = pp.sensitivity.create_ac_analysis()
+    via_wrapper.add_branch_admittance_factor_matrix(['L1-2-1'], ['L2-3-1'],
+                                                    SensitivityFunctionType.BRANCH_ACTIVE_POWER_1, 'm')
+    by_hand = pp.sensitivity.create_ac_analysis()
+    by_hand.add_factor_matrix(['L1-2-1'], ['L2-3-1'], [], ContingencyContextType.ALL,
+                              SensitivityFunctionType.BRANCH_ACTIVE_POWER_1,
+                              SensitivityVariableType.BRANCH_ADMITTANCE, 'm')
+
+    wrapped = via_wrapper.run(n).get_sensitivity_matrix('m')
+    manual = by_hand.run(n).get_sensitivity_matrix('m')
+    pd.testing.assert_frame_equal(manual, wrapped)
+    assert abs(wrapped['L1-2-1']['L2-3-1']) > 1e-6
+
+
+def test_add_svc_pilot_factor_matrix():
+    n = pp.network.create_ieee14()
+    n.update_generators(id='B8-G', min_q=-6, max_q=200)
+    zones = pd.DataFrame.from_records(index='name',
+                                      data=[{'name': 'z1', 'target_v': 12.7, 'bus_ids': 'B10'}])
+    units = pd.DataFrame.from_records(index='unit_id',
+                                      data=[{'unit_id': 'B6-G', 'zone_name': 'z1', 'participate': True},
+                                            {'unit_id': 'B8-G', 'zone_name': 'z1', 'participate': True}])
+    n.create_extensions('secondaryVoltageControl', [zones, units])
+
+    params = pp.sensitivity.Parameters()
+    params.load_flow_parameters.use_reactive_limits = False
+    params.load_flow_parameters.provider_parameters = {'secondaryVoltageControl': 'true',
+                                                       'maxPlausibleTargetVoltage': '1.6'}
+
+    via_wrapper = pp.sensitivity.create_ac_analysis()
+    via_wrapper.add_svc_pilot_factor_matrix(['B10'], ['z1'], SensitivityFunctionType.BUS_VOLTAGE, 'm')
+    by_hand = pp.sensitivity.create_ac_analysis()
+    by_hand.add_factor_matrix(['B10'], ['z1'], [], ContingencyContextType.ALL,
+                              SensitivityFunctionType.BUS_VOLTAGE,
+                              SensitivityVariableType.SVC_PILOT_POINT_TARGET_VOLTAGE, 'm')
+
+    wrapped = via_wrapper.run(n, params).get_sensitivity_matrix('m')
+    manual = by_hand.run(n, params).get_sensitivity_matrix('m')
+    pd.testing.assert_frame_equal(manual, wrapped)
+    # the closed loop makes the pilot bus track its own target
+    assert wrapped['B10']['z1'] == pytest.approx(1.0, abs=1e-3)
