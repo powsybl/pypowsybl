@@ -75,6 +75,64 @@ def test_run_lf_dc():
     assert 1 == len(results)
 
 
+@pytest.mark.parametrize('power_factor', [1.0, 0.9])
+@pytest.mark.parametrize('transformer_ratio', [True, False])
+def test_dc_voltage_and_current(power_factor, transformer_ratio):
+    n = pp.network.create_eurostag_tutorial_example1_network()
+    lf.run_dc(n, lf.Parameters(dc_power_factor=power_factor,
+                              dc_use_transformer_ratio=transformer_ratio))
+    nominal_v = n.get_voltage_levels()['nominal_v']
+    buses = n.get_buses()
+    assert buses['v_mag'].tolist() == buses['voltage_level_id'].map(nominal_v).tolist()
+    branches = n.get_branches()
+    for side in (1, 2):
+        expected = branches[f'p{side}'].abs() * 1000 / (
+            3 ** 0.5 * branches[f'voltage_level{side}_id'].map(nominal_v) * power_factor)
+        assert branches[f'i{side}'].to_numpy() == pytest.approx(expected.to_numpy())
+        assert branches[f'q{side}'].isna().all()
+    # the same rule applies to injections, whatever the reactive power of their terminal
+    injections = n.get_injections()
+    assert injections.loc['LOAD', 'q'] == pytest.approx(200)
+    expected = injections['p'].abs() * 1000 / (
+        3 ** 0.5 * injections['voltage_level_id'].map(nominal_v) * power_factor)
+    assert injections['i'].notna().all()
+    assert injections['i'].to_numpy() == pytest.approx(expected.to_numpy())
+    # so currents are balanced at each bus
+    assert injections.loc['LOAD', 'i'] == pytest.approx(branches.loc['NHV2_NLOAD', 'i2'])
+
+
+def test_dc_voltage_and_current_node_breaker():
+    n = pp.network.create_four_substations_node_breaker_network()
+    lf.run_dc(n)
+    nominal_v = n.get_voltage_levels()['nominal_v']
+    busbar_sections = n.get_busbar_sections()
+    assert busbar_sections['v'].tolist() == busbar_sections['voltage_level_id'].map(nominal_v).tolist()
+    # no current can be estimated for equipment which only exchanges reactive power
+    assert n.get_static_var_compensators()['i'].isna().all()
+    assert n.get_shunt_compensators()['i'].isna().all()
+    assert n.get_lines()['i1'].notna().all()
+
+    # the results of an AC load flow replace the DC estimates
+    lf.run_ac(n)
+    busbar_sections = n.get_busbar_sections()
+    assert busbar_sections['v'].tolist() != busbar_sections['voltage_level_id'].map(nominal_v).tolist()
+
+
+def test_dc_voltage_and_current_variants():
+    n = pp.network.create_eurostag_tutorial_example1_network()
+    lf.run_dc(n)
+    dc_current = n.get_lines()['i1']
+    assert dc_current.notna().all()
+    n.clone_variant('InitialState', 'copy')
+    n.set_working_variant('copy')
+    assert n.get_lines()['i1'].tolist() == dc_current.tolist()
+    lf.run_ac(n)
+    assert n.get_lines()['i1'].tolist() != dc_current.tolist()
+    n.set_working_variant('InitialState')
+    assert n.get_lines()['i1'].tolist() == dc_current.tolist()
+    assert n.get_buses()['v_mag'].tolist() == [24, 380, 380, 150]
+
+
 def test_lf_parameters():
     parameters = lf.Parameters()
     assert parameters.dc_use_transformer_ratio

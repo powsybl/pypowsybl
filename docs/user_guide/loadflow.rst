@@ -152,6 +152,33 @@ DC Load Flow
 
 In order to run a DC loadflow, simply use the :func:`run_dc` method.
 
+A DC load flow only computes active powers and voltage angles: voltage magnitudes, and the currents
+which derive from them, are not defined on the network. For the components which have converged,
+network dataframes report the values which are implied by the DC approximation instead:
+
+- voltage magnitudes (``v_mag`` of buses, ``v`` of busbar sections) are the nominal voltages;
+- currents are estimated at every terminal as
+  ``abs(p) * 1000 / (sqrt(3) * nominal_v * dc_power_factor)`` (with MW, kV and A). This is the estimate
+  used for the branches monitored by a DC security analysis. Reactive powers are not computed:
+  ``dc_power_factor``, which defaults to 1, stands for them. The nominal voltage of each terminal is
+  used, so the estimate does not depend on ``dc_use_transformer_ratio``;
+- the same rule applies to branches and to injections, so the currents are balanced at each bus like
+  the active powers are. The reactive power which may be reported for an injection, like the one of a
+  load, is not used: its ``i`` is not derived from its ``q``;
+- currents of shunt and static var compensators remain undefined, as these only exchange reactive
+  power.
+
+These values are estimates and not simulation results: they ignore voltage variations and the
+actual reactive powers.
+
+The network itself is not modified. As soon as a voltage magnitude is defined on a bus, by an AC
+load flow or by an update of ``v_mag``, the values of the network are reported again. This
+interpretation of DC results follows cloned variants, but it is not part of the network: it is lost
+when the network is exported, pickled, copied or merged.
+
+DC security analysis also reports nominal voltages for monitored buses, and the current estimates of
+its provider for monitored branches.
+
 For that example, we will use a distributed slack, with imbalance distributed on generators,
 proportional to their maximum power. We also choose to ignore transformer ratios in the DC equations:
 
