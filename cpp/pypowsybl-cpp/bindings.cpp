@@ -1110,6 +1110,10 @@ PYBIND11_MODULE(_pypowsybl, m) {
     m.def("remove_variant", &pypowsybl::removeVariant, "remove a variant", py::arg("network"), py::arg("variant"));
     m.def("clone_variant", &pypowsybl::cloneVariant, "clone a variant", py::arg("network"), py::arg("src"), py::arg("variant"), py::arg("may_overwrite"));
     m.def("get_variant_ids", &pypowsybl::getVariantsIds, "get all variant ids from a network", py::arg("network"));
+    m.def("get_outage_groups", [](const pypowsybl::JavaHandle& network, const std::vector<std::string>& elementIds) {
+        py::gil_scoped_release release;
+        return pypowsybl::getOutageGroups(network, elementIds);
+    }, "get outage groups for the provided element ids", py::arg("network"), py::arg("element_ids"));
     m.def("add_monitored_elements", &pypowsybl::addMonitoredElements, "Add monitors to get specific results on network after security analysis process", py::arg("security_analysis_context"),
           py::arg("contingency_context_type"), py::arg("branch_ids"), py::arg("voltage_level_ids"), py::arg("three_windings_transformer_ids"),
           py::arg("contingency_ids"));

@@ -63,9 +63,9 @@ public class BranchObservabilityDataframeProvider extends AbstractSingleDatafram
                                 branchObservability.getNullableQualityP1().getStandardDeviation() : Double.NaN,
                     (branchObservability, standardDeviation, context) -> branchObservability.getNullableQualityP1().setStandardDeviation(standardDeviation))
                 .booleans("p1_redundant", branchObservability -> branchObservability.getQualityP1().isPresent() &&
-                                (boolean) branchObservability.getNullableQualityQ1().isRedundant().orElse(false),
+                                (boolean) branchObservability.getNullableQualityP1().isRedundant().orElse(false),
                     (branchObservability, redundant) -> branchObservability.getNullableQualityQ1().setRedundant(redundant))
-                .booleans("p1_redundant_null", branchObservability -> branchObservability.getQualityP1().isEmpty() || branchObservability.getNullableQualityQ1().isRedundant().isEmpty())
+                .booleans("p1_redundant_null", branchObservability -> branchObservability.getQualityP1().isEmpty() || branchObservability.getNullableQualityP1().isRedundant().isEmpty())
                 .doubles("p2_standard_deviation", (branchObservability, context) -> branchObservability.getQualityP2().isPresent() ?
                                 branchObservability.getNullableQualityP2().getStandardDeviation() : Double.NaN,
                     (branchObservability, standardDeviation, context) -> branchObservability.getNullableQualityP2().setStandardDeviation(standardDeviation))

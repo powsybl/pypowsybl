@@ -23,6 +23,7 @@ import static com.powsybl.dataframe.network.adders.SeriesUtils.applyIfPresent;
  * @author Etienne Lesot {@literal <etienne.lesot at rte-france.com>}
  * @author Sylvain Leclerc {@literal <sylvain.leclerc@rte-france.com>}
  */
+@SuppressWarnings("java:S5738") // removing "deprecated" warnings before voltage refactoring integration
 public class RatioTapChangerDataframeAdder implements NetworkElementAdder {
 
     private static final List<SeriesMetadata> METADATA = List.of(
