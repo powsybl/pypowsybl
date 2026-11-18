@@ -17,13 +17,19 @@ public class SeriesMetadata {
     private final boolean modifiable;
     private final SeriesDataType type;
     private final boolean defaultAttribute;
+    private final boolean deprecated;
 
     public SeriesMetadata(boolean index, String name, boolean modifiable, SeriesDataType type, boolean defaultAttribute) {
+        this(index, name, modifiable, type, defaultAttribute, false);
+    }
+
+    public SeriesMetadata(boolean index, String name, boolean modifiable, SeriesDataType type, boolean defaultAttribute, boolean deprecated) {
         this.index = index;
         this.name = name;
         this.modifiable = modifiable;
         this.type = type;
         this.defaultAttribute = defaultAttribute;
+        this.deprecated = deprecated;
     }
 
     public boolean isIndex() {
@@ -46,6 +52,10 @@ public class SeriesMetadata {
         return new SeriesMetadata(false, name, false, SeriesDataType.STRING, false);
     }
 
+    public static SeriesMetadata deprecatedStrings(String name) {
+        return new SeriesMetadata(false, name, false, SeriesDataType.STRING, false, true);
+    }
+
     public static SeriesMetadata ints(String name) {
         return new SeriesMetadata(false, name, false, SeriesDataType.INT, false);
     }
@@ -54,8 +64,16 @@ public class SeriesMetadata {
         return new SeriesMetadata(false, name, false, SeriesDataType.BOOLEAN, false);
     }
 
+    public static SeriesMetadata deprecatedBooleans(String name) {
+        return new SeriesMetadata(false, name, false, SeriesDataType.BOOLEAN, false, true);
+    }
+
     public static SeriesMetadata doubles(String name) {
         return new SeriesMetadata(false, name, false, SeriesDataType.DOUBLE, false);
+    }
+
+    public static SeriesMetadata deprecatedDoubles(String name) {
+        return new SeriesMetadata(false, name, false, SeriesDataType.DOUBLE, false, true);
     }
 
     public static SeriesMetadata stringIndex(String name) {
@@ -68,5 +86,9 @@ public class SeriesMetadata {
 
     public boolean isDefaultAttribute() {
         return defaultAttribute;
+    }
+
+    public boolean isDeprecated() {
+        return deprecated;
     }
 }

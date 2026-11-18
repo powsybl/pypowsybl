@@ -13,6 +13,9 @@ on:
 
 permissions: { }
 
+env:
+  PGO_BUILD: 'true'
+
 jobs:
   native_lib_build:
     name: Build ${{ matrix.config.name }} native libraries
@@ -86,7 +89,7 @@ jobs:
         env:
           MACOSX_DEPLOYMENT_TARGET: ${{ matrix.config.macosx_deployment_target }}
         run: |
-          ${{ env.PYTHON }} setup.py bdist_wheel ${{ matrix.config.bdist_wheel_args }}
+          BDIST_WHEEL_ARGS="${{ matrix.config.bdist_wheel_args }}" .github/workflows/scripts/build_wheel.sh
           if [ "${{ matrix.config.name }}" == "linux" ] || [ "${{ matrix.config.name }}" == "linux-arm64" ]; then
             auditwheel repair dist/*.whl
           fi
@@ -218,7 +221,7 @@ jobs:
         env:
           MACOSX_DEPLOYMENT_TARGET: ${{ matrix.config.macosx_deployment_target }}
         run: |
-          ${{ env.PYTHON }} setup.py bdist_wheel ${{ matrix.config.bdist_wheel_args }}
+          BDIST_WHEEL_ARGS="${{ matrix.config.bdist_wheel_args }}" .github/workflows/scripts/build_wheel.sh
           if [ "${{ matrix.config.name }}" == "linux" ] || [ "${{ matrix.config.name }}" == "linux-arm64" ]; then
             auditwheel repair dist/*.whl
           fi
@@ -242,6 +245,10 @@ jobs:
         run: |
           WHEEL_FILE=$(ls ${{ matrix.config.wheel-dir }}/*.whl | head -n 1)
           ${{ env.PYTHON }} -m pip install "${WHEEL_FILE}[pandapower, opf]" --user
+
+      - name: Run GraalVM options test
+        working-directory: ./tests
+        run: ${{ env.PYTHON }} graalvm_options_test.py
 
       - name: Run tests
         working-directory: ./tests # Run in subdir to use installed lib, not sources
@@ -427,11 +434,11 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: Set up JDK 21
+      - name: Set up JDK 25
         uses: actions/setup-java@be666c2fcd27ec809703dec50e508c2fdc7f6654 # v5.2.0
         with:
           distribution: 'temurin'
-          java-version: '21'
+          java-version: '25'
           cache: 'maven'
 
       - name: Build with Maven (Ubuntu)

@@ -10,10 +10,12 @@
 #include <string>
 #include <vector>
 #include <map>
+#include <unordered_map>
 #include <memory>
 #include <stdexcept>
 #include <functional>
 #include <mutex>
+#include <utility>
 #include "powsybl-api.h"
 #include "pypowsybl-java.h"
 
@@ -283,12 +285,17 @@ enum XnecSelectionStrategy {
 
 class SeriesMetadata {
 public:
-    SeriesMetadata(const std::string& name, int type, bool isIndex, bool isModifiable, bool isDefault):
+    SeriesMetadata(const std::string& name, int type, bool isIndex, bool isModifiable, bool isDefault, bool isDeprecated):
         name_(name),
         type_(type),
         isIndex_(isIndex),
         isModifiable_(isModifiable),
-        isDefault_(isDefault) {
+        isDefault_(isDefault),
+        isDeprecated_(isDeprecated) {
+    }
+
+    SeriesMetadata(const std::string& name, int type, bool isIndex, bool isModifiable, bool isDefault):
+        SeriesMetadata(name, type, isIndex, isModifiable, isDefault, false) {
     }
 
     const std::string& name() const { return name_; }
@@ -296,6 +303,7 @@ public:
     bool isIndex() const { return isIndex_; }
     bool isModifiable() const { return isModifiable_; }
     bool isDefault() const { return isDefault_; }
+    bool isDeprecated() const { return isDeprecated_; }
 
 private:
     std::string name_;
@@ -303,6 +311,7 @@ private:
     bool isIndex_;
     bool isModifiable_;
     bool isDefault_;
+    bool isDeprecated_;
 };
 
 
@@ -876,6 +885,8 @@ void cloneVariant(const JavaHandle& network, std::string& src, std::string& vari
 
 std::vector<std::string> getVariantsIds(const JavaHandle& network);
 
+std::unordered_map<std::string, std::vector<std::string>> getOutageGroups(const JavaHandle& network, const std::vector<std::string>& elementIds);
+
 void addMonitoredElements(const JavaHandle& securityAnalysisContext, contingency_context_type contingencyContextType, const std::vector<std::string>& branchIds,
                       const std::vector<std::string>& voltageLevelIds, const std::vector<std::string>& threeWindingsTransformerIds,
                       const std::vector<std::string>& contingencyIds);
@@ -1131,6 +1142,7 @@ SeriesArray* getCracHvdcRangeActions(const JavaHandle& cracHandle);
 SeriesArray* getCracInjectionRangeActions(const JavaHandle& cracHandle);
 SeriesArray* getNetworkElementIdsAndKeys(const JavaHandle& cracHandle);
 SeriesArray* getCracCounterTradeRangeActions(const JavaHandle& cracHandle);
+SeriesArray* getCracCounterTradeConnectedAreas(const JavaHandle& cracHandle);
 SeriesArray* getCracRangeActionRanges(const JavaHandle& cracHandle);
 SeriesArray* getCracNetworkActions(const JavaHandle& cracHandle);
 SeriesArray* getCracTerminalConnectionActions(const JavaHandle& cracHandle);

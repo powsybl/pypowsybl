@@ -416,7 +416,9 @@ PYBIND11_MODULE(_pypowsybl, m) {
             .value("VOLTAGE_SOURCE_CONVERTER", element_type::VOLTAGE_SOURCE_CONVERTER)
             .value("DC_GROUND", element_type::DC_GROUND)
             .value("DC_SWITCH", element_type::DC_SWITCH)
-            .value("DC_BUS", element_type::DC_BUS);
+            .value("DC_BUS", element_type::DC_BUS)
+            .value("OVERLOAD_MANAGEMENT_SYSTEM", element_type::OVERLOAD_MANAGEMENT_SYSTEM)
+            .value("OVERLOAD_MANAGEMENT_SYSTEM_TRIPPING", element_type::OVERLOAD_MANAGEMENT_SYSTEM_TRIPPING);
 
     py::enum_<filter_attributes_type>(m, "FilterAttributesType")
             .value("ALL_ATTRIBUTES", filter_attributes_type::ALL_ATTRIBUTES)
@@ -1069,12 +1071,14 @@ PYBIND11_MODULE(_pypowsybl, m) {
     bindArray<pypowsybl::SeriesArray>(m, "SeriesArray");
 
     py::class_<pypowsybl::SeriesMetadata>(m, "SeriesMetadata", "Metadata about one series")
+            .def(py::init<const std::string&, int, bool, bool, bool, bool>())
             .def(py::init<const std::string&, int, bool, bool, bool>())
             .def_property_readonly("name", &pypowsybl::SeriesMetadata::name, "Name of this series.")
             .def_property_readonly("type", &pypowsybl::SeriesMetadata::type)
             .def_property_readonly("is_index", &pypowsybl::SeriesMetadata::isIndex)
             .def_property_readonly("is_modifiable", &pypowsybl::SeriesMetadata::isModifiable)
-            .def_property_readonly("is_default", &pypowsybl::SeriesMetadata::isDefault);
+            .def_property_readonly("is_default", &pypowsybl::SeriesMetadata::isDefault)
+            .def_property_readonly("is_deprecated", &pypowsybl::SeriesMetadata::isDeprecated);
 
     m.def("get_network_elements_dataframe_metadata", &pypowsybl::getNetworkDataframeMetadata, "Get dataframe metadata for a given network element type",
           py::arg("element_type"));
@@ -1106,6 +1110,10 @@ PYBIND11_MODULE(_pypowsybl, m) {
     m.def("remove_variant", &pypowsybl::removeVariant, "remove a variant", py::arg("network"), py::arg("variant"));
     m.def("clone_variant", &pypowsybl::cloneVariant, "clone a variant", py::arg("network"), py::arg("src"), py::arg("variant"), py::arg("may_overwrite"));
     m.def("get_variant_ids", &pypowsybl::getVariantsIds, "get all variant ids from a network", py::arg("network"));
+    m.def("get_outage_groups", [](const pypowsybl::JavaHandle& network, const std::vector<std::string>& elementIds) {
+        py::gil_scoped_release release;
+        return pypowsybl::getOutageGroups(network, elementIds);
+    }, "get outage groups for the provided element ids", py::arg("network"), py::arg("element_ids"));
     m.def("add_monitored_elements", &pypowsybl::addMonitoredElements, "Add monitors to get specific results on network after security analysis process", py::arg("security_analysis_context"),
           py::arg("contingency_context_type"), py::arg("branch_ids"), py::arg("voltage_level_ids"), py::arg("three_windings_transformer_ids"),
           py::arg("contingency_ids"));
@@ -1412,6 +1420,7 @@ PYBIND11_MODULE(_pypowsybl, m) {
     m.def("get_crac_injection_range_actions", &pypowsybl::getCracInjectionRangeActions, "Get crac injection range actions", py::arg("crac"));
     m.def("get_network_element_ids_and_keys", &pypowsybl::getNetworkElementIdsAndKeys, "Get crac injection ra elements", py::arg("crac"));
     m.def("get_crac_counter_trade_range_actions", &pypowsybl::getCracCounterTradeRangeActions, "Get crac counter trade range actions", py::arg("crac"));
+    m.def("get_crac_counter_trade_connected_areas", &pypowsybl::getCracCounterTradeConnectedAreas, "Get crac counter trade connected areas", py::arg("crac"));
     m.def("get_crac_range_action_ranges", &pypowsybl::getCracRangeActionRanges, "Get crac range action ranges", py::arg("crac"));
     m.def("get_crac_network_actions", &pypowsybl::getCracNetworkActions, "Get crac network actions", py::arg("crac"));
     m.def("get_crac_terminal_connection_actions", &pypowsybl::getCracTerminalConnectionActions, "Get terminal connection actions", py::arg("crac"));

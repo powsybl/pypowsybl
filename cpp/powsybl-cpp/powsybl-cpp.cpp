@@ -93,7 +93,9 @@ void init(std::function <void(GraalVmGuard* guard, exception_handler* exc)> preJ
     int argc = argv.size();
     int c;
     if (argc > 1) {
-        graal_create_isolate_params_t params;
+        // zero-initialised: default address space, no auxiliary image, no protection domain
+        graal_create_isolate_params_t params = {};
+        // GraalVM reads only the fields introduced up to this version: with version 0 the arguments below are ignored
         params.version = 4;
         // theses fields are not part of the public API, so on are named reserved
         // this might fail in a coming release of GraalVM
@@ -211,6 +213,18 @@ std::map<std::string, std::string> convertMapStructToStdMap(string_map* map) {
     }
     PowsyblCaller::get()->callJava<>(::freeStringMap, map);
     return stdStringMap;
+}
+
+std::unordered_map<std::string, std::vector<std::string>> convertStringArrayMapStructToUnorderedMap(string_array_map* map) {
+    std::unordered_map<std::string, std::vector<std::string>> stdStringArrayMap;
+    stdStringArrayMap.reserve(map->length);
+    for (int i = 0; i < map->length; i++) {
+        char** keyPtr = (char**) map->keys + i;
+        array* valuePtr = map->values + i;
+        stdStringArrayMap.emplace(std::string(*keyPtr ? *keyPtr : ""), toVector<std::string>(valuePtr));
+    }
+    PowsyblCaller::get()->callJava<>(::freeStringArrayMap, map);
+    return stdStringArrayMap;
 }
 
 char* copyStringToCharPtr(const std::string& str) {
@@ -1350,6 +1364,12 @@ std::vector<std::string> getVariantsIds(const JavaHandle& network) {
     return formats.get();
 }
 
+std::unordered_map<std::string, std::vector<std::string>> getOutageGroups(const JavaHandle& network, const std::vector<std::string>& elementIds) {
+    ToCharPtrPtr elementIdsPtr(elementIds);
+    auto outageGroupsPtr = PowsyblCaller::get()->callJava<string_array_map*>(::getOutageGroups, network, elementIdsPtr.get(), elementIds.size());
+    return convertStringArrayMapStructToUnorderedMap(outageGroupsPtr);
+}
+
 void addMonitoredElements(const JavaHandle& securityAnalysisContext, contingency_context_type contingencyContextType, const std::vector<std::string>& branchIds,
                       const std::vector<std::string>& voltageLevelIds, const std::vector<std::string>& threeWindingsTransformerIds,
                       const std::vector<std::string>& contingencyIds) {
@@ -1427,7 +1447,7 @@ std::vector<SeriesMetadata> convertDataframeMetadata(dataframe_metadata* datafra
     std::vector<SeriesMetadata> res;
     for (int i = 0; i < dataframeMetadata->attributes_count; i++) {
         const series_metadata& series = dataframeMetadata->attributes_metadata[i];
-        res.push_back(SeriesMetadata(series.name, series.type, series.is_index, series.is_modifiable, series.is_default));
+        res.push_back(SeriesMetadata(series.name, series.type, series.is_index, series.is_modifiable, series.is_default, series.is_deprecated));
     }
     return res;
 }
@@ -2369,6 +2389,10 @@ SeriesArray* getNetworkElementIdsAndKeys(const JavaHandle& cracHandle) {
 
 SeriesArray* getCracCounterTradeRangeActions(const JavaHandle& cracHandle) {
   return new SeriesArray(PowsyblCaller::get()->callJava<array*>(::getCracCounterTradeRangeActions, cracHandle));
+}
+
+SeriesArray* getCracCounterTradeConnectedAreas(const JavaHandle& cracHandle) {
+  return new SeriesArray(PowsyblCaller::get()->callJava<array*>(::getCracCounterTradeConnectedAreas, cracHandle));
 }
 
 SeriesArray* getCracRangeActionRanges(const JavaHandle& cracHandle) {

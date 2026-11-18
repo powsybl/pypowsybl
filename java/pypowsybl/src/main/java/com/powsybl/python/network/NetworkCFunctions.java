@@ -601,6 +601,30 @@ public final class NetworkCFunctions {
         });
     }
 
+    /**
+     * Native entry point returning propagated outage groups for a batch of initiating equipments.
+     *
+     * @param thread current isolate thread
+     * @param networkHandle handle of the network to inspect
+     * @param elementIdsPtr pointer to the first native string containing an initiating equipment identifier
+     * @param elementIdsCount number of initiating equipment identifiers available through {@code elementIdsPtr}
+     * @param exceptionHandlerPtr native exception handler used to report Java failures
+     * @return native string-map array keyed by initiating equipment identifier
+     */
+    @CEntryPoint(name = "getOutageGroups")
+    public static StringArrayMap getOutageGroups(IsolateThread thread, ObjectHandle networkHandle,
+                                                 CCharPointerPointer elementIdsPtr, int elementIdsCount,
+                                                 ExceptionHandlerPointer exceptionHandlerPtr) {
+        return doCatch(exceptionHandlerPtr, new PointerProvider<>() {
+            @Override
+            public StringArrayMap get() {
+                Network network = ObjectHandles.getGlobal().get(networkHandle);
+                List<String> elementIds = toStringList(elementIdsPtr, elementIdsCount);
+                return CTypeUtil.fromStringListMap(NetworkUtil.getOutageGroups(network, elementIds));
+            }
+        });
+    }
+
     private static DataframeFilter createDataframeFilter(FilterAttributesType filterAttributesType, CCharPointerPointer attributesPtrPtr, int attributesCount, DataframePointer selectedElementsDataframe) {
         List<String> attributes = toStringList(attributesPtrPtr, attributesCount);
         AttributeFilterType filterType = switch (filterAttributesType) {
@@ -1026,21 +1050,6 @@ public final class NetworkCFunctions {
             UnmanagedMemory.free(attrMetadata.getName());
         }
         UnmanagedMemory.free(metadata.getAttributesMetadata());
-    }
-
-    private static void createSeriesMetadata(List<SeriesMetadata> metadata, DataframeMetadataPointer cMetadata) {
-        SeriesMetadataPointer seriesMetadataPtr = UnmanagedMemory.calloc(metadata.size() * SizeOf.get(SeriesMetadataPointer.class));
-        for (int i = 0; i < metadata.size(); i++) {
-            SeriesMetadata colMetadata = metadata.get(i);
-            SeriesMetadataPointer metadataPtr = seriesMetadataPtr.addressOf(i);
-            metadataPtr.setName(CTypeUtil.toCharPtr(colMetadata.getName()));
-            metadataPtr.setType(convert(colMetadata.getType()));
-            metadataPtr.setIndex(colMetadata.isIndex());
-            metadataPtr.setModifiable(colMetadata.isModifiable());
-            metadataPtr.setDefault(colMetadata.isDefaultAttribute());
-        }
-        cMetadata.setAttributesCount(metadata.size());
-        cMetadata.setAttributesMetadata(seriesMetadataPtr);
     }
 
     @CEntryPoint(name = "updateNetworkElementsExtensionsWithSeries")
@@ -1970,7 +1979,7 @@ public final class NetworkCFunctions {
                 threeWtsStyles = Collections.emptyMap();
             }
 
-            nadParameters.setStyleProviderFactory(network -> new CustomStyleProvider(busStyles, edgesStyles, threeWtsStyles));
+            nadParameters.setStyleProviderFactory(network -> new CustomStyleProvider(busStyles, edgesStyles, threeWtsStyles, null));
         }
     }
 
@@ -2133,7 +2142,7 @@ public final class NetworkCFunctions {
                 DataframeMetadataPointer dataframeMetadataArray = UnmanagedMemory.calloc(metadata.size() * SizeOf.get(DataframeMetadataPointer.class));
                 int i = 0;
                 for (List<SeriesMetadata> dataframeMetadata : metadata) {
-                    createSeriesMetadata(dataframeMetadata, dataframeMetadataArray.addressOf(i));
+                    CTypeUtil.createSeriesMetadata(dataframeMetadata, dataframeMetadataArray.addressOf(i));
                     i++;
                 }
                 DataframesMetadataPointer res = UnmanagedMemory.calloc(SizeOf.get(DataframesMetadataPointer.class));

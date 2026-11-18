@@ -17,7 +17,7 @@ import com.powsybl.iidm.network.Network;
 import com.powsybl.python.commons.CommonObjects;
 import com.powsybl.python.contingency.ContingencyContainerImpl;
 import com.powsybl.security.*;
-import com.powsybl.security.limitreduction.LimitReduction;
+import com.powsybl.security.limitscaling.LimitScaling;
 import com.powsybl.security.monitor.StateMonitor;
 
 import java.nio.file.Files;
@@ -37,7 +37,7 @@ public class SecurityAnalysisContext extends ContingencyContainerImpl {
 
     private final List<StateMonitor> monitors = new ArrayList<>();
 
-    private final List<LimitReduction> limitReductions = new ArrayList<>();
+    private final List<LimitScaling> limitScalings = new ArrayList<>();
 
     SecurityAnalysisResult run(Network network, SecurityAnalysisParameters securityAnalysisParameters, String provider, ReportNode reportNode) {
         ContingenciesProvider contingencies = this::createContingencies;
@@ -47,7 +47,7 @@ public class SecurityAnalysisContext extends ContingencyContainerImpl {
                 .setOperatorStrategies(operatorStrategies)
                 .setActions(actions)
                 .setMonitors(monitors)
-                .setLimitReductions(limitReductions)
+                .setLimitScalings(limitScalings)
                 .setReportNode(reportNode == null ? ReportNode.NO_OP : reportNode);
         SecurityAnalysisReport report = SecurityAnalysis.find(provider)
                 .run(network, network.getVariantManager().getWorkingVariantId(), contingencies, runParameters);
@@ -86,11 +86,11 @@ public class SecurityAnalysisContext extends ContingencyContainerImpl {
         monitors.add(monitor);
     }
 
-    public void addLimitReduction(LimitReduction limitReduction) {
-        limitReductions.add(limitReduction);
+    public void addLimitReduction(LimitScaling limitScaling) {
+        limitScalings.add(limitScaling);
     }
 
-    public List<LimitReduction> getLimitReductions() {
-        return Collections.unmodifiableList(limitReductions);
+    public List<LimitScaling> getLimitsScalings() {
+        return Collections.unmodifiableList(limitScalings);
     }
 }
