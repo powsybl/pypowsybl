@@ -108,19 +108,18 @@ class Network:  # pylint: disable=too-many-public-methods
         """
         Date of this network case, in UTC timezone.
         """
-        return self._case_date
+        return datetime.datetime.fromtimestamp(_pp.get_network_metadata(self._handle).case_date, timezone.utc)
 
     @case_date.setter
     def case_date(self, value: datetime.datetime) -> None:
         _pp.set_network_case_date(self._handle, value.timestamp())
-        self._case_date = value.astimezone(timezone.utc)
 
     @property
     def forecast_distance(self) -> datetime.timedelta:
         """
         The forecast distance: 0 for a snapshot.
         """
-        return self._forecast_distance
+        return datetime.timedelta(minutes=_pp.get_network_metadata(self._handle).forecast_distance)
 
     @property
     def nominal_apparent_power(self) -> float:
@@ -167,8 +166,6 @@ class Network:  # pylint: disable=too-many-public-methods
         self._id = att.id
         self._name = att.name
         self._source_format = att.source_format
-        self._forecast_distance = datetime.timedelta(minutes=att.forecast_distance)
-        self._case_date = datetime.datetime.fromtimestamp(att.case_date, timezone.utc)
 
     def update_from_file(self, file: Union[str, PathLike], parameters: Optional[Dict[str, str]] = None, post_processors: Optional[List[str]] = None,
              report_node: Optional[ReportNode] = None) -> None:
