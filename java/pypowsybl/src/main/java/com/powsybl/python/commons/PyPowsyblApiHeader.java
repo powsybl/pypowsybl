@@ -1429,19 +1429,6 @@ public final class PyPowsyblApiHeader {
         void setInitialVoltageProfileMode(int initialVoltageProfileMode);
     }
 
-    @CEnum("VoltageInitializerObjective")
-    public enum VoltageInitializerObjective {
-        MIN_GENERATION,
-        BETWEEN_HIGH_AND_LOW_VOLTAGE_LIMIT,
-        SPECIFIC_VOLTAGE_PROFILE;
-
-        @CEnumValue
-        public native int getCValue();
-
-        @CEnumLookup
-        public static native VoltageInitializerObjective fromCValue(int value);
-    }
-
     @CEnum("VoltageInitializerLogLevelAmpl")
     public enum VoltageInitializerLogLevelAmpl {
         LOG_AMPL_DEBUG,

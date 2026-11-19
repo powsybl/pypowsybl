@@ -1045,7 +1045,6 @@ void voltageInitializerAddVariableShuntCompensators(const JavaHandle& paramsHand
 void voltageInitializerAddConstantQGenerators(const JavaHandle& paramsHandle, const std::string& idPtr);
 void voltageInitializerAddVariableTwoWindingsTransformers(const JavaHandle& paramsHandle, const std::string& idPtr);
 void voltageInitializerAddConfiguredReactiveSlackBuses(const JavaHandle& paramsHandle, const std::string& idPtr);
-void voltageInitializerSetObjective(const JavaHandle& paramsHandle, VoltageInitializerObjective cObjective);
 void voltageInitializerSetObjectiveDistance(const JavaHandle& paramsHandle, double dist);
 void voltageInitializerSetLogLevelAmpl(const JavaHandle& paramsHandle, VoltageInitializerLogLevelAmpl logLevelAmpl);
 void voltageInitializerSetLogLevelSolver(const JavaHandle& paramsHandle, VoltageInitializerLogLevelSolver logLevelSolver);

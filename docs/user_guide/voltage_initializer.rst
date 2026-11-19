@@ -32,8 +32,6 @@ Here is a simple starting example:
     some_2wt_id = n.get_2_windings_transformers().iloc[0].name
     params.add_variable_two_windings_transformers([some_2wt_id])
 
-    params.set_objective(VoltageInitializerObjective.SPECIFIC_VOLTAGE_PROFILE)
-
     results = v_init.run(n, params)
     results.apply_all_modification(n)
 
@@ -140,15 +138,16 @@ Available settings in the VoltageInitializerParameters class
     params.add_specificvoltage_limits({"vl_id": (0.5, 1.2)})
 
 
-- Specify the objective function and the objective distance
+- Weight the terms of the ACOPF objective function. For example, to target for each bus the voltage
+  in the middle of its voltage limits:
 
 .. code-block:: python
 
     import pypowsybl as pp
     import pypowsybl.voltage_initializer as v_init
     params = v_init.VoltageInitializerParameters()
-    params.set_objective(va.VoltageInitializerObjective.SPECIFIC_VOLTAGE_PROFILE)
-    params.set_objective_distance(1.3)
+    params.set_penalty_voltage_target_ratio(1)
+    params.set_objective_distance(50)
 
 
 - Tune scaling factors applied before ACOPF solving:

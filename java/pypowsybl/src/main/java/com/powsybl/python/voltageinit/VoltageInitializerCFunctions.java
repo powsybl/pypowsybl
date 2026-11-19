@@ -33,7 +33,6 @@ import com.powsybl.python.commons.CTypeUtil;
 import com.powsybl.python.commons.Directives;
 import com.powsybl.python.commons.PyPowsyblApiHeader;
 import com.powsybl.python.commons.PyPowsyblApiHeader.StringMap;
-import com.powsybl.python.commons.PyPowsyblApiHeader.VoltageInitializerObjective;
 import com.powsybl.python.commons.PyPowsyblApiHeader.VoltageInitializerLogLevelAmpl;
 import com.powsybl.python.commons.PyPowsyblApiHeader.VoltageInitializerLogLevelSolver;
 import com.powsybl.python.commons.PyPowsyblApiHeader.VoltageInitializerReactiveSlackBusesMode;
@@ -150,18 +149,6 @@ public final class VoltageInitializerCFunctions {
                 OpenReacParameters params = ObjectHandles.getGlobal().get(paramsHandle);
                 String id = CTypeUtil.toString(idPtr);
                 params.addConfiguredReactiveSlackBuses(List.of(id));
-            }
-        });
-    }
-
-    @CEntryPoint(name = "voltageInitializerSetObjective")
-    public static void setObjective(IsolateThread thread, ObjectHandle paramsHandle,
-            VoltageInitializerObjective cObjective, PyPowsyblApiHeader.ExceptionHandlerPointer exceptionHandlerPtr) {
-        doCatch(exceptionHandlerPtr, new Runnable() {
-            @Override
-            public void run() {
-                OpenReacParameters params = ObjectHandles.getGlobal().get(paramsHandle);
-                params.setObjective(Util.convert(cObjective));
             }
         });
     }

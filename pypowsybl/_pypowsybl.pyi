@@ -702,13 +702,6 @@ class VoltageInitializerStatus:
     NOT_OK: ClassVar[VoltageInitializerStatus] = ...
 
 
-class VoltageInitializerObjective:
-    __members__: ClassVar[Dict[str,
-                               VoltageInitializerObjective]] = ...  # read-only
-    MIN_GENERATION: ClassVar[VoltageInitializerObjective] = ...
-    BETWEEN_HIGH_AND_LOW_VOLTAGE_LIMIT: ClassVar[VoltageInitializerObjective] = ...
-    SPECIFIC_VOLTAGE_PROFILE: ClassVar[VoltageInitializerObjective] = ...
-
 class VoltageInitializerLogLevelAmpl:
     __members__: ClassVar[Dict[str,
                                VoltageInitializerLogLevelAmpl]] = ...  # read-only
@@ -1200,9 +1193,6 @@ def voltage_initializer_add_specific_low_voltage_limits(
 def voltage_initializer_add_specific_high_voltage_limits(
         params_handle: JavaHandle, voltage_level_id: str, is_relative: bool, limit: float) -> None: ...
 
-
-def voltage_initializer_set_objective(
-    params_handle: JavaHandle, objective: VoltageInitializerObjective) -> None: ...
 
 def voltage_initializer_set_objective_distance(
     params_handle: JavaHandle, dist: float) -> None: ...
