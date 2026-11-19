@@ -33,13 +33,6 @@ jobs:
             wheel-dir: "wheelhouse",
           }
           - {
-            name: darwin,
-            os: macos-15-intel,
-            macosx_deployment_target: "10.16", # to ensure pip finds wheel when Big Sur is configured to return 10.16 as version instead of 11.0
-            bdist_wheel_args: "--plat-name macosx-11.0-x86_64", # needed to avoid the wheel to be named -universal2
-            wheel-dir: "dist",
-          }
-          - {
             name: windows,
             os: windows-2022,
             wheel-dir: "dist",
