@@ -257,10 +257,7 @@ public final class SensitivityAnalysisCFunctions {
         doCatch(exceptionHandlerPtr, new Runnable() {
             @Override
             public void run() {
-                if (matrixPtr.isNonNull()) {
-                    UnmanagedMemory.free(matrixPtr.getValues());
-                    UnmanagedMemory.free(matrixPtr);
-                }
+                Util.freeMatrix(matrixPtr);
             }
         });
     }

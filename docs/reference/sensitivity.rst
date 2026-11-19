@@ -36,16 +36,53 @@ output cotangents ``y_bar = dL/dfunction``, :meth:`AcSensitivityAnalysis.run_adj
 gradient-descent loop over hundreds of controls affordable.
 
 It reuses the AC load flow OpenLoadFlow retains in its network cache, so a load flow must have run on the
-network first with ``networkCacheEnabled`` on, and the same load flow parameters must be used for both:
+network first with ``networkCacheEnabled`` on, and the same load flow parameters must be used for both.
 
-.. code-block:: python
+The cotangents are yours to compute: they are the partial derivatives of *your* objective with respect to
+each monitored function, in that function's own units, ordered as the factor matrices were declared.
 
-    >>> parameters = pp.loadflow.Parameters(provider_parameters={'networkCacheEnabled': 'true'})
-    >>> pp.loadflow.run_ac(network, parameters)
+Take a least-squares voltage objective ``L = 0.5 * sum_i (V_i - V_i*)**2``, where ``V_i`` is the solved
+voltage of monitored bus *i* and ``V_i*`` the voltage you want there — ``wanted_voltages`` in the code below.
+``V_i*`` is a constant of your objective, not a network attribute: in particular it is **not** the
+generators' ``target_v``, which is the lever this example differentiates with respect to. The cotangents are
+then simply the voltage deviations ``dL/dV_i = V_i - V_i*``, read off the load flow that warmed the cache —
+in kV, since that is what ``BUS_VOLTAGE`` is in:
+
+.. doctest::
+
+    >>> import pandas as pd
+    >>> import pypowsybl as pp
+    >>> from pypowsybl.sensitivity import ContingencyContextType, SensitivityFunctionType, SensitivityVariableType
+    >>> network = pp.network.create_ieee14()
+    >>> parameters = pp.loadflow.Parameters(distributed_slack=False,
+    ...                                     provider_parameters={'networkCacheEnabled': 'true'})
+    >>> lf_result = pp.loadflow.run_ac(network, parameters)
+    >>> monitored_buses = ['VL4_0', 'VL5_0', 'VL7_0']
+    >>> generators = ['B2-G', 'B3-G', 'B6-G']
     >>> analysis = pp.sensitivity.create_ac_analysis()
-    >>> analysis.add_branch_admittance_factor_matrix(monitored_lines, controllable_lines,
-    ...                                             SensitivityFunctionType.BRANCH_ACTIVE_POWER_1)
-    >>> gradient = analysis.run_adjoint(network, cotangents, parameters).get_gradient()
+    >>> analysis.add_factor_matrix(monitored_buses, generators, [], ContingencyContextType.NONE,
+    ...                            SensitivityFunctionType.BUS_VOLTAGE,
+    ...                            SensitivityVariableType.BUS_TARGET_VOLTAGE, 'objective')
+    >>> wanted_voltages = pd.Series({'VL4_0': 138.0, 'VL5_0': 136.0, 'VL7_0': 15.0})
+    >>> voltages = network.get_buses().loc[monitored_buses]['v_mag']
+    >>> cotangents = voltages - wanted_voltages
+    >>> cotangents.round(3)
+    id
+    VL4_0   -0.614
+    VL5_0    1.634
+    VL7_0   -0.139
+    dtype: float64
+    >>> result = analysis.run_adjoint(network, {'objective': cotangents}, parameters)
+    >>> result.get_gradient('objective').round(3)
+    B2-G    0.405
+    B3-G    0.093
+    B6-G    2.679
+    Name: dL/dvariable, dtype: float64
+
+The ``2.679`` against ``B6-G`` is ``dL/dtarget_v`` for that generator — the derivative of the loss with
+respect to its voltage set point, in loss units per kV — and the single transpose solve produced it for
+every generator at once. Cotangents passed as a ``pandas.Series`` are aligned on the monitored function ids
+rather than taken positionally, so they cannot silently go in shuffled; a plain list is positional.
 
 The run is base case only: an analysis that declares contingencies is refused rather than answered for the
 base case, since the two are indistinguishable once returned. A lever outside the solved component — a line

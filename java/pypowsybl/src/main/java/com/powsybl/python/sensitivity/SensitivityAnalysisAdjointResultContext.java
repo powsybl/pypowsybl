@@ -9,9 +9,7 @@ package com.powsybl.python.sensitivity;
 
 import com.powsybl.commons.PowsyblException;
 import com.powsybl.python.commons.PyPowsyblApiHeader;
-import org.graalvm.nativeimage.UnmanagedMemory;
-import org.graalvm.nativeimage.c.struct.SizeOf;
-import org.graalvm.nativeimage.c.type.CDoublePointer;
+import com.powsybl.python.commons.Util;
 
 import java.util.Map;
 
@@ -43,18 +41,6 @@ public class SensitivityAnalysisAdjointResultContext {
 
     public PyPowsyblApiHeader.MatrixPointer createGradient(String matrixId) {
         double[] values = gradientValues(matrixId);
-        return doubleArrToMatrix(values, values.length, 1);
-    }
-
-    private static PyPowsyblApiHeader.MatrixPointer doubleArrToMatrix(double[] values, int rowCount, int colCount) {
-        CDoublePointer valuePtr = UnmanagedMemory.calloc(rowCount * colCount * SizeOf.get(CDoublePointer.class));
-        for (int i = 0; i < colCount * rowCount; i++) {
-            valuePtr.addressOf(i).write(values[i]);
-        }
-        PyPowsyblApiHeader.MatrixPointer matrixPtr = UnmanagedMemory.calloc(SizeOf.get(PyPowsyblApiHeader.MatrixPointer.class));
-        matrixPtr.setRowCount(rowCount);
-        matrixPtr.setColumnCount(colCount);
-        matrixPtr.setValues(valuePtr);
-        return matrixPtr;
+        return Util.createMatrix(values, values.length, 1);
     }
 }
