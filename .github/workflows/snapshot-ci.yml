@@ -22,6 +22,7 @@ jobs:
       matrix:
         config:
           - { name: ubuntu, os: ubuntu-22.04 }
+          - { name: ubuntu-arm64, os: ubuntu-24.04-arm }
           - { name: darwin, os: macos-15-intel, macosx_deployment_target: "10.16", bdist_wheel_args: "--plat-name macosx-11.0-x86_64" }
           #- { name: darwin-arm64, os: macos-15, macosx_deployment_target: "11", bdist_wheel_args: "--plat-name macosx-11.0-arm64" }
           - { name: windows, os: windows-2022 }
@@ -323,11 +324,11 @@ jobs:
         working-directory: ./pypowsybl
 
       - name: Install Ipopt (Linux, via micromamba)
-        if: matrix.config.name == 'ubuntu'
+        if: (matrix.config.name == 'ubuntu' || matrix.config.name == 'ubuntu-arm64')
         shell: bash
         run: |
-          curl -Ls https://micro.mamba.pm/api/micromamba/linux-64/latest | tar -xvj bin/micromamba
-          ./bin/micromamba create -y -p $HOME/ipopt-env -c conda-forge ipopt==3.14.19 mumps==5.1.2
+          curl -Ls https://micro.mamba.pm/api/micromamba/$(uname)-$(uname -m)/latest | tar -xvj bin/micromamba
+          ./bin/micromamba create -y -p $HOME/ipopt-env -c conda-forge ipopt==3.14.19
           echo "LD_LIBRARY_PATH=$HOME/ipopt-env/lib:${LD_LIBRARY_PATH}" >> $GITHUB_ENV
 
       - name: Install Ipopt (macOS arm64, via Homebrew)
@@ -407,6 +408,7 @@ jobs:
       matrix:
         config:
           - { name: ubuntu, os: ubuntu-22.04 }
+          - { name: ubuntu-arm64, os: ubuntu-24.04-arm }
           - { name: darwin, os: macos-15-intel, macosx_deployment_target: "10.16", bdist_wheel_args: "--plat-name macosx-11.0-x86_64" }
           #- { name: darwin-arm64, os: macos-15, macosx_deployment_target: "11", bdist_wheel_args: "--plat-name macosx-11.0-arm64" }
           - { name: windows, os: windows-2022 }
@@ -451,11 +453,11 @@ jobs:
           unzip binaries.zip
 
       - name: Install Ipopt (Linux, via micromamba)
-        if: matrix.config.name == 'ubuntu'
+        if: (matrix.config.name == 'ubuntu' || matrix.config.name == 'ubuntu-arm64')
         shell: bash
         run: |
           curl -Ls https://micro.mamba.pm/api/micromamba/linux-64/latest | tar -xvj bin/micromamba
-          ./bin/micromamba create -y -p $HOME/ipopt-env -c conda-forge ipopt==3.14.19 mumps==5.1.2
+          ./bin/micromamba create -y -p $HOME/ipopt-env -c conda-forge ipopt==3.14.19
           echo "LD_LIBRARY_PATH=$HOME/ipopt-env/lib:${LD_LIBRARY_PATH}" >> $GITHUB_ENV
 
       - name: Install Ipopt (macOS arm64, via Homebrew)
