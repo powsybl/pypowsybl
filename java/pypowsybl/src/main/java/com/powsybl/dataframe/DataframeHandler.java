@@ -7,6 +7,7 @@
  */
 package com.powsybl.dataframe;
 
+import java.util.List;
 import java.util.OptionalDouble;
 import java.util.OptionalInt;
 
@@ -48,6 +49,27 @@ public interface DataframeHandler {
         void set(int index, String value);
     }
 
+    /**
+     * Writer of a dictionary-encoded string series: one int code per row, referring to the list of distinct values
+     * (the dictionary) which is set once, after all codes are written. The code -1 encodes a missing value.
+     */
+    interface DictionaryStringSeriesWriter {
+        /**
+         * Writes the code of one row.
+         *
+         * @param index the row
+         * @param code  the index of the row's value in the dictionary, or -1 for a missing value
+         */
+        void set(int index, int code);
+
+        /**
+         * Sets the distinct values the codes refer to; to be called once, after all codes are written.
+         *
+         * @param dictionary the distinct values, indexed by their code
+         */
+        void setDictionary(List<String> dictionary);
+    }
+
     void allocate(int seriesCount);
 
     StringSeriesWriter newStringIndex(String name, int size);
@@ -65,5 +87,23 @@ public interface DataframeHandler {
     BooleanSeriesWriter newBooleanSeries(String name, int size);
 
     DoubleSeriesWriter newDoubleSeries(String name, int size);
+
+    /**
+     * Creates an index level transferred as codes and a dictionary; it is read as the same index as a string index.
+     *
+     * @param name the name of the index level
+     * @param size the number of rows
+     * @return the writer of the codes and dictionary
+     */
+    DictionaryStringSeriesWriter newDictionaryStringIndex(String name, int size);
+
+    /**
+     * Creates a string series transferred as codes and a dictionary; it is read as the same column as a string series.
+     *
+     * @param name the name of the series
+     * @param size the number of rows
+     * @return the writer of the codes and dictionary
+     */
+    DictionaryStringSeriesWriter newDictionaryStringSeries(String name, int size);
 
 }

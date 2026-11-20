@@ -77,7 +77,7 @@ void deleteDataframe(dataframe* df) {
 std::shared_ptr<dataframe> createDataframe(py::list columnsValues, const std::vector<std::string>& columnsNames, const std::vector<int>& columnsTypes, const std::vector<bool>& isIndex) {
     int columnsNumber = columnsNames.size();
     std::shared_ptr<dataframe> dataframe(new ::dataframe(), ::deleteDataframe);
-    series* columns = new series[columnsNumber];
+    series* columns = new series[columnsNumber]();
     for (int indice = 0 ; indice < columnsNumber ; indice ++ ) {
         series* column = columns + indice;
         py::str name = (py::str) columnsNames[indice];
@@ -1057,9 +1057,18 @@ PYBIND11_MODULE(_pypowsybl, m) {
                         return seriesAsNumpyArray<int>(s);
                     case 3:
                         return seriesAsNumpyArray<bool>(s);
+                    case 4: // dictionary-encoded strings: the codes
+                        return seriesAsNumpyArray<int>(s);
                     default:
                         throw pypowsybl::PyPowsyblError("Series type not supported: " + std::to_string(s.type));
                 }
+            })
+            .def_property_readonly("dictionary", [](const series& s) -> py::object {
+                // distinct values of a dictionary-encoded string series (data holds the codes), None otherwise
+                if (s.type == 4) {
+                    return py::cast(pypowsybl::toVector<std::string>((array *) & s.dictionary));
+                }
+                return py::none();
             })
             .def_property_readonly("mask", [](const series& s) {
                 if (s.mask != nullptr) {

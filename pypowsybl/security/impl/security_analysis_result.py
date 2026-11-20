@@ -153,6 +153,9 @@ class SecurityAnalysisResult:
     def branch_results(self) -> pd.DataFrame:
         """
         Results (P, Q, I) for monitored branches.
+
+        The dataframe is indexed by ``contingency_id``, ``operator_strategy_id`` and ``branch_id``
+        (empty string for pre-contingency results and results without operator strategy).
         """
         return create_data_frame_from_series_array(_pypowsybl.get_branch_results(self._handle))
 
@@ -160,6 +163,9 @@ class SecurityAnalysisResult:
     def bus_results(self) -> pd.DataFrame:
         """
         Bus results (voltage angle and magnitude) for monitored voltage levels.
+
+        The dataframe is indexed by ``contingency_id``, ``operator_strategy_id``, ``voltage_level_id`` and ``bus_id``
+        (empty string for pre-contingency results and results without operator strategy).
         """
         return create_data_frame_from_series_array(_pypowsybl.get_bus_results(self._handle))
 
@@ -167,5 +173,8 @@ class SecurityAnalysisResult:
     def three_windings_transformer_results(self) -> pd.DataFrame:
         """
         Results (P, Q, I) for monitored three winding transformers.
+
+        The dataframe is indexed by ``contingency_id`` (empty string for pre-contingency results)
+        and ``transformer_id``.
         """
         return create_data_frame_from_series_array(_pypowsybl.get_three_windings_transformer_results(self._handle))

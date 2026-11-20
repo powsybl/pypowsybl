@@ -138,7 +138,7 @@ public final class SecurityAnalysisCFunctions {
             @Override
             public ArrayPointer<SeriesPointer> get() {
                 SecurityAnalysisResult result = ObjectHandles.getGlobal().get(securityAnalysisResult);
-                return Dataframes.createCDataframe(Dataframes.branchResultsMapper(), result);
+                return Dataframes.createCDataframe(handler -> NetworkResultDataframes.writeBranchResults(result, handler));
             }
         });
     }
@@ -149,7 +149,7 @@ public final class SecurityAnalysisCFunctions {
             @Override
             public ArrayPointer<SeriesPointer> get() {
                 SecurityAnalysisResult result = ObjectHandles.getGlobal().get(securityAnalysisResult);
-                return Dataframes.createCDataframe(Dataframes.busResultsMapper(), result);
+                return Dataframes.createCDataframe(handler -> NetworkResultDataframes.writeBusResults(result, handler));
             }
         });
     }
@@ -160,7 +160,7 @@ public final class SecurityAnalysisCFunctions {
             @Override
             public ArrayPointer<SeriesPointer> get() {
                 SecurityAnalysisResult result = ObjectHandles.getGlobal().get(securityAnalysisResult);
-                return Dataframes.createCDataframe(Dataframes.threeWindingsTransformerResultsMapper(), result);
+                return Dataframes.createCDataframe(handler -> NetworkResultDataframes.writeThreeWindingsTransformerResults(result, handler));
             }
         });
     }
