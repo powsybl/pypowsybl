@@ -42,11 +42,6 @@ public class SignalNGeneratorAdder extends AbstractEquipmentAdder {
         return new AbstractEquipmentSeries<Generator, SignalNGeneratorBuilder>(dataframe) {
 
             @Override
-            protected SignalNGeneratorBuilder createBuilder(Network network, ReportNode reportNode) {
-                return SignalNGeneratorBuilder.of(network, reportNode);
-            }
-
-            @Override
             protected SignalNGeneratorBuilder createBuilder(Network network, String modelName, ReportNode reportNode) {
                 return SignalNGeneratorBuilder.of(network, modelName, reportNode);
             }

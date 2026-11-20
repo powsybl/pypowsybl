@@ -42,11 +42,6 @@ public class GridFormingConverterAdder extends AbstractEquipmentAdder {
         return new AbstractEquipmentSeries<Generator, GridFormingConverterBuilder>(dataframe) {
 
             @Override
-            protected GridFormingConverterBuilder createBuilder(Network network, ReportNode reportNode) {
-                return GridFormingConverterBuilder.of(network, reportNode);
-            }
-
-            @Override
             protected GridFormingConverterBuilder createBuilder(Network network, String modelName, ReportNode reportNode) {
                 return GridFormingConverterBuilder.of(network, modelName, reportNode);
             }

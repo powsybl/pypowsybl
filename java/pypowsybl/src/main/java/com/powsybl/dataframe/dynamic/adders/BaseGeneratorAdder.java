@@ -42,11 +42,6 @@ public class BaseGeneratorAdder extends AbstractEquipmentAdder {
         return new AbstractEquipmentSeries<Generator, BaseGeneratorBuilder>(dataframe) {
 
             @Override
-            protected BaseGeneratorBuilder createBuilder(Network network, ReportNode reportNode) {
-                return BaseGeneratorBuilder.of(network, reportNode);
-            }
-
-            @Override
             protected BaseGeneratorBuilder createBuilder(Network network, String modelName, ReportNode reportNode) {
                 return BaseGeneratorBuilder.of(network, modelName, reportNode);
             }

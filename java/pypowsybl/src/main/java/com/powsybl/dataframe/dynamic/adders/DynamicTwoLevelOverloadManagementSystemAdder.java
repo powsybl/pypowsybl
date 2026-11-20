@@ -83,11 +83,6 @@ public class DynamicTwoLevelOverloadManagementSystemAdder extends AbstractSimple
         }
 
         @Override
-        protected DynamicTwoLevelOverloadManagementSystemBuilder createBuilder(Network network, ReportNode reportNode) {
-            return DynamicTwoLevelOverloadManagementSystemBuilder.of(network, reportNode);
-        }
-
-        @Override
         protected DynamicTwoLevelOverloadManagementSystemBuilder createBuilder(Network network, String modelName, ReportNode reportNode) {
             return DynamicTwoLevelOverloadManagementSystemBuilder.of(network, modelName, reportNode);
         }

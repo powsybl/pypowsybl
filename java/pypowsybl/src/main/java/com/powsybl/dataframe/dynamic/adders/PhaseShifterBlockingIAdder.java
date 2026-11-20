@@ -66,11 +66,6 @@ public class PhaseShifterBlockingIAdder extends AbstractSimpleDynamicModelAdder 
         }
 
         @Override
-        protected PhaseShifterBlockingIAutomationSystemBuilder createBuilder(Network network, ReportNode reportNode) {
-            return PhaseShifterBlockingIAutomationSystemBuilder.of(network, reportNode);
-        }
-
-        @Override
         protected PhaseShifterBlockingIAutomationSystemBuilder createBuilder(Network network, String modelName, ReportNode reportNode) {
             return PhaseShifterBlockingIAutomationSystemBuilder.of(network, modelName, reportNode);
         }

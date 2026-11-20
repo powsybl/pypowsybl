@@ -75,11 +75,6 @@ public class DynamicOverloadManagementSystemAdder extends AbstractSimpleDynamicM
         }
 
         @Override
-        protected DynamicOverloadManagementSystemBuilder createBuilder(Network network, ReportNode reportNode) {
-            return DynamicOverloadManagementSystemBuilder.of(network, reportNode);
-        }
-
-        @Override
         protected DynamicOverloadManagementSystemBuilder createBuilder(Network network, String modelName, ReportNode reportNode) {
             return DynamicOverloadManagementSystemBuilder.of(network, modelName, reportNode);
         }

@@ -42,11 +42,6 @@ public class HvdcPAdder extends AbstractEquipmentAdder {
         return new AbstractEquipmentSeries<HvdcLine, HvdcPBuilder>(dataframe) {
 
             @Override
-            protected HvdcPBuilder createBuilder(Network network, ReportNode reportNode) {
-                return HvdcPBuilder.of(network, reportNode);
-            }
-
-            @Override
             protected HvdcPBuilder createBuilder(Network network, String modelName, ReportNode reportNode) {
                 return HvdcPBuilder.of(network, modelName, reportNode);
             }

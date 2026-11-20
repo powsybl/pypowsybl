@@ -42,11 +42,6 @@ public class LineAdder extends AbstractEquipmentAdder {
         return new AbstractEquipmentSeries<Line, LineBuilder>(dataframe) {
 
             @Override
-            protected LineBuilder createBuilder(Network network, ReportNode reportNode) {
-                return LineBuilder.of(network, reportNode);
-            }
-
-            @Override
             protected LineBuilder createBuilder(Network network, String modelName, ReportNode reportNode) {
                 return LineBuilder.of(network, modelName, reportNode);
             }

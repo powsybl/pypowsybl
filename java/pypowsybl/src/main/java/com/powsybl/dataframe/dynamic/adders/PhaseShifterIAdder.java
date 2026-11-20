@@ -66,11 +66,6 @@ public class PhaseShifterIAdder extends AbstractSimpleDynamicModelAdder {
         }
 
         @Override
-        protected PhaseShifterIAutomationSystemBuilder createBuilder(Network network, ReportNode reportNode) {
-            return PhaseShifterIAutomationSystemBuilder.of(network, reportNode);
-        }
-
-        @Override
         protected PhaseShifterIAutomationSystemBuilder createBuilder(Network network, String modelName, ReportNode reportNode) {
             return PhaseShifterIAutomationSystemBuilder.of(network, modelName, reportNode);
         }

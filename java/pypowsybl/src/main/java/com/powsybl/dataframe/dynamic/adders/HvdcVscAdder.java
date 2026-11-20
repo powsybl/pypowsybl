@@ -42,11 +42,6 @@ public class HvdcVscAdder extends AbstractEquipmentAdder {
         return new AbstractEquipmentSeries<HvdcLine, HvdcVscBuilder>(dataframe) {
 
             @Override
-            protected HvdcVscBuilder createBuilder(Network network, ReportNode reportNode) {
-                return HvdcVscBuilder.of(network, reportNode);
-            }
-
-            @Override
             protected HvdcVscBuilder createBuilder(Network network, String modelName, ReportNode reportNode) {
                 return HvdcVscBuilder.of(network, modelName, reportNode);
             }

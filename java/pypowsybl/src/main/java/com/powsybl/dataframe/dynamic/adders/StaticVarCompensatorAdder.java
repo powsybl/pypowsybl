@@ -42,11 +42,6 @@ public class StaticVarCompensatorAdder extends AbstractEquipmentAdder {
         return new AbstractEquipmentSeries<StaticVarCompensator, BaseStaticVarCompensatorBuilder>(dataframe) {
 
             @Override
-            protected BaseStaticVarCompensatorBuilder createBuilder(Network network, ReportNode reportNode) {
-                return BaseStaticVarCompensatorBuilder.of(network, reportNode);
-            }
-
-            @Override
             protected BaseStaticVarCompensatorBuilder createBuilder(Network network, String modelName, ReportNode reportNode) {
                 return BaseStaticVarCompensatorBuilder.of(network, modelName, reportNode);
             }
