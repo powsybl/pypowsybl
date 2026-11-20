@@ -11,10 +11,11 @@ import com.powsybl.commons.PowsyblException;
 import com.powsybl.dataframe.BooleanSeriesMapper;
 import com.powsybl.dataframe.DataframeElementType;
 import com.powsybl.dataframe.DoubleSeriesMapper;
-import com.powsybl.dataframe.network.extensions.NetworkExtensions;
 import com.powsybl.dataframe.network.extensions.ExtensionDataframeKey;
+import com.powsybl.dataframe.network.extensions.NetworkExtensions;
 import com.powsybl.dataframe.update.UpdatingDataframe;
 import com.powsybl.iidm.network.*;
+import com.powsybl.iidm.network.regulation.RegulationMode;
 import com.powsybl.python.commons.PyPowsyblApiHeader;
 import com.powsybl.python.network.NetworkUtil;
 import com.powsybl.python.network.SideEnum;
@@ -27,7 +28,7 @@ import java.util.function.*;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
-import static com.powsybl.dataframe.MappingUtils.*;
+import static com.powsybl.dataframe.MappingUtils.ifExistsInt;
 import static com.powsybl.dataframe.network.PerUnitUtil.*;
 
 /**
@@ -38,6 +39,7 @@ import static com.powsybl.dataframe.network.PerUnitUtil.*;
  * @author Yichen TANG {@literal <yichen.tang at rte-france.com>}
  * @author Sylvain Leclerc {@literal <sylvain.leclerc at rte-france.com>}
  */
+@SuppressWarnings("java:S5738") // removing "deprecated" warnings before voltage refactoring integration
 public final class NetworkDataframes {
 
     private static final Map<DataframeElementType, NetworkDataframeMapper> MAPPERS = createMappers();
@@ -49,9 +51,18 @@ public final class NetworkDataframes {
     private static final String MAX_Q_AT_TARGET_P = "max_q_at_target_p";
     private static final String MIN_Q_AT_P = "min_q_at_p";
     private static final String MAX_Q_AT_P = "max_q_at_p";
+    private static final String TARGET_V = "target_v";
+    private static final String TARGET_Q = "target_q";
+    private static final String VOLTAGE_REGULATOR_ON = "voltage_regulator_on";
+    private static final String TARGET_DEADBAND = "target_deadband";
+    private static final String LOCAL_TARGET_Q = "local_target_q";
+    private static final String LOCAL_TARGET_V = "local_target_v";
+    private static final String REGULATED_ELEMENT_ID = "regulated_element_id";
     private static final String REGULATED_BUS_ID = "regulated_bus_id";
     private static final String REGULATED_BUS_BREAKER_BUS_ID = "regulated_bus_breaker_bus_id";
     private static final String REGULATING = "regulating";
+    private static final String REGULATION_MODE = "regulation_mode";
+    private static final String REGULATION_VALUE = "regulation_value";
 
     private NetworkDataframes() {
     }
@@ -109,6 +120,8 @@ public final class NetworkDataframes {
         mappers.put(DataframeElementType.DC_GROUND, dcGrounds());
         mappers.put(DataframeElementType.DC_SWITCH, dcSwitches());
         mappers.put(DataframeElementType.DC_BUS, dcBuses());
+        mappers.put(DataframeElementType.OVERLOAD_MANAGEMENT_SYSTEM, overloadManagementSystems());
+        mappers.put(DataframeElementType.OVERLOAD_MANAGEMENT_SYSTEM_TRIPPING, overloadManagementSystemTrippings());
         return Collections.unmodifiableMap(mappers);
     }
 
@@ -332,13 +345,20 @@ public final class NetworkDataframes {
                 .doubles(MAX_Q_AT_P, getPerUnitMaxQ(getOppositeP()), false)
                 .doubles("rated_s", (g, context) -> g.getRatedS(), (g, ratedS, context) -> g.setRatedS(ratedS))
                 .strings("reactive_limits_kind", NetworkDataframes::getReactiveLimitsKind)
-                .doubles("target_v", (g, context) -> perUnitTargetV(context, g.getTargetV(), g.getRegulatingTerminal(), g.getTerminal()),
+                .deprecatedDoubles(TARGET_V, (g, context) -> perUnitTargetV(context, g.getTargetV(), g.getRegulatingTerminal(), g.getTerminal()),
                     (g, v, context) -> g.setTargetV(unPerUnitTargetV(context, v, g.getRegulatingTerminal(), g.getTerminal())))
-                .doubles("equivalent_local_target_v", (g, context) -> perUnitV(context, g.getEquivalentLocalTargetV(), g.getTerminal()), false)
-                .doubles("target_q", (g, context) -> perUnitPQ(context, g.getTargetQ()), (g, q, context) -> g.setTargetQ(unPerUnitPQ(context, q)))
-                .booleans("voltage_regulator_on", Generator::isVoltageRegulatorOn, Generator::setVoltageRegulatorOn)
-                .strings("regulated_element_id", generator -> NetworkUtil.getRegulatedElementId(generator::getRegulatingTerminal),
-                        (generator, elementId) -> NetworkUtil.setRegulatingTerminal(generator::setRegulatingTerminal, generator.getNetwork(), elementId))
+                .deprecatedDoubles("equivalent_local_target_v", (g, context) -> perUnitV(context, g.getEquivalentLocalTargetV(), g.getTerminal()), false)
+                .deprecatedDoubles(TARGET_Q, (g, context) -> perUnitPQ(context, g.getTargetQ()), (g, q, context) -> g.setTargetQ(unPerUnitPQ(context, q)))
+                .deprecatedBooleans(VOLTAGE_REGULATOR_ON, Generator::isVoltageRegulatorOn, Generator::setVoltageRegulatorOn)
+                .doubles(LOCAL_TARGET_V, (g, context) -> perUnitV(context, g.getLocalTargetV(), g.getTerminal()),
+                        (g, v, context) -> g.setLocalTargetV(unPerUnitV(context, v, g.getTerminal())))
+                .doubles(LOCAL_TARGET_Q, (g, context) -> perUnitPQ(context, g.getLocalTargetQ()), (g, q, context) -> g.setLocalTargetQ(unPerUnitPQ(context, q)))
+                .booleans(REGULATING, Generator::isRegulating, RegulationUtil::setRegulating)
+                .enums(REGULATION_MODE, RegulationMode.class, RegulationUtil::getRegulationMode, RegulationUtil::setRegulationMode)
+                .doubles(REGULATION_VALUE, RegulationUtil::getRegulationValue, RegulationUtil::setRegulationValue)
+                .strings(REGULATED_ELEMENT_ID, generator -> NetworkUtil.getRegulatedElementId(generator::getRegulatingTerminal),
+                        (generator, elementId) -> NetworkUtil.setTerminal(t -> RegulationUtil.setRegulatingTerminal(generator, t),
+                                generator.getNetwork(), elementId))
                 .strings(REGULATED_BUS_ID, generator -> getBusId(generator.getRegulatingTerminal()), false)
                 .strings(REGULATED_BUS_BREAKER_BUS_ID, generator -> getBusBreakerViewBusId(generator.getRegulatingTerminal()), false)
                 .doubles("p", getPerUnitP(), setPerUnitP())
@@ -436,7 +456,16 @@ public final class NetworkDataframes {
                 .doubles(MAX_Q_AT_P, getPerUnitMaxQ(getOppositeP()), false)
                 .strings("reactive_limits_kind", NetworkDataframes::getReactiveLimitsKind)
                 .doubles("target_p", (b, context) -> perUnitPQ(context, b.getTargetP()), (b, targetP, context) -> b.setTargetP(unPerUnitPQ(context, targetP)))
-                .doubles("target_q", (b, context) -> perUnitPQ(context, b.getTargetQ()), (b, targetQ, context) -> b.setTargetQ(unPerUnitPQ(context, targetQ)))
+                .deprecatedDoubles(TARGET_Q, (b, context) -> perUnitPQ(context, b.getTargetQ()), (b, targetQ, context) -> b.setTargetQ(unPerUnitPQ(context, targetQ)))
+                .doubles(LOCAL_TARGET_V, (b, context) -> perUnitV(context, b.getLocalTargetV(), b.getTerminal()),
+                        (b, v, context) -> b.setLocalTargetV(unPerUnitV(context, v, b.getTerminal())))
+                .doubles(LOCAL_TARGET_Q, (b, context) -> perUnitPQ(context, b.getLocalTargetQ()), (b, q, context) -> b.setLocalTargetQ(unPerUnitPQ(context, q)))
+                .booleans(REGULATING, Battery::isRegulating, RegulationUtil::setRegulating)
+                .enums(REGULATION_MODE, RegulationMode.class, RegulationUtil::getRegulationMode, RegulationUtil::setRegulationMode)
+                .doubles(REGULATION_VALUE, RegulationUtil::getRegulationValue, RegulationUtil::setRegulationValue)
+                .strings(REGULATED_ELEMENT_ID, b -> NetworkUtil.getRegulatedElementId(b::getRegulatingTerminal),
+                        (b, elementId) -> NetworkUtil.setTerminal(t -> RegulationUtil.setRegulatingTerminal(b, t),
+                                b.getNetwork(), elementId))
                 .doubles("p", getPerUnitP(), setPerUnitP())
                 .doubles("q", getPerUnitQ(), setPerUnitQ())
                 .doubles("i", (b, context) -> perUnitI(context, b.getTerminal()))
@@ -473,11 +502,18 @@ public final class NetworkDataframes {
                 .ints("max_section_count", ShuntCompensator::getMaximumSectionCount)
                 .ints("section_count", ShuntCompensator::getSectionCount, ShuntCompensator::setSectionCount)
                 .optionalInts("solved_section_count", ShuntCompensator::findSolvedSectionCount)
-                .booleans("voltage_regulation_on", ShuntCompensator::isVoltageRegulatorOn, ShuntCompensator::setVoltageRegulatorOn)
-                .doubles("target_v", (sc, context) -> perUnitTargetV(context, sc.getTargetV(), sc.getRegulatingTerminal(), sc.getTerminal()),
+                .deprecatedBooleans("voltage_regulation_on", ShuntCompensator::isVoltageRegulatorOn, ShuntCompensator::setVoltageRegulatorOn)
+                .deprecatedDoubles(TARGET_V, (sc, context) -> perUnitTargetV(context, sc.getTargetV(), sc.getRegulatingTerminal(), sc.getTerminal()),
                     (sc, v, context) -> sc.setTargetV(unPerUnitTargetV(context, v, sc.getRegulatingTerminal(), sc.getTerminal())))
-                .doubles("target_deadband", (sc, context) -> perUnitV(context, sc.getTargetDeadband(), sc.getRegulatingTerminal()),
-                    (sc, tb, context) -> sc.setTargetDeadband(unPerUnitV(context, tb, sc.getRegulatingTerminal())))
+                .doubles(LOCAL_TARGET_V, (sc, context) -> perUnitV(context, sc.getLocalTargetV(), sc.getTerminal()),
+                        (sc, v, context) -> sc.setLocalTargetV(unPerUnitV(context, v, sc.getTerminal())))
+                .booleans(REGULATING, ShuntCompensator::isRegulating, RegulationUtil::setRegulating)
+                .enums(REGULATION_MODE, RegulationMode.class, RegulationUtil::getRegulationMode, RegulationUtil::setRegulationMode)
+                .doubles(REGULATION_VALUE, RegulationUtil::getRegulationValue, RegulationUtil::setRegulationValue)
+                .strings(REGULATED_ELEMENT_ID, sc -> NetworkUtil.getRegulatedElementId(sc::getRegulatingTerminal),
+                        (sc, elementId) -> NetworkUtil.setTerminal(t -> RegulationUtil.setRegulatingTerminal(sc, t),
+                                sc.getNetwork(), elementId))
+                .doubles(TARGET_DEADBAND, RegulationUtil::getTargetDeadband, RegulationUtil::setTargetDeadband)
                 .strings("regulating_bus_id", sc -> getBusId(sc.getRegulatingTerminal()))
                 .doubles("p", getPerUnitP(), setPerUnitP())
                 .doubles("q", getPerUnitQ(), setPerUnitQ())
@@ -769,11 +805,11 @@ public final class NetworkDataframes {
                         (dl, maxP, context) -> dl.getGeneration().setMaxP(unPerUnitPQ(context, maxP)))
                 .doubles("target_p", (dl, context) -> perUnitPQ(context, dl.getGeneration().getTargetP()),
                         (dl, targetP, context) -> dl.getGeneration().setTargetP(unPerUnitPQ(context, targetP)))
-                .doubles("target_q", (dl, context) -> perUnitPQ(context, dl.getGeneration().getTargetQ()),
+                .doubles(TARGET_Q, (dl, context) -> perUnitPQ(context, dl.getGeneration().getTargetQ()),
                         (dl, targetQ, context) -> dl.getGeneration().setTargetQ(unPerUnitPQ(context, targetQ)))
-                .doubles("target_v", (dl, context) -> perUnitV(context, dl.getGeneration().getTargetV(), dl.getTerminal()),
+                .doubles(TARGET_V, (dl, context) -> perUnitV(context, dl.getGeneration().getTargetV(), dl.getTerminal()),
                         (dl, targetV, context) -> dl.getGeneration().setTargetV(unPerUnitV(context, targetV, dl.getTerminal())))
-                .booleans("voltage_regulator_on", dl -> dl.getGeneration().isVoltageRegulationOn(),
+                .booleans(VOLTAGE_REGULATOR_ON, dl -> dl.getGeneration().isVoltageRegulationOn(),
                         (dl, voltageRegulatorOn) -> dl.getGeneration().setVoltageRegulationOn(voltageRegulatorOn))
                 .build();
     }
@@ -783,11 +819,11 @@ public final class NetworkDataframes {
                 .stringsIndex("id", TieLine::getId)
                 .strings("name", tl -> tl.getOptionalName().orElse(""), Identifiable::setName)
                 .strings("boundary_line1_id", tl -> tl.getBoundaryLine1().getId())
-                .strings("dangling_line1_id", tl -> tl.getBoundaryLine1().getId())
+                .deprecatedStrings("dangling_line1_id", tl -> tl.getBoundaryLine1().getId())
                 .strings("boundary_line2_id", tl -> tl.getBoundaryLine2().getId())
-                .strings("dangling_line2_id", tl -> tl.getBoundaryLine2().getId())
+                .deprecatedStrings("dangling_line2_id", tl -> tl.getBoundaryLine2().getId())
                 .strings("pairing_key", tl -> Objects.toString(tl.getPairingKey(), ""))
-                .strings("ucte_xnode_code", tl -> Objects.toString(tl.getPairingKey(), ""))
+                .deprecatedStrings("ucte_xnode_code", tl -> Objects.toString(tl.getPairingKey(), ""))
                 .booleans("connected1", t -> t.getTerminal1().isConnected(), connectBranchSide1())
                 .booleans("connected2", t -> t.getTerminal2().isConnected(), connectBranchSide2())
                 .booleans("fictitious", Identifiable::isFictitious, Identifiable::setFictitious, false)
@@ -827,13 +863,20 @@ public final class NetworkDataframes {
                 .doubles(MIN_Q_AT_P, getPerUnitMinQ(getOppositeP()), false)
                 .doubles(MAX_Q_AT_P, getPerUnitMaxQ(getOppositeP()), false)
                 .strings("reactive_limits_kind", NetworkDataframes::getReactiveLimitsKind)
-                .doubles("target_v", (vsc, context) -> perUnitTargetV(context, vsc.getVoltageSetpoint(), vsc.getRegulatingTerminal(), vsc.getTerminal()),
+                .deprecatedDoubles(TARGET_V, (vsc, context) -> perUnitTargetV(context, vsc.getRegulatingTargetV(), vsc.getRegulatingTerminal(), vsc.getTerminal()),
                     (vsc, targetV, context) -> vsc.setVoltageSetpoint(unPerUnitTargetV(context, targetV, vsc.getRegulatingTerminal(), vsc.getTerminal())))
-                .doubles("target_q", (vsc, context) -> perUnitPQ(context, vsc.getReactivePowerSetpoint()),
+                .deprecatedDoubles(TARGET_Q, (vsc, context) -> perUnitPQ(context, vsc.getReactivePowerSetpoint()),
                     (vsc, targetQ, context) -> vsc.setReactivePowerSetpoint(unPerUnitPQ(context, targetQ)))
-                .booleans("voltage_regulator_on", VscConverterStation::isVoltageRegulatorOn, VscConverterStation::setVoltageRegulatorOn)
-                .strings("regulated_element_id", vsc -> NetworkUtil.getRegulatedElementId(vsc::getRegulatingTerminal),
-                        (vsc, elementId) -> NetworkUtil.setRegulatingTerminal(vsc::setRegulatingTerminal, vsc.getNetwork(), elementId))
+                .deprecatedBooleans(VOLTAGE_REGULATOR_ON, VscConverterStation::isVoltageRegulatorOn, VscConverterStation::setVoltageRegulatorOn)
+                .doubles(LOCAL_TARGET_V, (vsc, context) -> perUnitV(context, vsc.getLocalTargetV(), vsc.getTerminal()),
+                        (vsc, v, context) -> vsc.setLocalTargetV(unPerUnitV(context, v, vsc.getTerminal())))
+                .doubles(LOCAL_TARGET_Q, (vsc, context) -> perUnitPQ(context, vsc.getLocalTargetQ()),
+                        (vsc, q, context) -> vsc.setLocalTargetQ(unPerUnitPQ(context, q)))
+                .booleans(REGULATING, VscConverterStation::isRegulating, RegulationUtil::setRegulating)
+                .enums(REGULATION_MODE, RegulationMode.class, RegulationUtil::getRegulationMode, RegulationUtil::setRegulationMode)
+                .doubles(REGULATION_VALUE, RegulationUtil::getRegulationValue, RegulationUtil::setRegulationValue)
+                .strings(REGULATED_ELEMENT_ID, vsc -> NetworkUtil.getRegulatedElementId(vsc::getRegulatingTerminal),
+                        (vsc, elementId) -> NetworkUtil.setTerminal(t -> RegulationUtil.setRegulatingTerminal(vsc, t), vsc.getNetwork(), elementId))
                 .strings(REGULATED_BUS_ID, vsc -> getBusId(vsc.getRegulatingTerminal()), false)
                 .strings(REGULATED_BUS_BREAKER_BUS_ID, vsc -> getBusBreakerViewBusId(vsc.getRegulatingTerminal()), false)
                 .doubles("p", getPerUnitP(), setPerUnitP())
@@ -856,15 +899,21 @@ public final class NetworkDataframes {
                 .strings("name", svc -> svc.getOptionalName().orElse(""), Identifiable::setName)
                 .doubles("b_min", (svc, context) -> svc.getBmin(), (svc, bMin, context) -> svc.setBmin(bMin))
                 .doubles("b_max", (svc, context) -> svc.getBmax(), (svc, bMax, context) -> svc.setBmax(bMax))
-                .doubles("target_v", (svc, context) -> perUnitTargetV(context, svc.getVoltageSetpoint(), svc.getRegulatingTerminal(), svc.getTerminal()),
+                .deprecatedDoubles(TARGET_V, (svc, context) -> perUnitTargetV(context, svc.getRegulatingTargetV(), svc.getRegulatingTerminal(), svc.getTerminal()),
                     (svc, targetV, context) -> svc.setVoltageSetpoint(unPerUnitTargetV(context, targetV, svc.getRegulatingTerminal(), svc.getTerminal())))
-                .doubles("target_q", (svc, context) -> perUnitPQ(context, svc.getReactivePowerSetpoint()),
+                .deprecatedDoubles(TARGET_Q, (svc, context) -> perUnitPQ(context, svc.getReactivePowerSetpoint()),
                     (svc, targetQ, context) -> svc.setReactivePowerSetpoint(unPerUnitPQ(context, targetQ)))
-                .enums("regulation_mode", StaticVarCompensator.RegulationMode.class,
-                        StaticVarCompensator::getRegulationMode, StaticVarCompensator::setRegulationMode)
-                .booleans(REGULATING, StaticVarCompensator::isRegulating, StaticVarCompensator::setRegulating)
-                .strings("regulated_element_id", svc -> NetworkUtil.getRegulatedElementId(svc::getRegulatingTerminal),
-                        (svc, elementId) -> NetworkUtil.setRegulatingTerminal(svc::setRegulatingTerminal, svc.getNetwork(), elementId))
+                .doubles(LOCAL_TARGET_V, (b, context) -> perUnitV(context, b.getLocalTargetV(), b.getTerminal()),
+                        (svc, v, context) -> svc.setLocalTargetV(unPerUnitV(context, v, svc.getTerminal())))
+                .doubles(LOCAL_TARGET_Q, (svc, context) -> perUnitPQ(context, svc.getLocalTargetQ()),
+                        (svc, q, context) -> svc.setLocalTargetQ(unPerUnitPQ(context, q)))
+                .booleans(REGULATING, StaticVarCompensator::isRegulating, RegulationUtil::setRegulating)
+                .enums(REGULATION_MODE, RegulationMode.class, RegulationUtil::getRegulationMode, RegulationUtil::setRegulationMode)
+                .doubles(REGULATION_VALUE, RegulationUtil::getRegulationValue, RegulationUtil::setRegulationValue)
+                .doubles("slope", RegulationUtil::getSlope, RegulationUtil::setSlope)
+                .strings(REGULATED_ELEMENT_ID, svc -> NetworkUtil.getRegulatedElementId(svc::getRegulatingTerminal),
+                        (svc, elementId) -> NetworkUtil.setTerminal(t -> RegulationUtil.setRegulatingTerminal(svc, t),
+                                svc.getNetwork(), elementId))
                 .strings(REGULATED_BUS_ID, svc -> getBusId(svc.getRegulatingTerminal()), false)
                 .strings(REGULATED_BUS_BREAKER_BUS_ID, svc -> getBusBreakerViewBusId(svc.getRegulatingTerminal()), false)
                 .doubles("p", getPerUnitP(), setPerUnitP())
@@ -1054,18 +1103,27 @@ public final class NetworkDataframes {
                 .booleans("dc_connected2", conv -> conv.getDcTerminal2().isConnected(),
                         (conv, dcConnected2) -> conv.getDcTerminal2().setConnected(dcConnected2))
                 .strings("pcc_terminal_id", conv -> NetworkUtil.getRegulatedElementId(conv::getPccTerminal),
-                        (conv, elementId) -> NetworkUtil.setPccTerminal(conv::setPccTerminal, conv.getNetwork(), elementId))
-                .booleans("voltage_regulator_on", VoltageSourceConverter::isVoltageRegulatorOn, VoltageSourceConverter::setVoltageRegulatorOn)
+                        (conv, elementId) -> NetworkUtil.setTerminal(conv::setPccTerminal, conv.getNetwork(), elementId))
+                .deprecatedBooleans(VOLTAGE_REGULATOR_ON, VoltageSourceConverter::isVoltageRegulatorOn, VoltageSourceConverter::setVoltageRegulatorOn)
                 .enums("control_mode", AcDcConverter.ControlMode.class, VoltageSourceConverter::getControlMode, VoltageSourceConverter::setControlMode)
                 .doubles("target_v_dc", (conv, context) -> perUnitV(context, conv.getTargetVdc(), conv.getDcTerminal1()),
                         //we supposed that NominalV is the same for both DC nodes connected to the converter
                         (conv, targetV, context) -> conv.setTargetVdc(unPerUnitV(context, targetV, conv.getDcTerminal1())))
-                .doubles("target_v_ac", (conv, context) -> perUnitV(context, conv.getVoltageSetpoint(), conv.getTerminal1()),
+                .deprecatedDoubles("target_v_ac", (conv, context) -> perUnitV(context, conv.getVoltageSetpoint(), conv.getTerminal1()),
                         (conv, targetV, context) -> conv.setVoltageSetpoint(unPerUnitV(context, targetV, conv.getTerminal1())))
                 .doubles("target_p", (conv, context) -> perUnitPQ(context, conv.getTargetP()),
                         (conv, targetP, context) -> conv.setTargetP(unPerUnitPQ(context, targetP)))
-                .doubles("target_q", (conv, context) -> perUnitPQ(context, conv.getReactivePowerSetpoint()),
+                .deprecatedDoubles(TARGET_Q, (conv, context) -> perUnitPQ(context, conv.getReactivePowerSetpoint()),
                         (conv, targetQ, context) -> conv.setReactivePowerSetpoint(unPerUnitPQ(context, targetQ)))
+                .doubles("local_target_v_ac", (vsc, context) -> perUnitV(context, vsc.getLocalTargetV(), vsc.getTerminal()),
+                        (vsc, v, context) -> vsc.setLocalTargetV(unPerUnitV(context, v, vsc.getTerminal())))
+                .doubles(LOCAL_TARGET_Q, (vsc, context) -> perUnitPQ(context, vsc.getLocalTargetQ()),
+                        (vsc, q, context) -> vsc.setLocalTargetQ(unPerUnitPQ(context, q)))
+                .booleans(REGULATING, VoltageSourceConverter::isRegulating, RegulationUtil::setRegulating)
+                .enums(REGULATION_MODE, RegulationMode.class, RegulationUtil::getRegulationMode, RegulationUtil::setRegulationMode)
+                .doubles(REGULATION_VALUE, RegulationUtil::getRegulationValue, RegulationUtil::setRegulationValue)
+                .strings(REGULATED_ELEMENT_ID, vsc -> NetworkUtil.getRegulatedElementId(vsc::getRegulatingTerminal),
+                        (vsc, elementId) -> NetworkUtil.setTerminal(t -> RegulationUtil.setRegulatingTerminal(vsc, t), vsc.getNetwork(), elementId))
                 // The core represents the "unbounded" default as -/+ Double.MAX_VALUE; expose it as -/+ infinity
                 // Non-default columns, so absent from the default dataframe.
                 .doubles("min_p",
@@ -1106,7 +1164,8 @@ public final class NetworkDataframes {
                 .strings("dc_node_id", dg -> dg.getDcTerminal().getDcNode().getId())
                 .booleans("connected", dg -> dg.getDcTerminal().isConnected(),
                         (dg, dcConnected) -> dg.getDcTerminal().setConnected(dcConnected))
-                .doubles("r", (dg, context) -> dg.getR(), (dg, r, context) -> dg.setR(r))
+                .doubles("r", (dg, context) -> perUnitR(context, dg),
+                        (dg, r, context) -> dg.setR(unPerUnitRX(context, dg, r)))
                 .booleans("fictitious", Identifiable::isFictitious, Identifiable::setFictitious, false)
                 .addProperties()
                 .build();
@@ -1124,7 +1183,8 @@ public final class NetworkDataframes {
                 .strings("dc_node2_id", ds -> ds.getDcNode2().getId())
                 .enums("kind", DcSwitchKind.class, DcSwitch::getKind)
                 .booleans("open", DcSwitch::isOpen, DcSwitch::setOpen)
-                .doubles("r", (ds, context) -> ds.getR(), (ds, r, context) -> ds.setR(r))
+                .doubles("r", (ds, context) -> perUnitR(context, ds),
+                        (ds, r, context) -> ds.setR(unPerUnitRX(context, ds, r)))
                 .booleans("fictitious", Identifiable::isFictitious, Identifiable::setFictitious, false)
                 .addProperties()
                 .build();
@@ -1140,6 +1200,103 @@ public final class NetworkDataframes {
                 .doubles("v", (db, context) -> perUnitV(context, db.getV(), db.getDcNodes().iterator().next().getNominalV()),
                         (db, v, context) -> db.setV(unPerUnitV(context, v, db.getDcNodes().iterator().next().getNominalV())))
                 .addProperties()
+                .build();
+    }
+
+    private static NetworkDataframeMapper overloadManagementSystems() {
+        return NetworkDataframeMapperBuilder.ofStream(Network::getOverloadManagementSystemStream,
+                        getOrThrow(Network::getOverloadManagementSystem, "Overload management system"))
+                .stringsIndex("id", OverloadManagementSystem::getId)
+                .strings("name", oms -> oms.getOptionalName().orElse(""), Identifiable::setName)
+                .strings("substation_id", oms -> oms.getSubstation().getId())
+                .booleans("enabled", OverloadManagementSystem::isEnabled, OverloadManagementSystem::setEnabled)
+                .strings("monitored_element_id", OverloadManagementSystem::getMonitoredElementId)
+                .enums("monitored_element_side", ThreeSides.class, OverloadManagementSystem::getMonitoredSide)
+                .ints("tripping_count", oms -> oms.getTrippings().size())
+                .addProperties()
+                .build();
+    }
+
+    record OverloadManagementSystemTrippingRow(OverloadManagementSystem oms, OverloadManagementSystem.Tripping tripping) {
+        String getId() {
+            return oms.getId();
+        }
+
+        String getKey() {
+            return tripping.getKey();
+        }
+
+        String getElementToOperateId() {
+            return switch (tripping) {
+                case OverloadManagementSystem.BranchTripping t -> t.getBranchToOperateId();
+                case OverloadManagementSystem.ThreeWindingsTransformerTripping t -> t.getThreeWindingsTransformerToOperateId();
+                case OverloadManagementSystem.SwitchTripping t -> t.getSwitchToOperateId();
+                default -> throw new PowsyblException("Unexpected tripping type: " + tripping.getType());
+            };
+        }
+
+        void setElementToOperateId(String elementId) {
+            switch (tripping) {
+                case OverloadManagementSystem.BranchTripping t -> t.setBranchToOperateId(elementId);
+                case OverloadManagementSystem.ThreeWindingsTransformerTripping t -> t.setThreeWindingsTransformerToOperateId(elementId);
+                case OverloadManagementSystem.SwitchTripping t -> t.setSwitchToOperateId(elementId);
+                default -> throw new PowsyblException("Unexpected tripping type: " + tripping.getType());
+            }
+        }
+
+        String getSideToOperate() {
+            return switch (tripping) {
+                case OverloadManagementSystem.BranchTripping t -> t.getSideToOperate().name();
+                case OverloadManagementSystem.ThreeWindingsTransformerTripping t -> t.getSideToOperate().name();
+                default -> "";
+            };
+        }
+
+        void setSideToOperate(String side) {
+            switch (tripping) {
+                case OverloadManagementSystem.BranchTripping t -> t.setSideToOperate(TwoSides.valueOf(side));
+                case OverloadManagementSystem.ThreeWindingsTransformerTripping t -> t.setSideToOperate(ThreeSides.valueOf(side));
+                default -> throw new PowsyblException("Cannot set a side to operate on switch tripping '" + getKey()
+                        + "' of overload management system '" + getId() + "'.");
+            }
+        }
+    }
+
+    private static Stream<OverloadManagementSystemTrippingRow> getOverloadManagementSystemTrippingRows(Network network) {
+        return network.getOverloadManagementSystemStream()
+                .flatMap(oms -> oms.getTrippings().stream().map(tripping -> new OverloadManagementSystemTrippingRow(oms, tripping)));
+    }
+
+    static OverloadManagementSystemTrippingRow getOverloadManagementSystemTrippingRow(Network network, UpdatingDataframe dataframe, int index) {
+        String id = dataframe.getStringValue("id", index)
+                .orElseThrow(() -> new IllegalArgumentException("id column is missing"));
+        String key = dataframe.getStringValue("tripping_key", index)
+                .orElseThrow(() -> new IllegalArgumentException("tripping_key column is missing"));
+        OverloadManagementSystem oms = network.getOverloadManagementSystem(id);
+        if (oms == null) {
+            throw new PowsyblException("Overload management system '" + id + "' does not exist.");
+        }
+        return oms.getTrippings().stream()
+                .filter(tripping -> tripping.getKey().equals(key))
+                .findFirst()
+                .map(tripping -> new OverloadManagementSystemTrippingRow(oms, tripping))
+                .orElseThrow(() -> new PowsyblException("Tripping '" + key + "' does not exist in overload management system '" + id + "'."));
+    }
+
+    private static NetworkDataframeMapper overloadManagementSystemTrippings() {
+        return NetworkDataframeMapperBuilder.ofStream(NetworkDataframes::getOverloadManagementSystemTrippingRows,
+                        NetworkDataframes::getOverloadManagementSystemTrippingRow)
+                .stringsIndex("id", OverloadManagementSystemTrippingRow::getId)
+                .stringsIndex("tripping_key", OverloadManagementSystemTrippingRow::getKey)
+                .strings("name", row -> row.tripping().getNameOrKey(), (row, name) -> row.tripping().setName(name))
+                .enums("tripping_type", OverloadManagementSystem.Tripping.Type.class, row -> row.tripping().getType())
+                .doubles("current_limit", (row, context) -> row.tripping().getCurrentLimit(),
+                    (row, currentLimit, context) -> row.tripping().setCurrentLimit(currentLimit))
+                .booleans("open_action", row -> row.tripping().isOpenAction(), (row, openAction) -> row.tripping().setOpenAction(openAction))
+                .strings("element_to_operate_id", OverloadManagementSystemTrippingRow::getElementToOperateId,
+                    OverloadManagementSystemTrippingRow::setElementToOperateId)
+                .strings("side_to_operate", OverloadManagementSystemTrippingRow::getSideToOperate,
+                    OverloadManagementSystemTrippingRow::setSideToOperate)
                 .build();
     }
 
@@ -1323,6 +1480,8 @@ public final class NetworkDataframes {
 
         String getSide();
 
+        Network getNetwork();
+
         RatioTapChanger getRtc();
 
         PhaseTapChanger getPtc();
@@ -1348,6 +1507,11 @@ public final class NetworkDataframes {
         }
 
         @Override
+        public Network getNetwork() {
+            return twt.getNetwork();
+        }
+
+        @Override
         public RatioTapChanger getRtc() {
             return twt.getRatioTapChanger();
         }
@@ -1359,22 +1523,24 @@ public final class NetworkDataframes {
 
         @Override
         public String getRtcRegulatedSide() {
-            return NetworkDataframes.getTapChangerRegulatedSide(twt, TwoWindingsTransformer::getRatioTapChanger);
+            return getTerminalSideStr(twt, twt.getRatioTapChanger().getRegulatingTerminal());
         }
 
         @Override
         public void setRtcRegulatedSide(String regulatedSide) {
-            NetworkDataframes.setTapChangerRegulatedSide(twt, regulatedSide, TwoWindingsTransformer::getRatioTapChanger);
+            RatioTapChanger rtc = this.getRtc();
+            rtc.getVoltageRegulation().setTerminal(getBranchTerminal(twt, regulatedSide),
+                    rtc.getRegulatingTargetV());
         }
 
         @Override
         public String getPtcRegulatedSide() {
-            return NetworkDataframes.getTapChangerRegulatedSide(twt, TwoWindingsTransformer::getPhaseTapChanger);
+            return getTerminalSideStr(twt, twt.getPhaseTapChanger().getRegulationTerminal());
         }
 
         @Override
         public void setPtcRegulatedSide(String regulatedSide) {
-            NetworkDataframes.setTapChangerRegulatedSide(twt, regulatedSide, TwoWindingsTransformer::getPhaseTapChanger);
+            twt.getPhaseTapChanger().setRegulationTerminal(getBranchTerminal(twt, regulatedSide));
         }
     }
 
@@ -1390,6 +1556,11 @@ public final class NetworkDataframes {
         }
 
         @Override
+        public Network getNetwork() {
+            return twt.getNetwork();
+        }
+
+        @Override
         public RatioTapChanger getRtc() {
             return twt.getLeg(side).getRatioTapChanger();
         }
@@ -1401,22 +1572,24 @@ public final class NetworkDataframes {
 
         @Override
         public String getRtcRegulatedSide() {
-            return NetworkDataframes.getTapChangerRegulatedSide(twt, side, ThreeWindingsTransformer.Leg::getRatioTapChanger);
+            return getTerminalSideStr(twt, this.getRtc().getRegulatingTerminal());
         }
 
         @Override
         public void setRtcRegulatedSide(String regulatedSide) {
-            NetworkDataframes.setTapChangerRegulatedSide(twt, side, regulatedSide, ThreeWindingsTransformer.Leg::getRatioTapChanger);
+            RatioTapChanger rtc = this.getRtc();
+            rtc.getVoltageRegulation().setTerminal(twt.getTerminal(ThreeSides.valueOf(regulatedSide)),
+                    rtc.getRegulatingTargetV());
         }
 
         @Override
         public String getPtcRegulatedSide() {
-            return NetworkDataframes.getTapChangerRegulatedSide(twt, side, ThreeWindingsTransformer.Leg::getPhaseTapChanger);
+            return getTerminalSideStr(twt, this.getPtc().getRegulationTerminal());
         }
 
         @Override
         public void setPtcRegulatedSide(String regulatedSide) {
-            NetworkDataframes.setTapChangerRegulatedSide(twt, side, regulatedSide, ThreeWindingsTransformer.Leg::getPhaseTapChanger);
+            this.getPtc().setRegulationTerminal(twt.getTerminal(ThreeSides.valueOf(regulatedSide)));
         }
     }
 
@@ -1494,16 +1667,19 @@ public final class NetworkDataframes {
                 .ints("high_tap", row -> row.getRtc().getHighTapPosition())
                 .ints("step_count", row -> row.getRtc().getStepCount())
                 .booleans("oltc", row -> row.getRtc().hasLoadTapChangingCapabilities(), (row, v) -> row.getRtc().setLoadTapChangingCapabilities(v))
-                .booleans(REGULATING, row -> row.getRtc().isRegulating(), (row, v) -> row.getRtc().setRegulating(v))
-                .enums("regulation_mode", RatioTapChanger.RegulationMode.class,
-                    row -> row.getRtc().getRegulationMode(), (row, v) -> row.getRtc().setRegulationMode(v), false)
-                .doubles("regulation_value", (row, context) -> row.getRtc().getRegulationValue(),
-                    (row, v, context) -> row.getRtc().setRegulationValue(v), false)
-                .doubles("target_v", (row, context) -> getTransformerTargetV(row.getRtc(), context),
+                .booleans(REGULATING, row -> row.getRtc().isRegulating(), (row, v) -> RegulationUtil.setRegulating(row.getRtc(), v))
+                .enums(REGULATION_MODE, RegulationMode.class,
+                    row -> RegulationUtil.getRegulationMode(row.getRtc()), (row, v) -> RegulationUtil.setRegulationMode(row.getRtc(), v))
+                .doubles(REGULATION_VALUE, (row, context) -> RegulationUtil.getRegulationValue(row.getRtc(), context),
+                    (row, v, context) -> RegulationUtil.setRegulationValue(row.getRtc(), v, context))
+                .deprecatedDoubles(TARGET_V, (row, context) -> getTransformerTargetV(row.getRtc(), context),
                         (row, targetV, context) -> setTransformerTargetV(row.getRtc(), targetV, context))
-                .doubles("target_deadband", (row, context) -> row.getRtc().getTargetDeadband(),
-                    (row, v, context) -> row.getRtc().setTargetDeadband(v))
-                .strings("regulating_bus_id", row -> getBusId(row.getRtc().getRegulationTerminal()))
+                .doubles(TARGET_DEADBAND, (row, context) -> RegulationUtil.getTargetDeadband(row.getRtc(), context),
+                    (row, v, context) -> RegulationUtil.setTargetDeadband(row.getRtc(), v, context))
+                .strings(REGULATED_ELEMENT_ID, row -> NetworkUtil.getRegulatedElementId(row.getRtc()::getRegulatingTerminal),
+                        (row, elementId) ->
+                                NetworkUtil.setTerminal(t -> RegulationUtil.setRegulatingTerminal(row.getRtc(), t), row.getNetwork(), elementId))
+                .strings("regulating_bus_id", row -> getBusId(row.getRtc().getRegulatingTerminal()))
                 .strings("regulated_side", TapChangerRow::getRtcRegulatedSide, TapChangerRow::setRtcRegulatedSide, false)
                 .build();
     }
@@ -1531,27 +1707,6 @@ public final class NetworkDataframes {
         } else {
             return rtc.getTargetV();
         }
-    }
-
-    private static <T extends TapChanger<?, ?, ?, ?>> String getTapChangerRegulatedSide(TwoWindingsTransformer transformer, Function<TwoWindingsTransformer, T> tapChangerGetter) {
-        return getTerminalSideStr(transformer, tapChangerGetter.apply(transformer).getRegulationTerminal());
-    }
-
-    private static <T extends TapChanger<?, ?, ?, ?>> void setTapChangerRegulatedSide(TwoWindingsTransformer transformer, String side, Function<TwoWindingsTransformer, T> tapChangerGetter) {
-        tapChangerGetter.apply(transformer).setRegulationTerminal(getBranchTerminal(transformer, side));
-    }
-
-    private static <T extends TapChanger<?, ?, ?, ?>> String getTapChangerRegulatedSide(ThreeWindingsTransformer transformer, ThreeSides side, Function<ThreeWindingsTransformer.Leg, T> tapChangerGetter) {
-        var rtc = tapChangerGetter.apply(transformer.getLeg(side));
-        return getTerminalSideStr(transformer, rtc.getRegulationTerminal());
-    }
-
-    private static <T extends TapChanger<?, ?, ?, ?>> void setTapChangerRegulatedSide(ThreeWindingsTransformer transformer, ThreeSides side, String regulatedSide, Function<ThreeWindingsTransformer.Leg, T> tapChangerGetter) {
-        var rtc = tapChangerGetter.apply(transformer.getLeg(side));
-        if (regulatedSide.isEmpty()) {
-            rtc.setRegulationTerminal(null);
-        }
-        rtc.setRegulationTerminal(transformer.getTerminal(ThreeSides.valueOf(regulatedSide)));
     }
 
     private static double computeRho(TwoWindingsTransformer twt) {
@@ -1639,10 +1794,10 @@ public final class NetworkDataframes {
                 .ints("step_count", t -> t.getPtc().getStepCount())
                 .booleans("oltc", t -> t.getPtc().hasLoadTapChangingCapabilities(), (t, v) -> t.getPtc().setLoadTapChangingCapabilities(v))
                 .booleans(REGULATING, t -> t.getPtc().isRegulating(), (t, v) -> t.getPtc().setRegulating(v))
-                .enums("regulation_mode", PhaseTapChanger.RegulationMode.class, t -> t.getPtc().getRegulationMode(), (t, v) -> t.getPtc().setRegulationMode(v))
-                .doubles("regulation_value", (t, context) -> t.getPtc().getRegulationValue(),
+                .enums(REGULATION_MODE, PhaseTapChanger.RegulationMode.class, t -> t.getPtc().getRegulationMode(), (t, v) -> t.getPtc().setRegulationMode(v))
+                .doubles(REGULATION_VALUE, (t, context) -> t.getPtc().getRegulationValue(),
                     (t, v, context) -> t.getPtc().setRegulationValue(v))
-                .doubles("target_deadband", (t, context) -> t.getPtc().getTargetDeadband(),
+                .doubles(TARGET_DEADBAND, (t, context) -> t.getPtc().getTargetDeadband(),
                     (t, v, context) -> t.getPtc().setTargetDeadband(v))
                 .strings("regulating_bus_id", t -> getBusId(t.getPtc().getRegulationTerminal()))
                 .strings("regulated_side", TapChangerRow::getPtcRegulatedSide, TapChangerRow::setPtcRegulatedSide, false)

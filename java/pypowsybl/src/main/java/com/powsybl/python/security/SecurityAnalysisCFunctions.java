@@ -249,7 +249,7 @@ public final class SecurityAnalysisCFunctions {
             limitViolationPtrPlus.setLimit(limitViolation.getLimit());
             limitViolationPtrPlus.setLimitName(CTypeUtil.toCharPtr(Objects.toString(limitViolation.getLimitName(), "")));
             limitViolationPtrPlus.setAcceptableDuration(limitViolation.getAcceptableDuration());
-            limitViolationPtrPlus.setLimitReduction(limitViolation.getLimitReduction());
+            limitViolationPtrPlus.setLimitReduction(limitViolation.getLimitScaling());
             limitViolationPtrPlus.setValue(limitViolation.getValue());
             limitViolationPtrPlus.setSide(limitViolation.getSide() != null ? limitViolation.getSide().ordinal() : -1);
         }

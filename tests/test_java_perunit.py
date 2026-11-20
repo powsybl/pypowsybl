@@ -13,6 +13,7 @@ import numpy as np
 from numpy import nan
 
 import util
+from pypowsybl._pypowsybl import ElementType, get_network_elements_dataframe_metadata
 
 
 def test_per_unit_line():
@@ -70,14 +71,15 @@ def test_generator_per_unit():
     expected = pd.DataFrame.from_records(
         index='id',
         columns=['id', 'name', 'energy_source', 'target_p', 'min_p', 'max_p', 'min_q', 'max_q', 'rated_s',
-                 'reactive_limits_kind',
-                 'target_v',
-                 'target_q', 'voltage_regulator_on', 'regulated_element_id', 'p', 'q', 'i', 'voltage_level_id',
-                 'bus_id', 'connected'],
-        data=[['GEN', '', 'OTHER', 6.07, -100, 49.99, -100, 100, nan, 'MIN_MAX', 1.02, 3.01, True, 'GEN', -3.03,
-               -1.12641, 3.16461, 'VLGEN', 'VLGEN_0', True],
+                 'reactive_limits_kind', 'target_v', 'target_q', 'voltage_regulator_on', 'local_target_v',
+                 'local_target_q', 'regulating', 'regulation_mode', 'regulation_value', 'regulated_element_id',
+                 'p', 'q', 'i', 'voltage_level_id', 'bus_id', 'connected'],
+        data=[['GEN', '', 'OTHER', 6.07, -100, 49.99, -100, 100, nan, 'MIN_MAX', 1.02, 3.01, True,
+               1.02, 3.01, True, 'VOLTAGE', nan, 'GEN',
+               -3.03, -1.12641, 3.16461, 'VLGEN', 'VLGEN_0', True],
               ['GEN2', '', 'OTHER', 6.07, -100, 49.99, -1.79769e+306, 1.79769e+306, None, 'MIN_MAX', 1.02, 3.01, True,
-               'GEN2', -3.03, -1.13, 3.16, 'VLGEN', 'VLGEN_0', True]])
+               1.02, 3.01, True, 'VOLTAGE', nan, 'GEN2',
+               -3.03, -1.13, 3.16, 'VLGEN', 'VLGEN_0', True]])
     pd.testing.assert_frame_equal(expected, n.get_generators(), check_dtype=False, atol=1e-2)
     generators2 = pd.DataFrame(data=[[6.080, 3.02, 1.1, False, False]],
                                columns=['target_p', 'target_q', 'target_v', 'voltage_regulator_on', 'connected'],
@@ -86,13 +88,14 @@ def test_generator_per_unit():
     expected = pd.DataFrame.from_records(
         index='id',
         columns=['id', 'name', 'energy_source', 'target_p', 'min_p', 'max_p', 'min_q', 'max_q', 'rated_s',
-                 'reactive_limits_kind',
-                 'target_v',
-                 'target_q', 'voltage_regulator_on', 'regulated_element_id', 'p', 'q', 'i', 'voltage_level_id',
-                 'bus_id', 'connected'],
-        data=[['GEN', '', 'OTHER', 6.08, -100, 49.99, -100, 100, nan, 'MIN_MAX', 1.1, 3.02, False, 'GEN', -3.03,
-               -1.12641, nan, 'VLGEN', '', False],
+                 'reactive_limits_kind', 'target_v', 'target_q', 'voltage_regulator_on', 'local_target_v',
+                 'local_target_q', 'regulating', 'regulation_mode', 'regulation_value', 'regulated_element_id',
+                 'p', 'q', 'i', 'voltage_level_id', 'bus_id', 'connected'],
+        data=[['GEN', '', 'OTHER', 6.08, -100, 49.99, -100, 100, nan, 'MIN_MAX', 1.1, 3.02, False,
+               1.1, 3.02, False, 'VOLTAGE', nan,
+               'GEN', -3.03, -1.12641, nan, 'VLGEN', '', False],
               ['GEN2', '', 'OTHER', 6.07, -100, 49.99, -1.79769e+306, 1.79769e+306, None, 'MIN_MAX', 1.02, 3.01, True,
+               1.02, 3.01, True, 'VOLTAGE', nan,
                'GEN2', -3.03, -1.13, 3.16, 'VLGEN', 'VLGEN_0', True]])
     pd.testing.assert_frame_equal(expected, n.get_generators(), check_dtype=False, atol=1e-2)
 
@@ -130,9 +133,10 @@ def test_shunt_compensators_per_unit():
     n.per_unit = True
     expected = pd.DataFrame(index=pd.Series(name='id', data=['SHUNT']),
                             columns=['name', 'g', 'b', 'model_type', 'max_section_count', 'section_count', 'solved_section_count',
-                                     'voltage_regulation_on', 'target_v', 'target_deadband', 'regulating_bus_id',
+                                     'voltage_regulation_on', 'target_v', 'local_target_v', 'regulating', 'regulation_mode',
+                                     'regulation_value', 'regulated_element_id', 'target_deadband', 'regulating_bus_id',
                                      'p', 'q', 'i', 'voltage_level_id', 'bus_id', 'connected'],
-                            data=[['', 0, -19.2, 'LINEAR', 1, 1, nan, False, nan, nan, 'S1VL2_0', nan, 19.2, nan, 'S1VL2',
+                            data=[['', 0, -19.2, 'LINEAR', 1, 1, nan, False, nan, nan, False, '', nan, 'SHUNT', nan, 'S1VL2_0', nan, 19.2, nan, 'S1VL2',
                                    'S1VL2_0', True]])
     pd.testing.assert_frame_equal(expected, n.get_shunt_compensators(), check_dtype=False, atol=1e-2)
 
@@ -186,24 +190,28 @@ def test_vsc_converter_stations_per_unit():
     expected = pd.DataFrame.from_records(
         index='id',
         columns=['id', 'name', 'loss_factor', 'min_q', 'max_q', 'reactive_limits_kind', 'target_v', 'target_q',
-                 'voltage_regulator_on',
-                 'regulated_element_id',
+                 'voltage_regulator_on', 'local_target_v', 'local_target_q', 'regulating', 'regulation_mode',
+                 'regulation_value', 'regulated_element_id',
                  'p', 'q', 'i', 'voltage_level_id', 'bus_id', 'connected', 'hvdc_line_id'],
 
-        data=[['VSC1', 'VSC1', 1.1, nan, nan, 'CURVE', 1, 5, True, 'VSC1', 0.10, -5.12, 5.12, 'S1VL2', 'S1VL2_0', True, 'HVDC1'],
-              ['VSC2', 'VSC2', 1.1, -4, 5, 'MIN_MAX', 0, 1.2, False, 'VSC2', -0.1, -1.2, 1.18, 'S2VL1', 'S2VL1_0',
-               True, 'HVDC1']])
+        data=[['VSC1', 'VSC1', 1.1, nan, nan, 'CURVE', 1, 5, True, 1, 5, True, 'VOLTAGE', nan,
+               'VSC1', 0.10, -5.12, 5.12, 'S1VL2', 'S1VL2_0', True, 'HVDC1'],
+              ['VSC2', 'VSC2', 1.1, -4, 5, 'MIN_MAX', 0, 1.2, False, 0, 1.2, False, '', nan,
+               'VSC2', -0.1, -1.2, 1.18, 'S2VL1', 'S2VL1_0', True, 'HVDC1']])
     pd.testing.assert_frame_equal(expected, n.get_vsc_converter_stations(), check_dtype=False, atol=1e-2)
     n.update_vsc_converter_stations(pd.DataFrame(data=[[3.0, 4.0], [1.0, 2.0]],
-                                                 columns=['target_v', 'target_q'],
+                                                 columns=['local_target_v', 'local_target_q'],
                                                  index=['VSC1', 'VSC2']))
     expected = pd.DataFrame.from_records(
         index='id',
         columns=['id', 'name', 'loss_factor', 'min_q', 'max_q', 'reactive_limits_kind', 'target_v', 'target_q',
-                 'voltage_regulator_on', 'regulated_element_id',
+                 'voltage_regulator_on', 'local_target_v', 'local_target_q', 'regulating', 'regulation_mode',
+                 'regulation_value', 'regulated_element_id',
                  'p', 'q', 'i', 'voltage_level_id', 'bus_id', 'connected', 'hvdc_line_id'],
-        data=[['VSC1', 'VSC1', 1.1, nan, nan, 'CURVE', 3, 4, True, 'VSC1', 0.10, -5.12, 5.12, 'S1VL2', 'S1VL2_0', True, 'HVDC1'],
-              ['VSC2', 'VSC2', 1.1, -4, 5, 'MIN_MAX', 1, 2, False, 'VSC2', -0.1, -1.2, 1.18, 'S2VL1', 'S2VL1_0', True, 'HVDC1']])
+        data=[['VSC1', 'VSC1', 1.1, nan, nan, 'CURVE', 3, 4, True, 3, 4, True, 'VOLTAGE', nan,
+               'VSC1', 0.10, -5.12, 5.12, 'S1VL2', 'S1VL2_0', True, 'HVDC1'],
+              ['VSC2', 'VSC2', 1.1, -4, 5, 'MIN_MAX', 1, 2, False, 1, 2, False, '', nan,
+               'VSC2', -0.1, -1.2, 1.18, 'S2VL1', 'S2VL1_0', True, 'HVDC1']])
     pd.testing.assert_frame_equal(expected, n.get_vsc_converter_stations(), check_dtype=False, atol=1e-2)
 
 
@@ -213,20 +221,22 @@ def test_get_static_var_compensators_per_unit():
     n.per_unit = True
     expected = pd.DataFrame.from_records(
         index='id',
-        columns=['id', 'name', 'b_min', 'b_max', 'target_v', 'target_q', 'regulation_mode', 'regulating', 'regulated_element_id',
+        columns=['id', 'name', 'b_min', 'b_max', 'target_v', 'target_q', 'local_target_v', 'local_target_q',
+                 'regulating', 'regulation_mode', 'regulation_value', 'slope', 'regulated_element_id',
                  'p', 'q', 'i', 'voltage_level_id', 'bus_id', 'connected'],
-        data=[['SVC', '', -0.05, 0.05, 1.0, nan, 'VOLTAGE', True, 'SVC', 0, -0.13, 0.13, 'S4VL1', 'S4VL1_0', True]])
+        data=[['SVC', '', -0.05, 0.05, 1.0, nan, 1.0, nan, True, 'VOLTAGE', nan, nan, 'SVC', 0, -0.13, 0.13, 'S4VL1', 'S4VL1_0', True]])
     pd.testing.assert_frame_equal(expected, n.get_static_var_compensators(), check_dtype=False, atol=1e-2)
 
     n.update_static_var_compensators(pd.DataFrame.from_records(
-        index=['id'], columns=['id', 'target_v', 'target_q'],
+        index=['id'], columns=['id', 'local_target_v', 'local_target_q'],
         data=[('SVC', 3.0, 4.0)]))
 
     expected = pd.DataFrame.from_records(
         index='id',
-        columns=['id', 'name', 'b_min', 'b_max', 'target_v', 'target_q', 'regulation_mode', 'regulating', 'regulated_element_id',
+        columns=['id', 'name', 'b_min', 'b_max', 'target_v', 'target_q', 'local_target_v', 'local_target_q',
+                 'regulating', 'regulation_mode', 'regulation_value', 'slope', 'regulated_element_id',
                  'p', 'q', 'i', 'voltage_level_id', 'bus_id', 'connected'],
-        data=[['SVC', '', -0.05, 0.05, 3, 4, 'VOLTAGE', True, 'SVC', 0, -0.13, 0.13, 'S4VL1', 'S4VL1_0', True]])
+        data=[['SVC', '', -0.05, 0.05, 3.0, 4.0, 3.0, 4.0, True, 'VOLTAGE', nan, nan, 'SVC', 0, -0.13, 0.13, 'S4VL1', 'S4VL1_0', True]])
     pd.testing.assert_frame_equal(expected, n.get_static_var_compensators(), check_dtype=False, atol=1e-2)
 
 
@@ -354,21 +364,26 @@ def test_batteries():
     n.per_unit = True
     expected = pd.DataFrame(index=pd.Series(name='id', data=['BAT', 'BAT2']),
                             columns=['name', 'max_p', 'min_p', 'min_q', 'max_q', 'reactive_limits_kind', 'target_p',
-                                     'target_q',
+                                     'target_q', 'local_target_v', 'local_target_q', 'regulating', 'regulation_mode',
+                                     'regulation_value', 'regulated_element_id',
                                      'p', 'q', 'i', 'voltage_level_id', 'bus_id', 'connected'],
-                            data=[['', 100, -100, -100, 100, 'MIN_MAX', 100, 100, -6.05, -2.25, nan, 'VLBAT', 'VLBAT_0',
-                                   True],
-                                  ['', 2, -2, nan, nan, 'CURVE', 1, 2, -6.05, -2.25, nan, 'VLBAT', 'VLBAT_0', True]])
+                            data=[['', 100, -100, -100, 100, 'MIN_MAX', 100, 100, nan, 100, False, '', nan,
+                                   'BAT', -6.05, -2.25, nan, 'VLBAT', 'VLBAT_0', True],
+                                  ['', 2, -2, nan, nan, 'CURVE', 1, 2, nan, 2, False, '', nan,
+                                   'BAT2', -6.05, -2.25, nan, 'VLBAT', 'VLBAT_0', True]])
     pd.testing.assert_frame_equal(expected, n.get_batteries(), check_dtype=False, atol=1e-2)
     n.update_batteries(pd.DataFrame(data=[[50, -50, 50, 50, -7, -3]],
-                                    columns=['max_p', 'min_p', 'target_p', 'target_q', 'p', 'q'],
+                                    columns=['max_p', 'min_p', 'target_p', 'local_target_q', 'p', 'q'],
                                     index=['BAT']))
     expected = pd.DataFrame(index=pd.Series(name='id', data=['BAT', 'BAT2']),
                             columns=['name', 'max_p', 'min_p', 'min_q', 'max_q', 'reactive_limits_kind', 'target_p',
-                                     'target_q',
+                                     'target_q', 'local_target_v', 'local_target_q', 'regulating', 'regulation_mode',
+                                     'regulation_value', 'regulated_element_id',
                                      'p', 'q', 'i', 'voltage_level_id', 'bus_id', 'connected'],
-                            data=[['', 50, -50, -100, 100, 'MIN_MAX', 50, 50, -7, -3, nan, 'VLBAT', 'VLBAT_0', True],
-                                  ['', 2, -2, nan, nan, 'CURVE', 1, 2, -6.05, -2.25, nan, 'VLBAT', 'VLBAT_0', True]])
+                            data=[['', 50, -50, -100, 100, 'MIN_MAX', 50, 50, nan, 50, False, '', nan,
+                                   'BAT', -7, -3, nan, 'VLBAT', 'VLBAT_0', True],
+                                  ['', 2, -2, nan, nan, 'CURVE', 1, 2, nan, 2, False, '', nan,
+                                   'BAT2', -6.05, -2.25, nan, 'VLBAT', 'VLBAT_0', True]])
     pd.testing.assert_frame_equal(expected, n.get_batteries(), check_dtype=False, atol=1e-2)
 
 
@@ -377,9 +392,11 @@ def test_ratio_tap_changers_per_unit():
     n.per_unit = True
     expected = pd.DataFrame(index=pd.Series(name='id', data=['NHV2_NLOAD']),
                             columns=['side', 'tap', 'solved_tap_position', 'low_tap', 'high_tap', 'step_count', 'oltc',
-                                     'regulating', 'target_v', 'target_deadband', 'regulating_bus_id'],
-                            data=[['', 1, nan, 0, 2, 3, True, True, 1.05, 0.0, 'VLLOAD_0']])
-    pd.testing.assert_frame_equal(expected, n.get_ratio_tap_changers(), check_dtype=False, atol=1e-2)
+                                     'regulating', 'regulation_mode', 'regulation_value', 'target_v', 'target_deadband',
+                                     'regulated_element_id', 'regulating_bus_id', 'regulated_side'],
+                            data=[['', 1, nan, 0, 2, 3, True, True, 'VOLTAGE', 1.05, 1.05, 0.0,
+                                   'NHV2_NLOAD', 'VLLOAD_0', 'TWO']])
+    pd.testing.assert_frame_equal(expected, n.get_ratio_tap_changers(all_attributes=True), check_dtype=False, atol=1e-2)
 
 
 def test_lines_not_same_nominal_voltage_per_unit():
@@ -508,3 +525,82 @@ def test_phase_tap_changer_steps_per_unit():
     assert steps.loc['T196-2040-1', 0]['x'] == 3
     assert steps.loc['T196-2040-1', 0]['g'] == 4
     assert steps.loc['T196-2040-1', 0]['b'] == 2
+
+
+# --- detailed DC model -------------------------------------------------------------------------
+# 400 kV nodes with Sb = 100 MVA give Zbase = V^2/Sb = 1600 ohm, so 0.4 ohm is 0.00025 pu.
+DC_NOMINAL_V = 400.0
+DC_BASE_POWER = 100.0
+DC_Z_BASE = DC_NOMINAL_V ** 2 / DC_BASE_POWER
+DC_R_OHM = 0.4
+DC_R_PU = DC_R_OHM / DC_Z_BASE
+
+
+def _dc_network_with_every_resistive_element():
+    """Exactly one DC line, one DC switch and one DC ground, all DC_R_OHM, and nothing else.
+
+    Deliberately built from an empty network rather than a factory one: the guard test below sweeps
+    every DC element there is, so the fixture must contain no element it did not put there.
+    """
+    n = pp.network.create_empty('dc-per-unit')
+    n.nominal_apparent_power = DC_BASE_POWER
+    n.create_dc_nodes(id=['dnA', 'dnB'], nominal_v=[DC_NOMINAL_V, DC_NOMINAL_V])
+    n.create_dc_lines(id='dlAB', dc_node1_id='dnA', dc_node2_id='dnB', r=DC_R_OHM)
+    n.create_dc_switches(id='dsAB', dc_node1_id='dnA', dc_node2_id='dnB', kind='BREAKER',
+                         open=False, r=DC_R_OHM)
+    n.create_dc_grounds(id='dgA', dc_node_id='dnA', r=DC_R_OHM)
+    return n
+
+
+def test_per_unit_dc_switch():
+    n = _dc_network_with_every_resistive_element()
+    n.per_unit = True
+    assert n.get_dc_switches().loc['dsAB', 'r'] == pytest.approx(DC_R_PU, abs=1e-12)
+    n.update_dc_switches(id='dsAB', r=0.25)
+    n.per_unit = False
+    assert n.get_dc_switches().loc['dsAB', 'r'] == pytest.approx(0.25 * DC_Z_BASE, abs=1e-9)
+
+
+def test_per_unit_dc_ground():
+    n = _dc_network_with_every_resistive_element()
+    n.per_unit = True
+    assert n.get_dc_grounds().loc['dgA', 'r'] == pytest.approx(DC_R_PU, abs=1e-12)
+    n.update_dc_grounds(id='dgA', r=0.25)
+    n.per_unit = False
+    assert n.get_dc_grounds().loc['dgA', 'r'] == pytest.approx(0.25 * DC_Z_BASE, abs=1e-9)
+
+
+def test_per_unit_dc_line():
+    n = _dc_network_with_every_resistive_element()
+    n.per_unit = True
+    assert n.get_dc_lines().loc['dlAB', 'r'] == pytest.approx(DC_R_PU, abs=1e-12)
+    n.update_dc_lines(id='dlAB', r=0.25)
+    n.per_unit = False
+    assert n.get_dc_lines().loc['dlAB', 'r'] == pytest.approx(0.25 * DC_Z_BASE, abs=1e-9)
+
+
+def test_per_unit_every_dc_resistance_uses_the_same_impedance_base():
+    """Guard: no DC element may expose an ohmic 'r' that skips the per-unit view.
+
+    DcSwitch.r and DcGround.r once did, while DcLine.r did not, and nothing caught it because no
+    detailed-DC dataframe was per-unit tested. Rather than list the element types, this discovers
+    them from the dataframe metadata, so a DC element added later cannot quietly repeat it: if it
+    declares an 'r' and the fixture above does not build one, this test fails and says so.
+    """
+    n = _dc_network_with_every_resistive_element()
+    dc_types_with_r = [ElementType.__members__[name] for name in ElementType.__members__
+                       if name.startswith('DC_')
+                       and 'r' in [s.name for s in get_network_elements_dataframe_metadata(
+                           ElementType.__members__[name])]]
+    assert dc_types_with_r, "no DC element type declares an 'r' column - metadata lookup broke"
+
+    n.per_unit = True
+    for element_type in dc_types_with_r:
+        elements = n.get_elements(element_type)
+        assert not elements.empty, (
+            f"{element_type.name} declares an 'r' column but the fixture builds none - add one, "
+            f"so its per-unit handling is covered too")
+        for element_id, r in elements['r'].items():
+            assert r == pytest.approx(DC_R_PU, abs=1e-12), (
+                f"{element_type.name} '{element_id}' reports r={r} in per-unit mode, expected "
+                f"{DC_R_PU} - it is most likely being returned in ohms")

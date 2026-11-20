@@ -21,7 +21,6 @@ import com.powsybl.dynamicsimulation.OutputVariable;
 import com.powsybl.iidm.network.ThreeSides;
 import com.powsybl.iidm.network.ValidationLevel;
 import com.powsybl.openreac.parameters.input.algo.OpenReacAmplLogLevel;
-import com.powsybl.openreac.parameters.input.algo.OpenReacOptimisationObjective;
 import com.powsybl.openreac.parameters.input.algo.OpenReacSolverLogLevel;
 import com.powsybl.openreac.parameters.input.algo.ReactiveSlackBusesMode;
 import com.powsybl.openreac.parameters.output.OpenReacStatus;
@@ -196,6 +195,40 @@ public final class Util {
         return allocArrayPointer(doubleListPtr, doubleList.size());
     }
 
+    /**
+     * A {@code rowCount × colCount} matrix in unmanaged memory, filled row-major from {@code values}.
+     *
+     * <p>Both the struct and its value buffer are {@link UnmanagedMemory} allocations, so the caller owns
+     * them and must release them through the matching free entry point ({@code freeSensitivityMatrix});
+     * nothing here is reachable by the garbage collector.</p>
+     */
+    public static PyPowsyblApiHeader.MatrixPointer createMatrix(double[] values, int rowCount, int colCount) {
+        if (values.length != rowCount * colCount) {
+            throw new IllegalArgumentException("Matrix(" + rowCount + "*" + colCount + ") is not suitable for arrays size:" + values.length);
+        }
+        CDoublePointer valuePtr = UnmanagedMemory.calloc(rowCount * colCount * SizeOf.get(CDoublePointer.class));
+        for (int i = 0; i < colCount * rowCount; i++) {
+            valuePtr.addressOf(i).write(values[i]);
+        }
+        PyPowsyblApiHeader.MatrixPointer matrixPtr = UnmanagedMemory.calloc(SizeOf.get(PyPowsyblApiHeader.MatrixPointer.class));
+        matrixPtr.setRowCount(rowCount);
+        matrixPtr.setColumnCount(colCount);
+        matrixPtr.setValues(valuePtr);
+        return matrixPtr;
+    }
+
+    /**
+     * Releases a matrix obtained from {@link #createMatrix}: its value buffer, then the struct itself.
+     *
+     * <p>A no-op on a null pointer, since {@code createDoubleMatrix} answers one for an absent result.</p>
+     */
+    public static void freeMatrix(PyPowsyblApiHeader.MatrixPointer matrixPtr) {
+        if (matrixPtr.isNonNull()) {
+            UnmanagedMemory.free(matrixPtr.getValues());
+            UnmanagedMemory.free(matrixPtr);
+        }
+    }
+
     public static ArrayPointer<CIntPointer> createIntegerArray(List<Integer> integerList) {
         CIntPointer intListPtr = UnmanagedMemory.calloc(integerList.size() * SizeOf.get(CIntPointer.class));
         for (int i = 0; i < integerList.size(); i++) {
@@ -269,6 +302,8 @@ public final class Util {
             case DC_GROUND -> PyPowsyblApiHeader.ElementType.DC_GROUND;
             case DC_SWITCH -> PyPowsyblApiHeader.ElementType.DC_SWITCH;
             case DC_BUS -> PyPowsyblApiHeader.ElementType.DC_BUS;
+            case OVERLOAD_MANAGEMENT_SYSTEM -> PyPowsyblApiHeader.ElementType.OVERLOAD_MANAGEMENT_SYSTEM;
+            case OVERLOAD_MANAGEMENT_SYSTEM_TRIPPING -> PyPowsyblApiHeader.ElementType.OVERLOAD_MANAGEMENT_SYSTEM_TRIPPING;
         };
     }
 
@@ -323,6 +358,8 @@ public final class Util {
             case DC_GROUND -> DataframeElementType.DC_GROUND;
             case DC_SWITCH -> DataframeElementType.DC_SWITCH;
             case DC_BUS -> DataframeElementType.DC_BUS;
+            case OVERLOAD_MANAGEMENT_SYSTEM -> DataframeElementType.OVERLOAD_MANAGEMENT_SYSTEM;
+            case OVERLOAD_MANAGEMENT_SYSTEM_TRIPPING -> DataframeElementType.OVERLOAD_MANAGEMENT_SYSTEM_TRIPPING;
         };
     }
 
@@ -404,14 +441,6 @@ public final class Util {
 
     public static VoltageInitializerStatus convert(OpenReacStatus status) {
         return status == OpenReacStatus.OK ? VoltageInitializerStatus.OK : VoltageInitializerStatus.NOT_OK;
-    }
-
-    public static OpenReacOptimisationObjective convert(VoltageInitializerObjective obj) {
-        return switch (obj) {
-            case MIN_GENERATION -> OpenReacOptimisationObjective.MIN_GENERATION;
-            case BETWEEN_HIGH_AND_LOW_VOLTAGE_LIMIT -> OpenReacOptimisationObjective.BETWEEN_HIGH_AND_LOW_VOLTAGE_LIMIT;
-            case SPECIFIC_VOLTAGE_PROFILE -> OpenReacOptimisationObjective.SPECIFIC_VOLTAGE_PROFILE;
-        };
     }
 
     public static OpenReacAmplLogLevel convert(VoltageInitializerLogLevelAmpl obj) {

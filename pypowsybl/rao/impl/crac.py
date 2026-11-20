@@ -385,8 +385,7 @@ class Crac:
 
             - **name**: the name of the counter-trade range action
             - **operator**: the name of the operator the counter-trade range action belongs to
-            - **exporting_area**: the name of the area the power is exported from
-            - **importing_area**: the name of the area the power is imported in
+            - **area_id**: the id of the area the counter-trade range action is defined upon
             - **group_id**: the id of the group the counter-trade range action belongs to
             - **speed**: the activation speed of the counter-trade range action, if it is an automaton
             - **activation_cost**: the amount of money to spend to activate the counter-trade range action
@@ -396,6 +395,28 @@ class Crac:
             This DataFrame is indexed by the id of the counter-trade range actions.
         """
         series = _pypowsybl.get_crac_counter_trade_range_actions(self._handle)
+        return create_data_frame_from_series_array(series)
+
+    def get_counter_trade_connected_areas(self) -> DataFrame:
+        """
+        Get the connected areas and their border ranges for each counter-trade range action defined in the
+        CRAC in a DataFrame.
+
+        Returns:
+            A DataFrame containing the connected areas and their border ranges for each counter-trade range
+            action defined in the CRAC
+
+        Notes:
+            The resulting DataFrame, will include the following columns:
+
+            - **area_id**: the id of the connected area
+            - **min**: the lower bound of the border range, if defined
+            - **max**: the upper bound of the border range, if defined
+            - **range_type**: the type of border range (absolute, relative to previous instant, relative to initial network), if defined
+
+            This DataFrame is indexed by the id of the counter-trade range actions.
+        """
+        series = _pypowsybl.get_crac_counter_trade_connected_areas(self._handle)
         return create_data_frame_from_series_array(series)
 
     def get_ranges(self) -> DataFrame:

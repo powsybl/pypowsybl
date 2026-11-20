@@ -23,6 +23,12 @@ typedef struct string_map_struct {
     char** values;
 } string_map;
 
+typedef struct string_array_map_struct {
+    int length;
+    char** keys;
+    array* values;
+} string_array_map;
+
 typedef struct network_metadata_struct {
     char* id;
     char* name;
@@ -196,7 +202,9 @@ typedef enum {
     VOLTAGE_SOURCE_CONVERTER,
     DC_GROUND,
     DC_SWITCH,
-    DC_BUS
+    DC_BUS,
+    OVERLOAD_MANAGEMENT_SYSTEM,
+    OVERLOAD_MANAGEMENT_SYSTEM_TRIPPING
 } element_type;
 
 typedef enum {
@@ -328,6 +336,7 @@ typedef struct series_metadata_struct {
     unsigned char  is_index;
     unsigned char  is_modifiable;
     unsigned char  is_default;
+    unsigned char  is_deprecated;
 } series_metadata;
 
 /**
@@ -438,12 +447,6 @@ typedef enum {
     OK = 0,
     NOT_OK,
 } VoltageInitializerStatus;
-
-typedef enum {
-    MIN_GENERATION = 0,
-    BETWEEN_HIGH_AND_LOW_VOLTAGE_LIMIT,
-    SPECIFIC_VOLTAGE_PROFILE,
-} VoltageInitializerObjective;
 
 typedef enum {
     LOG_AMPL_DEBUG = 0,
