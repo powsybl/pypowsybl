@@ -13,6 +13,8 @@ import com.powsybl.contingency.Contingency;
 import com.powsybl.contingency.ContingencyContext;
 import com.powsybl.contingency.ContingencyContextType;
 import com.powsybl.iidm.network.*;
+import com.powsybl.openloadflow.sensi.AcSensitivityAnalysis;
+import com.powsybl.openloadflow.sensi.OpenSensitivityAnalysisProvider;
 import com.powsybl.python.commons.CommonObjects;
 import com.powsybl.python.contingency.ContingencyContainerImpl;
 import com.powsybl.sensitivity.*;
@@ -103,7 +105,9 @@ class SensitivityAnalysisContext extends ContingencyContainerImpl {
         }
     }
 
-    private final Map<String, MatrixInfo> factorsMatrix = new HashMap<>();
+    // LinkedHashMap: preserve matrix declaration order so the flat column layout (offsetColumn) — hence the
+    // adjoint cotangent vector alignment — is deterministic and matches the Python-side declaration order.
+    private final Map<String, MatrixInfo> factorsMatrix = new LinkedHashMap<>();
 
     void addFactorMatrix(String matrixId, List<String> branchesIds, List<String> variablesIds,
                          List<String> contingencies, ContingencyContextType contingencyContextType,
@@ -149,6 +153,22 @@ class SensitivityAnalysisContext extends ContingencyContainerImpl {
             count += matrix.getColumnCount();
         }
         return count;
+    }
+
+    private AcSensitivityAnalysis.AdjointVariable resolveAdjointVariable(Network network, String variableId, MatrixInfo matrix,
+                                                                        Map<String, SensitivityVariableSet> variableSetsById) {
+        SensitivityVariableType declaredType = matrix.getVariableType();
+        if (declaredType != null) {
+            return AcSensitivityAnalysis.AdjointVariable.of(declaredType, variableId);
+        }
+        SensitivityVariableType inferredType = getVariableType(network, variableId);
+        if (inferredType != null) {
+            return AcSensitivityAnalysis.AdjointVariable.of(inferredType, variableId);
+        }
+        if (variableSetsById.containsKey(variableId)) {
+            return AcSensitivityAnalysis.AdjointVariable.ofVariableSet(SensitivityVariableType.INJECTION_ACTIVE_POWER, variableId);
+        }
+        throw new PowsyblException("Variable '" + variableId + "' not found");
     }
 
     private SensitivityVariableType getVariableType(Network network, String variableId) {
@@ -287,6 +307,171 @@ class SensitivityAnalysisContext extends ContingencyContainerImpl {
                                                     valuesByContingencyId,
                                                     baseCaseReferences,
                                                     referencesByContingencyId);
+    }
+
+    /**
+     * Reverse-mode (adjoint / VJP) run: given output cotangents {@code ȳ} over the declared functions
+     * (the columns of the factor matrices, flat in offsetColumn order), returns {@code θ̄ = Sᵀ·ȳ} per declared
+     * factor matrix — the reverse-mode dual of {@link #run}. Reuses the OpenLoadFlow-retained
+     * {@code networkCacheEnabled} context, so a cached AC load flow must have run on the network first.
+     *
+     * @param functionCotangents dL/dfunction, one entry per declared function column (offsetColumn layout).
+     */
+    SensitivityAnalysisAdjointResultContext runAdjoint(Network network, double[] functionCotangents,
+                                                       SensitivityAnalysisParameters sensitivityAnalysisParameters,
+                                                       String provider) {
+        rejectDeclaredContingencies(network);
+        prepareMatrices();
+        Map<String, SensitivityVariableSet> variableSetsById = variableSets.stream()
+                .collect(Collectors.toMap(SensitivityVariableSet::getId, e -> e));
+
+        Map<AcSensitivityAnalysis.FunctionRef, Double> cotangentByFunction = new LinkedHashMap<>();
+        Map<AcSensitivityAnalysis.VariableRef, AcSensitivityAnalysis.AdjointVariable> leversByRef = new LinkedHashMap<>();
+        Map<AcSensitivityAnalysis.FunctionRef, String> statedByMatrix = new HashMap<>();
+        Map<String, List<AcSensitivityAnalysis.VariableRef>> gradientKeysByMatrixId = new LinkedHashMap<>();
+
+        for (Map.Entry<String, MatrixInfo> matrixEntry : factorsMatrix.entrySet()) {
+            MatrixInfo matrix = matrixEntry.getValue();
+            List<String> columns = matrix.getColumnIds();
+            List<String> rows = matrix.getRowIds();
+            SensitivityFunctionType functionType = matrix.getFunctionType();
+
+            for (int j = 0; j < columns.size(); j++) {
+                var function = new AcSensitivityAnalysis.FunctionRef(functionType,
+                        SensitivityFactor.resolveBusId(columns.get(j), functionType, network));
+                putFunctionCotangent(cotangentByFunction, statedByMatrix, function,
+                        functionCotangents[matrix.getOffsetColumn() + j], matrixEntry.getKey());
+            }
+
+            // the levers (rows) of this matrix, each with its resolved type + set-ness
+            List<AcSensitivityAnalysis.VariableRef> gradientKeys = new ArrayList<>(rows.size());
+            for (String variableId : rows) {
+                AcSensitivityAnalysis.AdjointVariable lever = resolveAdjointVariable(network, variableId, matrix, variableSetsById);
+                leversByRef.putIfAbsent(lever.ref(), lever);
+                gradientKeys.add(lever.ref());
+            }
+            gradientKeysByMatrixId.put(matrixEntry.getKey(), gradientKeys);
+        }
+
+        SensitivityAnalysisProvider p = SensitivityAnalysisCUtils.getSensitivityAnalysisProvider(provider);
+        if (!(p instanceof OpenSensitivityAnalysisProvider olfProvider)) {
+            throw new PowsyblException("Adjoint (VJP) sensitivity requires the OpenLoadFlow provider, got '" + p.getName() + "'");
+        }
+        Map<AcSensitivityAnalysis.VariableRef, Double> gradientByVariableKey = olfProvider.runAdjoint(network,
+                network.getVariantManager().getWorkingVariantId(), cotangentByFunction,
+                List.copyOf(leversByRef.values()), variableSets, sensitivityAnalysisParameters);
+
+        // Join the gradient onto each matrix's rows here, so the result context holds answers rather than the
+        // keys needed to compute them.
+        Map<String, double[]> gradientByMatrixId = new LinkedHashMap<>();
+        gradientKeysByMatrixId.forEach((matrixId, rowKeys) -> {
+            double[] values = new double[rowKeys.size()];
+            for (int i = 0; i < rowKeys.size(); i++) {
+                AcSensitivityAnalysis.VariableRef rowKey = rowKeys.get(i);
+                Double value = gradientByVariableKey.get(rowKey);
+                if (value == null) {
+                    throw new PowsyblException("No gradient returned for the declared lever " + rowKey.type()
+                            + " '" + rowKey.id() + "' of factor matrix '" + matrixId + "'. OpenLoadFlow answers "
+                            + "every lever it is given, so this means the lever it was given differs from the "
+                            + "one read back.");
+                }
+                values[i] = value;
+            }
+            gradientByMatrixId.put(matrixId, values);
+        });
+        return new SensitivityAnalysisAdjointResultContext(gradientByMatrixId);
+    }
+
+    /**
+     * Refuse a reverse-mode request that declares contingencies, naming them.
+     *
+     * <p>Reverse mode is BASE CASE only: it contracts the cotangent against the Jacobian the network cache
+     * retained for the solved base state, and OpenLoadFlow emits every adjoint factor with
+     * {@code ContingencyContext.none()}. A declared contingency therefore changes nothing in the answer.
+     * Returning the base-case gradient anyway is the worst option available — it is a plausible number for a
+     * question nobody asked, and nothing downstream can tell it apart from the post-contingency gradient the
+     * caller believed they requested.</p>
+     *
+     * <p>The test is what was DECLARED, not the contingency context type: the lever wrappers
+     * ({@code add_shunt_susceptance_factor_matrix} and friends) all pass {@code ContingencyContextType.ALL},
+     * which with no contingency declared means all of none and is exactly how the adjoint is meant to be
+     * called. Rejecting on the context type would reject the recommended usage.</p>
+     */
+    private void rejectDeclaredContingencies(Network network) {
+        List<String> contingencyIds = hasDeclaredContingencies()
+                ? createContingencies(network).stream().map(Contingency::getId).sorted().toList()
+                : List.of();
+        List<String> matricesWithContingencies = factorsMatrix.entrySet().stream()
+                .filter(e -> !e.getValue().getContingencyIds().isEmpty())
+                .map(Map.Entry::getKey)
+                .sorted()
+                .toList();
+        List<String> declared = new ArrayList<>();
+        if (!contingencyIds.isEmpty()) {
+            declared.add("contingencies " + contingencyIds);
+        }
+        if (!matricesWithContingencies.isEmpty()) {
+            declared.add("factor matrices declaring contingencies " + matricesWithContingencies);
+        }
+        if (declared.isEmpty()) {
+            return;
+        }
+        throw new PowsyblException("Adjoint (VJP) sensitivity is base case only, so it refuses a request that "
+                + "declares " + String.join(" and ", declared) + ": they would otherwise be ignored in "
+                + "silence and the gradient returned for the base case. Drop them from this analysis to run "
+                + "the adjoint, or use the forward run for post-contingency sensitivities.");
+    }
+
+    /**
+     * Record one declared column's cotangent under its {@code (functionType, functionId)} key, tolerating the
+     * SAME function being declared by several factor matrices but never double-counting it.
+     *
+     * <p>{@code ȳ} is a property of a monitored FUNCTION, not of the matrix that happens to declare it. The
+     * flat input vector carries one slot per (matrix, column) instead, so fusing several variable families
+     * into one call — each declaring the same monitored functions against its own variables — presents the
+     * same function several times. Summing those slots, which this did, silently multiplies {@code ȳ} by the
+     * number of families and returns a plausible gradient that is simply k times too large. Callers were left
+     * to defeat it by putting the real cotangent on the first family's matrices and zeros on all the others,
+     * an invariant nothing checked and a reader of the caller could not guess.</p>
+     *
+     * <p>So: the repeated slots must AGREE, and the agreed value is used once. Zero reads as "not stated
+     * here", which keeps the zero-fill convention working unchanged; two different non-zero values are a
+     * genuine contradiction about one number and are rejected rather than blended.</p>
+     *
+     * <p>Agreement is relative, not bit-exact: a caller that recomputes its cotangent per factor matrix does
+     * the same arithmetic twice and can land on values differing in the last bits, which is the same number
+     * stated twice, not a contradiction. Only a disagreement above {@link #COTANGENT_RELATIVE_TOLERANCE}
+     * is one, and the first slot's value is the one used.</p>
+     */
+    private static void putFunctionCotangent(Map<AcSensitivityAnalysis.FunctionRef, Double> cotangentByFunction,
+                                             Map<AcSensitivityAnalysis.FunctionRef, String> statedByMatrix,
+                                             AcSensitivityAnalysis.FunctionRef key, double value, String matrixId) {
+        Double previous = cotangentByFunction.get(key);
+        if (previous == null || previous == 0.0) {
+            cotangentByFunction.put(key, value);
+            if (value != 0.0) {
+                statedByMatrix.put(key, matrixId);
+            }
+            return;
+        }
+        if (value != 0.0 && !agreeOnCotangent(previous, value)) {
+            throw new PowsyblException("Conflicting cotangents for monitored function " + key.type() + " '"
+                    + key.id() + "': factor matrix '" + statedByMatrix.get(key) + "' states " + previous
+                    + ", factor matrix '" + matrixId + "' states " + value + ". A monitored function has ONE "
+                    + "dL/dfunction, whichever factor matrices declare it; state the same value (or 0) in "
+                    + "every matrix that does. The id above is the RESOLVED one, so two different ids for one "
+                    + "bus — a bus-breaker id and its bus-view bus — are the same monitored function here.");
+        }
+    }
+
+    /** Above this relative gap, two slots for one monitored function state different numbers. */
+    private static final double COTANGENT_RELATIVE_TOLERANCE = 1e-9;
+
+    private static boolean agreeOnCotangent(double previous, double value) {
+        // Relative to the larger magnitude: the slots are the same computation repeated, so the gap that
+        // matters is the one relative to their own scale, not an absolute epsilon that a cotangent of 1e6
+        // (or 1e-6) would read completely differently.
+        return Math.abs(value - previous) <= COTANGENT_RELATIVE_TOLERANCE * Math.max(Math.abs(previous), Math.abs(value));
     }
 
 }

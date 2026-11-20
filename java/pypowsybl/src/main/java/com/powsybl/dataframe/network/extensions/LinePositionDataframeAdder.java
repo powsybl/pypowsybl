@@ -52,10 +52,8 @@ public class LinePositionDataframeAdder extends AbstractSimpleAdder {
                 double longitude = longitudeCol.get(row);
                 List<Coordinate> coordinates = coordinatesByLineId.computeIfAbsent(id, k -> new ArrayList<>());
                 // ensure list can store coordinate at num index
-                if (num > coordinates.size()) {
-                    for (int i = 0; i < num - coordinates.size(); i++) {
-                        coordinates.add(null);
-                    }
+                while (coordinates.size() <= num) {
+                    coordinates.add(null);
                 }
                 coordinates.set(num, new Coordinate(latitude, longitude));
             }

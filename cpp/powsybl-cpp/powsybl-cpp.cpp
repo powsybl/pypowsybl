@@ -215,6 +215,18 @@ std::map<std::string, std::string> convertMapStructToStdMap(string_map* map) {
     return stdStringMap;
 }
 
+std::unordered_map<std::string, std::vector<std::string>> convertStringArrayMapStructToUnorderedMap(string_array_map* map) {
+    std::unordered_map<std::string, std::vector<std::string>> stdStringArrayMap;
+    stdStringArrayMap.reserve(map->length);
+    for (int i = 0; i < map->length; i++) {
+        char** keyPtr = (char**) map->keys + i;
+        array* valuePtr = map->values + i;
+        stdStringArrayMap.emplace(std::string(*keyPtr ? *keyPtr : ""), toVector<std::string>(valuePtr));
+    }
+    PowsyblCaller::get()->callJava<>(::freeStringArrayMap, map);
+    return stdStringArrayMap;
+}
+
 char* copyStringToCharPtr(const std::string& str) {
     char* c = new char[str.size() + 1];
     str.copy(c, str.size());
@@ -1311,6 +1323,22 @@ std::shared_ptr<matrix> getReferenceMatrix(const JavaHandle& sensitivityAnalysis
     });
 }
 
+JavaHandle runSensitivityAnalysisAdjoint(const JavaHandle& sensitivityAnalysisContext, const JavaHandle& network, const std::vector<double>& cotangents, SensitivityAnalysisParameters& parameters, const std::string& provider) {
+    auto c_parameters = parameters.to_c_struct();
+    return PowsyblCaller::get()->callJava<JavaHandle>(::runSensitivityAnalysisAdjoint, sensitivityAnalysisContext, network,
+                                (double*) cotangents.data(), (int) cotangents.size(), c_parameters.get(), (char*) provider.data());
+}
+
+std::shared_ptr<matrix> getGradient(const JavaHandle& sensitivityAnalysisAdjointResultContext, const std::string& matrixId) {
+    matrix* m = PowsyblCaller::get()->callJava<matrix*>(::getGradient, sensitivityAnalysisAdjointResultContext, (char*) matrixId.c_str());
+    if (m == nullptr) {
+        return nullptr;
+    }
+    return std::shared_ptr<matrix>(m, [](matrix* ptr) {
+        PowsyblCaller::get()->callJava(::freeSensitivityMatrix, ptr);
+    });
+}
+
 SeriesArray* createNetworkElementsSeriesArray(const JavaHandle& network, element_type elementType, filter_attributes_type filterAttributesType, const std::vector<std::string>& attributes, dataframe* dataframe, bool perUnit, double nominalApparentPower) {
 	ToCharPtrPtr attributesPtr(attributes);
     return new SeriesArray(PowsyblCaller::get()->callJava<array*>(::createNetworkElementsSeriesArray, network, elementType, filterAttributesType, attributesPtr.get(), attributes.size(), dataframe, perUnit, nominalApparentPower));
@@ -1350,6 +1378,12 @@ std::vector<std::string> getVariantsIds(const JavaHandle& network) {
     auto formatsArrayPtr = PowsyblCaller::get()->callJava<array*>(::getVariantsIds, network);
     ToStringVector formats(formatsArrayPtr);
     return formats.get();
+}
+
+std::unordered_map<std::string, std::vector<std::string>> getOutageGroups(const JavaHandle& network, const std::vector<std::string>& elementIds) {
+    ToCharPtrPtr elementIdsPtr(elementIds);
+    auto outageGroupsPtr = PowsyblCaller::get()->callJava<string_array_map*>(::getOutageGroups, network, elementIdsPtr.get(), elementIds.size());
+    return convertStringArrayMapStructToUnorderedMap(outageGroupsPtr);
 }
 
 void addMonitoredElements(const JavaHandle& securityAnalysisContext, contingency_context_type contingencyContextType, const std::vector<std::string>& branchIds,
@@ -2118,10 +2152,6 @@ void voltageInitializerAddConfiguredReactiveSlackBuses(const JavaHandle& paramsH
     pypowsybl::PowsyblCaller::get()->callJava(::voltageInitializerAddConfiguredReactiveSlackBuses, paramsHandle, (char*) idPtr.c_str());
 }
 
-void voltageInitializerSetObjective(const JavaHandle& paramsHandle, VoltageInitializerObjective cObjective) {
-    pypowsybl::PowsyblCaller::get()->callJava(::voltageInitializerSetObjective, paramsHandle, cObjective);
-}
-
 void voltageInitializerSetObjectiveDistance(const JavaHandle& paramsHandle, double dist) {
     pypowsybl::PowsyblCaller::get()->callJava(::voltageInitializerSetObjectiveDistance, paramsHandle, dist);
 }
@@ -2371,6 +2401,10 @@ SeriesArray* getNetworkElementIdsAndKeys(const JavaHandle& cracHandle) {
 
 SeriesArray* getCracCounterTradeRangeActions(const JavaHandle& cracHandle) {
   return new SeriesArray(PowsyblCaller::get()->callJava<array*>(::getCracCounterTradeRangeActions, cracHandle));
+}
+
+SeriesArray* getCracCounterTradeConnectedAreas(const JavaHandle& cracHandle) {
+  return new SeriesArray(PowsyblCaller::get()->callJava<array*>(::getCracCounterTradeConnectedAreas, cracHandle));
 }
 
 SeriesArray* getCracRangeActionRanges(const JavaHandle& cracHandle) {

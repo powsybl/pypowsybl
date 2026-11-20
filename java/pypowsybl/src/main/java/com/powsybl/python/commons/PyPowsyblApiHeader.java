@@ -7,14 +7,22 @@
  */
 package com.powsybl.python.commons;
 
-import org.graalvm.nativeimage.UnmanagedMemory;
 import org.graalvm.nativeimage.ObjectHandle;
+import org.graalvm.nativeimage.UnmanagedMemory;
 import org.graalvm.nativeimage.c.CContext;
 import org.graalvm.nativeimage.c.constant.CEnum;
 import org.graalvm.nativeimage.c.constant.CEnumLookup;
 import org.graalvm.nativeimage.c.constant.CEnumValue;
-import org.graalvm.nativeimage.c.struct.*;
-import org.graalvm.nativeimage.c.type.*;
+import org.graalvm.nativeimage.c.struct.CField;
+import org.graalvm.nativeimage.c.struct.CFieldAddress;
+import org.graalvm.nativeimage.c.struct.CPointerTo;
+import org.graalvm.nativeimage.c.struct.CStruct;
+import org.graalvm.nativeimage.c.struct.SizeOf;
+import org.graalvm.nativeimage.c.type.CCharPointer;
+import org.graalvm.nativeimage.c.type.CCharPointerPointer;
+import org.graalvm.nativeimage.c.type.CDoublePointer;
+import org.graalvm.nativeimage.c.type.CIntPointer;
+import org.graalvm.nativeimage.c.type.VoidPointer;
 import org.graalvm.word.PointerBase;
 
 /**
@@ -56,7 +64,7 @@ public final class PyPowsyblApiHeader {
         @CField("length")
         void setLength(int length);
 
-        ArrayPointer addressOf(int index);
+        ArrayPointer<T> addressOf(int index);
 
     }
 
@@ -91,6 +99,27 @@ public final class PyPowsyblApiHeader {
 
         @CField("values")
         void setValues(CCharPointerPointer values);
+    }
+
+    @CStruct("string_array_map")
+    public interface StringArrayMap extends PointerBase {
+        @CField("length")
+        int getLength();
+
+        @CField("length")
+        void setLength(int length);
+
+        @CField("keys")
+        CCharPointerPointer getKeys();
+
+        @CField("keys")
+        void setKeys(CCharPointerPointer keys);
+
+        @CField("values")
+        ArrayPointer<CCharPointerPointer> getValues();
+
+        @CField("values")
+        void setValues(ArrayPointer<CCharPointerPointer> values);
     }
 
     @CStruct("network_metadata")
@@ -1399,19 +1428,6 @@ public final class PyPowsyblApiHeader {
 
         @CField("initial_voltage_profile_mode")
         void setInitialVoltageProfileMode(int initialVoltageProfileMode);
-    }
-
-    @CEnum("VoltageInitializerObjective")
-    public enum VoltageInitializerObjective {
-        MIN_GENERATION,
-        BETWEEN_HIGH_AND_LOW_VOLTAGE_LIMIT,
-        SPECIFIC_VOLTAGE_PROFILE;
-
-        @CEnumValue
-        public native int getCValue();
-
-        @CEnumLookup
-        public static native VoltageInitializerObjective fromCValue(int value);
     }
 
     @CEnum("VoltageInitializerLogLevelAmpl")

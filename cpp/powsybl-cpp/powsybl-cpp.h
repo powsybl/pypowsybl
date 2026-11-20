@@ -10,10 +10,12 @@
 #include <string>
 #include <vector>
 #include <map>
+#include <unordered_map>
 #include <memory>
 #include <stdexcept>
 #include <functional>
 #include <mutex>
+#include <utility>
 #include "powsybl-api.h"
 #include "pypowsybl-java.h"
 
@@ -861,6 +863,10 @@ std::shared_ptr<matrix> getSensitivityMatrix(const JavaHandle& sensitivityAnalys
 
 std::shared_ptr<matrix> getReferenceMatrix(const JavaHandle& sensitivityAnalysisResultContext, const std::string& matrixId, const std::string& contingencyId);
 
+JavaHandle runSensitivityAnalysisAdjoint(const JavaHandle& sensitivityAnalysisContext, const JavaHandle& network, const std::vector<double>& cotangents, SensitivityAnalysisParameters& parameters, const std::string& provider);
+
+std::shared_ptr<matrix> getGradient(const JavaHandle& sensitivityAnalysisAdjointResultContext, const std::string& matrixId);
+
 SeriesArray* createNetworkElementsSeriesArray(const JavaHandle& network, element_type elementType, filter_attributes_type filterAttributesType, const std::vector<std::string>& attributes, dataframe* dataframe, bool perUnit, double nominalApparentPower);
 
 void removeNetworkElements(const JavaHandle& network, const std::vector<std::string>& elementIds);
@@ -882,6 +888,8 @@ void removeVariant(const JavaHandle& network, std::string& variant);
 void cloneVariant(const JavaHandle& network, std::string& src, std::string& variant, bool mayOverwrite);
 
 std::vector<std::string> getVariantsIds(const JavaHandle& network);
+
+std::unordered_map<std::string, std::vector<std::string>> getOutageGroups(const JavaHandle& network, const std::vector<std::string>& elementIds);
 
 void addMonitoredElements(const JavaHandle& securityAnalysisContext, contingency_context_type contingencyContextType, const std::vector<std::string>& branchIds,
                       const std::vector<std::string>& voltageLevelIds, const std::vector<std::string>& threeWindingsTransformerIds,
@@ -1041,7 +1049,6 @@ void voltageInitializerAddVariableShuntCompensators(const JavaHandle& paramsHand
 void voltageInitializerAddConstantQGenerators(const JavaHandle& paramsHandle, const std::string& idPtr);
 void voltageInitializerAddVariableTwoWindingsTransformers(const JavaHandle& paramsHandle, const std::string& idPtr);
 void voltageInitializerAddConfiguredReactiveSlackBuses(const JavaHandle& paramsHandle, const std::string& idPtr);
-void voltageInitializerSetObjective(const JavaHandle& paramsHandle, VoltageInitializerObjective cObjective);
 void voltageInitializerSetObjectiveDistance(const JavaHandle& paramsHandle, double dist);
 void voltageInitializerSetLogLevelAmpl(const JavaHandle& paramsHandle, VoltageInitializerLogLevelAmpl logLevelAmpl);
 void voltageInitializerSetLogLevelSolver(const JavaHandle& paramsHandle, VoltageInitializerLogLevelSolver logLevelSolver);
@@ -1138,6 +1145,7 @@ SeriesArray* getCracHvdcRangeActions(const JavaHandle& cracHandle);
 SeriesArray* getCracInjectionRangeActions(const JavaHandle& cracHandle);
 SeriesArray* getNetworkElementIdsAndKeys(const JavaHandle& cracHandle);
 SeriesArray* getCracCounterTradeRangeActions(const JavaHandle& cracHandle);
+SeriesArray* getCracCounterTradeConnectedAreas(const JavaHandle& cracHandle);
 SeriesArray* getCracRangeActionRanges(const JavaHandle& cracHandle);
 SeriesArray* getCracNetworkActions(const JavaHandle& cracHandle);
 SeriesArray* getCracTerminalConnectionActions(const JavaHandle& cracHandle);
