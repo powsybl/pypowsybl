@@ -118,6 +118,19 @@ public class BaseDataframeMapperBuilder<T, U, C, B extends BaseDataframeMapperBu
         return doubles(name, value, null, defaultAttribute);
     }
 
+    public B deprecatedDoubles(String name, ToDoubleBiFunction<U, C> value, DoubleSeriesMapper.DoubleUpdater<U, C> updater) {
+        return deprecatedDoubles(name, value, updater, true);
+    }
+
+    public B deprecatedDoubles(String name, ToDoubleBiFunction<U, C> value, boolean defaultAttribute) {
+        return deprecatedDoubles(name, value, null, defaultAttribute);
+    }
+
+    public B deprecatedDoubles(String name, ToDoubleBiFunction<U, C> value, DoubleSeriesMapper.DoubleUpdater<U, C> updater, boolean defaultAttribute) {
+        series.add(new DoubleSeriesMapper<>(name, value, updater, defaultAttribute, true));
+        return (B) this;
+    }
+
     public B ints(String name, ToIntFunction<U> value, IntSeriesMapper.IntUpdater<U> updater) {
         return ints(name, value, updater, true);
     }
@@ -172,12 +185,26 @@ public class BaseDataframeMapperBuilder<T, U, C, B extends BaseDataframeMapperBu
         return booleans(name, value, null, defaultAttribute);
     }
 
+    public B deprecatedBooleans(String name, Predicate<U> value, BooleanSeriesMapper.BooleanUpdater<U> updater) {
+        return deprecatedBooleans(name, value, updater, true);
+    }
+
+    public B deprecatedBooleans(String name, Predicate<U> value, BooleanSeriesMapper.BooleanUpdater<U> updater, boolean defaultAttribute) {
+        series.add(new BooleanSeriesMapper<>(name, value, updater, defaultAttribute, true));
+        return (B) this;
+    }
+
     public B strings(String name, Function<U, String> value, BiConsumer<U, String> updater) {
         return strings(name, value, updater, true);
     }
 
     public B strings(String name, Function<U, String> value, BiConsumer<U, String> updater, boolean defaultAttribute) {
-        series.add(new StringSeriesMapper<>(name, value, updater, defaultAttribute));
+        return strings(name, value, updater, defaultAttribute, false);
+    }
+
+    public B strings(String name, Function<U, String> value, BiConsumer<U, String> updater, boolean defaultAttribute,
+                     boolean deprecated) {
+        series.add(new StringSeriesMapper<>(name, false, value, updater, defaultAttribute, deprecated));
         return (B) this;
     }
 
@@ -192,6 +219,14 @@ public class BaseDataframeMapperBuilder<T, U, C, B extends BaseDataframeMapperBu
     public B stringsIndex(String name, Function<U, String> value) {
         series.add(new StringSeriesMapper<>(name, true, value));
         return (B) this;
+    }
+
+    public B deprecatedStrings(String name, Function<U, String> value) {
+        return strings(name, value, null, true, true);
+    }
+
+    public B deprecatedStrings(String name, Function<U, String> value, BiConsumer<U, String> updater, boolean defaultAttribute) {
+        return strings(name, value, updater, defaultAttribute, true);
     }
 
     public <E extends Enum<E>> B enums(String name, Class<E> enumClass, Function<U, E> value, BiConsumer<U, E> updater) {

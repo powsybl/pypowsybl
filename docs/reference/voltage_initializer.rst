@@ -25,7 +25,6 @@ VoltageInitializerParameters : How to parameterize the tool
     VoltageInitializerParameters.add_specific_low_voltage_limits
     VoltageInitializerParameters.add_specific_high_voltage_limits
     VoltageInitializerParameters.add_specific_voltage_limits
-    VoltageInitializerParameters.set_objective
     VoltageInitializerParameters.set_objective_distance
     VoltageInitializerParameters.set_log_level_ampl
     VoltageInitializerParameters.set_log_level_solver

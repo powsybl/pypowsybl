@@ -17,20 +17,6 @@ from pypowsybl.opf.impl.util import TRACE_LEVEL, HvdcRow
 
 logger = logging.getLogger(__name__)
 
-def set_dc_node_voltage_starts(network_cache: NetworkCache, model: Model, v_dc_vars: Any) -> None:
-    dc_node_count = len(network_cache.dc_nodes)
-    grounded_dc_nodes_ids = {row.dc_node_id for row in network_cache.dc_grounds.itertuples(index=False)}
-
-    for dc_node_num, row in enumerate(network_cache.dc_nodes.itertuples()):
-        if row.Index in grounded_dc_nodes_ids:
-            start_v = 0.0
-        else:
-            #hack to guarantee functional initialization for P_DC = (conv_i * |v1-v2|). The hack avoids V1=V2 at start which stops solver at first iteration
-            start_v = 1.0 + 1e-4 * (dc_node_num - (dc_node_count - 1) / 2)
-        logger.log(TRACE_LEVEL,
-                    f"Set start value {start_v} for voltage variable of dc node '{row.Index}' (num={dc_node_num})")
-        model.set_variable_start(v_dc_vars[dc_node_num], start_v)
-
 
 @dataclass
 class VariableContext:
@@ -68,8 +54,8 @@ class VariableContext:
     t3_open_side1_branch_p2_vars: Any
     t3_open_side1_branch_q2_vars: Any
     v_dc_vars: Any
-    closed_dc_line_i1_vars: Any
-    closed_dc_line_i2_vars: Any
+    closed_dc_line_i_vars: Any
+    closed_dc_switch_i_vars: Any
     conv_p_vars: Any
     conv_q_vars: Any
     conv_i_vars: Any
@@ -87,6 +73,7 @@ class VariableContext:
     t3_leg2_num_2_index: list[int]
     t3_leg3_num_2_index: list[int]
     dc_line_num_2_index: list[int]
+    dc_switch_num_2_index: list[int]
     conv_num_2_index: list[int]
 
 
@@ -97,7 +84,6 @@ class VariableContext:
         v_vars = model.add_m_variables(bus_count, name="v")
         ph_vars = model.add_m_variables(bus_count, name="ph")
         v_dc_vars = model.add_m_variables(dc_node_count, name="v_dc")
-        set_dc_node_voltage_starts(network_cache, model, v_dc_vars)
 
         gen_count = len(network_cache.generators)
         gen_p_nums: list[int] = []
@@ -260,12 +246,22 @@ class VariableContext:
         dc_line_count = len(network_cache.dc_lines)
         dc_line_num_2_index = [-1] * dc_line_count
         for dc_line_num, row in enumerate(network_cache.dc_lines.itertuples(index=False)):
-            if row.dc_node1_id and row.dc_node2_id:
+            if row.dc_node1_id and row.dc_node2_id and row.connected1 and row.connected2:
                 dc_line_num_2_index[dc_line_num] = len(closed_dc_line_nums)
                 closed_dc_line_nums.append(dc_line_num)
 
-        closed_dc_line_i1_vars = model.add_m_variables(len(closed_dc_line_nums), name='closed_dc_line_i1')
-        closed_dc_line_i2_vars = model.add_m_variables(len(closed_dc_line_nums), name='closed_dc_line_i2')
+        # Oriented dc_node1 -> dc_node2.
+        closed_dc_line_i_vars = model.add_m_variables(len(closed_dc_line_nums), name='closed_dc_line_i')
+
+        closed_dc_switch_nums: list[int] = []
+        dc_switch_count = len(network_cache.dc_switches)
+        dc_switch_num_2_index = [-1] * dc_switch_count
+        for dc_switch_num, row in enumerate(network_cache.dc_switches.itertuples(index=False)):
+            if not row.open:
+                dc_switch_num_2_index[dc_switch_num] = len(closed_dc_switch_nums)
+                closed_dc_switch_nums.append(dc_switch_num)
+
+        closed_dc_switch_i_vars = model.add_m_variables(len(closed_dc_switch_nums), name='closed_dc_switch_i')
 
         converter_nums: list[int] = []
         converter_count = len(network_cache.voltage_source_converters)
@@ -295,7 +291,8 @@ class VariableContext:
                                t3_closed_branch_q1_vars, t3_closed_branch_q2_vars,
                                t3_open_side1_p2_vars, t3_open_side1_q2_vars,
                                v_dc_vars,
-                               closed_dc_line_i1_vars, closed_dc_line_i2_vars,
+                               closed_dc_line_i_vars,
+                               closed_dc_switch_i_vars,
                                conv_p_vars, conv_q_vars, conv_i_vars,
                                branch_num_2_index,
                                gen_p_num_2_index, gen_q_num_2_index,
@@ -305,7 +302,7 @@ class VariableContext:
                                vsc_cs_num_2_index,
                                bl_num_2_index,
                                t3_num_2_index, t3_leg1_num_2_index, t3_leg2_num_2_index, t3_leg3_num_2_index,
-                               dc_line_num_2_index, conv_num_2_index)
+                               dc_line_num_2_index, dc_switch_num_2_index, conv_num_2_index)
 
     def _update_generators(self, network_cache: NetworkCache, model: Model) -> None:
         connected_gen_ids: list[str] = []
@@ -710,20 +707,18 @@ class VariableContext:
 
     def _update_dc_lines(self, network_cache: NetworkCache, model: Model) -> None:
         dc_line_ids: list[str] = []
-        dc_line_i1 = []
-        dc_line_i2 = []
+        dc_line_i = []
         for dc_line_num, (dc_line_id, row) in enumerate(network_cache.dc_lines.iterrows()):
             dc_line_index = self.dc_line_num_2_index[dc_line_num]
             dc_line_ids.append(str(dc_line_id))
-            i1 = model.get_value(self.closed_dc_line_i1_vars[dc_line_index])
-            i2 = model.get_value(self.closed_dc_line_i2_vars[dc_line_index])
+            # An open line has no equation and no current variable: it carries no current.
+            i = 0.0 if dc_line_index == -1 else model.get_value(self.closed_dc_line_i_vars[dc_line_index])
 
-            dc_line_i1.append(i1)
-            dc_line_i2.append(i2)
+            dc_line_i.append(i)
 
-            logger.log(TRACE_LEVEL, f"Update dc_line '{dc_line_id}': i1={i1} i2={i2}")
+            logger.log(TRACE_LEVEL, f"Update dc_line '{dc_line_id}': i={i}")
 
-        network_cache.update_dc_lines(dc_line_ids, dc_line_i1, dc_line_i2)
+        network_cache.update_dc_lines(dc_line_ids, dc_line_i)
 
     def _update_voltage_source_converters(self, network_cache: NetworkCache, model: Model) -> None:
         conv_ids: list[str] = []

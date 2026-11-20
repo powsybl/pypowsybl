@@ -27,7 +27,6 @@ def test_parameters():
     params.add_specific_low_voltage_limits([("vl_id_4", False, 380)])
     params.add_specific_high_voltage_limits([("vl_id_4", True, 2.3)])
 
-    params.set_objective(va.VoltageInitializerObjective.SPECIFIC_VOLTAGE_PROFILE)
     params.set_objective_distance(1.3)
     params.set_log_level_ampl(va.VoltageInitializerLogLevelAmpl.ERROR)
     params.set_log_level_solver(va.VoltageInitializerLogLevelSolver.EVERYTHING)
@@ -69,8 +68,6 @@ def test_runner():
     params.add_constant_q_generators([some_gen_id])
     some_2wt_id = n.get_2_windings_transformers().iloc[0].name
     params.add_variable_two_windings_transformers([some_2wt_id])
-
-    params.set_objective(v_init.VoltageInitializerObjective.SPECIFIC_VOLTAGE_PROFILE)
 
     results = v_init.run(n, params, True)
     results.apply_all_modifications(n)

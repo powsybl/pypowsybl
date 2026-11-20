@@ -116,6 +116,8 @@ All network elements are accessible as dataframes, using the following getters.
    Network.get_shunt_compensators
    Network.get_static_var_compensators
    Network.get_substations
+   Network.get_overload_management_systems
+   Network.get_overload_management_systems_trippings
    Network.get_switches
    Network.get_switch_flows
    Network.get_terminals
@@ -195,6 +197,8 @@ Network elements can be modified using dataframes:
    Network.update_shunt_compensators
    Network.update_static_var_compensators
    Network.update_substations
+   Network.update_overload_management_systems
+   Network.update_overload_management_systems_trippings
    Network.update_switches
    Network.update_terminals
    Network.update_tie_lines
@@ -248,6 +252,7 @@ Network elements can be created or removed using the following methods:
    Network.create_voltage_angle_limits
    Network.create_phase_tap_changers
    Network.create_ratio_tap_changers
+   Network.create_overload_management_systems
    Network.create_shunt_compensators
    Network.create_static_var_compensators
    Network.create_substations
@@ -326,6 +331,7 @@ Miscellaneous network functions
    Network.get_validation_level
    Network.validate
    Network.set_min_validation_level
+   Network.get_outage_groups
 
 
 I/O
