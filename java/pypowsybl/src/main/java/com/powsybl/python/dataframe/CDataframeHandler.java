@@ -12,6 +12,7 @@ import com.powsybl.python.commons.CTypeUtil;
 import com.powsybl.python.commons.PyPowsyblApiHeader;
 import com.powsybl.python.commons.PyPowsyblApiHeader.ArrayPointer;
 import com.powsybl.python.commons.PyPowsyblApiHeader.SeriesPointer;
+import com.powsybl.python.commons.Util;
 import org.graalvm.nativeimage.UnmanagedMemory;
 import org.graalvm.nativeimage.c.struct.SizeOf;
 import org.graalvm.nativeimage.c.type.CCharPointer;
@@ -20,6 +21,7 @@ import org.graalvm.nativeimage.c.type.CDoublePointer;
 import org.graalvm.nativeimage.c.type.CIntPointer;
 import org.graalvm.word.PointerBase;
 
+import java.util.List;
 import java.util.OptionalDouble;
 import java.util.OptionalInt;
 
@@ -37,6 +39,10 @@ public class CDataframeHandler implements DataframeHandler {
     public static final int DOUBLE_SERIES_TYPE = 1;
     public static final int INT_SERIES_TYPE = 2;
     public static final int BOOLEAN_SERIES_TYPE = 3;
+    /**
+     * String series transferred as int codes (the series data) and the distinct values they refer to (the dictionary).
+     */
+    public static final int DICTIONARY_STRING_SERIES_TYPE = 4;
 
     private ArrayPointer<SeriesPointer> dataframePtr;
     private int currentIndex;
@@ -164,6 +170,40 @@ public class CDataframeHandler implements DataframeHandler {
         };
     }
 
+    @Override
+    public DictionaryStringSeriesWriter newDictionaryStringIndex(String name, int size) {
+        return newDictionaryStringSeries(true, name, size);
+    }
+
+    @Override
+    public DictionaryStringSeriesWriter newDictionaryStringSeries(String name, int size) {
+        return newDictionaryStringSeries(false, name, size);
+    }
+
+    private DictionaryStringSeriesWriter newDictionaryStringSeries(boolean index, String name, int size) {
+        CIntPointer codesPtr = UnmanagedMemory.calloc(size * SizeOf.get(CIntPointer.class));
+        SeriesPointer seriesPtr = addSeries(index, name, size, codesPtr, nullPointer(), DICTIONARY_STRING_SERIES_TYPE);
+        return new DictionaryStringSeriesWriter() {
+            @Override
+            public void set(int i, int code) {
+                codesPtr.addressOf(i).write(code);
+            }
+
+            @Override
+            public void setDictionary(List<String> dictionary) {
+                if (seriesPtr.dictionary().getPtr().isNonNull()) {
+                    Util.freeCharPtrArray(seriesPtr.dictionary());
+                }
+                CCharPointerPointer dictionaryPtr = UnmanagedMemory.calloc(dictionary.size() * SizeOf.get(CCharPointerPointer.class));
+                for (int i = 0; i < dictionary.size(); i++) {
+                    dictionaryPtr.addressOf(i).write(CTypeUtil.toCharPtr(dictionary.get(i)));
+                }
+                seriesPtr.dictionary().setLength(dictionary.size());
+                seriesPtr.dictionary().setPtr(dictionaryPtr);
+            }
+        };
+    }
+
     private void addSeries(String name, int count, PointerBase dataPtr, int type) {
         addSeries(false, name, count, dataPtr, nullPointer(), type);
     }
@@ -176,7 +216,7 @@ public class CDataframeHandler implements DataframeHandler {
         addSeries(true, name, count, dataPtr, nullPointer(), type);
     }
 
-    private void addSeries(boolean index, String name, int count, PointerBase dataPtr, CIntPointer maskPtr, int type) {
+    private SeriesPointer addSeries(boolean index, String name, int count, PointerBase dataPtr, CIntPointer maskPtr, int type) {
         SeriesPointer seriesPtrI = dataframePtr.getPtr().addressOf(currentIndex);
         seriesPtrI.setName(CTypeUtil.toCharPtr(name));
         seriesPtrI.setIndex(index);
@@ -185,5 +225,6 @@ public class CDataframeHandler implements DataframeHandler {
         seriesPtrI.data().setPtr(dataPtr);
         seriesPtrI.setMask(maskPtr);
         currentIndex++;
+        return seriesPtrI;
     }
 }
