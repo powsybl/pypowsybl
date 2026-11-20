@@ -80,6 +80,10 @@ class PyPowsyblBuild(build_ext):
                 for filename in glob.glob(os.path.join(bin_dir, '*.*')):
                     shutil.copy(filename, extdir)
 
+        if os.environ.get('PYPOWSYBL_EXTRA_JARS'):
+            extra_jars = os.environ['PYPOWSYBL_EXTRA_JARS'].strip(os.pathsep)
+            cmake_args += ['-DEXTRA_JARS=' + os.pathsep + extra_jars]
+        
         pgo_instrument = 'ON' if os.environ.get('PYPOWSYBL_PGO_INSTRUMENT') else 'OFF'
         cmake_args += ["-DPYPOWSYBL_PGO_INSTRUMENT=" + pgo_instrument]
         cmake_args += ["-DPYPOWSYBL_PGO_PROFILES=" + os.environ.get('PYPOWSYBL_PGO_PROFILES', '')]

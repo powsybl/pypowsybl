@@ -857,6 +857,11 @@ public final class RaoCFunctions {
         return cracGenericMethod(thread, cracHandle, cracCounterTradeRangeActions(), exceptionHandlerPtr);
     }
 
+    @CEntryPoint(name = "getCracCounterTradeConnectedAreas")
+    public static ArrayPointer<SeriesPointer> getCracCounterTradeConnectedAreas(IsolateThread thread, ObjectHandle cracHandle, ExceptionHandlerPointer exceptionHandlerPtr) {
+        return cracGenericMethod(thread, cracHandle, cracCounterTradeConnectedAreas(), exceptionHandlerPtr);
+    }
+
     @CEntryPoint(name = "getCracRangeActionRanges")
     public static ArrayPointer<SeriesPointer> getCracRangeActionRanges(IsolateThread thread, ObjectHandle cracHandle, ExceptionHandlerPointer exceptionHandlerPtr) {
         return cracGenericMethod(thread, cracHandle, cracRanges(), exceptionHandlerPtr);

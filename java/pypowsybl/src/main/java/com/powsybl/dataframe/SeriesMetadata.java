@@ -64,8 +64,16 @@ public class SeriesMetadata {
         return new SeriesMetadata(false, name, false, SeriesDataType.BOOLEAN, false);
     }
 
+    public static SeriesMetadata deprecatedBooleans(String name) {
+        return new SeriesMetadata(false, name, false, SeriesDataType.BOOLEAN, false, true);
+    }
+
     public static SeriesMetadata doubles(String name) {
         return new SeriesMetadata(false, name, false, SeriesDataType.DOUBLE, false);
+    }
+
+    public static SeriesMetadata deprecatedDoubles(String name) {
+        return new SeriesMetadata(false, name, false, SeriesDataType.DOUBLE, false, true);
     }
 
     public static SeriesMetadata stringIndex(String name) {

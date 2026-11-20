@@ -34,6 +34,15 @@ public class ContingencyContainerImpl implements ContingencyContainer {
         pathToContingencyJsonFile = pathToJsonFile;
     }
 
+    /**
+     * Whether anything has been declared that {@link #createContingencies} would turn into contingencies.
+     * Cheap: it answers from what was declared, without reading the network or the JSON file, so a caller
+     * that only needs to know IF there are any does not pay for building them.
+     */
+    protected boolean hasDeclaredContingencies() {
+        return !elementIdsByContingencyId.isEmpty() || pathToContingencyJsonFile != null;
+    }
+
     private static ContingencyElement createContingencyElement(Network network, String elementId) {
         Identifiable<?> identifiable = network.getIdentifiable(elementId);
         if (identifiable == null) {

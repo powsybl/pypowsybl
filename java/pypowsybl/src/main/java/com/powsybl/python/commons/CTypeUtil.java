@@ -7,23 +7,33 @@
  */
 package com.powsybl.python.commons;
 
-import com.powsybl.dataframe.SeriesMetadata;
-import com.powsybl.python.commons.PyPowsyblApiHeader.DataframeMetadataPointer;
-import com.powsybl.python.commons.PyPowsyblApiHeader.SeriesMetadataPointer;
-import com.powsybl.python.commons.PyPowsyblApiHeader.StringMap;
-import org.graalvm.nativeimage.ObjectHandle;
-import org.graalvm.nativeimage.ObjectHandles;
-import org.graalvm.nativeimage.UnmanagedMemory;
-import org.graalvm.nativeimage.c.struct.SizeOf;
-import org.graalvm.nativeimage.c.type.*;
-import org.graalvm.word.*;
-
 import java.nio.charset.StandardCharsets;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import java.util.function.IntFunction;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
+import org.graalvm.nativeimage.ObjectHandle;
+import org.graalvm.nativeimage.ObjectHandles;
+import org.graalvm.nativeimage.UnmanagedMemory;
+import org.graalvm.nativeimage.c.struct.SizeOf;
+import org.graalvm.nativeimage.c.type.CCharPointer;
+import org.graalvm.nativeimage.c.type.CCharPointerPointer;
+import org.graalvm.nativeimage.c.type.CDoublePointer;
+import org.graalvm.nativeimage.c.type.CIntPointer;
+import org.graalvm.nativeimage.c.type.CTypeConversion;
+import org.graalvm.word.WordFactory;
+
+import com.powsybl.dataframe.SeriesMetadata;
+import com.powsybl.python.commons.PyPowsyblApiHeader.ArrayPointer;
+import com.powsybl.python.commons.PyPowsyblApiHeader.DataframeMetadataPointer;
+import com.powsybl.python.commons.PyPowsyblApiHeader.SeriesMetadataPointer;
+import com.powsybl.python.commons.PyPowsyblApiHeader.StringArrayMap;
+import com.powsybl.python.commons.PyPowsyblApiHeader.StringMap;
 import static com.powsybl.python.commons.Util.freeCharPtrArray;
 import static com.powsybl.python.commons.Util.getStringListAsPtr;
 
@@ -160,6 +170,34 @@ public final class CTypeUtil {
         });
         mapPtr.setKeys(getStringListAsPtr(keys));
         mapPtr.setValues(getStringListAsPtr(values));
+        return mapPtr;
+    }
+
+    /**
+     * Converts a Java map of strings to lists of strings into a native string-map array.
+     *
+     * @param stringMap Java map to convert
+     * @return native-allocated string-map array containing the same keys and string-list values
+     */
+    public static StringArrayMap fromStringListMap(Map<String, List<String>> stringMap) {
+        StringArrayMap mapPtr = UnmanagedMemory.calloc(SizeOf.get(StringArrayMap.class));
+        mapPtr.setLength(stringMap.size());
+
+        List<String> keys = new ArrayList<>(stringMap.size());
+        List<List<String>> values = new ArrayList<>(stringMap.size());
+        stringMap.forEach((key, value) -> {
+            keys.add(key);
+            values.add(value);
+        });
+
+        mapPtr.setKeys(getStringListAsPtr(keys));
+        ArrayPointer<CCharPointerPointer> valuesPtr = UnmanagedMemory.calloc(values.size() * SizeOf.get(ArrayPointer.class));
+        for (int i = 0; i < values.size(); i++) {
+            ArrayPointer<CCharPointerPointer> valuePtr = valuesPtr.addressOf(i);
+            valuePtr.setPtr(getStringListAsPtr(values.get(i)));
+            valuePtr.setLength(values.get(i).size());
+        }
+        mapPtr.setValues(valuesPtr);
         return mapPtr;
     }
 

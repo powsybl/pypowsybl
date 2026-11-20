@@ -364,7 +364,8 @@ def test_rao_cnec_results(rao_provider: str):
 
     # Flow cnecs
     df_flow_cnecs = result.get_flow_cnec_results()
-    assert ['cnec_id', 'optimized_instant', 'contingency', 'side', 'flow', 'margin', 'relative_margin', 'commercial_flow', 'loop_flow', 'ptdf_zonal_sum'] == list(df_flow_cnecs.columns)
+    assert list(df_flow_cnecs.columns) == ['cnec_id', 'optimized_instant', 'contingency', 'side', 'flow', 'margin',
+                                           'relative_margin', 'commercial_flow', 'loop_flow', 'ptdf_zonal_sum']
     nl_be_cnec = df_flow_cnecs.loc[df_flow_cnecs['cnec_id'] == 'NNL2AA1  BBE3AA1  1 - preventive']
     nl_be_cnec_side1 = nl_be_cnec.loc[nl_be_cnec['side'] == 'ONE'][['cnec_id', 'optimized_instant', 'flow', 'margin']]
     nl_be_cnec_side1 = nl_be_cnec_side1.sort_values(['optimized_instant'], ascending=[True])
@@ -376,11 +377,12 @@ def test_rao_cnec_results(rao_provider: str):
 
     # Voltage cnecs
     df_voltage_cnecs = result.get_voltage_cnec_results()
-    assert ['cnec_id', 'optimized_instant', 'contingency', 'side', 'min_voltage', 'max_voltage', 'margin'] == list(df_voltage_cnecs.columns)
+    assert list(df_voltage_cnecs.columns) == ['cnec_id', 'optimized_instant', 'contingency', 'side', 'min_voltage',
+                                              'max_voltage', 'margin']
 
     # Voltage cnecs
     df_angle_cnecs = result.get_angle_cnec_results()
-    assert ['cnec_id', 'optimized_instant', 'contingency', 'angle', 'margin'] == list(df_angle_cnecs.columns)
+    assert list(df_angle_cnecs.columns) == ['cnec_id', 'optimized_instant', 'contingency', 'angle', 'margin']
 
 @pytest.mark.parametrize("rao_provider", RAO_PROVIDERS)
 def test_rao_remedial_action_results(rao_provider: str):
@@ -389,7 +391,7 @@ def test_rao_remedial_action_results(rao_provider: str):
     # Ra results
     ra_results = result.get_remedial_action_results()
     ra_results = ra_results.sort_values(['remedial_action_id', 'optimized_instant'], ascending=[True, True]) # Sort to avoid row order difference
-    assert ['remedial_action_id', 'optimized_instant', 'contingency'] == list(ra_results.columns)
+    assert list(ra_results.columns) == ['remedial_action_id', 'optimized_instant', 'contingency']
     expected = pd.DataFrame(columns=['remedial_action_id', 'optimized_instant', 'contingency'],
                             data=[['close NL2 BE3 2', 'preventive', ""],
                                   ['pst-range-action', 'curative', "Contingency DE2 DE3"],
@@ -404,7 +406,7 @@ def test_rao_network_action_results(rao_provider: str):
     # Ra results
     network_action_results = result.get_network_action_results()
     network_action_results = network_action_results.sort_values(['remedial_action_id', 'optimized_instant'], ascending=[True, True]) # Sort to avoid row order difference
-    assert ['remedial_action_id', 'optimized_instant', 'contingency'] == list(network_action_results.columns)
+    assert list(network_action_results.columns) == ['remedial_action_id', 'optimized_instant', 'contingency']
     expected = pd.DataFrame(columns=['remedial_action_id', 'optimized_instant', 'contingency'],
                             data=[['close NL2 BE3 2', 'preventive', ""]])
     expected = expected.sort_values(['remedial_action_id', 'optimized_instant'], ascending=[True, True]) # Sort to avoid row order difference
@@ -417,7 +419,8 @@ def test_rao_pst_range_action_results(rao_provider: str):
     # Ra results
     pst_range_action_results = result.get_pst_range_action_results()
     pst_range_action_results = pst_range_action_results.sort_values(['remedial_action_id', 'optimized_instant'], ascending=[True, True])  # Sort to avoid row order difference
-    assert ['remedial_action_id', 'optimized_instant', 'contingency', 'optimized_tap'] == list(pst_range_action_results.columns)
+    assert list(pst_range_action_results.columns) == ['remedial_action_id', 'optimized_instant', 'contingency',
+                                                      'optimized_tap']
     expected = pd.DataFrame(
         columns=['remedial_action_id', 'optimized_instant', 'contingency', 'optimized_tap'],
         data=[['pst-range-action', 'curative', "Contingency DE2 DE3", 6],
@@ -432,7 +435,8 @@ def test_rao_range_action_results(rao_provider: str):
     # Ra results
     range_action_results = result.get_range_action_results()
     range_action_results = range_action_results.sort_values(['remedial_action_id', 'optimized_instant'], ascending=[True, True])  # Sort to avoid row order difference
-    assert ['remedial_action_id', 'optimized_instant', 'contingency', 'optimized_set_point'] == list(range_action_results.columns)
+    assert list(range_action_results.columns) == ['remedial_action_id', 'optimized_instant', 'contingency',
+                                                  'optimized_set_point']
     expected = pd.DataFrame(
         columns=['remedial_action_id', 'optimized_instant', 'contingency', 'optimized_set_point'],
         data=[])
@@ -445,7 +449,7 @@ def test_rao_cost_results(rao_provider: str):
 
     # Cost results
     cost_results_df = result.get_cost_results()
-    assert ['functional_cost', 'virtual_cost', 'cost'] == list(cost_results_df.columns)
+    assert list(cost_results_df.columns) == ['functional_cost', 'virtual_cost', 'cost']
     expected = pd.DataFrame(index=pd.Series(name='optimized_instant', data=['initial', 'preventive', 'outage', 'curative']),
                             columns=['functional_cost', 'virtual_cost', 'cost'],
                             data=[[158.362939, 0.0, 158.362939],
@@ -454,7 +458,7 @@ def test_rao_cost_results(rao_provider: str):
                                   [-304.400116, 0.0, -304.400116]])
     pd.testing.assert_frame_equal(expected, cost_results_df, check_dtype=False, check_like=True)
 
-    assert ['sensitivity-failure-cost'] == result.get_virtual_cost_names()
+    assert result.get_virtual_cost_names() == ['sensitivity-failure-cost']
 
     # Virtual cost results
     virtual_cost_df = result.get_virtual_cost_results('sensitivity-failure-cost')
@@ -509,7 +513,7 @@ def test_redispatch_ra_setpoints():
     validate_redispatch_ra_setpoint("rao/crac-simple-rd-mw.json","rao/rao-parameters-costly-shifted-20-mw.json", 480.0)
     validate_redispatch_ra_setpoint("rao/crac-simple-rd-ampere.json","rao/rao-parameters-min-margin-ampere.json", 0.0)
     validate_redispatch_ra_setpoint("rao/crac-simple-rd-ampere.json","rao/rao-parameters-costly-ampere.json", 346.0)
-    validate_redispatch_ra_setpoint("rao/crac-simple-rd-ampere.json","rao/rao-parameters-costly-shifted-20-ampere.json", 333.0)
+    validate_redispatch_ra_setpoint("rao/crac-simple-rd-ampere.json","rao/rao-parameters-costly-shifted-20-ampere.json", 334.0)
 
 def validate_redispatch_ra_setpoint(crac_file: str, parameters_file: str, set_point: float):
     network =  pp.network.load(DATA_DIR.joinpath("rao/2nodes.uct"))

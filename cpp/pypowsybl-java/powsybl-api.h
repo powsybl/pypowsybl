@@ -23,6 +23,12 @@ typedef struct string_map_struct {
     char** values;
 } string_map;
 
+typedef struct string_array_map_struct {
+    int length;
+    char** keys;
+    array* values;
+} string_array_map;
+
 typedef struct network_metadata_struct {
     char* id;
     char* name;
@@ -441,12 +447,6 @@ typedef enum {
     OK = 0,
     NOT_OK,
 } VoltageInitializerStatus;
-
-typedef enum {
-    MIN_GENERATION = 0,
-    BETWEEN_HIGH_AND_LOW_VOLTAGE_LIMIT,
-    SPECIFIC_VOLTAGE_PROFILE,
-} VoltageInitializerObjective;
 
 typedef enum {
     LOG_AMPL_DEBUG = 0,

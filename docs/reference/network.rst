@@ -119,6 +119,7 @@ All network elements are accessible as dataframes, using the following getters.
    Network.get_overload_management_systems
    Network.get_overload_management_systems_trippings
    Network.get_switches
+   Network.get_switch_flows
    Network.get_terminals
    Network.get_voltage_levels
    Network.get_vsc_converter_stations
@@ -330,6 +331,7 @@ Miscellaneous network functions
    Network.get_validation_level
    Network.validate
    Network.set_min_validation_level
+   Network.get_outage_groups
 
 
 I/O
