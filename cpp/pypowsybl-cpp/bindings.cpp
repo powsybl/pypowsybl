@@ -239,11 +239,6 @@ void voltageInitializerBinding(py::module_& m) {
         .value("OK", VoltageInitializerStatus::OK)
         .value("NOT_OK", VoltageInitializerStatus::NOT_OK);
 
-    py::enum_<VoltageInitializerObjective>(m, "VoltageInitializerObjective")
-        .value("MIN_GENERATION", VoltageInitializerObjective::MIN_GENERATION)
-        .value("BETWEEN_HIGH_AND_LOW_VOLTAGE_LIMIT", VoltageInitializerObjective::BETWEEN_HIGH_AND_LOW_VOLTAGE_LIMIT)
-        .value("SPECIFIC_VOLTAGE_PROFILE", VoltageInitializerObjective::SPECIFIC_VOLTAGE_PROFILE);
-
     py::enum_<VoltageInitializerLogLevelAmpl>(m, "VoltageInitializerLogLevelAmpl")
         .value("DEBUG", VoltageInitializerLogLevelAmpl::LOG_AMPL_DEBUG)
         .value("INFO", VoltageInitializerLogLevelAmpl::LOG_AMPL_INFO)
@@ -269,7 +264,6 @@ void voltageInitializerBinding(py::module_& m) {
     m.def("voltage_initializer_add_specific_high_voltage_limits", &pypowsybl::voltageInitializerAddSpecificHighVoltageLimits, py::arg("params_handle"), py::arg("voltage_level_id"), py::arg("is_relative"), py::arg("limit"));
     m.def("voltage_initializer_add_configured_reactive_slack_buses", &pypowsybl::voltageInitializerAddConfiguredReactiveSlackBuses, py::arg("params_handle"), py::arg("id_ptr"));
 
-    m.def("voltage_initializer_set_objective", &pypowsybl::voltageInitializerSetObjective, py::arg("params_handle"), py::arg("c_objective"));
     m.def("voltage_initializer_set_objective_distance", &pypowsybl::voltageInitializerSetObjectiveDistance, py::arg("params_handle"), py::arg("dist"));
 
     m.def("voltage_initializer_set_default_variable_scaling_factor", &pypowsybl::voltageInitializerSetDefaultVariableScalingFactor, py::arg("params_handle"), py::arg("default_variable_scaling_factor"));

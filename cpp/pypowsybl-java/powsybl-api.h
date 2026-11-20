@@ -449,12 +449,6 @@ typedef enum {
 } VoltageInitializerStatus;
 
 typedef enum {
-    MIN_GENERATION = 0,
-    BETWEEN_HIGH_AND_LOW_VOLTAGE_LIMIT,
-    SPECIFIC_VOLTAGE_PROFILE,
-} VoltageInitializerObjective;
-
-typedef enum {
     LOG_AMPL_DEBUG = 0,
     LOG_AMPL_INFO,
     LOG_AMPL_WARNING,
