@@ -2152,10 +2152,6 @@ void voltageInitializerAddConfiguredReactiveSlackBuses(const JavaHandle& paramsH
     pypowsybl::PowsyblCaller::get()->callJava(::voltageInitializerAddConfiguredReactiveSlackBuses, paramsHandle, (char*) idPtr.c_str());
 }
 
-void voltageInitializerSetObjective(const JavaHandle& paramsHandle, VoltageInitializerObjective cObjective) {
-    pypowsybl::PowsyblCaller::get()->callJava(::voltageInitializerSetObjective, paramsHandle, cObjective);
-}
-
 void voltageInitializerSetObjectiveDistance(const JavaHandle& paramsHandle, double dist) {
     pypowsybl::PowsyblCaller::get()->callJava(::voltageInitializerSetObjectiveDistance, paramsHandle, dist);
 }
