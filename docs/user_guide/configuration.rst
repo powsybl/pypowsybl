@@ -2,8 +2,8 @@ Configuration
 =============
 
 PyPowSyBl uses the same configuration file as the rest of the PowSyBl framework.
-That file is where default implementations and default parameters for load flow,
-security analysis, dynamic simulation, and other components are stored.
+PyPowSyBl can read default parameters for load flow, security analysis, dynamic
+simulation, and other components from that file.
 
 This page only covers what a Python user needs. The full mechanism (modules,
 YAML vs XML, environment-variable overrides) is documented in the
@@ -35,13 +35,9 @@ enabled by default.
 Example
 -------
 
-A minimal YAML file that selects OpenLoadFlow and sets a few default load-flow
-parameters:
+A minimal YAML file that sets a few default load-flow parameters:
 
 .. code-block:: yaml
-
-   load-flow:
-     default-impl-name: OpenLoadFlow
 
    load-flow-default-parameters:
      voltageInitMode: UNIFORM_VALUES
