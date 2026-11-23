@@ -27,6 +27,7 @@ class VoltageSourceConverterConstraints(Constraints):
 
                 dc_node1_num = network_cache.dc_nodes.index.get_loc(dc_node1_id)
                 dc_node2_num = network_cache.dc_nodes.index.get_loc(dc_node2_id)
+                # TODO: raises KeyError '' for a converter disconnected on the AC side (empty bus1_id).
                 bus1_num = network_cache.buses.index.get_loc(bus1_id)
                 v1_var = variable_context.v_dc_vars[dc_node1_num]
                 v2_var = variable_context.v_dc_vars[dc_node2_num]

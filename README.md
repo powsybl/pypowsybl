@@ -28,7 +28,7 @@ Notebooks demonstrating PyPowSyBl features can be found in this [repository](htt
 
 ## Installation
 
-PyPowSyBl is released on [PyPi](https://pypi.org/project/pypowsybl/) for Python 3.10 to 3.14, on Linux, Windows and MacOS.
+PyPowSyBl is released on [PyPi](https://pypi.org/project/pypowsybl/) for Python 3.10 to 3.14, on Linux (x86_64 and arm64), MacOS (arm64) and Windows.
 
 First, make sure you have an up-to-date version of pip and setuptools:
 ```bash
@@ -102,7 +102,7 @@ Requirements:
 - Maven >= 3.1
 - Cmake >= 3.20
 - C++11 compiler
-- Python >= 3.10 for Linux, Windows and MacOS (amd64 and arm64)
+- Python >= 3.10 for Linux (x86_64 and arm64), MacOS (arm64) and Windows
 - [Oracle GraalVM Java 21](https://www.graalvm.org/downloads/)
 
 To build from sources and install PyPowSyBl package:
@@ -127,6 +127,9 @@ python setup.py build --debug develop --user
 
 Please refer to pip and setuptools documentations for more information.
 
+To build a faster, profile-guided optimized (PGO) native image, which requires Oracle GraalVM, see
+[tools/pgo/README.md](tools/pgo/README.md).
+
 To run unit tests:
 
 ```bash
@@ -141,4 +144,14 @@ mypy -p pypowsybl
 To run linting inspection with `pylint`:
 ```bash
 pylint pypowsybl
+```
+
+### Building with extra Java plug-ins
+
+A native image cannot load Java code at run time and the layered graalvm feature is still alpha, so a powsybl plug-in (for example an additional importer or exporter shipped as a jar) can only be added to pypowsybl when the native library is built. Set `PYPOWSYBL_EXTRA_JARS` to the
+plug-in's jars, separated by the platform path separator (`:` on Linux and macOS, `;` on Windows), before building:
+
+```bash
+export PYPOWSYBL_EXTRA_JARS=/path/plugin.jar:/path/dependency.jar
+pip install .
 ```

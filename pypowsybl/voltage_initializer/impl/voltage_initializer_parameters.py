@@ -12,11 +12,9 @@ from pypowsybl._pypowsybl import (
     voltage_initializer_add_variable_two_windings_transformers,
     voltage_initializer_add_specific_low_voltage_limits,
     voltage_initializer_add_specific_high_voltage_limits,
-    VoltageInitializerObjective,
     VoltageInitializerLogLevelAmpl,
     VoltageInitializerLogLevelSolver,
     VoltageInitializerReactiveSlackBusesMode,
-    voltage_initializer_set_objective,
     voltage_initializer_set_objective_distance,
     voltage_initializer_set_log_level_ampl,
     voltage_initializer_set_log_level_solver,
@@ -128,24 +126,16 @@ class VoltageInitializerParameters:
             self.add_specific_low_voltage_limits([(key, True, limits[key][0])])
             self.add_specific_high_voltage_limits([(key, True, limits[key][1])])
 
-    def set_objective(self, objective: VoltageInitializerObjective) -> None:
-        """
-        If you use BETWEEN_HIGH_AND_LOW_VOLTAGE_LIMIT, you also need to call
-         :func:`~VoltageInitializerParameters.set_objective_distance`.
-
-        Args:
-            objective: objective function to set for VoltageInitializer.
-        """
-        voltage_initializer_set_objective(self._handle, objective)
-
     def set_objective_distance(self, distance: float) -> None:
         """
-        If you use BETWEEN_HIGH_AND_LOW_VOLTAGE_LIMIT, you also need to call this function.
+        Sets the voltage target of the voltage target ratio term in the ACOPF objective, which only has an effect
+        if :func:`~VoltageInitializerParameters.set_penalty_voltage_target_ratio` is set to a positive value.
+        Defaults to 50%.
 
         Args:
             distance: is in %.
-                        A 0% objective means the model will target lower voltage limit.
-                        A 100% objective means the model will target upper voltage limit.
+                        A 0% distance means the term targets the lower voltage limit.
+                        A 100% distance means the term targets the upper voltage limit.
         """
         voltage_initializer_set_objective_distance(self._handle, distance)
 
@@ -195,7 +185,7 @@ class VoltageInitializerParameters:
     def set_min_plausible_low_voltage_limit(self, min_plausible_low_voltage_level: float) -> None:
         """
         Changes the minimal plausible value for low voltage limits (in p.u.) in ACOPF solving.
-        
+
         Args:
             min_plausible_low_voltage_level: is >= 0.
         """
@@ -204,7 +194,7 @@ class VoltageInitializerParameters:
     def set_max_plausible_high_voltage_limit(self, max_plausible_high_voltage_limit: float) -> None:
         """
         Changes the maximal plausible value for high voltage limits (in p.u.) in ACOPF solving.
-        
+
         Args:
             max_plausible_high_voltage_limit: is > 0.
         """
@@ -213,7 +203,7 @@ class VoltageInitializerParameters:
     def set_active_power_variation_rate(self, active_power_variation_rate: float) -> None:
         """
         Changes the weight to favor more/less minimization of active power produced by generators.
-    
+
         Args:
             active_power_variation_rate: is >= 0 and =< 1.
                         A 0 active_power_variation_rate means the model will minimize the sum of generations.
@@ -224,7 +214,7 @@ class VoltageInitializerParameters:
     def set_min_plausible_active_power_threshold(self, min_plausible_active_power_threshold: float) -> None:
         """
         Changes the threshold of active and reactive power considered as null in the optimization.
-        
+
         Args:
             min_plausible_active_power_threshold: is >= 0.
         """
@@ -233,7 +223,7 @@ class VoltageInitializerParameters:
     def set_low_impedance_threshold(self, low_impedance_threshold: float) -> None:
         """
         Changes the threshold of impedance considered as null.
-        
+
         Args:
             low_impedance_threshold: is >= 0.
         """
@@ -241,8 +231,8 @@ class VoltageInitializerParameters:
 
     def set_min_nominal_voltage_ignored_bus(self, min_nominal_voltage_ignored_bus: float) -> None:
         """
-        Changes the threshold used to ignore voltage levels with nominal voltage lower than it. 
-        
+        Changes the threshold used to ignore voltage levels with nominal voltage lower than it.
+
         Args:
             min_nominal_voltage_ignored_bus: is >= 0.
         """
@@ -251,7 +241,7 @@ class VoltageInitializerParameters:
     def set_min_nominal_voltage_ignored_voltage_bounds(self, min_nominal_voltage_ignored_voltage_bounds: float) -> None:
         """
         Changes the threshold used to replace voltage limits of voltage levels with nominal voltage lower than it.
-        
+
         Args:
             min_nominal_voltage_ignored_voltage_bounds: is >= 0.
         """
@@ -260,7 +250,7 @@ class VoltageInitializerParameters:
     def set_max_plausible_power_limit(self, max_plausible_power_limit: float) -> None:
         """
         Changes the threshold defining the maximum active and reactive power considered in correction of generator limits.
-        
+
         Args:
             max_plausible_power_limit: is > 0.
         """
@@ -269,7 +259,7 @@ class VoltageInitializerParameters:
     def set_high_active_power_default_limit(self, high_active_power_default_limit: float) -> None:
         """
         Changes the threshold used for the correction of high active power limit of generators.
-        
+
         Args:
             high_active_power_default_limit: is > 0.
         """
@@ -278,7 +268,7 @@ class VoltageInitializerParameters:
     def set_low_active_power_default_limit(self, low_active_power_default_limit: float) -> None:
         """
         Changes the threshold used for the correction of low active power limit of generators.
-        
+
         Args:
             low_active_power_default_limit: is > 0.
         """
@@ -286,9 +276,9 @@ class VoltageInitializerParameters:
 
     def set_default_minimal_qp_range(self, default_minimal_qp_range: float) -> None:
         """
-        Changes the threshold used to fix active (resp. reactive) power of generators with 
+        Changes the threshold used to fix active (resp. reactive) power of generators with
         active (resp. reactive) power limits that are closer than it.
-        
+
         Args:
             default_minimal_qp_range: is >= 0.
         """
@@ -297,7 +287,7 @@ class VoltageInitializerParameters:
     def set_default_qmax_pmax_ratio(self, default_qmax_pmax_ratio: float) -> None:
         """
         Changes the ratio used to calculate threshold for corrections of high/low reactive power limits.
-        
+
         Args:
             default_qmax_pmax_ratio: is > 0.
         """
@@ -356,11 +346,10 @@ class VoltageInitializerParameters:
 
     def set_penalty_active_power(self, penalty_active_power: float) -> None:
         """
-        Sets the penalty for active power generation in the ACOPF objective.
-        Not setting it restores the historical default value.
+        Sets the penalty for active power generation in the ACOPF objective. Defaults to 1.
 
         Args:
-            penalty_active_power: is > 0.
+            penalty_active_power: is >= 0.
         """
         voltage_initializer_set_penalty_active_power(self._handle, penalty_active_power)
 
@@ -373,27 +362,30 @@ class VoltageInitializerParameters:
 
     def set_penalty_transfo_ratio(self, penalty_transfo_ratio: float) -> None:
         """
+        Sets the penalty for the transformer ratio term in the ACOPF objective. Defaults to 0.
+
         Args:
-            penalty_transfo_ratio: is > 0.
+            penalty_transfo_ratio: is >= 0.
         """
         voltage_initializer_set_penalty_transfo_ratio(self._handle, penalty_transfo_ratio)
 
     def set_penalty_voltage_target_ratio(self, penalty_voltage_target_ratio: float) -> None:
         """
-        Sets the penalty for the voltage target ratio term in the ACOPF objective.
-        Not setting it restores the historical default value.
+        Sets the penalty for the voltage target ratio term in the ACOPF objective, which targets for each bus
+        the voltage at :func:`~VoltageInitializerParameters.set_objective_distance` percent between its low and
+        high voltage limits. Defaults to 0.
 
         Args:
-            penalty_voltage_target_ratio: is > 0.
+            penalty_voltage_target_ratio: is >= 0.
         """
         voltage_initializer_set_penalty_voltage_target_ratio(self._handle, penalty_voltage_target_ratio)
 
     def set_penalty_voltage_target_data(self, penalty_voltage_target_data: float) -> None:
         """
-        Sets the penalty for the voltage target data term in the ACOPF objective.
-        Not setting it restores the historical default value.
+        Sets the penalty for the voltage target data term in the ACOPF objective, which targets for each bus
+        the voltage of the reference state of the ACOPF, that is 1 pu. Defaults to 0.
 
         Args:
-            penalty_voltage_target_data: is > 0.
+            penalty_voltage_target_data: is >= 0.
         """
         voltage_initializer_set_penalty_voltage_target_data(self._handle, penalty_voltage_target_data)
