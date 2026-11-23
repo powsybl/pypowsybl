@@ -30,7 +30,7 @@ try:
 except ModuleNotFoundError:
     logging.getLogger("powsybl").warning("'opf' extra dependencies are not installed, some features will not be available")
 
-__version__ = '1.17.0'
+__version__ = '1.18.0.dev1'
 
 # set JVM java.library.path to pypowsybl module installation directory to be able to load native libraries
 _pypowsybl.set_java_library_path(_os.path.dirname(_inspect.getfile(_pypowsybl)))
