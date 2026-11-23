@@ -60,7 +60,8 @@ public final class NetworkElementAdders {
             Map.entry(VOLTAGE_SOURCE_CONVERTER, new VoltageSourceConverterDataFrameAdder()),
             Map.entry(DC_GROUND, new DcGroundDataFrameAdder()),
             Map.entry(DC_SWITCH, new DcSwitchDataFrameAdder()),
-            Map.entry(OVERLOAD_MANAGEMENT_SYSTEM, new OverloadManagementSystemDataframeAdder())
+            Map.entry(OVERLOAD_MANAGEMENT_SYSTEM, new OverloadManagementSystemDataframeAdder()),
+            Map.entry(DROOP_CURVE_SEGMENT, new DroopCurveSegmentDataframeAdder())
     );
 
     private static final Map<String, NetworkElementAdder> EXTENSIONS_ADDERS = NetworkExtensions.createExtensionsAdders();

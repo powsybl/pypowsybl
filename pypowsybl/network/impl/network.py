@@ -3008,7 +3008,8 @@ class Network:  # pylint: disable=too-many-public-methods
         """
         Get a dataframe of reactive capability curve points.
 
-        For each generator, the min/max reactive capabilities can be represented as curves.
+        For each generator, battery or VSC converter station, the min/max reactive capabilities can be
+        represented as curves.
         This dataframe describes those curves as a list of points, which associate a min and a max value of Q
         to a given value of P.
 
@@ -3023,14 +3024,44 @@ class Network:  # pylint: disable=too-many-public-methods
         Notes:
             The resulting dataframe, depending on the parameters, will include the following columns:
 
-              - **num**: the point position in the curve description (starts 0 for a given generator)
               - **p**: the active power of the point, in MW
               - **min_q**: the minimum value of reactive power, in MVar, for this value of P
               - **max_q**: the maximum value of reactive power, in MVar, for this value of P
 
-            This dataframe is indexed on the generator ID.
+            This dataframe is multi-indexed by the tuple (id, num): the id of the generator, battery or
+            VSC converter station owning the curve, and the position of the point in the curve (starting at 0).
         """
         return self.get_elements(ElementType.REACTIVE_CAPABILITY_CURVE_POINT, all_attributes, attributes)
+
+    def get_droop_curve_segments(self, all_attributes: bool = False,
+                                 attributes: Optional[List[str]] = None) -> DataFrame:
+        """
+        Get a dataframe of AC/DC converter droop curve segments.
+
+        For each voltage source converter whose control mode is ``DC_DROOP``, the droop curve
+        describes the relation between DC voltage and AC active power as a list of segments,
+        each with a voltage range and a droop coefficient.
+
+        Args:
+            all_attributes: flag for including all attributes in the dataframe, default is false
+            attributes: attributes to include in the dataframe. The 2 parameters are mutually exclusive.
+                        If no parameter is specified, the dataframe will include the default attributes.
+
+        Returns:
+            A dataframe of droop curve segments.
+
+        Notes:
+            The resulting dataframe, depending on the parameters, will include the following columns:
+
+              - **min_v**: the minimum DC voltage of the segment, in kV
+              - **max_v**: the maximum DC voltage of the segment, in kV
+              - **k**: the droop coefficient of the segment, in kV/MW
+
+            This dataframe is multi-indexed by the tuple (id, num): the id of the voltage source converter
+            owning the droop curve, and the position of the segment in the curve (starting at 0, in ascending
+            voltage order).
+        """
+        return self.get_elements(ElementType.DROOP_CURVE_SEGMENT, all_attributes, attributes)
 
     def get_aliases(self, all_attributes: bool = False, attributes: Optional[List[str]] = None,
                     **kwargs: ArrayLike) -> DataFrame:
@@ -6712,6 +6743,49 @@ class Network:  # pylint: disable=too-many-public-methods
             :meth:`create_minmax_reactive_limits`
         """
         return self._create_elements(ElementType.REACTIVE_CAPABILITY_CURVE_POINT, [df], **kwargs)
+
+    def create_droop_curve_segments(self, df: Optional[DataFrame] = None, **kwargs: ArrayLike) -> None:
+        """
+        Creates AC/DC converter droop curve segments.
+
+        A droop curve is composed of several segments, each defining a voltage range and a droop
+        coefficient. Each row of the input data defines one segment.
+
+        Args:
+            df: Attributes as a dataframe.
+            kwargs: Attributes as keyword arguments.
+
+        Notes:
+
+            Data may be provided as a dataframe or as keyword arguments.
+            In the latter case, all arguments must have the same length.
+
+            Valid attributes are:
+
+            - **id**:    the identifier of the voltage source converter
+            - **min_v**: the minimum DC voltage of the segment, in kV
+            - **max_v**: the maximum DC voltage of the segment, in kV
+            - **k**:     the droop coefficient of the segment, in kV/MW
+
+            At least one row must be defined for each converter. Segments provided for a given
+            converter must be contiguous and non-overlapping; providing segments for a converter
+            that already has a droop curve replaces it entirely.
+
+        Examples:
+            Converter VSC-1 will use a droop coefficient of -10 kV/MW below -100kV, and -5 kV/MW
+            between -100kV and 100kV:
+
+            .. code-block:: python
+
+                network.create_droop_curve_segments(id=['VSC-1', 'VSC-1'],
+                                                     min_v=[-500, -100],
+                                                     max_v=[-100, 100],
+                                                     k=[-10, -5])
+
+        See Also:
+            :meth:`get_droop_curve_segments`
+        """
+        return self._create_elements(ElementType.DROOP_CURVE_SEGMENT, [df], **kwargs)
 
     def create_tie_lines(self, df: Optional[DataFrame] = None, **kwargs: ArrayLike) -> None:
         """
