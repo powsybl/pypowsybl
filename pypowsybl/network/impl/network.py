@@ -3008,7 +3008,8 @@ class Network:  # pylint: disable=too-many-public-methods
         """
         Get a dataframe of reactive capability curve points.
 
-        For each generator, the min/max reactive capabilities can be represented as curves.
+        For each generator, battery or VSC converter station, the min/max reactive capabilities can be
+        represented as curves.
         This dataframe describes those curves as a list of points, which associate a min and a max value of Q
         to a given value of P.
 
@@ -3023,12 +3024,12 @@ class Network:  # pylint: disable=too-many-public-methods
         Notes:
             The resulting dataframe, depending on the parameters, will include the following columns:
 
-              - **num**: the point position in the curve description (starts 0 for a given generator)
               - **p**: the active power of the point, in MW
               - **min_q**: the minimum value of reactive power, in MVar, for this value of P
               - **max_q**: the maximum value of reactive power, in MVar, for this value of P
 
-            This dataframe is indexed on the generator ID.
+            This dataframe is multi-indexed by the tuple (id, num): the id of the generator, battery or
+            VSC converter station owning the curve, and the position of the point in the curve (starting at 0).
         """
         return self.get_elements(ElementType.REACTIVE_CAPABILITY_CURVE_POINT, all_attributes, attributes)
 
@@ -3052,13 +3053,13 @@ class Network:  # pylint: disable=too-many-public-methods
         Notes:
             The resulting dataframe, depending on the parameters, will include the following columns:
 
-              - **num**: the segment position in the curve description (starts at 0 for a given converter,
-                in ascending voltage order)
               - **min_v**: the minimum DC voltage of the segment, in kV
               - **max_v**: the maximum DC voltage of the segment, in kV
               - **k**: the droop coefficient of the segment, in kV/MW
 
-            This dataframe is indexed on the converter ID.
+            This dataframe is multi-indexed by the tuple (id, num): the id of the voltage source converter
+            owning the droop curve, and the position of the segment in the curve (starting at 0, in ascending
+            voltage order).
         """
         return self.get_elements(ElementType.DROOP_CURVE_SEGMENT, all_attributes, attributes)
 
