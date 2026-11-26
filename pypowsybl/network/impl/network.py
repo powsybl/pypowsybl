@@ -2880,6 +2880,8 @@ class Network:  # pylint: disable=too-many-public-methods
 
             This dataframe is indexed by the id of the transformer
 
+            In per-unit mode, **regulation_value** and **target_deadband** are NaN if no **regulated_element_id**/**regulated_side** are specified.
+
         Examples:
             .. code-block:: python
 
