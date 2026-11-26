@@ -1171,6 +1171,31 @@ def test_ratio_tap_changers_3_windings():
     assert 'TWO' == steps.loc['84ed55f4-61f5-4d9d-8755-bba7b877a246', 3]['side']
 
 
+def test_not_regulating_tap_changers():
+    n = pp.network.create_ieee300()
+    rtc = n.get_ratio_tap_changers(all_attributes=True).loc["T37-9001-1"]
+    assert False == rtc['regulating']
+    assert np.isnan(rtc['regulation_value'])
+    assert np.isnan(rtc['target_deadband'])
+    assert '' == rtc['regulated_element_id']
+    assert '' == rtc['regulated_side']
+
+    n.update_ratio_tap_changers(id='T37-9001-1', regulation_value=10.0, target_deadband=0.1)
+    rtc = n.get_ratio_tap_changers(all_attributes=True).loc["T37-9001-1"]
+    assert False == rtc['regulating']
+    assert 10.0 == rtc['regulation_value']
+    assert 0.1 == rtc['target_deadband']
+
+    n.per_unit = True
+    rtc = n.get_ratio_tap_changers(all_attributes=True).loc["T37-9001-1"]
+    assert False == rtc['regulating']
+    # Values can't be per-united without regulated element specified
+    assert np.isnan(rtc['regulation_value'])
+    assert np.isnan(rtc['target_deadband'])
+    assert '' == rtc['regulated_element_id']
+    assert '' == rtc['regulated_side']
+
+
 def test_deprecated_ratio_tap_changer():
     n = pp.network.create_eurostag_tutorial_example1_network()
     with pytest.warns(DeprecationWarning, match='"target_v" of RATIO_TAP_CHANGER is deprecated'):

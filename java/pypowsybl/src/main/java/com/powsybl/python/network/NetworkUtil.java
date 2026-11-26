@@ -458,7 +458,7 @@ public final class NetworkUtil {
 
     public static String getRegulatedElementId(Supplier<Terminal> regulatingTerminalGetter) {
         Terminal terminal = regulatingTerminalGetter.get();
-        return terminal.getConnectable() != null ? terminal.getConnectable().getId() : null;
+        return terminal != null && terminal.getConnectable() != null ? terminal.getConnectable().getId() : null;
     }
 
     /**

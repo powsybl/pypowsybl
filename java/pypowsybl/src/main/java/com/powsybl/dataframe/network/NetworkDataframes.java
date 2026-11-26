@@ -1671,12 +1671,12 @@ public final class NetworkDataframes {
                 .booleans(REGULATING, row -> row.getRtc().isRegulating(), (row, v) -> RegulationUtil.setRegulating(row.getRtc(), v))
                 .enums(REGULATION_MODE, RegulationMode.class,
                     row -> RegulationUtil.getRegulationMode(row.getRtc()), (row, v) -> RegulationUtil.setRegulationMode(row.getRtc(), v))
-                .doubles(REGULATION_VALUE, (row, context) -> RegulationUtil.getRegulationValue(row.getRtc(), context),
-                    (row, v, context) -> RegulationUtil.setRegulationValue(row.getRtc(), v, context))
+                .doubles(REGULATION_VALUE, (row, context) -> getRtcRegulationValue(row.getRtc(), context),
+                    (row, v, context) -> setRtcRegulationValue(row.getRtc(), v, context))
                 .deprecatedDoubles(TARGET_V, (row, context) -> getTransformerTargetV(row.getRtc(), context),
                         (row, targetV, context) -> setTransformerTargetV(row.getRtc(), targetV, context))
-                .doubles(TARGET_DEADBAND, (row, context) -> RegulationUtil.getTargetDeadband(row.getRtc(), context),
-                    (row, v, context) -> RegulationUtil.setTargetDeadband(row.getRtc(), v, context))
+                .doubles(TARGET_DEADBAND, (row, context) -> getRtcTargetDeadband(row.getRtc(), context),
+                    (row, v, context) -> setRtcTargetDeadband(row.getRtc(), v, context))
                 .strings(REGULATED_ELEMENT_ID, row -> NetworkUtil.getRegulatedElementId(row.getRtc()::getRegulatingTerminal),
                         (row, elementId) ->
                                 NetworkUtil.setTerminal(t -> RegulationUtil.setRegulatingTerminal(row.getRtc(), t), row.getNetwork(), elementId))
@@ -1685,16 +1685,40 @@ public final class NetworkDataframes {
                 .build();
     }
 
-    private static void setTransformerTargetV(RatioTapChanger rtc, double targetV, NetworkDataframeContext context) {
-        if (context.isPerUnit()) {
-            if (rtc.getRegulationTerminal() != null) {
-                rtc.setTargetV(unPerUnitV(context, targetV, rtc.getRegulationTerminal()));
-            }
-            // we are not able to per unit the target voltage as we don't know where is the regulated point and
-            // so on it nominal voltage
-        } else {
-            rtc.setTargetV(targetV);
+    private static double getRtcRegulationValue(RatioTapChanger rtc, NetworkDataframeContext context) {
+        // we are not able to per unit the target voltage as we don't know where is the regulated point and
+        // so on it nominal voltage
+        if (context.isPerUnit() && rtc.getRegulatingTerminal() == null) {
+            return Double.NaN;
         }
+        return RegulationUtil.getRegulationValue(rtc, context);
+    }
+
+    private static void setRtcRegulationValue(RatioTapChanger rtc, double value, NetworkDataframeContext context) {
+        // we are not able to per unit the target voltage as we don't know where is the regulated point and
+        // so on it nominal voltage
+        if (context.isPerUnit() && rtc.getRegulatingTerminal() == null) {
+            return;
+        }
+        RegulationUtil.setRegulationValue(rtc, value, context);
+    }
+
+    private static double getRtcTargetDeadband(RatioTapChanger rtc, NetworkDataframeContext context) {
+        // we are not able to per unit the target voltage as we don't know where is the regulated point and
+        // so on it nominal voltage
+        if (context.isPerUnit() && rtc.getRegulatingTerminal() == null) {
+            return Double.NaN;
+        }
+        return RegulationUtil.getTargetDeadband(rtc, context);
+    }
+
+    private static void setRtcTargetDeadband(RatioTapChanger rtc, double value, NetworkDataframeContext context) {
+        // we are not able to per unit the target voltage as we don't know where is the regulated point and
+        // so on it nominal voltage
+        if (context.isPerUnit() && rtc.getRegulatingTerminal() == null) {
+            return;
+        }
+        RegulationUtil.setTargetDeadband(rtc, value, context);
     }
 
     private static double getTransformerTargetV(RatioTapChanger rtc, NetworkDataframeContext context) {
@@ -1707,6 +1731,18 @@ public final class NetworkDataframes {
             return Double.NaN;
         } else {
             return rtc.getTargetV();
+        }
+    }
+
+    private static void setTransformerTargetV(RatioTapChanger rtc, double targetV, NetworkDataframeContext context) {
+        if (context.isPerUnit()) {
+            if (rtc.getRegulationTerminal() != null) {
+                rtc.setTargetV(unPerUnitV(context, targetV, rtc.getRegulationTerminal()));
+            }
+            // we are not able to per unit the target voltage as we don't know where is the regulated point and
+            // so on it nominal voltage
+        } else {
+            rtc.setTargetV(targetV);
         }
     }
 
