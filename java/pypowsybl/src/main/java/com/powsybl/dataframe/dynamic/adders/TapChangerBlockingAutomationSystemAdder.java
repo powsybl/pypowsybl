@@ -122,11 +122,6 @@ public class TapChangerBlockingAutomationSystemAdder implements DynamicMappingAd
         }
 
         @Override
-        protected TapChangerBlockingAutomationSystemBuilder createBuilder(Network network, ReportNode reportNode) {
-            return TapChangerBlockingAutomationSystemBuilder.of(network, reportNode);
-        }
-
-        @Override
         protected TapChangerBlockingAutomationSystemBuilder createBuilder(Network network, String modelName, ReportNode reportNode) {
             return TapChangerBlockingAutomationSystemBuilder.of(network, modelName, reportNode);
         }

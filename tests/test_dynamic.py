@@ -78,8 +78,6 @@ def test_add_mapping():
                                                                  phase_shifter_id='PSI', model_name='PhaseShifterBlockingI')
     model_mapping.add_tap_changer_automation_system(dynamic_model_id='DM_TC', parameter_set_id='tc', static_id='LOAD',
                                                     side='HIGH_VOLTAGE', model_name='TapChangerAutomaton')
-    # Equipment with default model name and dynamic id
-    model_mapping.add_base_load(static_id='LOAD', parameter_set_id='lab')
     # Equipment model from Supported models
     model_name = model_mapping.get_supported_models('Load')[0]
     model_mapping.add_base_load(static_id='LOAD', parameter_set_id='lab', model_name=model_name)

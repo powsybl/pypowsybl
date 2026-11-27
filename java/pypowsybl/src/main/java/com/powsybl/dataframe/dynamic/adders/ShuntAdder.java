@@ -42,11 +42,6 @@ public class ShuntAdder extends AbstractEquipmentAdder {
         return new AbstractEquipmentSeries<ShuntCompensator, BaseShuntBuilder>(dataframe) {
 
             @Override
-            protected BaseShuntBuilder createBuilder(Network network, ReportNode reportNode) {
-                return BaseShuntBuilder.of(network, reportNode);
-            }
-
-            @Override
             protected BaseShuntBuilder createBuilder(Network network, String modelName, ReportNode reportNode) {
                 return BaseShuntBuilder.of(network, modelName, reportNode);
             }

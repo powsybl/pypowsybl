@@ -42,11 +42,6 @@ public class SynchronizedGeneratorAdder extends AbstractEquipmentAdder {
         return new AbstractEquipmentSeries<Generator, SynchronizedGeneratorBuilder>(dataframe) {
 
             @Override
-            protected SynchronizedGeneratorBuilder createBuilder(Network network, ReportNode reportNode) {
-                return SynchronizedGeneratorBuilder.of(network, reportNode);
-            }
-
-            @Override
             protected SynchronizedGeneratorBuilder createBuilder(Network network, String modelName, ReportNode reportNode) {
                 return SynchronizedGeneratorBuilder.of(network, modelName, reportNode);
             }
