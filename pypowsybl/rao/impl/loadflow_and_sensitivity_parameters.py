@@ -39,7 +39,7 @@ class LoadFlowAndSensitivityParameters:
         self.load_flow_provider = c_parameters.load_flow_provider
         self.sensitivity_provider = c_parameters.sensitivity_provider
         self.sensitivity_failure_overcost = c_parameters.sensitivity_failure_overcost
-        sensitivity_provider_params = dict(zip(c_parameters.provider_parameters_keys, c_parameters.provider_parameters_values))
+        sensitivity_provider_params = dict(zip(c_parameters.sensitivity_parameters.provider_parameters_keys, c_parameters.sensitivity_parameters.provider_parameters_values))
         self.sensitivity_parameters = SensitivityParameters(parameters_from_c(c_parameters.sensitivity_parameters.loadflow_parameters),
                                                             sensitivity_provider_params,
                                                             c_parameters.sensitivity_parameters.flow_flow_sensitivity_value_threshold,

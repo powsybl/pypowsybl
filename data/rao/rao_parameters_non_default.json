@@ -171,8 +171,9 @@
           "angle-flow-sensitivity-value-threshold" : 88.0,
           "extensions" : {
             "open-sensitivity-parameters" : {
-              "debugDir" : null,
-              "startWithFrozenACEmulation" : true
+              "debugDir" : "dummy",
+              "startWithFrozenACEmulation" : false,
+              "threadCount" : 2
             }
           }
         }
