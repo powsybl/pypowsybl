@@ -292,8 +292,8 @@ def test_measurements():
     assert e.id == 'measurement1'
     assert e.type == 'CURRENT'
     assert e.side == ''
-    assert e.standard_deviation == 100.0
-    assert e.value == 2.0
+    assert e.standard_deviation == 2.0
+    assert e.value == 100.0
     assert e.valid
     n.create_extensions(extension_name, id=['measurement2', 'measurement3'], element_id=[element_id, element_id],
                         type=['REACTIVE_POWER', 'ACTIVE_POWER'], value=[200, 180], standard_deviation=[21, 23],
@@ -301,8 +301,8 @@ def test_measurements():
     e = n.get_extensions(extension_name).loc[element_id]
     expected = pd.DataFrame(index=pd.Series(name='element_id', data=['LD1', 'LD1']),
                             columns=['id', 'type', 'side', 'standard_deviation', 'value', 'valid'],
-                            data=[['measurement2', 'REACTIVE_POWER', '', 200, 21, True],
-                                  ['measurement3', 'ACTIVE_POWER', '', 180, 23, True]])
+                            data=[['measurement2', 'REACTIVE_POWER', '', 21, 200, True],
+                                  ['measurement3', 'ACTIVE_POWER', '', 23, 180, True]])
     pd.testing.assert_frame_equal(expected, e, check_dtype=False)
     n.remove_extensions(extension_name, [element_id])
     assert n.get_extensions(extension_name).empty

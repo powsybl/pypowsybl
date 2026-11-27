@@ -55,8 +55,8 @@ public class MeasurementsDataframeAdder extends AbstractSimpleAdder {
             this.id = dataframe.getStrings(ID);
             this.type = dataframe.getStrings(TYPE);
             this.side = dataframe.getStrings(SIDE);
-            this.value = dataframe.getDoubles(STANDARD_DEVIATION);
-            this.standardDeviation = dataframe.getDoubles(VALUE);
+            this.value = dataframe.getDoubles(VALUE);
+            this.standardDeviation = dataframe.getDoubles(STANDARD_DEVIATION);
             this.valid = dataframe.getInts(VALID);
         }
 
