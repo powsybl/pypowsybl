@@ -22,12 +22,12 @@ import static com.powsybl.dataframe.dynamic.adders.DynamicModelDataframeConstant
 /**
  * @author Laurent Issertial {@literal <laurent.issertial at rte-france.com>}
  */
-abstract class AbstractDynamicModelSeries<T extends ModelBuilder<DynamicModel>> implements DynamicModelSeries {
+public abstract class AbstractDynamicModelSeries<T extends ModelBuilder<DynamicModel>> implements DynamicModelSeries {
 
     protected final StringSeries parameterSetIds;
     protected final StringSeries modelsNames;
 
-    AbstractDynamicModelSeries(UpdatingDataframe dataframe) {
+    protected AbstractDynamicModelSeries(UpdatingDataframe dataframe) {
         this.parameterSetIds = PersistentStringSeries.copyOf(dataframe, PARAMETER_SET_ID);
         this.modelsNames = PersistentStringSeries.copyOf(dataframe, MODEL_NAME);
     }
