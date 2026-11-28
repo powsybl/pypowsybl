@@ -103,7 +103,7 @@ Requirements:
 - Cmake >= 3.20
 - C++11 compiler
 - Python >= 3.10 for Linux (x86_64 and arm64), MacOS (arm64) and Windows
-- [Oracle GraalVM Java 21](https://www.graalvm.org/downloads/)
+- [Oracle GraalVM Java 25](https://www.graalvm.org/downloads/)
 
 To build from sources and install PyPowSyBl package:
 
